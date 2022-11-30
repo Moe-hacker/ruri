@@ -80,8 +80,6 @@ void chroot_container(char *CONTAINER_DIR){
   //Check if system runtime files are already created.
   DIR *sysmounted;
   if((sysmounted=opendir("/sys/kernel"))==NULL){
-    printf("Skip creating system runtime files.\n");
-  }else{
     //umount /proc for two times because in my device,it has been mounted twice.
     umount("/proc");
     umount("/proc");
@@ -141,6 +139,8 @@ void chroot_container(char *CONTAINER_DIR){
     symlink("/proc/self/fd/1", "/dev/stdout");
     symlink("/proc/self/fd/2", "/dev/stderr");
     symlink("/dev/null", "/dev/tty0");
+  }else{
+    printf("Skip creating system runtime files.\n");
   }
   //Lower permissions by dropping caps.
   if (DROP_CAPS==1){
