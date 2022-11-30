@@ -100,7 +100,7 @@ void chroot_container(char *CONTAINER_DIR){
   mount("/proc/asound","/proc/asound","proc",MS_BIND|MS_RDONLY,NULL);
   mount("/proc/scsi","/proc/scsi","proc",MS_BIND|MS_RDONLY,NULL);
   mount("/sys/firmware","/sys/firmware","sysfs",MS_BIND|MS_RDONLY,NULL);
-  //For making dev nodes
+  //For making dev nodes.
   int dev;
   //Create system runtime nodes in /dev and then fix permissions.
   dev=makedev(1,3);
@@ -256,20 +256,25 @@ void chroot_container(char *CONTAINER_DIR){
 }
 //main() starts here.
 int main(int argc,char **argv){
+  //Check if we are running with root permissions.
+  if (getuid()!=0){
+    printf("Error: this program should be run with root privilege !\n");
+    exit(1);
+  }
+  //Check if container directory is given and exists
   if (argc==1){
-    printf("Chroot directory not set");
-    exit(0);
+    printf("Chroot directory not set !\n");
+    exit(1);
+  }
+  DIR *direxist;
+  if((direxist=opendir(argv[1]))==NULL){
+    printf("Container directory does not exist !\n");
+    exit(1);
+  }else{
+    closedir(direxist);
   }
   //Unset $LD_PRELOAD to run binaries in container.
   unsetenv("LD_PRELOAD");
-  //Check if we are running with root permissions.
-  if (getuid()!=0){
-    //exec() is more powerful than system(),isn't that?
-    char *privilege[]={"sudo",BINARY_PATH,argv[1],NULL};
-    execvp(privilege[0],privilege);
-    //We should exit here to avoid running the following part without root permissions.
-    exit(0);
-  }
   if (USE_UNSHARE==1){
     //Try to create namespaces with unshare().
     if(unshare(CLONE_NEWNS) == -1){

@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sched.h>
+#include <dirent.h>
 #include <linux/stat.h>
 #include <linux/sched.h>
 #include <linux/limits.h>
@@ -32,9 +33,6 @@
 #define USE_UNSHARE 1
 #define DROP_CAPS 1
 #define DROP_MORE_CAPS 0
-//For debugging,set it to `./a.out`.
-//I will find a better way to get root permissions or use shell to implement. 
-#define BINARY_PATH "./a.out"
 ///////////////////////////////
 
 //Some definitions of flags,set 0 to disable and 1 to enable.
