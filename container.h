@@ -61,6 +61,7 @@
 #define DROP_CAP_MKNOD 1
 #define DROP_CAP_AUDIT_WRITE 1
 #define DROP_CAP_SETFCAP 1
+//Do not set DROP_CAP_SETGID to 1 or you will not be able to login to the container.
 #define DROP_CAP_SETGID 0
 #define DROP_CAP_CHOWN 0
 #define DROP_CAP_NET_RAW 0

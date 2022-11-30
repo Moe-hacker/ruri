@@ -11,6 +11,7 @@ container [选项] [容器目录]
 ```text
 -h :显示帮助信息
 -u :开启unshare功能将容器隔离到新namespace中
+-U :尝试卸载容器
 -d :通过降低docker默认移除的capability降低容器权限
 -D :进一步移除容器capability降低权限
 ```

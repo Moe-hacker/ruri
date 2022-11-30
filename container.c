@@ -78,12 +78,13 @@ void show_helps(){
   printf("Options:\n");
   printf("  -h :Show helps\n");
   printf("  -u :Enable unshare feature\n");
+  printf("  -U :Umount container\n");
   printf("  -d :Drop capabilities to reduce permissions of container\n");
   printf("  -D :Drop more capabilities for better security\n");
   printf("This program should be run with root permissions\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\n");
 }
-//Run unshare container.
+//Run chroot container.
 void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
   greeting();
   //chroot into container.
@@ -99,6 +100,8 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
     //umount /proc for two times because in my device,it has been mounted twice.
     umount("/proc");
     umount("/proc");
+    //Fix issues in archlinux containers.
+    mount("/","/",NULL,MS_BIND,NULL);
     //mount proc,sys and dev.
     mount("proc","/proc","proc",MS_NOSUID|MS_NOEXEC|MS_NODEV,NULL);
     //For /sys,we make it read-only.
@@ -277,6 +280,45 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
   execv(login[0],login);
   return;
 }
+//Umount container.
+void umount_container(char *CONTAINER_DIR){
+  //Check if we are running with root permissions.
+  if (getuid() != 0){
+    printf("\033[31mError: this program should be run with root privilege !\033[0m\n");
+    exit(1);
+  }
+  //Check if container directory exists and is legitimate.
+  switch(CONTAINER_DIR[0]){
+    case '.':
+      break;
+    case '/':
+      if (!CONTAINER_DIR[1]){
+        printf("\033[31mError: `/` is not a container directory !\n");
+        exit(1);
+      }
+      break;
+    default :
+      printf("\033[31mError: container directory does not exist !\033[0m\n");
+      exit(1);
+  }
+  DIR *direxist;
+  if((direxist=opendir(CONTAINER_DIR)) == NULL){
+    printf("\033[31mError: container directory does not exist !\033[0m\n");
+    exit(1);
+  }else{
+    closedir(direxist);
+  }
+  //An easy way to get path to umount.
+  chroot(CONTAINER_DIR);
+  //Force umount for 10 times.
+  for (int i=1;i<10;i++){
+    umount2("/sys",MNT_FORCE);
+    umount2("/dev",MNT_FORCE);
+    umount2("/proc",MNT_FORCE);
+    umount2("/sys",MNT_FORCE);
+  }
+  return;
+}
 //main() starts here.
 int main(int argc,char **argv){
   //Check if arguments are given.
@@ -300,6 +342,15 @@ int main(int argc,char **argv){
           case 'u':
             use_unshare=1;
             break;
+          case 'U':
+            arg+=1;
+            if(argv[arg] != NULL){
+              umount_container(argv[arg]);
+            }else{
+              printf("\033[31mError: container directory is not set !\033[0m\n");
+              exit(1);
+            }
+            exit(0);
           case 'd':
             drop_caps=1;
             break;
