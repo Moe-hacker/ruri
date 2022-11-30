@@ -71,6 +71,18 @@ void greeting(){
   printf("%s\n","           「Keep moe,keep cool」");
   return;
 }
+//Help pages.
+void show_helps(){
+  printf("Usage:\n");
+  printf("  container [options] [container directory]\n");
+  printf("Options:\n");
+  printf("  -h :Show helps\n");
+  printf("  -u :Enable unshare feature\n");
+  printf("  -d :Drop capabilities to reduce permissions of container\n");
+  printf("  -D :Drop more capabilities for better security\n");
+  printf("This program should be run with root permissions\n");
+  printf("Unset $LD_PRELOAD before running this program to fix issues in termux\n");
+}
 //Run unshare container.
 void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
   greeting();
@@ -267,31 +279,24 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
 }
 //main() starts here.
 int main(int argc,char **argv){
-  //Check if we are running with root permissions.
-  if (getuid() != 0){
-    printf("\033[31mError: this program should be run with root privilege !\033[0m\n");
-    exit(1);
-  }
-  //Check if $LD_PRELOAD is unset.
-  char *ld_preload=getenv("LD_PRELOAD");
-  if(ld_preload != NULL){
-    printf("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\033[0m\n");
-    exit(1);
-  }
-  //Check if container directory is given and exists
+  //Check if arguments are given.
   if (argc <= 1){
-    printf("\033[31mError: container directory not set !\033[0m\n");
+    printf("\033[31mError: too few arguments !\033[0m\n");
     exit(1);
   }
   //Set default value.
   int use_unshare=0;
   int drop_caps=0;
   int drop_more_caps=0;
+  char *container_dir;
   //Parse command-line arguments.
   for (int arg=1;arg<argc;arg++){
     switch(argv[arg][0]){
       case '-' :
         switch(argv[arg][1]){
+          case 'h':
+            show_helps();
+            exit(0);
           case 'u':
             use_unshare=1;
             break;
@@ -303,14 +308,36 @@ int main(int argc,char **argv){
             drop_more_caps=1;
             break;
           default:
-            printf("%s%s%s\033[0m","\033[31mError: unknow usage `",argv[arg],"`");
-            exit(0);
+            printf("%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
+            show_helps();
+            exit(1);
         }
         break;
-    default:
-      char *container_dir=argv[arg];
+    case '/':
+    case '.':
+      container_dir=argv[arg];
       break;
+    default:
+      printf("%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
+      show_helps();
+      exit(1);
     }
+  }
+  //Check if container directory is given.
+  if (container_dir == NULL){
+    printf("\033[31mError: container directory is not set !\033[0m\n");
+    exit(1);
+  }
+  //Check if we are running with root permissions.
+  if (getuid() != 0){
+    printf("\033[31mError: this program should be run with root privilege !\033[0m\n");
+    exit(1);
+  }
+  //Check if $LD_PRELOAD is unset.
+  char *ld_preload=getenv("LD_PRELOAD");
+  if(ld_preload != NULL){
+    printf("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\033[0m\n");
+    exit(1);
   }
   //Check if container directory exists.
   DIR *direxist;
