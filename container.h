@@ -12,6 +12,7 @@
 #define _GNU_SOURCE
 //Include header files used.
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sched.h>
@@ -35,7 +36,7 @@
 #define DROP_MORE_CAPS 0
 ///////////////////////////////
 
-//Some definitions of flags,set 0 to disable and 1 to enable.
+//Some definitions of capability flags,set 0 to disable and 1 to enable.
 //But do not remove definitions without editing container.c.
 //Caps to drop from docker default containers.
 //If you don't know the meaning of these caps,just set their value to 1.

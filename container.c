@@ -69,6 +69,7 @@ void greeting(){
   printf("%s\n","        ▀                       ▀        ▀");
   show_n_char(row);
   printf("%s\n","           「Keep moe,keep cool」");
+  return;
 }
 //Run unshare container.
 void chroot_container(char *CONTAINER_DIR){
@@ -76,7 +77,10 @@ void chroot_container(char *CONTAINER_DIR){
   //chroot into container.
   chroot(CONTAINER_DIR);
   chdir("/");
-  printf("\033[1;38;2;166;227;161mRun unshare container.\033[0m\n");
+  printf("\033[1;38;2;166;227;161mRunning container.\033[0m\n");
+  mkdir("/sys",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+  mkdir("/proc",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+  mkdir("/dev",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
   //Check if system runtime files are already created.
   DIR *sysmounted;
   if((sysmounted=opendir("/sys/kernel"))==NULL){
@@ -140,7 +144,7 @@ void chroot_container(char *CONTAINER_DIR){
     symlink("/proc/self/fd/2", "/dev/stderr");
     symlink("/dev/null", "/dev/tty0");
   }else{
-    printf("Skip creating system runtime files.\n");
+    printf("\033[1;38;2;166;227;161mSkip creating system runtime files.\033[0m\n");
   }
   //Lower permissions by dropping caps.
   if (DROP_CAPS==1){
@@ -259,55 +263,59 @@ void chroot_container(char *CONTAINER_DIR){
   //Use exec() family function because system() is unavailable now.
   char *login[]={"/bin/su","-",NULL};
   execv(login[0],login);
+  return;
 }
 //main() starts here.
 int main(int argc,char **argv){
   //Check if we are running with root permissions.
   if (getuid()!=0){
-    printf("\033[31mError: this program should be run with root privilege !\n");
+    printf("\033[31mError: this program should be run with root privilege !\033[0m\n");
     exit(1);
   }
   //Check if container directory is given and exists
   if (argc==1){
-    printf("\033[31mError: container directory not set !\n");
+    printf("\033[31mError: container directory not set !\033[0m\n");
     exit(1);
   }
+  //Check if $LD_PRELOAD is unset.
+  char *ld_preload=getenv("LD_PRELOAD");
+  if(ld_preload!=NULL){
+    printf("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\033[0m\n");
+    exit(1);
+  }
+  //Check if container directory exists.
   DIR *direxist;
   if((direxist=opendir(argv[1]))==NULL){
-    printf("\033[31mError: container directory does not exist !\n");
+    printf("\033[31mError: container directory does not exist !\033[0m\n");
     exit(1);
   }else{
     closedir(direxist);
   }
-  char *ld_preload=getenv("LD_PRELOAD");
-  if(ld_preload!=NULL){
-    printf("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\n");
-    exit(1);
-  }
+  //Unshare itself into new namespaces.
   if (USE_UNSHARE==1){
     //Try to create namespaces with unshare().
     if(unshare(CLONE_NEWNS) == -1){
-      printf("\033[33mSeems that mount namespace is not supported on this device.But no worries.\n");
+      printf("\033[33mSeems that mount namespace is not supported on this device.But no worries.\033[0m\n");
       sleep(1);
     }
     if(unshare(CLONE_NEWUTS) == -1){
-      printf("\033[33mSeems that uts namespace is not supported on this device.But no worries.\n");
+      printf("\033[33mSeems that uts namespace is not supported on this device.But no worries.\033[0m\n");
       sleep(1);
     }
     if(unshare(CLONE_NEWIPC) == -1){
-      printf("\033[33mSeems that ipc namespace is not supported on this device.But no worries.\n");
+      printf("\033[33mSeems that ipc namespace is not supported on this device.But no worries.\033[0m\n");
       sleep(1);
     }
     if(unshare(CLONE_NEWPID) == -1){
-      printf("\033[33mSeems that pid namespace is not supported in this host.But no worries.\n");
+      printf("\033[33mSeems that pid namespace is not supported in this host.But no worries.\033[0m\n");
       sleep(1);
     }
     if(unshare(CLONE_FILES) == -1){
-      printf("\033[33mSeems that we could not unshare fds with child process.But no worries.\n");
+      printf("\033[33mSeems that we could not unshare fds with child process.But no worries.\033[0m\n");
       sleep(1);
     }
     if(unshare(CLONE_FS) == -1){
-      printf("\033[33mSeems that we could not unshare filesystem information with child process.But no worries.\n");
+      printf("\033[33mSeems that we could not unshare filesystem information with child process.But no worries.\033[0m\n");
       sleep(1);
     }
     //Fork itself into namespace.
@@ -320,6 +328,7 @@ int main(int argc,char **argv){
     //Fix `can't access tty` issue.
     waitpid(pid, NULL, 0);
   }else{
+    //Run container directly.
     chroot_container(argv[1]);
   }
   return 0;
