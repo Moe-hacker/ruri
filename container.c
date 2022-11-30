@@ -341,7 +341,7 @@ int main(int argc,char **argv){
   }
   //Check if container directory exists.
   DIR *direxist;
-  if((direxist=opendir(argv[1])) == NULL){
+  if((direxist=opendir(container_dir)) == NULL){
     printf("\033[31mError: container directory does not exist !\033[0m\n");
     exit(1);
   }else{
@@ -379,13 +379,13 @@ int main(int argc,char **argv){
     int pid=fork();
     //Run container in the forked process.
     if (pid == 0){
-      chroot_container(argv[1],drop_caps,drop_more_caps);
+      chroot_container(container_dir,drop_caps,drop_more_caps);
     }
     //Fix `can't access tty` issue.
     waitpid(pid,NULL,0);
   }else{
     //Run container directly.
-    chroot_container(argv[1],drop_caps,drop_more_caps);
+    chroot_container(container_dir,drop_caps,drop_more_caps);
   }
   return 0;
 }
