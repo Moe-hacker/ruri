@@ -312,10 +312,10 @@ void umount_container(char *CONTAINER_DIR){
   chroot(CONTAINER_DIR);
   //Force umount for 10 times.
   for (int i=1;i<10;i++){
-    umount2("/sys",MNT_FORCE);
-    umount2("/dev",MNT_FORCE);
-    umount2("/proc",MNT_FORCE);
-    umount2("/sys",MNT_FORCE);
+    umount2("/sys",MNT_DETACH|MNT_FORCE);
+    umount2("/dev",MNT_DETACH|MNT_FORCE);
+    umount2("/proc",MNT_DETACH|MNT_FORCE);
+    umount2("/sys",MNT_DETACH|MNT_FORCE);
   }
   return;
 }
