@@ -375,7 +375,7 @@ int main(int argc,char **argv){
       sleep(1);
     }
     //Fork itself into namespace.
-    //This can fix 'can't fork: out of memory` issue.
+    //This can fix `can't fork: out of memory` issue.
     int pid=fork();
     //Run container in the forked process.
     if (pid == 0){

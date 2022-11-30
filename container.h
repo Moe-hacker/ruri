@@ -60,15 +60,15 @@
 #define DROP_CAP_SETPCAP 1
 #define DROP_CAP_MKNOD 1
 #define DROP_CAP_AUDIT_WRITE 1
+#define DROP_CAP_SETGID 1
+#define DROP_CAP_SETFCAP 1
 #define DROP_CAP_CHOWN 0
 #define DROP_CAP_NET_RAW 0
 #define DROP_CAP_DAC_OVERRIDE 0
 #define DROP_CAP_FOWNER 0
 #define DROP_CAP_FSETID 0
 #define DROP_CAP_KILL 0
-#define DROP_CAP_SETGID 0
 #define DROP_CAP_NET_BIND_SERVICE 0
-#define DROP_CAP_SETFCAP 0
 // ██╗ ██╗  ███████╗   ████╗   ███████╗
 //████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
