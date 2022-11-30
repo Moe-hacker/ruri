@@ -1,3 +1,12 @@
+// ██╗ ██╗  ██╗   ███████╗
+//████████╗ ██║ ██╔══════╝
+//╚██╔═██╔╝ ██║ ██║
+//████████╗ ╚═╝ ██║
+//╚██╔═██╔╝ ██╗  ╚███████╗
+// ╚═╝ ╚═╝  ╚═╝   ╚══════╝
+//╔═╝  ╔═║╔═║╔═║╔═╝╔═║╔═║╔╔ ╔╔ ╝╔═ ╔═╝  ║  ╔═║╔═ ╔═╝║ ║╔═║╔═╝╔═╝
+//║    ╔═╝╔╔╝║ ║║ ║╔╔╝╔═║║║║║║║║║ ║║ ║  ║  ╔═║║ ║║ ║║ ║╔═║║ ║╔═╝
+//══╝  ╝  ╝ ╝══╝══╝╝ ╝╝ ╝╝╝╝╝╝╝╝╝ ╝══╝  ══╝╝ ╝╝ ╝══╝══╝╝ ╝══╝══╝
 //Heders was written into container.h.
 #include "container.h"
 //Only for centering output.
@@ -63,6 +72,7 @@ void greeting(){
 }
 //Run unshare container.
 void chroot_container(char *CONTAINER_DIR){
+  greeting();
   //chroot into container.
   chroot(CONTAINER_DIR);
   chdir("/");
@@ -126,37 +136,118 @@ void chroot_container(char *CONTAINER_DIR){
   symlink("/proc/self/fd/1", "/dev/stdout");
   symlink("/proc/self/fd/2", "/dev/stderr");
   symlink("/dev/null", "/dev/tty0");
-  //Lower permissions.
-
-  //TODO:drop more capabilities.
+  //Lower permissions by dropping caps.
   if (DROP_CAPS==1){
-    //Cap list from docker.
-    cap_drop_bound(CAP_SYS_ADMIN);
-    cap_drop_bound(CAP_SYS_MODULE);
-    cap_drop_bound(CAP_SYS_RAWIO);
-    cap_drop_bound(CAP_SYS_PACCT);
-    cap_drop_bound(CAP_SYS_NICE);
-    cap_drop_bound(CAP_SYS_RESOURCE);
-    cap_drop_bound(CAP_SYS_TTY_CONFIG);
-    cap_drop_bound(CAP_AUDIT_CONTROL);
-    cap_drop_bound(CAP_MAC_OVERRIDE);
-    cap_drop_bound(CAP_MAC_ADMIN);
-    cap_drop_bound(CAP_NET_ADMIN);
-    cap_drop_bound(CAP_SYSLOG);
-    cap_drop_bound(CAP_DAC_READ_SEARCH);
-    cap_drop_bound(CAP_LINUX_IMMUTABLE);
-    cap_drop_bound(CAP_NET_BROADCAST);
-    cap_drop_bound(CAP_IPC_LOCK);
-    cap_drop_bound(CAP_IPC_OWNER);
-    cap_drop_bound(CAP_SYS_PTRACE);
-    cap_drop_bound(CAP_SYS_BOOT);
-    cap_drop_bound(CAP_LEASE);
-    cap_drop_bound(CAP_WAKE_ALARM);
-    cap_drop_bound(CAP_BLOCK_SUSPEND);
-    //One more cap to drop.
-    cap_drop_bound(CAP_SYS_CHROOT);
-    //We Chinese call it "过河拆桥"
-    cap_drop_bound(CAP_SETPCAP);
+    //Caps to drop from docker default containers.
+    if(DROP_CAP_SYS_ADMIN==1){
+      cap_drop_bound(CAP_SYS_ADMIN);
+    }
+    if(DROP_CAP_SYS_MODULE==1){
+      cap_drop_bound(CAP_SYS_MODULE);
+    }
+    if(DROP_CAP_SYS_RAWIO==1){
+      cap_drop_bound(CAP_SYS_RAWIO);
+    }
+    if(DROP_CAP_SYS_PACCT==1){
+      cap_drop_bound(CAP_SYS_PACCT);
+    }
+    if(DROP_CAP_SYS_NICE==1){
+      cap_drop_bound(CAP_SYS_NICE);
+    }
+    if(DROP_CAP_SYS_RESOURCE==1){
+      cap_drop_bound(CAP_SYS_RESOURCE);
+    }
+    if(DROP_CAP_SYS_TTY_CONFIG==1){
+      cap_drop_bound(CAP_SYS_TTY_CONFIG);
+    }
+    if(DROP_CAP_AUDIT_CONTROL==1){
+      cap_drop_bound(CAP_AUDIT_CONTROL);
+    }
+    if(DROP_CAP_MAC_OVERRIDE==1){
+      cap_drop_bound(CAP_MAC_OVERRIDE);
+    }
+    if(DROP_CAP_MAC_ADMIN==1){
+      cap_drop_bound(CAP_MAC_ADMIN);
+    }
+    if(DROP_CAP_NET_ADMIN==1){
+      cap_drop_bound(CAP_NET_ADMIN);
+    }
+    if(DROP_CAP_SYSLOG==1){
+      cap_drop_bound(CAP_SYSLOG);
+    }
+    if(DROP_CAP_DAC_READ_SEARCH==1){
+      cap_drop_bound(CAP_DAC_READ_SEARCH);
+    }
+    if(DROP_CAP_LINUX_IMMUTABLE==1){
+      cap_drop_bound(CAP_LINUX_IMMUTABLE);
+    }
+    if(DROP_CAP_NET_BROADCAST==1){
+      cap_drop_bound(CAP_NET_BROADCAST);
+    }
+    if(DROP_CAP_IPC_LOCK==1){
+      cap_drop_bound(CAP_IPC_LOCK);
+    }
+    if(DROP_CAP_IPC_OWNER==1){
+      cap_drop_bound(CAP_IPC_OWNER);
+    }
+    if(DROP_CAP_SYS_PTRACE==1){
+      cap_drop_bound(CAP_SYS_PTRACE);
+    }
+    if(DROP_CAP_SYS_BOOT==1){
+      cap_drop_bound(CAP_SYS_BOOT);
+    }
+    if(DROP_CAP_LEASE==1){
+      cap_drop_bound(CAP_LEASE);
+    }
+    if(DROP_CAP_WAKE_ALARM==1){
+      cap_drop_bound(CAP_WAKE_ALARM);
+    }
+    if(DROP_CAP_BLOCK_SUSPEND==1){
+      cap_drop_bound(CAP_BLOCK_SUSPEND);
+    }
+  }
+  if(DROP_MORE_CAPS==1){
+    //In docker,these caps will be kept.
+    //Dropping these caps is usually not necessary.
+    if(DROP_CAP_SYS_CHROOT==1){
+      cap_drop_bound(CAP_SYS_CHROOT);
+    }
+    if(DROP_CAP_SETPCAP==1){
+      cap_drop_bound(CAP_SETPCAP);
+    }
+    if(DROP_CAP_MKNOD==1){
+      cap_drop_bound(CAP_MKNOD);
+    }
+    if(DROP_CAP_AUDIT_WRITE==1){
+      cap_drop_bound(CAP_AUDIT_WRITE);
+    }
+    if(DROP_CAP_CHOWN==1){
+      cap_drop_bound(CAP_CHOWN);
+    }
+    if(DROP_CAP_NET_RAW==1){
+      cap_drop_bound(CAP_NET_RAW);
+    }
+    if(DROP_CAP_DAC_OVERRIDE==1){
+      cap_drop_bound(CAP_DAC_OVERRIDE);
+    }
+    if(DROP_CAP_FOWNER==1){
+      cap_drop_bound(CAP_FOWNER);
+    }
+    if(DROP_CAP_FSETID==1){
+      cap_drop_bound(CAP_FSETID);
+    }
+    if(DROP_CAP_KILL==1){
+      cap_drop_bound(CAP_KILL);
+    }
+    if(DROP_CAP_SETGID==1){
+      cap_drop_bound(CAP_SETGID);
+    }
+    if(DROP_CAP_NET_BIND_SERVICE==1){
+      cap_drop_bound(CAP_NET_BIND_SERVICE);
+    }
+    if(DROP_CAP_SETFCAP==1){
+      cap_drop_bound(CAP_SETFCAP);
+    }
   }
   //Login to container.
   //Use exec() family function because system() is unavailable now.
@@ -164,7 +255,6 @@ void chroot_container(char *CONTAINER_DIR){
   execv(login[0],login);
 }
 //main() starts here.
-//Need to be moved to other function for other functions.
 int main(int argc,char **argv){
   if (argc==1){
     printf("Chroot directory not set");
@@ -205,14 +295,18 @@ int main(int argc,char **argv){
     int pid=fork();
     //Run container in the forked process.
     if (pid==0) {
-      greeting();
       chroot_container(argv[1]);
     }
     //Fix `can't access tty` issue.
     waitpid(pid, NULL, 0);
   }else{
-    greeting();
     chroot_container(argv[1]);
   }
   return 0;
 }
+// ██╗ ██╗  ███████╗   ████╗   ███████╗
+//████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
+//╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
+//████████╗ ██╔══╝   ██║   ██║ ██╔══╝
+//╚██╔═██╔╝ ███████╗ ╚██████╔╝ ██║
+// ╚═╝ ╚═╝  ╚══════╝  ╚═════╝  ╚═╝
