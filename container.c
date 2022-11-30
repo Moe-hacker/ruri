@@ -77,65 +77,70 @@ void chroot_container(char *CONTAINER_DIR){
   chroot(CONTAINER_DIR);
   chdir("/");
   printf("\033[1;38;2;166;227;161mRun unshare container.\033[0m\n");
-  //umount /proc for two times because in my device,it has been mounted twice.
-  umount("/proc");
-  umount("/proc");
-  //mount proc,sys and dev.
-  mount("proc","/proc","proc",MS_NOSUID|MS_NOEXEC|MS_NODEV,NULL);
-  //For /sys,we make it read-only.
-  mount("sysfs","/sys","sysfs",MS_NOSUID|MS_NOEXEC|MS_NODEV|MS_RDONLY,NULL);
-  mount("tmpfs","/dev","tmpfs",MS_NOSUID,"size=65536k,mode=755");
-  //Continue mounting some other directories in /dev.
-  mkdir("/dev/pts", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
-  mount("devpts","/dev/pts","devpts",0,"gid=4,mode=620");
-  mkdir("/dev/shm", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
-  mount("tmpfs","/dev/shm","tmpfs",MS_NOSUID|MS_NOEXEC|MS_NODEV,"mode=1777");
-  mkdir("/dev/mqune", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
-  mount("mqune","/dev/mqune","mqune",0,NULL);
-  //Protect some system runtime directories.
-  mount("/proc/bus","/proc/bus","proc",MS_BIND|MS_RDONLY,NULL);
-  mount("/proc/fs","/proc/fs","proc",MS_BIND|MS_RDONLY,NULL);
-  mount("/proc/irq","/proc/irq","proc",MS_BIND|MS_RDONLY,NULL);
-  mount("/proc/sys","/proc/sys","proc",MS_BIND|MS_RDONLY,NULL);
-  mount("/proc/asound","/proc/asound","proc",MS_BIND|MS_RDONLY,NULL);
-  mount("/proc/scsi","/proc/scsi","proc",MS_BIND|MS_RDONLY,NULL);
-  mount("/sys/firmware","/sys/firmware","sysfs",MS_BIND|MS_RDONLY,NULL);
-  //For making dev nodes.
-  int dev;
-  //Create system runtime nodes in /dev and then fix permissions.
-  dev=makedev(1,3);
-  mknod("/dev/null",S_IFCHR,dev);
-  chmod("/dev/null", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  dev=makedev(5,1);
-  mknod("/dev/console", S_IFCHR, dev);
-  chown("/dev/console", 0, 5);
-  chmod("/dev/console", S_IRUSR|S_IWUSR|S_IWGRP|S_IWOTH);
-  dev=makedev(1,5);
-  mknod("/dev/zero",S_IFCHR,dev);
-  chmod("/dev/zero", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  dev=makedev(5,2);
-  mknod("/dev/ptmx",S_IFCHR,dev);
-  chown("/dev/ptmx", 0, 5);
-  chmod("/dev/ptmx", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  dev=makedev(5,0);
-  mknod("/dev/tty",S_IFCHR,dev);
-  chown("/dev/tty", 0, 5);
-  chmod("/dev/tty", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-  dev=makedev(1,8);
-  mknod("/dev/random",S_IFCHR,dev);
-  chmod("/dev/random", S_IRUSR|S_IRGRP|S_IROTH);
-  dev=makedev(1,9);
-  mknod("/dev/urandom",S_IFCHR,dev);
-  chmod("/dev/urandom", S_IRUSR|S_IRGRP|S_IROTH);
-  mkdir("/dev/net", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
-  dev=makedev(10,200);
-  mknod("/dev/net/tun",S_IFCHR,dev);
-  //Create some system runtime link files in /dev.
-  symlink("/proc/self/fd", "/dev/fd");
-  symlink("/proc/self/fd/0", "/dev/stdin");
-  symlink("/proc/self/fd/1", "/dev/stdout");
-  symlink("/proc/self/fd/2", "/dev/stderr");
-  symlink("/dev/null", "/dev/tty0");
+  //Check if system runtime files are already created.
+  if(access("/dev/ptmx",F_OK)==-1){
+    //umount /proc for two times because in my device,it has been mounted twice.
+    umount("/proc");
+    umount("/proc");
+    //mount proc,sys and dev.
+    mount("proc","/proc","proc",MS_NOSUID|MS_NOEXEC|MS_NODEV,NULL);
+    //For /sys,we make it read-only.
+    mount("sysfs","/sys","sysfs",MS_NOSUID|MS_NOEXEC|MS_NODEV|MS_RDONLY,NULL);
+    mount("tmpfs","/dev","tmpfs",MS_NOSUID,"size=65536k,mode=755");
+    //Continue mounting some other directories in /dev.
+    mkdir("/dev/pts", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+    mount("devpts","/dev/pts","devpts",0,"gid=4,mode=620");
+    mkdir("/dev/shm", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+    mount("tmpfs","/dev/shm","tmpfs",MS_NOSUID|MS_NOEXEC|MS_NODEV,"mode=1777");
+    mkdir("/dev/mqune", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+    mount("mqune","/dev/mqune","mqune",0,NULL);
+    //Protect some system runtime directories.
+    mount("/proc/bus","/proc/bus","proc",MS_BIND|MS_RDONLY,NULL);
+    mount("/proc/fs","/proc/fs","proc",MS_BIND|MS_RDONLY,NULL);
+    mount("/proc/irq","/proc/irq","proc",MS_BIND|MS_RDONLY,NULL);
+    mount("/proc/sys","/proc/sys","proc",MS_BIND|MS_RDONLY,NULL);
+    mount("/proc/asound","/proc/asound","proc",MS_BIND|MS_RDONLY,NULL);
+    mount("/proc/scsi","/proc/scsi","proc",MS_BIND|MS_RDONLY,NULL);
+    mount("/sys/firmware","/sys/firmware","sysfs",MS_BIND|MS_RDONLY,NULL);
+    //For making dev nodes.
+    int dev;
+    //Create system runtime nodes in /dev and then fix permissions.
+    dev=makedev(1,3);
+    mknod("/dev/null",S_IFCHR,dev);
+    chmod("/dev/null", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+    dev=makedev(5,1);
+    mknod("/dev/console", S_IFCHR, dev);
+    chown("/dev/console", 0, 5);
+    chmod("/dev/console", S_IRUSR|S_IWUSR|S_IWGRP|S_IWOTH);
+    dev=makedev(1,5);
+    mknod("/dev/zero",S_IFCHR,dev);
+    chmod("/dev/zero", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+    dev=makedev(5,2);
+    mknod("/dev/ptmx",S_IFCHR,dev);
+    chown("/dev/ptmx", 0, 5);
+    chmod("/dev/ptmx", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+    dev=makedev(5,0);
+    mknod("/dev/tty",S_IFCHR,dev);
+    chown("/dev/tty", 0, 5);
+    chmod("/dev/tty", S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+    dev=makedev(1,8);
+    mknod("/dev/random",S_IFCHR,dev);
+    chmod("/dev/random", S_IRUSR|S_IRGRP|S_IROTH);
+    dev=makedev(1,9);
+    mknod("/dev/urandom",S_IFCHR,dev);
+    chmod("/dev/urandom", S_IRUSR|S_IRGRP|S_IROTH);
+    mkdir("/dev/net", S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+    dev=makedev(10,200);
+    mknod("/dev/net/tun",S_IFCHR,dev);
+    //Create some system runtime link files in /dev.
+    symlink("/proc/self/fd", "/dev/fd");
+    symlink("/proc/self/fd/0", "/dev/stdin");
+    symlink("/proc/self/fd/1", "/dev/stdout");
+    symlink("/proc/self/fd/2", "/dev/stderr");
+    symlink("/dev/null", "/dev/tty0");
+  }else{
+    printf("Skip creating system runtime files.\n");
+  }
   //Lower permissions by dropping caps.
   if (DROP_CAPS==1){
     //Caps to drop from docker default containers.
@@ -258,42 +263,51 @@ void chroot_container(char *CONTAINER_DIR){
 int main(int argc,char **argv){
   //Check if we are running with root permissions.
   if (getuid()!=0){
-    printf("Error: this program should be run with root privilege !\n");
+    printf("\033[31mError: this program should be run with root privilege !\n");
     exit(1);
   }
   //Check if container directory is given and exists
   if (argc==1){
-    printf("Chroot directory not set !\n");
+    printf("\033[31mError: container directory not set !\n");
     exit(1);
   }
   DIR *direxist;
   if((direxist=opendir(argv[1]))==NULL){
-    printf("Container directory does not exist !\n");
+    printf("\033[31mError: container directory does not exist !\n");
     exit(1);
   }else{
     closedir(direxist);
   }
-  //Unset $LD_PRELOAD to run binaries in container.
-  unsetenv("LD_PRELOAD");
+  char *ld_preload=getenv("LD_PRELOAD");
+  if(ld_preload!=NULL){
+    printf("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\n");
+    exit(1);
+  }
   if (USE_UNSHARE==1){
     //Try to create namespaces with unshare().
     if(unshare(CLONE_NEWNS) == -1){
-      printf("Seems that mount namespace is not supported on this device\n");
+      printf("\033[33mSeems that mount namespace is not supported on this device.But no worries.\n");
+      sleep(1);
     }
     if(unshare(CLONE_NEWUTS) == -1){
-      printf("Seems that uts namespace is not supported on this device\n");
+      printf("\033[33mSeems that uts namespace is not supported on this device.But no worries.\n");
+      sleep(1);
     }
     if(unshare(CLONE_NEWIPC) == -1){
-      printf("Seems that ipc namespace is not supported on this device\n");
+      printf("\033[33mSeems that ipc namespace is not supported on this device.But no worries.\n");
+      sleep(1);
     }
     if(unshare(CLONE_NEWPID) == -1){
-      printf("Seems that pid namespace is not supported in this host\n");
+      printf("\033[33mSeems that pid namespace is not supported in this host.But no worries.\n");
+      sleep(1);
     }
     if(unshare(CLONE_FILES) == -1){
-      printf("Seems that we could not unshare fds\n");
+      printf("\033[33mSeems that we could not unshare fds with child process.But no worries.\n");
+      sleep(1);
     }
     if(unshare(CLONE_FS) == -1){
-      printf("Seems that we could not unshare filesystem information.\n");
+      printf("\033[33mSeems that we could not unshare filesystem information with child process.But no worries.\n");
+      sleep(1);
     }
     //Fork itself into namespace.
     //This can fix 'can't fork: out of memory` issue.
