@@ -1,2 +1,1 @@
-# moe-container
-猫猫的termux-container底层实现
+咱自己写的东西还是喜欢用MIT协议的喵～
