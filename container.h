@@ -28,14 +28,6 @@
 #include <sys/types.h>
 //This program need to be linked with `-lcap`.
 #include <sys/capability.h>
-
-/////////////////////////////////
-//Only for debugging,this should be removed.
-#define USE_UNSHARE 1
-#define DROP_CAPS 1
-#define DROP_MORE_CAPS 0
-///////////////////////////////
-
 //Some definitions of capability flags,set 0 to disable and 1 to enable.
 //But do not remove definitions without editing container.c.
 //Caps to drop from docker default containers.
