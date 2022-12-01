@@ -6,3 +6,10 @@ static :
 	strip container
 clean :
 	rm container
+help :
+	@echo "Usage:"
+	@echo "  make all     :compile"
+	@echo "  make static  :static compile"
+	@echo "  make clean   :clean"
+	@echo "Dependent libraries:"
+	@echo "  libc-client-static,libcap-static"
