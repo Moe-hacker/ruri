@@ -9,6 +9,7 @@ container [选项] [容器目录]
 ```
 &emsp;选项：    
 ```text
+-v :显示版本信息
 -h :显示帮助信息
 -u :开启unshare功能将容器隔离到新namespace中
 -U :尝试卸载容器

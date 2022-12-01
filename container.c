@@ -102,7 +102,7 @@ void show_helps(int greetings){
   printf("\033[1;38;2;166;227;161mUsage:\n");
   printf("  container [options] [container directory]\n");
   printf("Options:\n");
-  printf("  -v :Show version info");
+  printf("  -v :Show version info\n");
   printf("  -h :Show helps\n");
   printf("  -u :Enable unshare feature\n");
   printf("  -U :Try to umount container,please reboot instead for better security\n");
@@ -424,7 +424,7 @@ int main(int argc,char **argv){
   //Check if $LD_PRELOAD is unset.
   char *ld_preload=getenv("LD_PRELOAD");
   if(ld_preload != NULL){
-    fprintf(stderr,"\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\033[0m\n");
+    fprintf(stderr,"\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
     exit(1);
   }
   //Check if container directory exists.
