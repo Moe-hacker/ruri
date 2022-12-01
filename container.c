@@ -16,6 +16,7 @@ void show_n_char(int num){
   for (count=1;count<=num;count++){
     putchar(space[0]);
   }
+  return;
 }
 //Greeting information.
 //As an easter agg.
@@ -110,6 +111,7 @@ void show_helps(int greetings){
   printf("  -D :Drop more capabilities for better security\n");
   printf("This program should be run with root privileges\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
+  return;
 }
 //Run chroot container.
 void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
