@@ -366,7 +366,7 @@ int main(int argc,char **argv){
   int use_unshare=0;
   int drop_caps=0;
   int drop_more_caps=0;
-  char *container_dir;
+  char *container_dir=NULL;
   //Parse command-line arguments.
   for (int arg=1;arg<argc;arg++){
     switch(argv[arg][0]){
@@ -414,7 +414,7 @@ int main(int argc,char **argv){
     }
   }
   //Check if container directory is given.
-  if (container_dir == NULL){
+  if (!container_dir){
     fprintf(stderr,"\033[31mError: container directory is not set !\033[0m\n");
     exit(1);
   }
