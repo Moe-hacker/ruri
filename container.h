@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <sched.h>
 #include <dirent.h>
+#include <errno.h>
 #include <linux/stat.h>
 #include <linux/sched.h>
 #include <linux/limits.h>

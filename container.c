@@ -7,7 +7,7 @@
 //╔═╝  ╔═║╔═║╔═║╔═╝╔═║╔═║╔╔ ╔╔ ╝╔═ ╔═╝  ║  ╔═║╔═ ╔═╝║ ║╔═║╔═╝╔═╝
 //║    ╔═╝╔╔╝║ ║║ ║╔╔╝╔═║║║║║║║║║ ║║ ║  ║  ╔═║║ ║║ ║║ ║╔═║║ ║╔═╝
 //══╝  ╝  ╝ ╝══╝══╝╝ ╝╝ ╝╝╝╝╝╝╝╝╝ ╝══╝  ══╝╝ ╝╝ ╝══╝══╝╝ ╝══╝══╝
-//Heders was written into container.h.
+//Headers was written into container.h.
 #include "container.h"
 //Only for centering output.
 void show_n_char(int num){
@@ -78,7 +78,7 @@ void show_helps(){
   printf("Options:\n");
   printf("  -h :Show helps\n");
   printf("  -u :Enable unshare feature\n");
-  printf("  -U :Umount container\n");
+  printf("  -U :Try to umount container,please reboot instead for better security\n");
   printf("  -d :Drop capabilities to reduce permissions of container\n");
   printf("  -D :Drop more capabilities for better security\n");
   printf("This program should be run with root permissions\n");
@@ -277,14 +277,20 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
   //Login to container.
   //Use exec() family function because system() is unavailable now.
   char *login[]={"/bin/su","-",NULL};
-  execv(login[0],login);
+  if (execv(login[0],login) == -1){
+    //Catch exceptions.
+    fprintf(stderr,"\033[31mFailed to execute `/bin/su`\n");
+    fprintf(stderr,"execv() returned: %d\n",errno);
+    fprintf(stderr,"error reason: %s\033[0m\n",strerror(errno));
+    exit(1);
+  }
   return;
 }
 //Umount container.
 void umount_container(char *CONTAINER_DIR){
   //Check if we are running with root permissions.
   if (getuid() != 0){
-    printf("\033[31mError: this program should be run with root privilege !\033[0m\n");
+    fprintf(stderr,"\033[31mError: this program should be run with root privilege !\033[0m\n");
     exit(1);
   }
   //Check if container directory exists and is legitimate.
@@ -293,17 +299,17 @@ void umount_container(char *CONTAINER_DIR){
       break;
     case '/':
       if (!CONTAINER_DIR[1]){
-        printf("\033[31mError: `/` is not a container directory !\n");
+        fprintf(stderr,"\033[31mError: `/` is not a container directory !\n");
         exit(1);
       }
       break;
     default :
-      printf("\033[31mError: container directory does not exist !\033[0m\n");
+      fprintf(stderr,"\033[31mError: container directory does not exist !\033[0m\n");
       exit(1);
   }
   DIR *direxist;
   if((direxist=opendir(CONTAINER_DIR)) == NULL){
-    printf("\033[31mError: container directory does not exist !\033[0m\n");
+    fprintf(stderr,"\033[31mError: container directory does not exist !\033[0m\n");
     exit(1);
   }else{
     closedir(direxist);
@@ -313,9 +319,13 @@ void umount_container(char *CONTAINER_DIR){
   //Force umount for 10 times.
   for (int i=1;i<10;i++){
     umount2("/sys",MNT_DETACH|MNT_FORCE);
+    usleep(200000);
     umount2("/dev",MNT_DETACH|MNT_FORCE);
+    usleep(200000);
     umount2("/proc",MNT_DETACH|MNT_FORCE);
+    usleep(200000);
     umount2("/sys",MNT_DETACH|MNT_FORCE);
+    usleep(200000);
   }
   return;
 }
@@ -323,7 +333,7 @@ void umount_container(char *CONTAINER_DIR){
 int main(int argc,char **argv){
   //Check if arguments are given.
   if (argc <= 1){
-    printf("\033[31mError: too few arguments !\033[0m\n");
+    fprintf(stderr,"\033[31mError: too few arguments !\033[0m\n");
     exit(1);
   }
   //Set default value.
@@ -347,7 +357,7 @@ int main(int argc,char **argv){
             if(argv[arg] != NULL){
               umount_container(argv[arg]);
             }else{
-              printf("\033[31mError: container directory is not set !\033[0m\n");
+              fprintf(stderr,"\033[31mError: container directory is not set !\033[0m\n");
               exit(1);
             }
             exit(0);
@@ -359,7 +369,7 @@ int main(int argc,char **argv){
             drop_more_caps=1;
             break;
           default:
-            printf("%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
+            fprintf(stderr,"%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
             show_helps();
             exit(1);
         }
@@ -369,31 +379,31 @@ int main(int argc,char **argv){
       container_dir=argv[arg];
       break;
     default:
-      printf("%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
+      fprintf(stderr,"%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
       show_helps();
       exit(1);
     }
   }
   //Check if container directory is given.
   if (container_dir == NULL){
-    printf("\033[31mError: container directory is not set !\033[0m\n");
+    fprintf(stderr,"\033[31mError: container directory is not set !\033[0m\n");
     exit(1);
   }
   //Check if we are running with root permissions.
   if (getuid() != 0){
-    printf("\033[31mError: this program should be run with root privilege !\033[0m\n");
+    fprintf(stderr,"\033[31mError: this program should be run with root privilege !\033[0m\n");
     exit(1);
   }
   //Check if $LD_PRELOAD is unset.
   char *ld_preload=getenv("LD_PRELOAD");
   if(ld_preload != NULL){
-    printf("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\033[0m\n");
+    fprintf(stderr,"\033[31mError: please unset $LD_PRELOAD before running this program or use su -c \"COMMAND\"to run.\033[0m\n");
     exit(1);
   }
   //Check if container directory exists.
   DIR *direxist;
   if((direxist=opendir(container_dir)) == NULL){
-    printf("\033[31mError: container directory does not exist !\033[0m\n");
+    fprintf(stderr,"\033[31mError: container directory does not exist !\033[0m\n");
     exit(1);
   }else{
     closedir(direxist);
