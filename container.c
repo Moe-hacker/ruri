@@ -19,7 +19,7 @@ void show_n_char(int num){
 }
 //Greeting information.
 //As an easter agg.
-void greeting(){
+void show_greetings(){
   struct winsize size;
   ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
   short row=size.ws_col;
@@ -68,12 +68,15 @@ void greeting(){
   show_n_char(row);
   printf("%s\n","        ▀                       ▀        ▀");
   show_n_char(row);
-  printf("%s\n","           「Keep moe,keep cool」");
+  printf("%s\n","           「Keep moe,keep cool」\033[0m");
   return;
 }
 //Help pages.
-void show_helps(){
-  printf("Usage:\n");
+void show_helps(int greetings){
+  if (greetings == 1){
+    show_greetings();
+  }
+  printf("\033[1;38;2;166;227;161mUsage:\n");
   printf("  container [options] [container directory]\n");
   printf("Options:\n");
   printf("  -h :Show helps\n");
@@ -82,15 +85,13 @@ void show_helps(){
   printf("  -d :Drop capabilities to reduce permissions of container\n");
   printf("  -D :Drop more capabilities for better security\n");
   printf("This program should be run with root permissions\n");
-  printf("Unset $LD_PRELOAD before running this program to fix issues in termux\n");
+  printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
 }
 //Run chroot container.
 void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
-  greeting();
   //chroot into container.
   chroot(CONTAINER_DIR);
   chdir("/");
-  printf("\033[1;38;2;166;227;161mRunning container.\033[0m\n");
   mkdir("/sys",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
   mkdir("/proc",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
   mkdir("/dev",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
@@ -158,8 +159,6 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
     symlink("/proc/self/fd/1","/dev/stdout");
     symlink("/proc/self/fd/2","/dev/stderr");
     symlink("/dev/null","/dev/tty0");
-  }else{
-    printf("\033[1;38;2;166;227;161mSkip creating system runtime files.\033[0m\n");
   }
   //Lower permissions by dropping caps.
   if (drop_caps == 1){
@@ -334,6 +333,7 @@ int main(int argc,char **argv){
   //Check if arguments are given.
   if (argc <= 1){
     fprintf(stderr,"\033[31mError: too few arguments !\033[0m\n");
+    show_helps(0);
     exit(1);
   }
   //Set default value.
@@ -347,7 +347,7 @@ int main(int argc,char **argv){
       case '-' :
         switch(argv[arg][1]){
           case 'h':
-            show_helps();
+            show_helps(1);
             exit(0);
           case 'u':
             use_unshare=1;
@@ -370,7 +370,7 @@ int main(int argc,char **argv){
             break;
           default:
             fprintf(stderr,"%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
-            show_helps();
+            show_helps(0);
             exit(1);
         }
         break;
@@ -380,7 +380,7 @@ int main(int argc,char **argv){
       break;
     default:
       fprintf(stderr,"%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
-      show_helps();
+      show_helps(0);
       exit(1);
     }
   }
