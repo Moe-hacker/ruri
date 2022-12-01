@@ -75,6 +75,7 @@ void show_greetings(){
 void show_version_info(){
   printf("\033[1;38;2;166;227;161mmoe-container 1.0-dev\n");
   printf("Copyright (C) 2022 Moe-hacker\n");
+  printf("            (>_×)\n");
   printf("\n");
   printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
   printf("of this software and associated documentation files (the \"Software\"), to deal\n");
