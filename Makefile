@@ -13,7 +13,7 @@ clean :
 	rm container||true
 	rm libcap.a||true
 help :
-	@echo "Usage:"
+	@echo "\033[1;38;2;166;227;161mUsage:"
 	@echo "  make all        :compile"
 	@echo "  make static     :static compile"
 	@echo "  make staticfail :static compile,fix errors"
@@ -21,3 +21,4 @@ help :
 	@echo "  make clean      :clean"
 	@echo "Dependent libraries:"
 	@echo "  libc-client-static,libcap-static"
+	@echo "If you got errors like \`undefined symbol: cap_drop_bound\` or \`undefined reference to \`cap_set_flag' when using static compile,please copy your \`libcap.a\` into current directory and use \`make staticfail\` instead\033[0m"
