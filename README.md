@@ -40,6 +40,6 @@ container [选项] [容器目录]
 &emsp;通过编辑`container.h`可选择哪些capability将会在加入-d或-D选项后移除。      
 &emsp;部分会影响容器正常运行的capability默认即使开启-D选项也不会被移除。       
 ### 关于namespace：      
-&emsp;这里仅使用到unshare()的`CLONE_NEWNS` `CLONE_NEWUTS` `CLONE_NEWIPC` `CLONE_NEWPID` `CLONE_FILES` `CLONE_FS` 选项。         
+&emsp;unshare()中的`CLONE_NEWUSER`和`CLONE_NEWNET`功能暂时还不会用，因此没有开启。         
 ### TODO:         
 &emsp;研究usermap实现，将容器root用户映射为普通用户。          

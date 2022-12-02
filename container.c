@@ -442,28 +442,34 @@ int main(int argc,char **argv){
   if (use_unshare == 1){
     //Try to create namespaces with unshare().
     if(unshare(CLONE_NEWNS) == -1){
-      printf("\033[33mSeems that mount namespace is not supported on this device.But no worries.\033[0m\n");
-      sleep(1);
+      printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");
     }
     if(unshare(CLONE_NEWUTS) == -1){
-      printf("\033[33mSeems that uts namespace is not supported on this device.But no worries.\033[0m\n");
-      sleep(1);
+      printf("\033[33mWarning: seems that uts namespace is not supported on this device\033[0m\n");
     }
     if(unshare(CLONE_NEWIPC) == -1){
-      printf("\033[33mSeems that ipc namespace is not supported on this device.But no worries.\033[0m\n");
-      sleep(1);
+      printf("\033[33mWarning: seems that ipc namespace is not supported on this device\033[0m\n");
     }
     if(unshare(CLONE_NEWPID) == -1){
-      printf("\033[33mSeems that pid namespace is not supported in this host.But no worries.\033[0m\n");
-      sleep(1);
+      printf("\033[33mWarning: seems that pid namespace is not supported in this host\033[0m\n");
     }
+    if(unshare(CLONE_NEWCGROUP) == -1){
+      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device\033[0m\n");
+    }
+    if(unshare(CLONE_NEWTIME) == -1){
+      printf("\033[33mWarning: seems that time namespace is not supported on this device\033[0m\n");
+    }
+    if(unshare(CLONE_SYSVSEM) == -1){
+      printf("\033[33mWarning: seems that semaphore namespace is not supported on this device\033[0m\n");
+    }
+//    if(unshare(CLONE_NEWNET) == -1){
+//      printf("\033[33mWarning: seems that net namespace is not supported on this device\033[0m\n");
+//    }
     if(unshare(CLONE_FILES) == -1){
-      printf("\033[33mSeems that we could not unshare fds with child process.But no worries.\033[0m\n");
-      sleep(1);
+      printf("\033[33mWarning: seems that we could not unshare file descriptors with child process\033[0m\n");
     }
     if(unshare(CLONE_FS) == -1){
-      printf("\033[33mSeems that we could not unshare filesystem information with child process.But no worries.\033[0m\n");
-      sleep(1);
+      printf("\033[33mWarning: seems that we could not unshare filesystem information with child process\033[0m\n");
     }
     //Fork itself into namespace.
     //This can fix `can't fork: out of memory` issue.
