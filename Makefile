@@ -9,12 +9,15 @@ static :
 staticfail :
 	cc -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE container.c -o container ./libcap.a
 	strip container
+install :all
+	install -m 777 container ${PREFIX}/bin/mcontainer
 clean :
 	rm container||true
 	rm libcap.a||true
 help :
 	@printf "\033[1;38;2;166;227;161mUsage:\n"
 	@echo "  make all        :compile"
+	@echo "  make install    :make all and install container to \$$PREFIX"
 	@echo "  make static     :static compile"
 	@echo "  make staticfail :static compile,fix errors"
 	@echo "  make no         :compile without optimizations"
