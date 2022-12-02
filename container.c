@@ -462,9 +462,6 @@ int main(int argc,char **argv){
     if(unshare(CLONE_SYSVSEM) == -1){
       printf("\033[33mWarning: seems that semaphore namespace is not supported on this device\033[0m\n");
     }
-//    if(unshare(CLONE_NEWNET) == -1){
-//      printf("\033[33mWarning: seems that net namespace is not supported on this device\033[0m\n");
-//    }
     if(unshare(CLONE_FILES) == -1){
       printf("\033[33mWarning: seems that we could not unshare file descriptors with child process\033[0m\n");
     }
