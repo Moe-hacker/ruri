@@ -15,7 +15,7 @@ clean :
 	rm container||true
 	rm libcap.a||true
 help :
-	@printf "\033[1;38;2;166;227;161mUsage:\n"
+	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all        :compile"
 	@echo "  make install    :make all and install container to \$$PREFIX"
 	@echo "  make static     :static compile"

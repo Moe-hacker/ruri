@@ -73,7 +73,7 @@ void show_greetings(){
   return;
 }
 void show_version_info(){
-  printf("\033[1;38;2;166;227;161mmoe-container 1.0-dev\n");
+  printf("\033[1;38;2;254;228;208mmoe-container 1.0\n");
   printf("Copyright (C) 2022 Moe-hacker\n");
   printf("            (>_×)\n");
   printf("\n");
@@ -101,7 +101,7 @@ void show_helps(int greetings){
   if (greetings == 1){
     show_greetings();
   }
-  printf("\033[1;38;2;166;227;161mUsage:\n");
+  printf("\033[1;38;2;254;228;208mUsage:\n");
   printf("  container [options] [container directory]\n");
   printf("Options:\n");
   printf("  -v :Show version info\n");
@@ -115,7 +115,7 @@ void show_helps(int greetings){
   return;
 }
 //Run chroot container.
-void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
+void chroot_container(char *CONTAINER_DIR,int *drop_caps,int *drop_more_caps){
   //chroot into container.
   chroot(CONTAINER_DIR);
   chdir("/");
@@ -188,7 +188,7 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
     symlink("/dev/null","/dev/tty0");
   }
   //Lower permissions by dropping caps.
-  if (drop_caps == 1){
+  if (drop_caps){
     //Caps to drop from docker default containers.
     if(DROP_CAP_SYS_ADMIN == 1){
       cap_drop_bound(CAP_SYS_ADMIN);
@@ -257,7 +257,7 @@ void chroot_container(char *CONTAINER_DIR,int drop_caps,int drop_more_caps){
       cap_drop_bound(CAP_BLOCK_SUSPEND);
     }
   }
-  if(drop_more_caps == 1){
+  if(drop_more_caps){
     //In docker,these caps will be kept.
     //Dropping these caps is usually not necessary.
     if(DROP_CAP_SYS_CHROOT == 1){
@@ -357,6 +357,8 @@ void umount_container(char *CONTAINER_DIR){
 }
 //main() starts here.
 int main(int argc,char **argv){
+  //Set process name.
+  prctl(PR_SET_NAME,"moe_container",NULL,NULL,NULL);
   //Check if arguments are given.
   if (argc <= 1){
     fprintf(stderr,"\033[31mError: too few arguments !\033[0m\n");
@@ -364,9 +366,10 @@ int main(int argc,char **argv){
     exit(1);
   }
   //Set default value.
-  int use_unshare=0;
-  int drop_caps=0;
-  int drop_more_caps=0;
+  int on=1;
+  int *use_unshare=NULL;
+  int *drop_caps=NULL;
+  int *drop_more_caps=NULL;
   char *container_dir=NULL;
   //Parse command-line arguments.
   for (int arg=1;arg<argc;arg++){
@@ -380,7 +383,7 @@ int main(int argc,char **argv){
             show_helps(1);
             exit(0);
           case 'u':
-            use_unshare=1;
+            use_unshare=&on;
             break;
           case 'U':
             arg+=1;
@@ -392,11 +395,11 @@ int main(int argc,char **argv){
             }
             exit(0);
           case 'd':
-            drop_caps=1;
+            drop_caps=&on;
             break;
           case 'D':
-            drop_caps=1;
-            drop_more_caps=1;
+            drop_caps=&on;
+            drop_more_caps=&on;
             break;
           default:
             fprintf(stderr,"%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
@@ -439,7 +442,8 @@ int main(int argc,char **argv){
     closedir(direxist);
   }
   //Unshare itself into new namespaces.
-  if (use_unshare == 1){
+  if (use_unshare){
+    prctl(PR_SET_NAME,"moe_unshare",NULL,NULL,NULL);
     //Try to create namespaces with unshare().
     if(unshare(CLONE_NEWNS) == -1){
       printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");

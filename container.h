@@ -21,6 +21,7 @@
 #include <linux/stat.h>
 #include <linux/sched.h>
 #include <linux/limits.h>
+#include <sys/prctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
