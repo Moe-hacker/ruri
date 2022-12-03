@@ -1,4 +1,12 @@
+<p align="center">「 可以自称贫穷却不必为此折损自尊</p>
+<p align="center">是富人与生俱来的特权 」</p>
+<p align="center">——酷安@普通的魔法使56</p>
+<p align="center">(>_×)</p>         
+
+-----------
 ### 关于：    
+&emsp;文章开头那句引用没有对大佬不敬的意思，只是觉得在放在这里挺合适的引用下而已。             
+&emsp;也知道自己就是个萌新，大佬轻喷。         
 &emsp;这里是将来的termux-container中chroot和chroot-unshare容器底层实现，咱自己写的东西咱还是比较喜欢用MIT协议喵～        
 &emsp;也可以作为一个容器应用在普通linux系统下运行。               
 ### Features:    
