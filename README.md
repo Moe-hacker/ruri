@@ -26,7 +26,7 @@
   make no         :compile without optimizations
   make clean      :clean
 ```
-If you got errors like `undefined symbol: cap_drop_bound` or `undefined reference to 'cap_set_flag'` when using static compile , please copy your `libcap.a` into current directory and use `make staticfail` instead.        
+&emsp;If you got errors like `undefined symbol: cap_drop_bound` or `undefined reference to 'cap_set_flag'` when using static compile , please copy your `libcap.a` into current directory and use `make staticfail` instead.        
 #### Dependent libraries:
 For dynamic compilation:         
 - libcap       
@@ -47,10 +47,10 @@ container [options] [container directory]
   -d :Drop capabilities to reduce permissions of container
   -D :Drop more capabilities for better security
 ```
-This program should be run with root privileges.        
-Unset $LD_PRELOAD before running this program to fix issues in termux.         
+&emsp;This program should be run with root privileges.        
+&emsp;Unset $LD_PRELOAD before running this program to fix issues in termux.         
 ### About capabilities:     
-Edit `container.h` to customise which capabilities will be dropped or kept after using `-d` or `-D` option.      
+&emsp;Edit `container.h` to customise which capabilities will be dropped or kept after using `-d` or `-D` option.      
 
 --------
 <p align="center">「見つけてくれたね ありがとう」</p>
