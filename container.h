@@ -60,17 +60,17 @@
 //These caps will be dropped by using -D option if their value is `1`
 //Do not change these values or you might run into problems.
 #define DROP_CAP_SYS_CHROOT 1
-#define DROP_CAP_SETPCAP 1
-#define DROP_CAP_MKNOD 1
-#define DROP_CAP_AUDIT_WRITE 1
+#define DROP_CAP_SETPCAP 0
+#define DROP_CAP_MKNOD 0
+#define DROP_CAP_AUDIT_WRITE 0
 #define DROP_CAP_SETFCAP 1
 //Do not set DROP_CAP_SETGID to 1 or you will not be able to login to the container with -D option.
 #define DROP_CAP_SETGID 0
 #define DROP_CAP_CHOWN 0
-#define DROP_CAP_NET_RAW 1
+#define DROP_CAP_NET_RAW 0
 #define DROP_CAP_DAC_OVERRIDE 1
 #define DROP_CAP_FOWNER 1
-#define DROP_CAP_FSETID 0
+#define DROP_CAP_FSETID 1
 #define DROP_CAP_KILL 1
 #define DROP_CAP_NET_BIND_SERVICE 0
 // ██╗ ██╗  ███████╗   ████╗   ███████╗
