@@ -61,7 +61,7 @@
 //Do not change these values or you might run into problems.
 #define DROP_CAP_SYS_CHROOT 1
 #define DROP_CAP_SETPCAP 0
-#define DROP_CAP_MKNOD 0
+#define DROP_CAP_MKNOD 1
 #define DROP_CAP_AUDIT_WRITE 0
 #define DROP_CAP_SETFCAP 1
 //Do not set DROP_CAP_SETGID to 1 or you will not be able to login to the container with -D option.
