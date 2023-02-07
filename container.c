@@ -20,7 +20,7 @@ void show_n_char(int num){
 }
 //Greeting information.
 //As an easter agg.
-void show_greetings(){
+void show_greetings(void){
   struct winsize size;
   ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
   short row=size.ws_col;
@@ -72,8 +72,8 @@ void show_greetings(){
   printf("%s\n","           「Keep moe,keep cool」\033[0m");
   return;
 }
-void show_version_info(){
-  printf("\033[1;38;2;254;228;208mmoe-container 1.0\n");
+void show_version_info(void){
+  printf("\033[1;38;2;254;228;208mmoe-container 1.1-pre\n");
   printf("Copyright (C) 2022 Moe-hacker\n");
   printf("            (>_×)\n");
   printf("\n");
@@ -115,9 +115,9 @@ void show_helps(int greetings){
   return;
 }
 //Run chroot container.
-void chroot_container(char *CONTAINER_DIR,int *drop_caps,int *drop_more_caps){
+void chroot_container(char *container_dir,_Bool *drop_caps,_Bool *drop_more_caps){
   //chroot into container.
-  chroot(CONTAINER_DIR);
+  chroot(container_dir);
   chdir("/");
   mkdir("/sys",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
   mkdir("/proc",S_IRUSR|S_IWUSR|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
@@ -299,6 +299,15 @@ void chroot_container(char *CONTAINER_DIR,int *drop_caps,int *drop_more_caps){
     if(DROP_CAP_SETFCAP == 1){
       cap_drop_bound(CAP_SETFCAP);
     }
+    if (DROP_CAP_SETUID == 1){
+      cap_drop_bound(CAP_SETUID);
+    }
+    if (DROP_CAP_SYS_TIME == 1){
+      cap_drop_bound(CAP_SYS_TIME);
+    }
+    if (DROP_CAP_AUDIT_READ == 1){
+      cap_drop_bound(CAP_AUDIT_READ);
+    }
   }
   //Login to container.
   //Use exec() family function because system() is unavailable now.
@@ -313,35 +322,22 @@ void chroot_container(char *CONTAINER_DIR,int *drop_caps,int *drop_more_caps){
   return;
 }
 //Umount container.
-void umount_container(char *CONTAINER_DIR){
+void umount_container(char *container_dir){
   //Check if we are running with root privileges.
   if (getuid() != 0){
     fprintf(stderr,"\033[31mError: this program should be run with root privileges !\033[0m\n");
     exit(1);
   }
-  //Check if container directory exists and is legitimate.
-  switch(CONTAINER_DIR[0]){
-    case '.':
-      break;
-    case '/':
-      if (!CONTAINER_DIR[1]){
-        fprintf(stderr,"\033[31mError: `/` is not a container directory !\n");
-        exit(1);
-      }
-      break;
-    default :
-      fprintf(stderr,"\033[31mError: container directory does not exist !\033[0m\n");
-      exit(1);
-  }
+  //Check if container directory exists.
   DIR *direxist;
-  if((direxist=opendir(CONTAINER_DIR)) == NULL){
+  if((direxist=opendir(container_dir)) == NULL){
     fprintf(stderr,"\033[31mError: container directory does not exist !\033[0m\n");
     exit(1);
   }else{
     closedir(direxist);
   }
   //An easy way to get path to umount.
-  chroot(CONTAINER_DIR);
+  chroot(container_dir);
   //Force umount for 10 times.
   for (int i=1;i<10;i++){
     umount2("/sys",MNT_DETACH|MNT_FORCE);
@@ -366,10 +362,10 @@ int main(int argc,char **argv){
     exit(1);
   }
   //Set default value.
-  int on=1;
-  int *use_unshare=NULL;
-  int *drop_caps=NULL;
-  int *drop_more_caps=NULL;
+  _Bool on=1;
+  _Bool *use_unshare=NULL;
+  _Bool *drop_caps=NULL;
+  _Bool *drop_more_caps=NULL;
   char *container_dir=NULL;
   //Parse command-line arguments.
   for (int arg=1;arg<argc;arg++){

@@ -73,6 +73,9 @@
 #define DROP_CAP_FSETID 1
 #define DROP_CAP_KILL 1
 #define DROP_CAP_NET_BIND_SERVICE 0
+#define DROP_CAP_SETUID 0
+#define DROP_CAP_SYS_TIME 1
+#define DROP_CAP_AUDIT_READ 0
 // ██╗ ██╗  ███████╗   ████╗   ███████╗
 //████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
