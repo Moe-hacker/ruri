@@ -76,6 +76,9 @@
 #define DROP_CAP_SETUID 0
 #define DROP_CAP_SYS_TIME 1
 #define DROP_CAP_AUDIT_READ 0
+#define DROP_CAP_PERFMON 0
+#define DROP_CAP_BPF 0
+#define DROP_CAP_CHECKPOINT_RESTORE 0
 // ██╗ ██╗  ███████╗   ████╗   ███████╗
 //████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

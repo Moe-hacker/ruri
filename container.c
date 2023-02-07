@@ -308,6 +308,15 @@ void chroot_container(char *container_dir,_Bool *drop_caps,_Bool *drop_more_caps
     if (DROP_CAP_AUDIT_READ == 1){
       cap_drop_bound(CAP_AUDIT_READ);
     }
+    if (DROP_CAP_PERFMON == 1){
+      cap_drop_bound(CAP_PERFMON);
+    }
+    if (DROP_CAP_BPF == 1){
+      cap_drop_bound(CAP_BPF);
+    }
+    if (DROP_CAP_CHECKPOINT_RESTORE == 1){
+      cap_drop_bound(CAP_CHECKPOINT_RESTORE);
+    }
   }
   //Login to container.
   //Use exec() family function because system() is unavailable now.
