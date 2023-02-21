@@ -110,6 +110,7 @@ void show_helps(int greetings){
   printf("  -U :Try to umount container,please reboot instead for better security\n");
   printf("  -d :Drop capabilities to reduce permissions of container\n");
   printf("  -D :Drop more capabilities for better security\n");
+  printf("  -w :Disable warnings\n");
   printf("This program should be run with root privileges\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
   return;
@@ -375,6 +376,7 @@ int main(int argc,char **argv){
   _Bool *use_unshare=NULL;
   _Bool *drop_caps=NULL;
   _Bool *drop_more_caps=NULL;
+  _Bool *nowarning=NULL;
   char *container_dir=NULL;
   //Parse command-line arguments.
   for (int arg=1;arg<argc;arg++){
@@ -405,6 +407,9 @@ int main(int argc,char **argv){
           case 'D':
             drop_caps=&on;
             drop_more_caps=&on;
+            break;
+          case 'w':
+            nowarning=&on;
             break;
           default:
             fprintf(stderr,"%s%s%s\033[0m\n","\033[31mError: unknow option `",argv[arg],"`");
@@ -450,31 +455,31 @@ int main(int argc,char **argv){
   if (use_unshare){
     prctl(PR_SET_NAME,"moe_unshare",NULL,NULL,NULL);
     //Try to create namespaces with unshare().
-    if(unshare(CLONE_NEWNS) == -1){
+    if(unshare(CLONE_NEWNS) == -1&&!nowarning){
       printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");
     }
-    if(unshare(CLONE_NEWUTS) == -1){
+    if(unshare(CLONE_NEWUTS) == -1&&!nowarning){
       printf("\033[33mWarning: seems that uts namespace is not supported on this device\033[0m\n");
     }
-    if(unshare(CLONE_NEWIPC) == -1){
+    if(unshare(CLONE_NEWIPC) == -1&&!nowarning){
       printf("\033[33mWarning: seems that ipc namespace is not supported on this device\033[0m\n");
     }
-    if(unshare(CLONE_NEWPID) == -1){
+    if(unshare(CLONE_NEWPID) == -1&&!nowarning){
       printf("\033[33mWarning: seems that pid namespace is not supported in this host\033[0m\n");
     }
-    if(unshare(CLONE_NEWCGROUP) == -1){
+    if(unshare(CLONE_NEWCGROUP) == -1&&!nowarning){
       printf("\033[33mWarning: seems that cgroup namespace is not supported on this device\033[0m\n");
     }
-    if(unshare(CLONE_NEWTIME) == -1){
+    if(unshare(CLONE_NEWTIME) == -1&&!nowarning){
       printf("\033[33mWarning: seems that time namespace is not supported on this device\033[0m\n");
     }
-    if(unshare(CLONE_SYSVSEM) == -1){
+    if(unshare(CLONE_SYSVSEM) == -1&&!nowarning){
       printf("\033[33mWarning: seems that semaphore namespace is not supported on this device\033[0m\n");
     }
-    if(unshare(CLONE_FILES) == -1){
+    if(unshare(CLONE_FILES) == -1&&!nowarning){
       printf("\033[33mWarning: seems that we could not unshare file descriptors with child process\033[0m\n");
     }
-    if(unshare(CLONE_FS) == -1){
+    if(unshare(CLONE_FS) == -1&&!nowarning){
       printf("\033[33mWarning: seems that we could not unshare filesystem information with child process\033[0m\n");
     }
     //Fork itself into namespace.
