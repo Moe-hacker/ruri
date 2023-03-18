@@ -33,8 +33,8 @@
 void show_n_char(int num);
 void show_greetings(void);
 void show_version_info(void);
-void show_helps(_Bool greetings);
-void chroot_container(char *container_dir, _Bool *drop_caps, _Bool *drop_more_caps, _Bool *use_unshare, _Bool *no_warnings);
+void show_helps(bool greetings);
+void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings);
 void umount_container(char *container_dir);
 // For centering output.
 void show_n_char(int num)
@@ -128,7 +128,7 @@ void show_version_info(void)
   return;
 }
 // Help pages.
-void show_helps(_Bool greetings)
+void show_helps(bool greetings)
 {
   if (greetings)
   {
@@ -149,7 +149,7 @@ void show_helps(_Bool greetings)
   return;
 }
 // Run chroot container.
-void chroot_container(char *container_dir, _Bool *drop_caps, _Bool *drop_more_caps, _Bool *use_unshare, _Bool *no_warnings)
+void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings)
 {
   // Check if container directory is given.
   if (!container_dir)
@@ -543,13 +543,13 @@ int main(int argc, char **argv)
     exit(1);
   }
   // Set default value.
-  _Bool on = 1;
-  _Bool *use_unshare = NULL;
-  _Bool *drop_caps = NULL;
-  _Bool *drop_more_caps = NULL;
-  _Bool *no_warnings = NULL;
+  bool on = true;
+  bool *use_unshare = NULL;
+  bool *drop_caps = NULL;
+  bool *drop_more_caps = NULL;
+  bool *no_warnings = NULL;
   char *container_dir = NULL;
-  _Bool *greetings = NULL;
+  bool *greetings = NULL;
   // Parse command-line arguments.
   for (int arg = 1; arg < argc; arg++)
   {

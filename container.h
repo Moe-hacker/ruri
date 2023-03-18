@@ -28,6 +28,7 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <stdbool.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
 // Some definitions of capability flags,set 0 to disable and 1 to enable.
