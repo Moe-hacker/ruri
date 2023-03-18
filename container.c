@@ -143,7 +143,7 @@ void chroot_container(char *container_dir, _Bool *drop_caps, _Bool *drop_more_ca
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
-  if (ld_preload != NULL)
+  if (ld_preload && strcmp(ld_preload, "") != 0)
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
     exit(1);
