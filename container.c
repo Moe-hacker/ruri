@@ -33,7 +33,7 @@
 void show_n_char(int num);
 void show_greetings(void);
 void show_version_info(void);
-void show_helps(int greetings);
+void show_helps(_Bool greetings);
 void chroot_container(char *container_dir, _Bool *drop_caps, _Bool *drop_more_caps, _Bool *use_unshare, _Bool *no_warnings);
 void umount_container(char *container_dir);
 // For centering output.
@@ -128,9 +128,9 @@ void show_version_info(void)
   return;
 }
 // Help pages.
-void show_helps(int greetings)
+void show_helps(_Bool greetings)
 {
-  if (greetings == 1)
+  if (greetings)
   {
     show_greetings();
   }
@@ -549,6 +549,7 @@ int main(int argc, char **argv)
   _Bool *drop_more_caps = NULL;
   _Bool *no_warnings = NULL;
   char *container_dir = NULL;
+  _Bool *greetings = NULL;
   // Parse command-line arguments.
   for (int arg = 1; arg < argc; arg++)
   {
@@ -561,7 +562,8 @@ int main(int argc, char **argv)
         show_version_info();
         exit(0);
       case 'h':
-        show_helps(1);
+        greetings = &on;
+        show_helps(greetings);
         exit(0);
       case 'u':
         use_unshare = &on;
@@ -590,7 +592,7 @@ int main(int argc, char **argv)
         break;
       default:
         fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg], "`");
-        show_helps(0);
+        show_helps(greetings);
         exit(1);
       }
       break;
@@ -600,7 +602,7 @@ int main(int argc, char **argv)
       break;
     default:
       fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg], "`");
-      show_helps(0);
+      show_helps(greetings);
       exit(1);
     }
   }
