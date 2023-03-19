@@ -3,9 +3,24 @@
 <p align="center">僅かな時の彩を 」</p>    
 <p align="center">(>_×)</p>         
 
------------------     
+![](https://img.shields.io/github/stars/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=instatus&logoColor=fee4d0)
+![](https://img.shields.io/github/forks/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
+![](https://img.shields.io/github/license/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
+![](https://img.shields.io/github/repo-size/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)
+![](https://img.shields.io/github/last-commit/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
+![](https://img.shields.io/badge/language-shell-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
 
-[[简体中文]](https://github.com/Moe-hacker/moe-container/blob/main/README-zh.md)
+-----------------     
+You can read this doc in :
+
+**[<kbd> <br> 简体中文 <br> </kbd>](https://github.com/Moe-hacker/moe-container/blob/main/README-zh.md)**&emsp;**[<kbd> <br> English <br> </kbd>](https://github.com/Moe-hacker/moe-container/blob/main/README.md)**
+
+### WARNING:      
+```
+* Your warranty is now void.
+* I am not responsible for anything that may happen to your device by using this program.
+* You do it at your own risk and take the responsibility upon yourself.
+```
 ### About:      
 &emsp;moe-container runs a linux container with namespaces and dropped capabilities in your system.       
 &emsp;It's like `chroot` and `unshare`,but with a controllable reduced capability set.       
