@@ -26,6 +26,7 @@ You can read this doc in :
 &emsp;It's like `chroot` and `unshare`,but with a controllable reduced capability set.       
 ### Features:
 - Written with 100% C programming language.          
+- Light weight, the binary is less than 1M.      
 - Can be run with unshare mode.        
 - Controllable capability set.           
 - Automatically mount system runtime files and login to the container.        
