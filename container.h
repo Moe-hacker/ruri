@@ -67,16 +67,19 @@
 #define DROP_CAP_SETFCAP 1
 // Do not set DROP_CAP_SETGID to 1 or you will not be able to login to the container with -D option.
 #define DROP_CAP_SETGID 0
+// Do not set DROP_CAP_CHOWN to 1 or maybe you will not be able to use debian apt.
 #define DROP_CAP_CHOWN 0
 // Do not set DROP_CAP_NET_RAW to 1 or maybe you will not be able to use alpine apk.
 #define DROP_CAP_NET_RAW 0
 // Do not set DROP_CAP_DAC_OVERRIDE to 1 or maybe you will not be able to login to the container with -D option.
 #define DROP_CAP_DAC_OVERRIDE 0
-#define DROP_CAP_FOWNER 1
-#define DROP_CAP_FSETID 1
+// Do not set DROP_CAP_FOWNER and DROP_CAP_FSETID to 1 or maybe you will not be able to use debian apt.
+#define DROP_CAP_FOWNER 0
+#define DROP_CAP_FSETID 0
 #define DROP_CAP_KILL 1
 #define DROP_CAP_NET_BIND_SERVICE 1
-#define DROP_CAP_SETUID 1
+// Do not set DROP_CAP_SETUID to 1 or maybe you will not be able to use debian apt.
+#define DROP_CAP_SETUID 0
 #define DROP_CAP_SYS_TIME 1
 #define DROP_CAP_AUDIT_READ 1
 #define DROP_CAP_PERFMON 1

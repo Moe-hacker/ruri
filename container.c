@@ -487,7 +487,7 @@ void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps
     if (execv(init[0], init) == -1)
     {
       // Catch exceptions.
-      fprintf(stderr, "\033[31mFailed to execute init `%s`\n",init[0]);
+      fprintf(stderr, "\033[31mFailed to execute init `%s`\n", init[0]);
       fprintf(stderr, "execv() returned: %d\n", errno);
       fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
       exit(1);
@@ -615,7 +615,7 @@ int main(int argc, char **argv)
         container_dir = argv[arg_num];
         arg_num++;
         int init_arg_num = 0;
-        while (arg_num < argc)
+        while (arg_num <= argc)
         {
           init[init_arg_num] = argv[arg_num];
           arg_num++;
@@ -627,7 +627,7 @@ int main(int argc, char **argv)
       container_dir = argv[arg_num];
       arg_num++;
       int init_arg_num = 0;
-      while(arg_num<argc)
+      while (arg_num <= argc)
       {
         init[init_arg_num] = argv[arg_num];
         arg_num++;
