@@ -408,10 +408,6 @@ void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps
       {
         cap_drop_bound(CAP_SYS_CHROOT);
       }
-      if (DROP_CAP_SETPCAP == 1)
-      {
-        cap_drop_bound(CAP_SETPCAP);
-      }
       if (DROP_CAP_MKNOD == 1)
       {
         cap_drop_bound(CAP_MKNOD);
@@ -479,6 +475,11 @@ void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps
       if (DROP_CAP_CHECKPOINT_RESTORE == 1)
       {
         cap_drop_bound(CAP_CHECKPOINT_RESTORE);
+      }
+      // CAP_SETPCAP should be dropped as the last one.
+      if (DROP_CAP_SETPCAP == 1)
+      {
+        cap_drop_bound(CAP_SETPCAP);
       }
     }
     // Login to container.
