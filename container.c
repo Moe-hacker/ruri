@@ -201,7 +201,7 @@ void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps
     }
     if (unshare(CLONE_NEWPID) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that pid namespace is not supported in this host\033[0m\n");
+      printf("\033[33mWarning: seems that pid namespace is not supported on this device\033[0m\n");
     }
     if (unshare(CLONE_NEWCGROUP) == -1 && !no_warnings)
     {
