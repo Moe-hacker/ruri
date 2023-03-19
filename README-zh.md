@@ -30,7 +30,7 @@ make help       :显示帮助
 ```
 ### 用法：    
 ```text
-container [选项] [容器目录]
+container [选项] [容器目录] (init命令)
 ```
 &emsp;选项：    
 ```text
@@ -40,6 +40,7 @@ container [选项] [容器目录]
 -U :尝试卸载容器
 -d :通过移除docker默认移除的capability列表降低容器权限
 -D :进一步移除容器capability降低权限
+-w :抑制警告
 ```
 &emsp;注：
 - 容器必须以root权限运行。      

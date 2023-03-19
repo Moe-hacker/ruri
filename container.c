@@ -34,7 +34,7 @@ void show_n_char(int num);
 void show_greetings(void);
 void show_version_info(void);
 void show_helps(bool greetings);
-void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings);
+void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings, char *init[]);
 void umount_container(char *container_dir);
 // For centering output.
 void show_n_char(int num)
@@ -104,7 +104,7 @@ void show_greetings(void)
 }
 void show_version_info(void)
 {
-  printf("\033[1;38;2;254;228;208mmoe-container 1.1-pre\n");
+  printf("\033[1;38;2;254;228;208mmoe-container 1.1\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("            (>_×)\n");
   printf("\n");
@@ -135,7 +135,7 @@ void show_helps(bool greetings)
     show_greetings();
   }
   printf("\033[1;38;2;254;228;208mUsage:\n");
-  printf("  container [options] [container directory]\n");
+  printf("  container [options] [container directory] (init command)\n");
   printf("Options:\n");
   printf("  -v :Show version info\n");
   printf("  -h :Show helps\n");
@@ -149,7 +149,7 @@ void show_helps(bool greetings)
   return;
 }
 // Run chroot container.
-void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings)
+void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings, char *init[])
 {
   // Check if container directory is given.
   if (!container_dir)
@@ -484,11 +484,10 @@ void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps
     }
     // Login to container.
     // Use exec() family function because system() may be unavailable now.
-    char *login[] = {"/bin/su", "-", NULL};
-    if (execv(login[0], login) == -1)
+    if (execv(init[0], init) == -1)
     {
       // Catch exceptions.
-      fprintf(stderr, "\033[31mFailed to execute `/bin/su`\n");
+      fprintf(stderr, "\033[31mFailed to execute init `%s`\n",init[0]);
       fprintf(stderr, "execv() returned: %d\n", errno);
       fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
       exit(1);
@@ -551,13 +550,14 @@ int main(int argc, char **argv)
   bool *no_warnings = NULL;
   char *container_dir = NULL;
   bool *greetings = NULL;
+  char *init[1024] = {0};
   // Parse command-line arguments.
-  for (int arg = 1; arg < argc; arg++)
+  for (int arg_num = 1; arg_num < argc; arg_num++)
   {
-    switch (argv[arg][0])
+    switch (argv[arg_num][0])
     {
     case '-':
-      switch (argv[arg][1])
+      switch (argv[arg_num][1])
       {
       case 'v':
         show_version_info();
@@ -570,12 +570,12 @@ int main(int argc, char **argv)
         use_unshare = &on;
         break;
       case 'U':
-        arg += 1;
-        if (argv[arg] != NULL)
+        arg_num += 1;
+        if (argv[arg_num] != NULL)
         {
-          if (argv[arg][1])
+          if (argv[arg_num][1])
           {
-            umount_container(argv[arg]);
+            umount_container(argv[arg_num]);
           }
           else
           {
@@ -599,32 +599,54 @@ int main(int argc, char **argv)
         no_warnings = &on;
         break;
       default:
-        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg], "`");
+        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg_num], "`");
         show_helps(greetings);
         exit(1);
       }
       break;
     case '/':
-      if (!argv[arg][1])
+      if (!argv[arg_num][1])
       {
         fprintf(stderr, "%s\033[0m\n", "\033[31mError: `/` is not allowed to use as a container directory.");
         exit(1);
       }
       else
       {
-        container_dir = argv[arg];
+        container_dir = argv[arg_num];
+        arg_num++;
+        int init_arg_num = 0;
+        while (arg_num < argc)
+        {
+          init[init_arg_num] = argv[arg_num];
+          arg_num++;
+          init_arg_num++;
+        }
         break;
       }
     case '.':
-      container_dir = argv[arg];
+      container_dir = argv[arg_num];
+      arg_num++;
+      int init_arg_num = 0;
+      while(arg_num<argc)
+      {
+        init[init_arg_num] = argv[arg_num];
+        arg_num++;
+        init_arg_num++;
+      }
       break;
     default:
-      fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg], "`");
+      fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg_num], "`");
       show_helps(greetings);
       exit(1);
     }
   }
-  chroot_container(container_dir, drop_caps, drop_more_caps, use_unshare, no_warnings);
+  if (!init[0])
+  {
+    init[0] = "/bin/su";
+    init[1] = "-";
+    init[2] = NULL;
+  }
+  chroot_container(container_dir, drop_caps, drop_more_caps, use_unshare, no_warnings, init);
   return 0;
 }
 //  ██╗ ██╗  ███████╗   ████╗   ███████╗

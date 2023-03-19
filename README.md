@@ -36,7 +36,7 @@ For static compilation:
 - libc-static         
 ### Usage:    
 ```text
-container [options] [container directory]
+container [options] [container directory] (init command)
 ```
 #### Options:
 ```text
@@ -46,6 +46,7 @@ container [options] [container directory]
   -U :Try to umount container,please reboot instead for better security
   -d :Drop capabilities to reduce permissions of container
   -D :Drop more capabilities for better security
+  -w :Disable warnings
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Unset $LD_PRELOAD before running this program to fix issues in termux.         
