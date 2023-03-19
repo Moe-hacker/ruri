@@ -57,7 +57,7 @@ void show_greetings(void)
   row -= 44;
   row /= 2;
   show_n_char(row);
-  printf("%s\n", "\033[30m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
+  printf("%s\n", "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
   show_n_char(row);
   printf("%s\n", "          ▅▅▀▀▀               ▀▀▅▅");
   show_n_char(row);
@@ -75,9 +75,9 @@ void show_greetings(void)
   show_n_char(row);
   printf("%s\n", "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
   show_n_char(row);
-  printf("%s\n", "      █ █ █\033[40;31m█▀█\033[0m\033[30m█        █\033[40;31m█▀█\033[0m\033[30m█ █   █     █");
+  printf("%s\n", "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
   show_n_char(row);
-  printf("%s\n", "     █  █ █\033[31m███\033[30m█        █\033[31m███\033[30m█ █   █     ▀▅");
+  printf("%s\n", "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
   show_n_char(row);
   printf("%s\n", "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
   show_n_char(row);
@@ -640,6 +640,7 @@ int main(int argc, char **argv)
       exit(1);
     }
   }
+  // Set default init.
   if (!init[0])
   {
     init[0] = "/bin/su";
