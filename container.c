@@ -573,7 +573,14 @@ int main(int argc, char **argv)
         arg += 1;
         if (argv[arg] != NULL)
         {
-          umount_container(argv[arg]);
+          if (argv[arg][1])
+          {
+            umount_container(argv[arg]);
+          }
+          else
+          {
+            fprintf(stderr, "%s\033[0m\n", "\033[31mError: `/` is not allowed to use as a container directory.");
+          }
         }
         else
         {
@@ -598,6 +605,16 @@ int main(int argc, char **argv)
       }
       break;
     case '/':
+      if (!argv[arg][1])
+      {
+        fprintf(stderr, "%s\033[0m\n", "\033[31mError: `/` is not allowed to use as a container directory.");
+        exit(1);
+      }
+      else
+      {
+        container_dir = argv[arg];
+        break;
+      }
     case '.':
       container_dir = argv[arg];
       break;
