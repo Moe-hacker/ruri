@@ -314,13 +314,10 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
       {
         if (drop_caplist[drop_caplist_num])
         {
-          if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0)
+          if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0 && !no_warnings)
           {
-            if (!no_warnings)
-            {
-              fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[drop_caplist_num]));
-              fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-            }
+            fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[drop_caplist_num]));
+            fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
           }
         }
       }
