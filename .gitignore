@@ -2,3 +2,5 @@ container
 libcap.a
 container-amd64.zip
 container-arm64.zip
+tmpfile
+a.out

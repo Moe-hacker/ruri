@@ -8,7 +8,7 @@
 ![](https://img.shields.io/github/license/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
 ![](https://img.shields.io/github/repo-size/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)
 ![](https://img.shields.io/github/last-commit/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
-![](https://img.shields.io/badge/language-shell-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
+![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
 
 -----------------     
 You can read this doc in :
@@ -60,8 +60,8 @@ container [options] [container directory] (init command)
   -h :Show helps
   -u :Enable unshare feature
   -U :Try to umount container,please reboot instead for better security
-  -d :Drop capabilities to reduce permissions of container
-  -D :Drop more capabilities for better security
+  -d :Drop more capabilities for better security
+  -p :Run privileged container
   -w :Disable warnings
 ```
 &emsp;This program should be run with root privileges.        

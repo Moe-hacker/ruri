@@ -34,7 +34,7 @@ void show_n_char(int num);
 void show_greetings(void);
 void show_version_info(void);
 void show_helps(bool greetings);
-void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings, char *init[]);
+void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[]);
 void umount_container(char *container_dir);
 // For centering output.
 void show_n_char(int num)
@@ -104,7 +104,7 @@ void show_greetings(void)
 }
 void show_version_info(void)
 {
-  printf("\033[1;38;2;254;228;208mmoe-container 1.1\n");
+  printf("\033[1;38;2;254;228;208mmoe-container 1.2-pre\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("            (>_×)\n");
   printf("\n");
@@ -140,16 +140,16 @@ void show_helps(bool greetings)
   printf("  -v :Show version info\n");
   printf("  -h :Show helps\n");
   printf("  -u :Enable unshare feature\n");
-  printf("  -U :Try to umount container,please reboot instead for better security\n");
-  printf("  -d :Drop capabilities to reduce permissions of container\n");
-  printf("  -D :Drop more capabilities for better security\n");
+  printf("  -U :Try to umount container,please reboot your device instead for better security\n");
+  printf("  -d :Drop more capabilities for better security\n");
+  printf("  -p :Run privileged container\n");
   printf("  -w :Disable warnings\n");
   printf("This program should be run with root privileges\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
   return;
 }
 // Run chroot container.
-void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps, bool *use_unshare, bool *no_warnings, char *init[])
+void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[])
 {
   // Check if container directory is given.
   if (!container_dir)
@@ -307,179 +307,22 @@ void chroot_container(char *container_dir, bool *drop_caps, bool *drop_more_caps
       symlink("/proc/self/fd/2", "/dev/stderr");
       symlink("/dev/null", "/dev/tty0");
     }
-    // Lower permissions by dropping caps.
-    if (drop_caps)
+    // Drop caps.
+    if (drop_caplist[0])
     {
-      // Caps to drop from docker default containers.
-      if (DROP_CAP_SYS_ADMIN == 1)
+      for (int drop_caplist_num = 0; drop_caplist_num < CAP_LAST_CAP; drop_caplist_num++)
       {
-        cap_drop_bound(CAP_SYS_ADMIN);
-      }
-      if (DROP_CAP_SYS_MODULE == 1)
-      {
-        cap_drop_bound(CAP_SYS_MODULE);
-      }
-      if (DROP_CAP_SYS_RAWIO == 1)
-      {
-        cap_drop_bound(CAP_SYS_RAWIO);
-      }
-      if (DROP_CAP_SYS_PACCT == 1)
-      {
-        cap_drop_bound(CAP_SYS_PACCT);
-      }
-      if (DROP_CAP_SYS_NICE == 1)
-      {
-        cap_drop_bound(CAP_SYS_NICE);
-      }
-      if (DROP_CAP_SYS_RESOURCE == 1)
-      {
-        cap_drop_bound(CAP_SYS_RESOURCE);
-      }
-      if (DROP_CAP_SYS_TTY_CONFIG == 1)
-      {
-        cap_drop_bound(CAP_SYS_TTY_CONFIG);
-      }
-      if (DROP_CAP_AUDIT_CONTROL == 1)
-      {
-        cap_drop_bound(CAP_AUDIT_CONTROL);
-      }
-      if (DROP_CAP_MAC_OVERRIDE == 1)
-      {
-        cap_drop_bound(CAP_MAC_OVERRIDE);
-      }
-      if (DROP_CAP_MAC_ADMIN == 1)
-      {
-        cap_drop_bound(CAP_MAC_ADMIN);
-      }
-      if (DROP_CAP_NET_ADMIN == 1)
-      {
-        cap_drop_bound(CAP_NET_ADMIN);
-      }
-      if (DROP_CAP_SYSLOG == 1)
-      {
-        cap_drop_bound(CAP_SYSLOG);
-      }
-      if (DROP_CAP_DAC_READ_SEARCH == 1)
-      {
-        cap_drop_bound(CAP_DAC_READ_SEARCH);
-      }
-      if (DROP_CAP_LINUX_IMMUTABLE == 1)
-      {
-        cap_drop_bound(CAP_LINUX_IMMUTABLE);
-      }
-      if (DROP_CAP_NET_BROADCAST == 1)
-      {
-        cap_drop_bound(CAP_NET_BROADCAST);
-      }
-      if (DROP_CAP_IPC_LOCK == 1)
-      {
-        cap_drop_bound(CAP_IPC_LOCK);
-      }
-      if (DROP_CAP_IPC_OWNER == 1)
-      {
-        cap_drop_bound(CAP_IPC_OWNER);
-      }
-      if (DROP_CAP_SYS_PTRACE == 1)
-      {
-        cap_drop_bound(CAP_SYS_PTRACE);
-      }
-      if (DROP_CAP_SYS_BOOT == 1)
-      {
-        cap_drop_bound(CAP_SYS_BOOT);
-      }
-      if (DROP_CAP_LEASE == 1)
-      {
-        cap_drop_bound(CAP_LEASE);
-      }
-      if (DROP_CAP_WAKE_ALARM == 1)
-      {
-        cap_drop_bound(CAP_WAKE_ALARM);
-      }
-      if (DROP_CAP_BLOCK_SUSPEND == 1)
-      {
-        cap_drop_bound(CAP_BLOCK_SUSPEND);
-      }
-    }
-    if (drop_more_caps)
-    {
-      // In docker,these caps will be kept.
-      // Dropping these caps is usually not necessary.
-      if (DROP_CAP_SYS_CHROOT == 1)
-      {
-        cap_drop_bound(CAP_SYS_CHROOT);
-      }
-      if (DROP_CAP_MKNOD == 1)
-      {
-        cap_drop_bound(CAP_MKNOD);
-      }
-      if (DROP_CAP_AUDIT_WRITE == 1)
-      {
-        cap_drop_bound(CAP_AUDIT_WRITE);
-      }
-      if (DROP_CAP_CHOWN == 1)
-      {
-        cap_drop_bound(CAP_CHOWN);
-      }
-      if (DROP_CAP_NET_RAW == 1)
-      {
-        cap_drop_bound(CAP_NET_RAW);
-      }
-      if (DROP_CAP_DAC_OVERRIDE == 1)
-      {
-        cap_drop_bound(CAP_DAC_OVERRIDE);
-      }
-      if (DROP_CAP_FOWNER == 1)
-      {
-        cap_drop_bound(CAP_FOWNER);
-      }
-      if (DROP_CAP_FSETID == 1)
-      {
-        cap_drop_bound(CAP_FSETID);
-      }
-      if (DROP_CAP_KILL == 1)
-      {
-        cap_drop_bound(CAP_KILL);
-      }
-      if (DROP_CAP_SETGID == 1)
-      {
-        cap_drop_bound(CAP_SETGID);
-      }
-      if (DROP_CAP_NET_BIND_SERVICE == 1)
-      {
-        cap_drop_bound(CAP_NET_BIND_SERVICE);
-      }
-      if (DROP_CAP_SETFCAP == 1)
-      {
-        cap_drop_bound(CAP_SETFCAP);
-      }
-      if (DROP_CAP_SETUID == 1)
-      {
-        cap_drop_bound(CAP_SETUID);
-      }
-      if (DROP_CAP_SYS_TIME == 1)
-      {
-        cap_drop_bound(CAP_SYS_TIME);
-      }
-      if (DROP_CAP_AUDIT_READ == 1)
-      {
-        cap_drop_bound(CAP_AUDIT_READ);
-      }
-      if (DROP_CAP_PERFMON == 1)
-      {
-        cap_drop_bound(CAP_PERFMON);
-      }
-      if (DROP_CAP_BPF == 1)
-      {
-        cap_drop_bound(CAP_BPF);
-      }
-      if (DROP_CAP_CHECKPOINT_RESTORE == 1)
-      {
-        cap_drop_bound(CAP_CHECKPOINT_RESTORE);
-      }
-      // CAP_SETPCAP should be dropped as the last one.
-      if (DROP_CAP_SETPCAP == 1)
-      {
-        cap_drop_bound(CAP_SETPCAP);
+        if (drop_caplist[drop_caplist_num])
+        {
+          if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0)
+          {
+            if (!no_warnings)
+            {
+              fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[drop_caplist_num]));
+              fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
+            }
+          }
+        }
       }
     }
     // Login to container.
@@ -545,12 +388,23 @@ int main(int argc, char **argv)
   // Set default value.
   bool on = true;
   bool *use_unshare = NULL;
-  bool *drop_caps = NULL;
-  bool *drop_more_caps = NULL;
   bool *no_warnings = NULL;
   char *container_dir = NULL;
   bool *greetings = NULL;
+  bool *privileged = NULL;
   char *init[1024] = {0};
+  // These caps are kept by default:
+  // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
+  cap_value_t drop_caplist[CAP_LAST_CAP] = {};
+  cap_value_t drop_caplist_common[CAP_LAST_CAP] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
+  cap_value_t drop_caplist_unprivileged[CAP_LAST_CAP] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
+  // To do
+  // cap_value_t keep_caplist_extra[CAP_LAST_CAP] = {};
+  // int keep_caplist_extra_num = 0;
+  // cap_value_t drop_caplist_extra[CAP_LAST_CAP] = {};
+  // int drop_caplist_extra_num = 0;
+  //
+  //
   // Parse command-line arguments.
   for (int arg_num = 1; arg_num < argc; arg_num++)
   {
@@ -589,11 +443,13 @@ int main(int argc, char **argv)
         }
         exit(0);
       case 'd':
-        drop_caps = &on;
+        for (int unprivileged_num = 0; unprivileged_num < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); unprivileged_num++)
+        {
+          drop_caplist[unprivileged_num] = drop_caplist_unprivileged[unprivileged_num];
+        }
         break;
-      case 'D':
-        drop_caps = &on;
-        drop_more_caps = &on;
+      case 'p':
+        privileged = &on;
         break;
       case 'w':
         no_warnings = &on;
@@ -640,6 +496,16 @@ int main(int argc, char **argv)
       exit(1);
     }
   }
+  // Set default caplist to drop.
+  if (!privileged && !drop_caplist[0])
+  {
+    for (int common_num = 0; common_num < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); common_num++)
+    {
+      drop_caplist[common_num] = drop_caplist_common[common_num];
+    }
+  }
+  // Comply with capability-set policy specified.
+  // todo
   // Set default init.
   if (!init[0])
   {
@@ -647,7 +513,7 @@ int main(int argc, char **argv)
     init[1] = "-";
     init[2] = NULL;
   }
-  chroot_container(container_dir, drop_caps, drop_more_caps, use_unshare, no_warnings, init);
+  chroot_container(container_dir, drop_caplist, use_unshare, no_warnings, init);
   return 0;
 }
 //  ██╗ ██╗  ███████╗   ████╗   ███████╗
