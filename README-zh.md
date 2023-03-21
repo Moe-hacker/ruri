@@ -22,7 +22,7 @@ libcap动态库用于动态编译，libc和libcap静态库用于静态编译。
 #### 编译选项：     
 ```text
 make all        :默认动态编译
-make install    :默认动态编译并安装为mcontainer命令
+make install    :默认动态编译并安装为moe-container命令
 make static     :静态编译
 make staticfail :如果系统装有libcap.a但依然报错，将它复制到项目目录执行此编译选项
 make no         :动态编译，关闭优化选项
@@ -35,13 +35,15 @@ container [选项] [容器目录] (init命令)
 ```
 &emsp;选项：    
 ```text
--v :显示版本信息
--h :显示帮助信息
--u :开启unshare功能将容器隔离到新namespace中
--U :尝试卸载容器
--d :进一步降低特权
--p :运行特权容器
--w :抑制警告
+-v           :显示版本信息
+-h           :显示帮助信息
+-u           :开启unshare功能将容器隔离到新namespace中
+-U           :尝试卸载容器
+-d           :进一步降低特权
+-p           :运行特权容器
+--drop [cap] :移除指定特权
+--keep [cap] :保留指定特权
+-w           :抑制警告
 ```
 &emsp;注：
 - 容器必须以root权限运行。      

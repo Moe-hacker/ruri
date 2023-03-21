@@ -31,7 +31,7 @@
 #include <stdbool.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
-
+#define INIT_VALUE -114
 //  ██╗ ██╗  ███████╗   ████╗   ███████╗
 // ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 // ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

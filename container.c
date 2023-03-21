@@ -104,7 +104,7 @@ void show_greetings(void)
 }
 void show_version_info(void)
 {
-  printf("\033[1;38;2;254;228;208mmoe-container 1.2-pre\n");
+  printf("\033[1;38;2;254;228;208mmoe-container 1.2\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("            (>_×)\n");
   printf("\n");
@@ -137,17 +137,20 @@ void show_helps(bool greetings)
   printf("\033[1;38;2;254;228;208mUsage:\n");
   printf("  container [options] [container directory] (init command)\n");
   printf("Options:\n");
-  printf("  -v :Show version info\n");
-  printf("  -h :Show helps\n");
-  printf("  -u :Enable unshare feature\n");
-  printf("  -U :Try to umount container,please reboot your device instead for better security\n");
-  printf("  -d :Drop more capabilities for better security\n");
-  printf("  -p :Run privileged container\n");
-  printf("  -w :Disable warnings\n");
+  printf("  -v          :Show version info\n");
+  printf("  -h          :Show helps\n");
+  printf("  -u          :Enable unshare feature\n");
+  printf("  -U          :Try to umount container,please reboot your device instead for better security\n");
+  printf("  -d          :Drop more capabilities for better security\n");
+  printf("  -p          :Run privileged container\n");
+  printf(" --keep [cap] :Keep the specified cap\n");
+  printf(" --drop [cap] :Drop the specified cap\n");
+  printf("  -w          :Disable warnings\n");
   printf("This program should be run with root privileges\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
   return;
 }
+// Add a cap from caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
   int j = 0;
@@ -163,7 +166,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
   {
     for (int k = 0; k <= length; k++)
     {
-      if (!list[k] || list[k] == -114)
+      if (!list[k] || list[k] == INIT_VALUE)
       {
         list[k] = cap;
         break;
@@ -172,6 +175,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
   }
   return;
 }
+// Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 {
   for (int i = 0; i <= length; i++)
@@ -183,7 +187,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
         list[i] = list[i + 1];
         i++;
       }
-      list[i] = -114;
+      list[i] = INIT_VALUE;
       break;
     }
   }
@@ -229,7 +233,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     closedir(direxist);
   }
   // Set default value if not using unshare.
-  pid_t unshare_pid = -114;
+  pid_t unshare_pid = INIT_VALUE;
   // Unshare itself into new namespaces.
   if (use_unshare)
   {
@@ -285,7 +289,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     }
   }
   // Check if unshare is enabled.
-  if (unshare_pid == 0 || unshare_pid == -114)
+  if (unshare_pid == 0 || unshare_pid == INIT_VALUE)
   {
     // chroot into container.
     chroot(container_dir);
@@ -364,7 +368,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     {
       for (int drop_caplist_num = 0; drop_caplist_num < CAP_LAST_CAP + 1; drop_caplist_num++)
       {
-        if (drop_caplist[drop_caplist_num] && drop_caplist[drop_caplist_num] != -114)
+        if (drop_caplist[drop_caplist_num] && drop_caplist[drop_caplist_num] != INIT_VALUE)
         {
           if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0 && !no_warnings)
           {
@@ -452,8 +456,8 @@ int main(int argc, char **argv)
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
   cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
   cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
-  cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {-114};
-  cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {-114};
+  cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {INIT_VALUE};
+  cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {INIT_VALUE};
   cap_value_t cap = -1;
   // Parse command-line arguments.
   for (int arg_num = 1; arg_num < argc; arg_num++)
@@ -528,7 +532,7 @@ int main(int argc, char **argv)
         exit(1);
       }
     }
-    else if (strcmp(argv[arg_num], strchr(argv[arg_num], '/')) == 0 || strcmp(argv[arg_num], strchr(argv[arg_num], '.')) == 0)
+    else if ((strchr(argv[arg_num], '/') && strcmp(strchr(argv[arg_num], '/'), argv[arg_num]) == 0) || strchr(argv[arg_num], '.') && strcmp(strchr(argv[arg_num], '.'), argv[arg_num]) == 0)
     {
       container_dir = argv[arg_num];
       arg_num++;
@@ -559,14 +563,14 @@ int main(int argc, char **argv)
     }
   }
   // Comply with capability-set policy specified.
-  if (drop_caplist_extra[0] != -114)
+  if (drop_caplist_extra[0] != INIT_VALUE)
   {
     for (int drop_caplist_extra_num = 0; drop_caplist_extra_num <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); drop_caplist_extra_num++)
     {
       add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[drop_caplist_extra_num]);
     }
   }
-  if (keep_caplist_extra[0] != -114)
+  if (keep_caplist_extra[0] != INIT_VALUE)
   {
     for (int keep_caplist_extra_num = 0; keep_caplist_extra_num <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); keep_caplist_extra_num++)
     {

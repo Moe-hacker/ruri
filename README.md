@@ -36,7 +36,7 @@ You can read this doc in :
 #### make options:
 ```text
   make all        :compile
-  make install    :make all and install container to $PREFIX
+  make install    :make all and install moe-container to $PREFIX
   make static     :static compile
   make staticfail :static compile,fix errors
   make no         :compile without optimizations
@@ -56,13 +56,15 @@ container [options] [container directory] (init command)
 ```
 #### Options:
 ```text
-  -v :Show version info
-  -h :Show helps
-  -u :Enable unshare feature
-  -U :Try to umount container,please reboot instead for better security
-  -d :Drop more capabilities for better security
-  -p :Run privileged container
-  -w :Disable warnings
+  -v          :Show version info
+  -h          :Show helps
+  -u          :Enable unshare feature
+  -U          :Try to umount container,please reboot your device instead for better security
+  -d          :Drop more capabilities for better security
+  -p          :Run privileged container
+ --keep [cap] :Keep the specified cap
+ --drop [cap] :Drop the specified cap
+  -w          :Disable warnings
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Unset $LD_PRELOAD before running this program to fix issues in termux.         
