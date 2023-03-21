@@ -369,17 +369,17 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     // Drop caps.
     if (drop_caplist[0] != INIT_VALUE)
     {
-      for (int drop_caplist_num = 0; drop_caplist_num < CAP_LAST_CAP + 1; drop_caplist_num++)
+      for (int i = 0; i < CAP_LAST_CAP + 1; i++)
       {
-        if (drop_caplist[drop_caplist_num] != INIT_VALUE)
+        if (drop_caplist[i] != INIT_VALUE)
         {
-          if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0 && !no_warnings)
+          if (cap_drop_bound(drop_caplist[i]) != 0 && !no_warnings)
           {
-            fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[drop_caplist_num]));
+            fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[i]));
             fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
           }
         }
-        if(!drop_caplist[drop_caplist_num]){
+        if(!drop_caplist[i]){
           if (cap_drop_bound(0) != 0 && !no_warnings)
           {
             fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
@@ -579,29 +579,29 @@ int main(int argc, char **argv)
   // Set default caplist to drop.
   if (!privileged && drop_caplist[0] == INIT_VALUE)
   {
-    for (int common_num = 0; common_num < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); common_num++)
+    for (int i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++)
     {
-      drop_caplist[common_num] = drop_caplist_common[common_num];
+      drop_caplist[i] = drop_caplist_common[i];
     }
   }
   // Comply with capability-set policy specified.
   if (drop_caplist_extra[0] != INIT_VALUE)
   {
-    for (int drop_caplist_extra_num = 0; drop_caplist_extra_num <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); drop_caplist_extra_num++)
+    for (int i = 0; i <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
     {
-      if (drop_caplist_extra[drop_caplist_extra_num] != INIT_VALUE)
+      if (drop_caplist_extra[i] != INIT_VALUE)
       {
-        add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[drop_caplist_extra_num]);
+        add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[i]);
       }
     }
   }
   if (keep_caplist_extra[0] != INIT_VALUE)
   {
-    for (int keep_caplist_extra_num = 0; keep_caplist_extra_num <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); keep_caplist_extra_num++)
+    for (int i = 0; i <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
     {
-      if (keep_caplist_extra[keep_caplist_extra_num] != INIT_VALUE)
+      if (keep_caplist_extra[i] != INIT_VALUE)
       {
-        del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[keep_caplist_extra_num]);
+        del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[i]);
       }
     }
   }
