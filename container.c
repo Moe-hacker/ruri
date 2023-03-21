@@ -284,6 +284,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     // Fix `can't access tty` issue.
     if (unshare_pid != 0)
     {
+      usleep(200000);
       waitpid(unshare_pid, NULL, 0);
     }
     else if (unshare_pid < 0)
@@ -390,6 +391,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     }
     // Login to container.
     // Use exec() family function because system() may be unavailable now.
+    usleep(200000);
     if (execv(init[0], init) == -1)
     {
       // Catch exceptions.
