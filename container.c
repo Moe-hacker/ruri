@@ -30,10 +30,13 @@
  *                     佛祖保佑        永无BUG
  */
 #include "container.h"
+// Define functions.
 void show_n_char(int num);
 void show_greetings(void);
 void show_version_info(void);
 void show_helps(bool greetings);
+void add_to_list(cap_value_t *list, int length, cap_value_t cap);
+void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[]);
 void umount_container(char *container_dir);
 // For centering output.
@@ -166,7 +169,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
   {
     for (int k = 0; k <= length; k++)
     {
-      if (!list[k] || list[k] == INIT_VALUE)
+      if (list[k] == INIT_VALUE)
       {
         list[k] = cap;
         break;
@@ -364,15 +367,22 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
       symlink("/dev/null", "/dev/tty0");
     }
     // Drop caps.
-    if (drop_caplist[0])
+    if (drop_caplist[0] != INIT_VALUE)
     {
       for (int drop_caplist_num = 0; drop_caplist_num < CAP_LAST_CAP + 1; drop_caplist_num++)
       {
-        if (drop_caplist[drop_caplist_num] && drop_caplist[drop_caplist_num] != INIT_VALUE)
+        if (drop_caplist[drop_caplist_num] != INIT_VALUE)
         {
           if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0 && !no_warnings)
           {
             fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[drop_caplist_num]));
+            fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
+          }
+        }
+        if(!drop_caplist[drop_caplist_num]){
+          if (cap_drop_bound(0) != 0 && !no_warnings)
+          {
+            fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
             fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
           }
         }
@@ -454,10 +464,22 @@ int main(int argc, char **argv)
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
+  for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+  {
+    drop_caplist[i] = INIT_VALUE;
+  }
   cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
   cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
   cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {INIT_VALUE};
+  for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+  {
+    keep_caplist_extra[i] = INIT_VALUE;
+  }
   cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {INIT_VALUE};
+  for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+  {
+    drop_caplist_extra[i] = INIT_VALUE;
+  }
   cap_value_t cap = -1;
   // Parse command-line arguments.
   for (int arg_num = 1; arg_num < argc; arg_num++)
@@ -555,7 +577,7 @@ int main(int argc, char **argv)
     }
   }
   // Set default caplist to drop.
-  if (!privileged && !drop_caplist[0])
+  if (!privileged && drop_caplist[0] == INIT_VALUE)
   {
     for (int common_num = 0; common_num < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); common_num++)
     {
@@ -567,14 +589,20 @@ int main(int argc, char **argv)
   {
     for (int drop_caplist_extra_num = 0; drop_caplist_extra_num <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); drop_caplist_extra_num++)
     {
-      add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[drop_caplist_extra_num]);
+      if (drop_caplist_extra[drop_caplist_extra_num] != INIT_VALUE)
+      {
+        add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[drop_caplist_extra_num]);
+      }
     }
   }
   if (keep_caplist_extra[0] != INIT_VALUE)
   {
     for (int keep_caplist_extra_num = 0; keep_caplist_extra_num <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); keep_caplist_extra_num++)
     {
-      del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[keep_caplist_extra_num]);
+      if (keep_caplist_extra[keep_caplist_extra_num] != INIT_VALUE)
+      {
+        del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[keep_caplist_extra_num]);
+      }
     }
   }
   // Set default init.
