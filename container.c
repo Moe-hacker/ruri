@@ -148,6 +148,47 @@ void show_helps(bool greetings)
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
   return;
 }
+void add_to_list(cap_value_t *list, int length, cap_value_t cap)
+{
+  int j = 0;
+  for (int i = 0; i <= length; i++)
+  {
+    if (list[i] == cap)
+    {
+      j = 1;
+      break;
+    }
+  }
+  if (j == 0)
+  {
+    for (int k = 0; k <= length; k++)
+    {
+      if (!list[k] || list[k] == -114)
+      {
+        list[k] = cap;
+        break;
+      }
+    }
+  }
+  return;
+}
+void del_from_list(cap_value_t *list, int length, cap_value_t cap)
+{
+  for (int i = 0; i <= length; i++)
+  {
+    if (list[i] == cap)
+    {
+      while (i <= length - 1)
+      {
+        list[i] = list[i + 1];
+        i++;
+      }
+      list[i] = -114;
+      break;
+    }
+  }
+  return;
+}
 // Run chroot container.
 void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[])
 {
@@ -155,6 +196,12 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   if (!container_dir)
   {
     fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
+    exit(1);
+  }
+  // Refuse to use `/` for container directory.
+  if (strcmp(container_dir, "/") == 0)
+  {
+    fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
     exit(1);
   }
   // Check if we are running with root privileges.
@@ -181,7 +228,8 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   {
     closedir(direxist);
   }
-  int unshare_pid;
+  // Set default value if not using unshare.
+  pid_t unshare_pid = -114;
   // Unshare itself into new namespaces.
   if (use_unshare)
   {
@@ -231,9 +279,13 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     {
       waitpid(unshare_pid, NULL, 0);
     }
+    else if (unshare_pid < 0)
+    {
+      fprintf(stderr, "\033[31mFork error\n");
+    }
   }
   // Check if unshare is enabled.
-  if (unshare_pid == 0 || !unshare_pid)
+  if (unshare_pid == 0 || unshare_pid == -114)
   {
     // chroot into container.
     chroot(container_dir);
@@ -310,9 +362,9 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     // Drop caps.
     if (drop_caplist[0])
     {
-      for (int drop_caplist_num = 0; drop_caplist_num < CAP_LAST_CAP; drop_caplist_num++)
+      for (int drop_caplist_num = 0; drop_caplist_num < CAP_LAST_CAP + 1; drop_caplist_num++)
       {
-        if (drop_caplist[drop_caplist_num])
+        if (drop_caplist[drop_caplist_num] && drop_caplist[drop_caplist_num] != -114)
         {
           if (cap_drop_bound(drop_caplist[drop_caplist_num]) != 0 && !no_warnings)
           {
@@ -338,6 +390,11 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
 // Umount container.
 void umount_container(char *container_dir)
 {
+  if (strcmp(container_dir, "/") == 0)
+  {
+    fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
+    exit(1);
+  }
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
@@ -392,102 +449,102 @@ int main(int argc, char **argv)
   char *init[1024] = {0};
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
-  cap_value_t drop_caplist[CAP_LAST_CAP] = {};
-  cap_value_t drop_caplist_common[CAP_LAST_CAP] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
-  cap_value_t drop_caplist_unprivileged[CAP_LAST_CAP] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
-  // To do
-  // cap_value_t keep_caplist_extra[CAP_LAST_CAP] = {};
-  // int keep_caplist_extra_num = 0;
-  // cap_value_t drop_caplist_extra[CAP_LAST_CAP] = {};
-  // int drop_caplist_extra_num = 0;
-  //
-  //
+  cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
+  cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
+  cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
+  cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {-114};
+  cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {-114};
+  cap_value_t cap = -1;
   // Parse command-line arguments.
   for (int arg_num = 1; arg_num < argc; arg_num++)
   {
-    switch (argv[arg_num][0])
+    if (strcmp(argv[arg_num], "-v") == 0)
     {
-    case '-':
-      switch (argv[arg_num][1])
+      show_version_info();
+      exit(0);
+    }
+    else if (strcmp(argv[arg_num], "-h") == 0)
+    {
+      greetings = &on;
+      show_helps(greetings);
+      exit(0);
+    }
+    else if (strcmp(argv[arg_num], "-u") == 0)
+    {
+      use_unshare = &on;
+    }
+    else if (strcmp(argv[arg_num], "-U") == 0)
+    {
+      arg_num += 1;
+      if (argv[arg_num] != NULL)
       {
-      case 'v':
-        show_version_info();
+        umount_container(argv[arg_num]);
         exit(0);
-      case 'h':
-        greetings = &on;
-        show_helps(greetings);
-        exit(0);
-      case 'u':
-        use_unshare = &on;
-        break;
-      case 'U':
-        arg_num += 1;
-        if (argv[arg_num] != NULL)
-        {
-          if (argv[arg_num][1])
-          {
-            umount_container(argv[arg_num]);
-          }
-          else
-          {
-            fprintf(stderr, "%s\033[0m\n", "\033[31mError: `/` is not allowed to use as a container directory.");
-          }
-        }
-        else
-        {
-          fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-          exit(1);
-        }
-        exit(0);
-      case 'd':
-        for (int unprivileged_num = 0; unprivileged_num < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); unprivileged_num++)
-        {
-          drop_caplist[unprivileged_num] = drop_caplist_unprivileged[unprivileged_num];
-        }
-        break;
-      case 'p':
-        privileged = &on;
-        break;
-      case 'w':
-        no_warnings = &on;
-        break;
-      default:
-        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg_num], "`");
-        show_helps(greetings);
-        exit(1);
-      }
-      break;
-    case '/':
-      if (!argv[arg_num][1])
-      {
-        fprintf(stderr, "%s\033[0m\n", "\033[31mError: `/` is not allowed to use as a container directory.");
-        exit(1);
       }
       else
       {
-        container_dir = argv[arg_num];
-        arg_num++;
-        int init_arg_num = 0;
+        fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
+        exit(1);
+      }
+    }
+    else if (strcmp(argv[arg_num], "-d") == 0)
+    {
+      for (int unprivileged_num = 0; unprivileged_num < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); unprivileged_num++)
+      {
+        drop_caplist[unprivileged_num] = drop_caplist_unprivileged[unprivileged_num];
+      }
+    }
+    else if (strcmp(argv[arg_num], "-p") == 0)
+    {
+      privileged = &on;
+    }
+    else if (strcmp(argv[arg_num], "-w") == 0)
+    {
+      no_warnings = &on;
+    }
+    else if (strcmp(argv[arg_num], "--keep") == 0)
+    {
+      arg_num++;
+      if (cap_from_name(argv[arg_num], &cap) == 0)
+      {
+        add_to_list(keep_caplist_extra, CAP_LAST_CAP + 1, cap);
+      }
+      else
+      {
+        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+        exit(1);
+      }
+    }
+    else if (strcmp(argv[arg_num], "--drop") == 0)
+    {
+      arg_num++;
+      if (cap_from_name(argv[arg_num], &cap) == 0)
+      {
+        add_to_list(drop_caplist_extra, CAP_LAST_CAP + 1, cap);
+      }
+      else
+      {
+        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+        exit(1);
+      }
+    }
+    else if (strcmp(argv[arg_num], strchr(argv[arg_num], '/')) == 0 || strcmp(argv[arg_num], strchr(argv[arg_num], '.')) == 0)
+    {
+      container_dir = argv[arg_num];
+      arg_num++;
+      int init_arg_num = 0;
+      if (argv[arg_num])
+      {
         while (arg_num <= argc)
         {
           init[init_arg_num] = argv[arg_num];
           arg_num++;
           init_arg_num++;
         }
-        break;
       }
-    case '.':
-      container_dir = argv[arg_num];
-      arg_num++;
-      int init_arg_num = 0;
-      while (arg_num <= argc)
-      {
-        init[init_arg_num] = argv[arg_num];
-        arg_num++;
-        init_arg_num++;
-      }
-      break;
-    default:
+    }
+    else
+    {
       fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg_num], "`");
       show_helps(greetings);
       exit(1);
@@ -502,7 +559,20 @@ int main(int argc, char **argv)
     }
   }
   // Comply with capability-set policy specified.
-  // todo
+  if (drop_caplist_extra[0] != -114)
+  {
+    for (int drop_caplist_extra_num = 0; drop_caplist_extra_num <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); drop_caplist_extra_num++)
+    {
+      add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[drop_caplist_extra_num]);
+    }
+  }
+  if (keep_caplist_extra[0] != -114)
+  {
+    for (int keep_caplist_extra_num = 0; keep_caplist_extra_num <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); keep_caplist_extra_num++)
+    {
+      del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[keep_caplist_extra_num]);
+    }
+  }
   // Set default init.
   if (!init[0])
   {
