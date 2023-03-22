@@ -380,7 +380,8 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
             fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
           }
         }
-        if(!drop_caplist[i]){
+        if (!drop_caplist[i])
+        {
           if (cap_drop_bound(0) != 0 && !no_warnings)
           {
             fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
@@ -517,9 +518,9 @@ int main(int argc, char **argv)
     }
     else if (strcmp(argv[arg_num], "-d") == 0)
     {
-      for (int unprivileged_num = 0; unprivileged_num < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); unprivileged_num++)
+      for (int i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++)
       {
-        drop_caplist[unprivileged_num] = drop_caplist_unprivileged[unprivileged_num];
+        drop_caplist[i] = drop_caplist_unprivileged[i];
       }
     }
     else if (strcmp(argv[arg_num], "-p") == 0)
