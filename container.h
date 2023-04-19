@@ -34,6 +34,16 @@
 #include <sys/capability.h>
 #define INIT_VALUE -114
 #define _CONTAINER_VERSION "1.2"
+// Define functions.
+void show_n_char(int num);
+void show_greetings(void);
+void show_version_info(void);
+void show_helps(bool greetings);
+void add_to_list(cap_value_t *list, int length, cap_value_t cap);
+void del_from_list(cap_value_t *list, int length, cap_value_t cap);
+void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[]);
+void umount_container(char *container_dir);
+void container_daemon(void);
 //  ██╗ ██╗  ███████╗   ████╗   ███████╗
 // ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 // ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
