@@ -468,6 +468,7 @@ struct CONTAINER *del_node(struct CONTAINER *container){
   if(container==NULL){
     return container;
   }else{
+    free(container);
     container=container->container;
     container=del_node(container);
   }
@@ -525,6 +526,15 @@ void add_active_containers(char *container_dir, struct CONTAINER *container)
 void container_daemon(void)
 { 
   struct CONTAINER *container;
+  /*将被删除
+  container=add_node("x","x","x",container);
+  container=add_node("y","x","x",container);
+  container=add_node("z","x","x",container);
+  container=del_container("x",container);
+  if(container_active("x",container)){
+    printf("x");
+  }
+  */
 }
 int main(int argc, char **argv)
 {
