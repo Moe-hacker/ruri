@@ -447,16 +447,84 @@ void umount_container(char *container_dir)
   }
   return;
 }
-
-void container_daemon(void)
+struct CONTAINER *add_node(char *container_dir, char *is_unshare, char *unshare_pid, struct CONTAINER *container)
 {
-  struct
+  if (container == NULL)
   {
-    char container_dir;
-    bool unshare_container;
-    pid_t unshare_pid;
-    cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-  } *container[1024];
+    container=(struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+    container->container_dir=strdup(container_dir);
+    container->is_unshare = strdup(is_unshare);
+    container->unshare_pid = strdup(unshare_pid);
+    container->active_containers = 1;
+    container->container=NULL;
+  }
+  else
+  {
+    container=add_node(container_dir, is_unshare, unshare_pid, container->container);
+  }
+  return container;
+}
+struct CONTAINER *del_node(struct CONTAINER *container){
+  if(container==NULL){
+    return container;
+  }else{
+    container=container->container;
+    container=del_node(container);
+  }
+  return container;
+}
+struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container)
+{
+  if(container==NULL){
+    return container;
+  }
+  if (strcmp(container->container_dir, container_dir) == 0)
+  {
+    if(container->active_containers>1){
+      container->active_containers--;
+    }else{
+      container=del_node(container);
+    }
+  }
+  else
+  {
+    del_container(container_dir, container->container);
+  }
+  return container;
+}
+bool container_active(char *container_dir, struct CONTAINER *container)
+{
+  if (container == NULL)
+  {
+    return false;
+  }
+  else if (strcmp(container->container_dir, container_dir) == 0)
+  {
+    return true;
+  }
+  else
+  {
+    if(container_active(container_dir, container->container)){
+      return true;
+    }else{
+      return false;
+    }
+  }
+}
+void add_active_containers(char *container_dir, struct CONTAINER *container)
+{
+  if (strcmp(container->container_dir, container_dir) == 0)
+  {
+    container->active_containers += 1;
+  }
+  else
+  {
+    add_active_containers(container_dir, container->container);
+  }
+}
+void container_daemon(void)
+{ 
+  struct CONTAINER *container;
 }
 int main(int argc, char **argv)
 {
@@ -503,6 +571,11 @@ int main(int argc, char **argv)
     if (strcmp(argv[arg_num], "-v") == 0)
     {
       show_version_info();
+      exit(0);
+    }
+    else if (strcmp(argv[arg_num], "--daemon") == 0)
+    {
+      container_daemon();
       exit(0);
     }
     else if (strcmp(argv[arg_num], "-h") == 0)
