@@ -226,7 +226,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   {
     closedir(direxist);
   }
-  #ifdef DEV
+#ifdef DEV
   // Try to connect to container_daemon.
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -278,7 +278,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
       printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
     }
   }
-  #endif
+#endif
   // Set default value if not using unshare.
   pid_t unshare_pid = INIT_VALUE;
   // Unshare itself into new namespaces.
@@ -590,17 +590,14 @@ void add_active_containers(char *container_dir, struct CONTAINER *container)
 }
 void container_daemon(void)
 {
+  // Check if we are running with root privileges.
+  if (getuid() != 0)
+  {
+    fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
+    exit(1);
+  }
   // Create container struct.
   struct CONTAINER *container;
-  /*将被删除
-  container=add_node("x","x","x",container);
-  container=add_node("y","x","x",container);
-  container=add_node("z","x","x",container);
-  container=del_container("x",container);
-  if(container_active("x",container)){
-    printf("x");
-  }
-  */
   // create container.sock.
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -670,8 +667,10 @@ void container_daemon(void)
     unsigned int size = sizeof(addr);
     int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
     read(sock_new, msg, sizeof(msg));
-
-    write(sock_new, "Nya!", sizeof("Nya!"));
+    if (strcmp("Nya?", msg) == 0)
+    {
+      write(sock_new, "Nya!", sizeof("Nya!"));
+    }
     printf("%s\n", msg);
   }
 }
@@ -723,13 +722,13 @@ int main(int argc, char **argv)
       show_version_info();
       exit(0);
     }
-    #ifdef DEV
+#ifdef DEV
     else if (strcmp(argv[arg_num], "--daemon") == 0)
     {
       container_daemon();
       exit(0);
     }
-    #endif
+#endif
     else if (strcmp(argv[arg_num], "-h") == 0)
     {
       greetings = &on;

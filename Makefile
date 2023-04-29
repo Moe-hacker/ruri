@@ -9,6 +9,9 @@ static :
 staticfail :
 	clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE container.c -o container ./libcap.a
 	strip container
+dev :
+	clang -lcap -O3 -DDEV -z noexecstack -z now -fstack-protector-all -fPIE -pie container.c -o container
+	strip container
 install :all
 	install -m 777 container ${PREFIX}/bin/moe-container
 clean :
