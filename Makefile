@@ -1,13 +1,13 @@
 all :
-	clang -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE -pie -flto container.c -o container
+	clang -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE -pie container.c -o container
 	strip container
 no :
 	clang -lcap container.c -o container
 static :
-	clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE -flto container.c -o container
+	clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE container.c -o container
 	strip container
 staticfail :
-	clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE -flto container.c -o container ./libcap.a
+	clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE container.c -o container ./libcap.a
 	strip container
 install :all
 	install -m 777 container ${PREFIX}/bin/moe-container

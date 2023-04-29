@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
 #define INIT_VALUE -114
@@ -44,15 +45,19 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[]);
 void umount_container(char *container_dir);
 void container_daemon(void);
+#ifdef DEV
 // Define container struct for container_daemon.
 struct CONTAINER
 {
+    // Container info.
     char *container_dir;
     char *is_unshare;
     char *unshare_pid;
+    // Used to determine whether the container needs to be deleted.
     unsigned int active_containers;
     struct CONTAINER *container;
 };
+#endif
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

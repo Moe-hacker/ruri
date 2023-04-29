@@ -226,6 +226,59 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   {
     closedir(direxist);
   }
+  #ifdef DEV
+  // Try to connect to container_daemon.
+  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sockfd < 0)
+  {
+    perror("socket");
+    return;
+  }
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+  char *tmpdir = getenv("TMPDIR");
+  if (!tmpdir || strcmp(tmpdir, "") == 0)
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX];
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Set socket timeout duration.
+  struct timeval timeout = {3, 0};
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  bool daemon_running = false;
+  char msg[1024];
+  // Try to connect to container.sock and check if it's created by moe-container daemon.
+  if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == 0)
+  {
+    write(sockfd, "Nya?", sizeof("Nya?"));
+    // Container daemon will return `Nya!`.
+    read(sockfd, msg, sizeof(msg));
+    if (strcmp(msg, "Nya!") != 0)
+    {
+      if (!no_warnings)
+      {
+        printf("\033[33mContainer daemon can't say nya, it's not my cat :(\033[0m\n");
+      }
+    }
+    else
+    {
+      daemon_running = true;
+    }
+  }
+  else
+  {
+    if (!no_warnings)
+    {
+      perror("connect");
+      printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
+    }
+  }
+  #endif
   // Set default value if not using unshare.
   pid_t unshare_pid = INIT_VALUE;
   // Unshare itself into new namespaces.
@@ -447,44 +500,53 @@ void umount_container(char *container_dir)
   }
   return;
 }
+#ifdef DEV
 struct CONTAINER *add_node(char *container_dir, char *is_unshare, char *unshare_pid, struct CONTAINER *container)
 {
   if (container == NULL)
   {
-    container=(struct CONTAINER *)malloc(sizeof(struct CONTAINER));
-    container->container_dir=strdup(container_dir);
+    container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+    container->container_dir = strdup(container_dir);
     container->is_unshare = strdup(is_unshare);
     container->unshare_pid = strdup(unshare_pid);
     container->active_containers = 1;
-    container->container=NULL;
+    container->container = NULL;
   }
   else
   {
-    container=add_node(container_dir, is_unshare, unshare_pid, container->container);
+    container = add_node(container_dir, is_unshare, unshare_pid, container->container);
   }
   return container;
 }
-struct CONTAINER *del_node(struct CONTAINER *container){
-  if(container==NULL){
+struct CONTAINER *del_node(struct CONTAINER *container)
+{
+  if (container == NULL)
+  {
     return container;
-  }else{
+  }
+  else
+  {
     free(container);
-    container=container->container;
-    container=del_node(container);
+    container = container->container;
+    container = del_node(container);
   }
   return container;
 }
 struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container)
 {
-  if(container==NULL){
+  if (container == NULL)
+  {
     return container;
   }
   if (strcmp(container->container_dir, container_dir) == 0)
   {
-    if(container->active_containers>1){
+    if (container->active_containers > 1)
+    {
       container->active_containers--;
-    }else{
-      container=del_node(container);
+    }
+    else
+    {
+      container = del_node(container);
     }
   }
   else
@@ -505,9 +567,12 @@ bool container_active(char *container_dir, struct CONTAINER *container)
   }
   else
   {
-    if(container_active(container_dir, container->container)){
+    if (container_active(container_dir, container->container))
+    {
       return true;
-    }else{
+    }
+    else
+    {
       return false;
     }
   }
@@ -524,7 +589,8 @@ void add_active_containers(char *container_dir, struct CONTAINER *container)
   }
 }
 void container_daemon(void)
-{ 
+{
+  // Create container struct.
   struct CONTAINER *container;
   /*将被删除
   container=add_node("x","x","x",container);
@@ -535,7 +601,81 @@ void container_daemon(void)
     printf("x");
   }
   */
+  // create container.sock.
+  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sockfd < 0)
+  {
+    perror("socket");
+    return;
+  }
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  char *tmpdir = getenv("TMPDIR");
+  if (!tmpdir || strcmp(tmpdir, "") == 0)
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX];
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Set socket time out duration.
+  struct timeval timeout = {3, 0};
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  // Message to read.
+  char msg[1024];
+  // Check if container daemon is already running.
+  if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == 0)
+  {
+    write(sockfd, "Nya?", sizeof("Nya?"));
+    // Container daemon will return `Nya!`.
+    read(sockfd, msg, sizeof(msg));
+    if (strcmp(msg, "Nya!") == 0)
+    {
+      close(sockfd);
+      printf("\033[31mDaemon already running.\n");
+      exit(1);
+    }
+    else
+    {
+      remove(socket_path);
+      unlink(socket_path);
+      if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
+      {
+        perror("bind");
+        exit(1);
+      }
+    }
+  }
+  else
+  {
+    remove(socket_path);
+    unlink(socket_path);
+    if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
+    {
+      perror("bind");
+      exit(1);
+    }
+  }
+  // Rest socket time out duration to 100s.
+  timeout.tv_sec = 100;
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  listen(sockfd, 16);
+  // Read message from moe-container.
+  while (true)
+  {
+    msg[0] = '\000';
+    unsigned int size = sizeof(addr);
+    int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+    read(sock_new, msg, sizeof(msg));
+
+    write(sock_new, "Nya!", sizeof("Nya!"));
+    printf("%s\n", msg);
+  }
 }
+#endif
 int main(int argc, char **argv)
 {
   // Set process name.
@@ -583,11 +723,13 @@ int main(int argc, char **argv)
       show_version_info();
       exit(0);
     }
+    #ifdef DEV
     else if (strcmp(argv[arg_num], "--daemon") == 0)
     {
       container_daemon();
       exit(0);
     }
+    #endif
     else if (strcmp(argv[arg_num], "-h") == 0)
     {
       greetings = &on;
