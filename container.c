@@ -1,12 +1,3 @@
-//  ██╗ ██╗  ██╗   ███████╗
-// ████████╗ ██║ ██╔══════╝
-// ╚██╔═██╔╝ ██║ ██║
-// ████████╗ ╚═╝ ██║
-// ╚██╔═██╔╝ ██╗  ╚███████╗
-// ╚═╝ ╚═╝  ╚═╝   ╚══════╝
-// ╔═╝  ╔═║╔═║╔═║╔═╝╔═║╔═║╔╔ ╔╔ ╝╔═ ╔═╝  ║  ╔═║╔═ ╔═╝║ ║╔═║╔═╝╔═╝
-// ║    ╔═╝╔╔╝║ ║║ ║╔╔╝╔═║║║║║║║║║ ║║ ║  ║  ╔═║║ ║║ ║║ ║╔═║║ ║╔═╝
-// ══╝  ╝  ╝ ╝══╝══╝╝ ╝╝ ╝╝╝╝╝╝╝╝╝ ╝══╝  ══╝╝ ╝╝ ╝══╝══╝╝ ╝══╝══╝
 /*
  *                             _ooOoo_
  *                            o8888888o
@@ -187,6 +178,269 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   }
   return;
 }
+#ifdef __CONTAINER_DEV__
+// Add a node to CONTAINER struct.
+struct CONTAINER *add_node(char *container_dir, char *unshare_pid, struct CONTAINER *container)
+{
+  if (!container)
+  {
+    container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+    container->container_dir = strdup(container_dir);
+    container->unshare_pid = strdup(unshare_pid);
+    container->active_containers = 1;
+    return container;
+  }
+  else
+  {
+    container->container = add_node(container_dir, unshare_pid, container->container);
+    return container;
+  }
+}
+// Return info of a container.
+struct CONTAINER *read_node(char *container_dir, struct CONTAINER *container)
+{
+  struct CONTAINER *i;
+  if (container != NULL)
+  {
+    if (strcmp(container->container_dir, container_dir) == 0)
+    {
+      i = container;
+      return i;
+    }
+    else
+    {
+      return read_node(container_dir, container->container);
+    }
+  }
+  else
+  {
+    return NULL;
+  }
+}
+// Delete a container from CONTAINER struct.
+struct CONTAINER *del_node(struct CONTAINER *container)
+{
+  if (container == NULL)
+  {
+    return container;
+  }
+  else
+  {
+    free(container);
+    container = container->container;
+    container = del_node(container);
+  }
+  return container;
+}
+// Try to delete a container from CONTAINER struct, if it's running, just reduse value of active_containers.
+struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container)
+{
+  if (!container)
+  {
+    return container;
+  }
+  else if (strcmp(container->container_dir, container_dir) == 0)
+  {
+    if (container->active_containers > 1)
+    {
+      container->active_containers--;
+    }
+    else
+    {
+      container = del_node(container);
+    }
+  }
+  else
+  {
+    container->container = del_container(container_dir, container->container);
+  }
+  return container;
+}
+// Check if a container is running.
+bool container_active(char *container_dir, struct CONTAINER *container)
+{
+  if (container == NULL)
+  {
+    return false;
+  }
+  else if (strcmp(container->container_dir, container_dir) == 0)
+  {
+    return true;
+  }
+  else
+  {
+    return container_active(container_dir, container->container);
+  }
+}
+// Increase the value of active_containers.
+struct CONTAINER *add_active_containers(char *container_dir, struct CONTAINER *container)
+{
+  if (strcmp(container->container_dir, container_dir) == 0)
+  {
+    container->active_containers += 1;
+  }
+  else
+  {
+    container = add_active_containers(container_dir, container->container);
+  }
+  return container;
+}
+// For daemon.
+int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
+{
+  unsigned int size = sizeof(addr);
+  int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+  struct timeval timeout = {3, 0};
+  setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  return write(sock_new, msg, sizeof(msg));
+}
+// For client.
+int send_msg_client(char *msg, struct sockaddr_un addr)
+{
+  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sockfd < 0)
+  {
+    perror("socket");
+    return -1;
+  }
+  struct timeval timeout = {3, 0};
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
+  return write(sockfd, msg, sizeof(msg));
+}
+// For daemon.
+char *read_msg_server(struct sockaddr_un addr, int sockfd)
+{
+  char *msg;
+  unsigned int size = sizeof(addr);
+  int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+  struct timeval timeout = {3, 0};
+  setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  msg = (char *)malloc(4096);
+  read(sock_new, msg, 4096);
+  close(sock_new);
+  return msg;
+}
+// For client.
+char *read_msg_client(struct sockaddr_un addr)
+{
+  char *msg;
+  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sockfd < 0)
+  {
+    perror("socket");
+  }
+  struct timeval timeout = {3, 0};
+  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
+  msg = (char *)malloc(4096);
+  read(sockfd, msg, 4096);
+  close(sockfd);
+  return msg;
+}
+// Daemon process used to store container information.
+void container_daemon(void)
+{
+  // Check if we are running with root privileges.
+  if (getuid() != 0)
+  {
+    fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
+    exit(1);
+  }
+  // Create container struct.
+  struct CONTAINER *container;
+  // Set default value.
+  // Message to read.
+  char *msg;
+  // Container info.
+  char *container_dir;
+  char *unshare_pid;
+  struct CONTAINER *container_info;
+  // Create socket
+  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (sockfd < 0)
+  {
+    perror("socket");
+    return;
+  }
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  char *tmpdir = getenv("TMPDIR");
+  if (!tmpdir || strcmp(tmpdir, "") == 0)
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX] = {0};
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Check if container daemon is already running.
+  // Container daemon will return `Nya!`.
+  send_msg_client("Nya?", addr);
+  if (strcmp("Nya!", read_msg_client(addr)) == 0)
+  {
+    close(sockfd);
+    printf("\033[31mDaemon already running.\n");
+    exit(1);
+  }
+  else
+  {
+    // Create container.sock
+    remove(socket_path);
+    unlink(socket_path);
+    if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
+    {
+      perror("bind");
+      exit(1);
+    }
+  }
+  listen(sockfd, 16);
+  // Read message from moe-container.
+  while (true)
+  {
+    // Get message.
+    msg = read_msg_server(addr, sockfd);
+    printf("%s\n", msg);
+    // Test message.
+    if (strcmp("Nya?", msg) == 0)
+    {
+      send_msg_server("Nya!", addr, sockfd);
+    }
+    // Del a container from running containers.
+
+
+    //TODO
+    else if (strcmp("del", msg) == 0)
+    {
+      msg=read_msg_server(addr, sockfd);
+    }
+    else if (strcmp("add", msg) == 0)
+    {
+      // Get container_dir.
+      container_dir =read_msg_server(addr,  sockfd);
+      if (container_active(container_dir, container))
+      {
+        container = add_active_containers(container_dir, container);
+        container_info = read_node(container_dir, container);
+        send_msg_server(container_info->unshare_pid, addr, sockfd);
+      }
+      else
+      {
+        send_msg_server("NaN", addr, sockfd);
+        // Get unshare_pid.
+        msg=read_msg_server(addr, sockfd);
+        unshare_pid = strdup(msg);
+        container = add_node(container_dir, unshare_pid, container);
+        send_msg_server("OK", addr, sockfd);
+      }
+    }
+  }
+}
+#endif
 // Run chroot container.
 void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[])
 {
@@ -226,14 +480,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   {
     closedir(direxist);
   }
-#ifdef DEV
-  // Try to connect to container_daemon.
-  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (sockfd < 0)
-  {
-    perror("socket");
-    return;
-  }
+#ifdef __CONTAINER_DEV__
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
@@ -242,39 +489,24 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   {
     tmpdir = "/tmp";
   }
-  char socket_path[PATH_MAX];
+  char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/container.sock");
   strcpy(addr.sun_path, socket_path);
-  // Set socket timeout duration.
-  struct timeval timeout = {3, 0};
-  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
-  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   bool daemon_running = false;
-  char msg[1024];
+  // Message to read.
+  char *msg;
   // Try to connect to container.sock and check if it's created by moe-container daemon.
-  if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == 0)
+  // Container daemon will return `Nya!`.
+  send_msg_client("Nya?", addr);
+  if (strcmp("Nya!", read_msg_client(addr)) == 0)
   {
-    write(sockfd, "Nya?", sizeof("Nya?"));
-    // Container daemon will return `Nya!`.
-    read(sockfd, msg, sizeof(msg));
-    if (strcmp(msg, "Nya!") != 0)
-    {
-      if (!no_warnings)
-      {
-        printf("\033[33mContainer daemon can't say nya, it's not my cat :(\033[0m\n");
-      }
-    }
-    else
-    {
-      daemon_running = true;
-    }
+    daemon_running = true;
   }
   else
   {
     if (!no_warnings)
     {
-      perror("connect");
       printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
     }
   }
@@ -500,181 +732,6 @@ void umount_container(char *container_dir)
   }
   return;
 }
-#ifdef DEV
-struct CONTAINER *add_node(char *container_dir, char *is_unshare, char *unshare_pid, struct CONTAINER *container)
-{
-  if (container == NULL)
-  {
-    container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
-    container->container_dir = strdup(container_dir);
-    container->is_unshare = strdup(is_unshare);
-    container->unshare_pid = strdup(unshare_pid);
-    container->active_containers = 1;
-    container->container = NULL;
-  }
-  else
-  {
-    container = add_node(container_dir, is_unshare, unshare_pid, container->container);
-  }
-  return container;
-}
-struct CONTAINER *del_node(struct CONTAINER *container)
-{
-  if (container == NULL)
-  {
-    return container;
-  }
-  else
-  {
-    free(container);
-    container = container->container;
-    container = del_node(container);
-  }
-  return container;
-}
-struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container)
-{
-  if (container == NULL)
-  {
-    return container;
-  }
-  if (strcmp(container->container_dir, container_dir) == 0)
-  {
-    if (container->active_containers > 1)
-    {
-      container->active_containers--;
-    }
-    else
-    {
-      container = del_node(container);
-    }
-  }
-  else
-  {
-    del_container(container_dir, container->container);
-  }
-  return container;
-}
-bool container_active(char *container_dir, struct CONTAINER *container)
-{
-  if (container == NULL)
-  {
-    return false;
-  }
-  else if (strcmp(container->container_dir, container_dir) == 0)
-  {
-    return true;
-  }
-  else
-  {
-    if (container_active(container_dir, container->container))
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
-}
-void add_active_containers(char *container_dir, struct CONTAINER *container)
-{
-  if (strcmp(container->container_dir, container_dir) == 0)
-  {
-    container->active_containers += 1;
-  }
-  else
-  {
-    add_active_containers(container_dir, container->container);
-  }
-}
-void container_daemon(void)
-{
-  // Check if we are running with root privileges.
-  if (getuid() != 0)
-  {
-    fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    exit(1);
-  }
-  // Create container struct.
-  struct CONTAINER *container;
-  // create container.sock.
-  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (sockfd < 0)
-  {
-    perror("socket");
-    return;
-  }
-  struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
-  char *tmpdir = getenv("TMPDIR");
-  if (!tmpdir || strcmp(tmpdir, "") == 0)
-  {
-    tmpdir = "/tmp";
-  }
-  char socket_path[PATH_MAX];
-  strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
-  strcpy(addr.sun_path, socket_path);
-  // Set socket time out duration.
-  struct timeval timeout = {3, 0};
-  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
-  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-  // Message to read.
-  char msg[1024];
-  // Check if container daemon is already running.
-  if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == 0)
-  {
-    write(sockfd, "Nya?", sizeof("Nya?"));
-    // Container daemon will return `Nya!`.
-    read(sockfd, msg, sizeof(msg));
-    if (strcmp(msg, "Nya!") == 0)
-    {
-      close(sockfd);
-      printf("\033[31mDaemon already running.\n");
-      exit(1);
-    }
-    else
-    {
-      remove(socket_path);
-      unlink(socket_path);
-      if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
-      {
-        perror("bind");
-        exit(1);
-      }
-    }
-  }
-  else
-  {
-    remove(socket_path);
-    unlink(socket_path);
-    if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
-    {
-      perror("bind");
-      exit(1);
-    }
-  }
-  // Rest socket time out duration to 100s.
-  timeout.tv_sec = 100;
-  setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
-  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-  listen(sockfd, 16);
-  // Read message from moe-container.
-  while (true)
-  {
-    msg[0] = '\000';
-    unsigned int size = sizeof(addr);
-    int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
-    read(sock_new, msg, sizeof(msg));
-    if (strcmp("Nya?", msg) == 0)
-    {
-      write(sock_new, "Nya!", sizeof("Nya!"));
-    }
-    printf("%s\n", msg);
-  }
-}
-#endif
 int main(int argc, char **argv)
 {
   // Set process name.
@@ -722,7 +779,7 @@ int main(int argc, char **argv)
       show_version_info();
       exit(0);
     }
-#ifdef DEV
+#ifdef __CONTAINER_DEV__
     else if (strcmp(argv[arg_num], "--daemon") == 0)
     {
       container_daemon();

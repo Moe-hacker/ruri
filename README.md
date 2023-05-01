@@ -39,8 +39,10 @@ You can read this doc in :
   make install    :make all and install moe-container to $PREFIX
   make static     :static compile
   make staticfail :static compile,fix errors
-  make no         :compile without optimizations
   make clean      :clean
+*Only for developer:
+  make no         :compile without optimizations
+  make dev        :compile dev version
 ```
 &emsp;If you got errors like `undefined symbol: cap_drop_bound` or `undefined reference to 'cap_set_flag'` when using static compile , please copy your `libcap.a` into current directory and use `make staticfail` instead.        
 #### Dependent libraries:
