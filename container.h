@@ -39,6 +39,8 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[]);
 void umount_container(char *container_dir);
+#ifdef __CONTAINER_DEV__
+#warning "Dev version is only for the developer."
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd);
 int send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_server(struct sockaddr_un addr, int sockfd);
@@ -54,6 +56,7 @@ struct CONTAINER
     unsigned int active_containers;
     struct CONTAINER *container;
 };
+#endif
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
