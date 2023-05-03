@@ -572,8 +572,8 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   if (unshare_pid == 0 || unshare_pid == INIT_VALUE)
   {
     // chroot into container.
-    chdir(container_dir);
-    syscall(SYS_pivot_root,".",".");
+    chroot(container_dir);
+    chdir("/");
     mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
     mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
     mkdir("/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
