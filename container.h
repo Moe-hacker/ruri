@@ -16,6 +16,7 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
