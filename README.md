@@ -3,17 +3,17 @@
 <p align="center">僅かな時の彩を 」</p>    
 <p align="center">(>_×)</p>         
 
-![](https://img.shields.io/github/stars/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=instatus&logoColor=fee4d0)
-![](https://img.shields.io/github/forks/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
-![](https://img.shields.io/github/license/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
-![](https://img.shields.io/github/repo-size/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)
-![](https://img.shields.io/github/last-commit/Moe-hacker/moe-container?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
+![](https://img.shields.io/github/stars/Nya-moe/ruri?style=for-the-badge&color=fee4d0&logo=instatus&logoColor=fee4d0)
+![](https://img.shields.io/github/forks/Nya-moe/ruri?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
+![](https://img.shields.io/github/license/Nya-moe/ruri?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
+![](https://img.shields.io/github/repo-size/Nya-moe/ruri?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)
+![](https://img.shields.io/github/last-commit/Nya-moe/ruri?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
 ![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
 
 -----------------     
 You can read this doc in :
 
-**[<kbd> <br> 简体中文 <br> </kbd>](https://github.com/Moe-hacker/moe-container/blob/main/README-zh.md)**&emsp;**[<kbd> <br> English <br> </kbd>](https://github.com/Moe-hacker/moe-container/blob/main/README.md)**
+**[<kbd> <br> 简体中文 <br> </kbd>](https://github.com/Nya-moe/ruri/blob/main/README-zh.md)**&emsp;**[<kbd> <br> English <br> </kbd>](https://github.com/Nya-moe/ruri/blob/main/README.md)**
 
 ### WARNING:      
 ```
@@ -22,12 +22,13 @@ You can read this doc in :
 * You do it at your own risk and take the responsibility upon yourself.
 ```
 ### About:      
-&emsp;moe-container runs a linux container with namespaces and dropped capabilities in your system.       
-&emsp;It's like `chroot` and `unshare`,but with a controllable reduced capability set.       
+&emsp;moe-container is now renamed as ruri.    
+&emsp;ruri runs a linux container with namespaces and dropped capabilities. It is designed to provide better security for Linux containers on devices that do not support docker.       
+&emsp;It's like `chroot` and `unshare`, but it is more secure.       
+&emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.      
 ### Features:
 - Written with 100% C programming language.          
-- Light weight, the binary is less than 1M.      
-- Can be run with unshare mode.        
+- Light weight, the binary is less than 1M.             
 - Controllable capability set.           
 - Automatically mount system runtime files and login to the container.        
 ### Installation:
@@ -36,30 +37,29 @@ You can read this doc in :
 #### make options:
 ```text
   make all        :compile
-  make install    :make all and install moe-container to $PREFIX
+  make install    :make all and install ruri to $PREFIX
   make static     :static compile
-  make staticfail :static compile,fix errors
   make clean      :clean
 *Only for developer:
-  make no         :compile without optimizations
-  make dev        :compile dev version
+  make dev        :compile without optimizations and enable gdb debug information     
 ```
-&emsp;If you got errors like `undefined symbol: cap_drop_bound` or `undefined reference to 'cap_set_flag'` when using static compile , please copy your `libcap.a` into current directory and use `make staticfail` instead.        
 #### Dependent libraries:
 For dynamic compilation:         
 - libcap       
-
+- libpthread      
 For static compilation:         
 - libcap-static
 - libc-static         
+- pkg-config
 ### Usage:    
 ```text
-container [options] [container directory] (init command)
+ruri [options] [container directory] (init command)
 ```
 #### Options:
 ```text
   -v          :Show version info
   -h          :Show helps
+  -D          :Run rirud
   -u          :Enable unshare feature
   -U          :Try to umount container,please reboot your device instead for better security
   -d          :Drop more capabilities for better security
@@ -70,6 +70,8 @@ container [options] [container directory] (init command)
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Unset $LD_PRELOAD before running this program to fix issues in termux.         
+### About rirud:         
+&emsp;Since some functions need to be shared, rirud is not a separate binary program. rurid is a background service process that stores unshare container information and initializes the container so that the container always runs in the same namespaces. But it is not a necessary process. Pure chroot containers do not rely on rurid, unshare containers will only show a warning if daemon is not running, but it is still recommended to start rurid before running the container.        
 
 --------
 <p align="center">「見つけてくれたね ありがとう」</p>

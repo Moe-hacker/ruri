@@ -20,7 +20,7 @@
  *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  *                     佛祖保佑        永无BUG
  */
-#include "container.h"
+#include "ruri.h"
 // For centering output.
 void show_n_char(int num)
 {
@@ -36,9 +36,11 @@ void show_n_char(int num)
 // As an easter agg.
 void show_greetings(void)
 {
+  // Get the size of terminal.
   struct winsize size;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
   short row = size.ws_col;
+  // For centering output.
   row -= 44;
   row /= 2;
   show_n_char(row);
@@ -84,14 +86,14 @@ void show_greetings(void)
   show_n_char(row);
   printf("%s\n", "        ▀                       ▀        ▀");
   show_n_char(row);
-  printf("%s\n", "           「Keep moe,keep cool」\033[0m");
+  printf("%s\n", "");
   return;
 }
+// For `ruri -v`.
 void show_version_info(void)
 {
-  printf("\033[1;38;2;254;228;208m%s%s%s", "moe-container ", _CONTAINER_VERSION, "\n");
+  printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", __CONTAINER_VERSION__, "\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
-  printf("            (>_×)\n");
   printf("\n");
   printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
   printf("of this software and associated documentation files (the \"Software\"), to deal\n");
@@ -112,18 +114,20 @@ void show_version_info(void)
   printf("SOFTWARE.\033[0m\n");
   return;
 }
-// Help pages.
+// For `ruri -h`.
 void show_helps(bool greetings)
 {
+  // Do not show greeting if command-line args are wrong.
   if (greetings)
   {
     show_greetings();
   }
   printf("\033[1;38;2;254;228;208mUsage:\n");
-  printf("  container [options] [container directory] (init command)\n");
+  printf("  ruri [options] [container directory] (init command)\n");
   printf("Options:\n");
   printf("  -v          :Show version info\n");
   printf("  -h          :Show helps\n");
+  printf("  -D          :Run rirud\n");
   printf("  -u          :Enable unshare feature\n");
   printf("  -U          :Try to umount container,please reboot your device instead for better security\n");
   printf("  -d          :Drop more capabilities for better security\n");
@@ -135,23 +139,25 @@ void show_helps(bool greetings)
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
   return;
 }
-// Add a cap from caplist.
+// Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
-  int j = 0;
+  bool in = false;
+  // Check if the cap to add is already in caplist.
   for (int i = 0; i <= length; i++)
   {
     if (list[i] == cap)
     {
-      j = 1;
+      in = true;
       break;
     }
   }
-  if (j == 0)
+  // Add a cap to caplist.
+  if (!in)
   {
     for (int k = 0; k <= length; k++)
     {
-      if (list[k] == INIT_VALUE)
+      if (list[k] == __INIT_VALUE__)
       {
         list[k] = cap;
         break;
@@ -172,19 +178,19 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
         list[i] = list[i + 1];
         i++;
       }
-      list[i] = INIT_VALUE;
+      list[i] = __INIT_VALUE__;
       break;
     }
   }
   return;
 }
-#ifdef __CONTAINER_DEV__
 // Add a node to CONTAINER struct.
-struct CONTAINER *add_node(char *container_dir, char *unshare_pid, struct CONTAINER *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *init[1024], struct CONTAINERS *container)
 {
   if (!container)
   {
-    container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+    // Request memory of container struct.
+    container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
     container->container_dir = strdup(container_dir);
     container->unshare_pid = strdup(unshare_pid);
     container->active_containers = 1;
@@ -192,20 +198,18 @@ struct CONTAINER *add_node(char *container_dir, char *unshare_pid, struct CONTAI
   }
   else
   {
-    container->container = add_node(container_dir, unshare_pid, container->container);
+    container->container = add_node(container_dir, unshare_pid, drop_caplist, init, container->container);
     return container;
   }
 }
 // Return info of a container.
-struct CONTAINER *read_node(char *container_dir, struct CONTAINER *container)
+struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
 {
-  struct CONTAINER *i;
   if (container != NULL)
   {
     if (strcmp(container->container_dir, container_dir) == 0)
     {
-      i = container;
-      return i;
+      return container;
     }
     else
     {
@@ -214,11 +218,12 @@ struct CONTAINER *read_node(char *container_dir, struct CONTAINER *container)
   }
   else
   {
+    // TODO: check if read_node returnd null.
     return NULL;
   }
 }
 // Delete a container from CONTAINER struct.
-struct CONTAINER *del_node(struct CONTAINER *container)
+struct CONTAINERS *del_node(struct CONTAINERS *container)
 {
   if (container == NULL)
   {
@@ -226,19 +231,21 @@ struct CONTAINER *del_node(struct CONTAINER *container)
   }
   else
   {
-    free(container);
     container = container->container;
     container = del_node(container);
   }
   return container;
 }
-// Try to delete a container from CONTAINER struct, if it's running, just reduse value of active_containers.
-struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container)
+// Try to delete a container from CONTAINERS struct, if it's still running, just reduse value of active_containers.
+// TODO: kill_container()
+struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
+  // It will never be true.
   if (!container)
   {
     return container;
   }
+  // If container is the struct to delete.
   else if (strcmp(container->container_dir, container_dir) == 0)
   {
     if (container->active_containers > 1)
@@ -250,6 +257,7 @@ struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container
       container = del_node(container);
     }
   }
+  // If not, try the next struct.
   else
   {
     container->container = del_container(container_dir, container->container);
@@ -257,28 +265,33 @@ struct CONTAINER *del_container(char *container_dir, struct CONTAINER *container
   return container;
 }
 // Check if a container is running.
-bool container_active(char *container_dir, struct CONTAINER *container)
+bool container_active(char *container_dir, struct CONTAINERS *container)
 {
+  // Reached the end of container struct.
   if (container == NULL)
   {
     return false;
   }
+  // Found container matching container_dir.
   else if (strcmp(container->container_dir, container_dir) == 0)
   {
     return true;
   }
+  // Try the next struct.
   else
   {
     return container_active(container_dir, container->container);
   }
 }
 // Increase the value of active_containers.
-struct CONTAINER *add_active_containers(char *container_dir, struct CONTAINER *container)
+struct CONTAINERS *add_active_containers(char *container_dir, struct CONTAINERS *container)
 {
+  // Found container matching container_dir.
   if (strcmp(container->container_dir, container_dir) == 0)
   {
     container->active_containers += 1;
   }
+  // Try next struct.
   else
   {
     container = add_active_containers(container_dir, container->container);
@@ -289,11 +302,14 @@ struct CONTAINER *add_active_containers(char *container_dir, struct CONTAINER *c
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 {
   unsigned int size = sizeof(addr);
+  // Accept a connection.
   int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+  // Set timeout duration.
   struct timeval timeout = {3, 0};
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-  return write(sock_new, msg, sizeof(msg));
+  // Send messages.
+  return write(sock_new, msg, strlen(msg));
 }
 // For client.
 int send_msg_client(char *msg, struct sockaddr_un addr)
@@ -304,27 +320,34 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
     perror("socket");
     return -1;
   }
-  struct timeval timeout = {3, 0};
+  // Set timeout duration.
+  struct timeval timeout = {0, 100};
   setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  // Connect to daemon.
   connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
-  return write(sockfd, msg, sizeof(msg));
+  // Send messages.
+  return send(sockfd, msg, strlen(msg), 0);
 }
-// For daemon.
+// For daemon, return the messages have been read.
 char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
   char *msg;
   unsigned int size = sizeof(addr);
+  // Accept a connection.
   int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+  // Set timeout duration.
   struct timeval timeout = {3, 0};
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  // Maybe unnecessary.
   msg = (char *)malloc(4096);
+  // Read messages.
   read(sock_new, msg, 4096);
   close(sock_new);
   return msg;
 }
-// For client.
+// For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr)
 {
   char *msg;
@@ -333,38 +356,211 @@ char *read_msg_client(struct sockaddr_un addr)
   {
     perror("socket");
   }
-  struct timeval timeout = {3, 0};
+  // Set timeout duration.
+  struct timeval timeout = {0, 100};
   setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  // Connect to daemon.
   connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
+  // Maybe unnecessary.
   msg = (char *)malloc(4096);
+  // Read messages.
   read(sockfd, msg, 4096);
   close(sockfd);
   return msg;
 }
-// Daemon process used to store container information.
+// For daemon, init an unshare container in the background.
+void *init_unshare_container(void *arg)
+{
+  // pthread_create() only allows one argument.
+  struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
+  // Try to create namespaces with unshare(), no warnings to show because daemon shuld be silent.
+  unshare(CLONE_NEWNS);
+  unshare(CLONE_NEWUTS);
+  unshare(CLONE_NEWIPC);
+  unshare(CLONE_NEWPID);
+  unshare(CLONE_NEWCGROUP);
+  unshare(CLONE_NEWTIME);
+  unshare(CLONE_SYSVSEM);
+  unshare(CLONE_FILES);
+  unshare(CLONE_FS);
+  // Fork itself into namespace.
+  // This can fix `can't fork: out of memory` issue.
+  pid_t unshare_pid = fork();
+  // Fix `can't access tty` issue.
+  if (unshare_pid > 0)
+  {
+    // Set socket address.
+    struct sockaddr_un addr;
+    addr.sun_family = AF_UNIX;
+    // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+    char *tmpdir = getenv("TMPDIR");
+    if (!tmpdir || strcmp(tmpdir, "") == 0)
+    {
+      tmpdir = "/tmp";
+    }
+    char socket_path[PATH_MAX] = {0};
+    strcat(socket_path, tmpdir);
+    strcat(socket_path, "/container.sock");
+    strcpy(addr.sun_path, socket_path);
+    char container_pid[1024];
+    sprintf(container_pid, "%d", unshare_pid);
+    // TODO
+    send_msg_client("pid", addr);
+    send_msg_client(container_pid, addr);
+    usleep(200000);
+    waitpid(unshare_pid, NULL, 0);
+  }
+  else if (unshare_pid == 0)
+  {
+    // Redirect stdin/stdout.
+    freopen("/dev/null", "r", stdout);
+    freopen("/dev/zero", "r", stdout);
+    bool no_warinings = true;
+    run_chroot_container(container_info->container_dir, container_info->drop_caplist, &no_warinings, container_info->init_command);
+  }
+  return NULL;
+}
+// Run after chroot()
+void init_container(void)
+{
+  // umount /proc.
+  umount2("/proc", MNT_DETACH | MNT_FORCE);
+  // Fix issues in archlinux containers.
+  mount("/", "/", NULL, MS_BIND, NULL);
+  // mount proc,sys and dev.
+  mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  mkdir("/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
+  // For /sys,we make it read-only.
+  mount("sysfs", "/sys", "sysfs", MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
+  mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
+  // Continue mounting some other directories in /dev.
+  mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  mount("devpts", "/dev/pts", "devpts", 0, "gid=4,mode=620");
+  mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
+  mkdir("/dev/mqune", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  mount("mqune", "/dev/mqune", "mqune", 0, NULL);
+  // Protect some system runtime directories as read-only.
+  mount("/proc/bus", "/proc/bus", "proc", MS_BIND | MS_RDONLY, NULL);
+  mount("/proc/fs", "/proc/fs", "proc", MS_BIND | MS_RDONLY, NULL);
+  mount("/proc/irq", "/proc/irq", "proc", MS_BIND | MS_RDONLY, NULL);
+  mount("/proc/sys", "/proc/sys", "proc", MS_BIND | MS_RDONLY, NULL);
+  mount("/proc/asound", "/proc/asound", "proc", MS_BIND | MS_RDONLY, NULL);
+  mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
+  mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
+  // For making dev nodes.
+  int dev;
+  // Create system runtime nodes in /dev and then fix permissions.
+  dev = makedev(1, 3);
+  mknod("/dev/null", S_IFCHR, dev);
+  chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  dev = makedev(5, 1);
+  mknod("/dev/console", S_IFCHR, dev);
+  chown("/dev/console", 0, 5);
+  chmod("/dev/console", S_IRUSR | S_IWUSR | S_IWGRP | S_IWOTH);
+  dev = makedev(1, 5);
+  mknod("/dev/zero", S_IFCHR, dev);
+  chmod("/dev/zero", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  dev = makedev(5, 2);
+  mknod("/dev/ptmx", S_IFCHR, dev);
+  chown("/dev/ptmx", 0, 5);
+  chmod("/dev/ptmx", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  dev = makedev(5, 0);
+  mknod("/dev/tty", S_IFCHR, dev);
+  chown("/dev/tty", 0, 5);
+  chmod("/dev/tty", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  dev = makedev(1, 8);
+  mknod("/dev/random", S_IFCHR, dev);
+  chmod("/dev/random", S_IRUSR | S_IRGRP | S_IROTH);
+  dev = makedev(1, 9);
+  mknod("/dev/urandom", S_IFCHR, dev);
+  chmod("/dev/urandom", S_IRUSR | S_IRGRP | S_IROTH);
+  mkdir("/dev/net", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+  dev = makedev(10, 200);
+  mknod("/dev/net/tun", S_IFCHR, dev);
+  // Create some system runtime link files in /dev.
+  symlink("/proc/self/fd", "/dev/fd");
+  symlink("/proc/self/fd/0", "/dev/stdin");
+  symlink("/proc/self/fd/1", "/dev/stdout");
+  symlink("/proc/self/fd/2", "/dev/stderr");
+  symlink("/dev/null", "/dev/tty0");
+  // Fix issues in archlinux containers.
+  remove("/etc/mtab");
+  unlink("/etc/mtab");
+  symlink("/proc/mounts", "/etc/mtab");
+}
+// kill a container matching container_dir
+//TODO
+void kill_container(char *container_dir)
+{
+  // Set socket address.
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+  char *tmpdir = getenv("TMPDIR");
+  if (!tmpdir || (strcmp(tmpdir, "") == 0))
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX] = {0};
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Try to connect to container.sock and check if it's created by ruri daemon.
+  // Container daemon will return `Nya!`.
+  send_msg_client("Nya?", addr);
+  if (strcmp("Nya!", read_msg_client(addr)) != 0)
+  {
+    printf("\033[33mError: seems that container daemon is not running\033[0m\n");
+  }
+  // kill(container_pid,SIGKILL);
+}
+// Daemon process used to store container information and init unshare container.
+// TODO:del->kill
+// Received messages and reply contents:
+// --------------------------------------------------------------------------------------------------------------------------
+// |                              read                          |           send              |      comment
+// --------------------------------------------------------------------------------------------------------------------------
+// |                              Nya?                          |            Nya!             | Test messasge.
+// |                       Del+${container_dir}                 |                             | Write a container off.
+// |                             info                           |                             | wait for ${container_dir}
+// |                      ${container_dir}                      |   Pid+$container_pid//NAN   | Read container_dir, check if container is already running and send container_pid to ruri
+// | init+${init_command}+endinit+caplist+${caplist}+endcaplist |                             | Read information of container and init container
+// |                     pid+${container_pid}                   |                             | Read container_pid from child process
 void container_daemon(void)
 {
+  // Set process name.
+  prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
+  pthread_t pthread_id;
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
     fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
     exit(1);
   }
+  // Check if $LD_PRELOAD is unset.
+  char *ld_preload = getenv("LD_PRELOAD");
+  if (ld_preload && strcmp(ld_preload, "") != 0)
+  {
+    fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
+    exit(1);
+  }
   // Create container struct.
-  struct CONTAINER *container;
+  struct CONTAINERS *container = NULL;
   // Set default value.
   // Message to read.
   char *msg;
   // Container info.
   char *container_dir;
-  char *unshare_pid;
-  struct CONTAINER *container_info;
+  struct CONTAINER_INFO container_info;
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
   {
-    perror("socket");
+    fprintf(stderr, "\033[31mError: cannot create socket.\n");
     return;
   }
   struct sockaddr_un addr;
@@ -399,93 +595,142 @@ void container_daemon(void)
     }
   }
   listen(sockfd, 16);
-  // Read message from moe-container.
+  // Read message from ruri.
   while (true)
   {
     // Get message.
     msg = read_msg_server(addr, sockfd);
-    printf("%s\n", msg);
     // Test message.
     if (strcmp("Nya?", msg) == 0)
     {
       send_msg_server("Nya!", addr, sockfd);
     }
     // Del a container from running containers.
-
-
-    //TODO
     else if (strcmp("del", msg) == 0)
     {
-      msg=read_msg_server(addr, sockfd);
+      msg = read_msg_server(addr, sockfd);
+      container = del_container(msg, container);
     }
-    else if (strcmp("add", msg) == 0)
+    else if (strcmp("info", msg) == 0)
     {
       // Get container_dir.
-      container_dir =read_msg_server(addr,  sockfd);
+      container_dir = read_msg_server(addr, sockfd);
       if (container_active(container_dir, container))
       {
         container = add_active_containers(container_dir, container);
-        container_info = read_node(container_dir, container);
-        send_msg_server(container_info->unshare_pid, addr, sockfd);
+        send_msg_server("Pid", addr, sockfd);
+        send_msg_server(read_node(container_dir, container)->unshare_pid, addr, sockfd);
       }
       else
       {
         send_msg_server("NaN", addr, sockfd);
-        // Get unshare_pid.
-        msg=read_msg_server(addr, sockfd);
-        unshare_pid = strdup(msg);
-        container = add_node(container_dir, unshare_pid, container);
-        send_msg_server("OK", addr, sockfd);
+        // Read init command.
+        read_msg_server(addr, sockfd);
+        int i = 0;
+        while (true)
+        {
+          msg = read_msg_server(addr, sockfd);
+          if (strcmp("endinit", msg) == 0)
+          {
+            break;
+          }
+          container_info.init_command[i] = strdup(msg);
+          i++;
+        }
+        read_msg_server(addr, sockfd);
+        i = 0;
+        while (true)
+        {
+          msg = read_msg_server(addr, sockfd);
+          if (strcmp("endcaplist", msg) == 0)
+          {
+            break;
+          }
+          cap_from_name(msg, &container_info.drop_caplist[i]);
+          i++;
+        }
+        container_info.container_dir = strdup(container_dir);
+        pthread_create(&pthread_id, NULL, init_unshare_container, (void *)&container_info);
       }
+    }
+    else if (strcmp("pid", msg) == 0)
+    {
+      send_msg_server(read_msg_server(addr, sockfd), addr, sockfd);
     }
   }
 }
-#endif
-// Run chroot container.
-void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use_unshare, bool *no_warnings, char *init[])
+// Used for run_chroot_container
+bool check_container(char *container_dir)
 {
   // Check if container directory is given.
-  if (!container_dir)
+  if (container_dir == NULL)
   {
     fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-    exit(1);
+    return false;
   }
   // Refuse to use `/` for container directory.
+  // FIXME:
+  // Seems that this line will crash on Android 13. I dont't know why now.
+  // Gdb logs:
+  // Breakpoint 2, check_container (
+  // container_dir=0x7ffffffdb0 "./t") at container.c:601
+  // 601       if (strcmp(container_dir, "/") == 0)
+  // (gdb) c
+  // Continuing.
+  //
+  // Program received signal SIGSEGV, Segmentation fault.
+  // 0x0000007ff4505a10 in __strlen_aarch64 ()
+  //  from /apex/com.android.runtime/lib64/bionic/libc.so
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
-    exit(1);
+    return false;
   }
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
     fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    exit(1);
+    return false;
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
-  if (ld_preload && strcmp(ld_preload, "") != 0)
+  if (ld_preload && (strcmp(ld_preload, "") != 0))
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
-    exit(1);
+    return false;
   }
   // Check if container directory exists.
   DIR *direxist;
   if ((direxist = opendir(container_dir)) == NULL)
   {
     fprintf(stderr, "\033[31mError: container directory does not exist !\033[0m\n");
-    exit(1);
+    return false;
   }
   else
   {
     closedir(direxist);
   }
-#ifdef __CONTAINER_DEV__
+  return true;
+}
+// Run unshare container.
+void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[])
+{
+  // Set default init.
+  if (init[0] == NULL)
+  {
+    init[0] = "/bin/su";
+    init[1] = "-";
+    init[2] = NULL;
+  }
+  pid_t unshare_pid = __INIT_VALUE__;
+  // Get the absolute path of container.
+  realpath(container_dir, container_dir);
+  // Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
   char *tmpdir = getenv("TMPDIR");
-  if (!tmpdir || strcmp(tmpdir, "") == 0)
+  if (!tmpdir || (strcmp(tmpdir, "") == 0))
   {
     tmpdir = "/tmp";
   }
@@ -494,9 +739,7 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
   strcat(socket_path, "/container.sock");
   strcpy(addr.sun_path, socket_path);
   bool daemon_running = false;
-  // Message to read.
-  char *msg;
-  // Try to connect to container.sock and check if it's created by moe-container daemon.
+  // Try to connect to container.sock and check if it's created by ruri daemon.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
   if (strcmp("Nya!", read_msg_client(addr)) == 0)
@@ -510,14 +753,10 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
       printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
     }
   }
-#endif
-  // Set default value if not using unshare.
-  pid_t unshare_pid = INIT_VALUE;
   // Unshare itself into new namespaces.
-  if (use_unshare)
+  if (!daemon_running)
   {
-    prctl(PR_SET_NAME, "moe_unshare", NULL, NULL, NULL);
-    // Try to create namespaces with unshare().
+    // Create namespace here because container_daemon is not running.
     if (unshare(CLONE_NEWNS) == -1 && !no_warnings)
     {
       printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");
@@ -558,7 +797,130 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     // This can fix `can't fork: out of memory` issue.
     unshare_pid = fork();
     // Fix `can't access tty` issue.
-    if (unshare_pid != 0)
+    if (unshare_pid > 0)
+    {
+      usleep(200000);
+      waitpid(unshare_pid, NULL, 0);
+    }
+    else if (unshare_pid < 0)
+    {
+      fprintf(stderr, "\033[31mFork error\n");
+    }
+  }
+  else
+  {
+    send_msg_client("info", addr);
+    send_msg_client(container_dir, addr);
+    if (strcmp(read_msg_client(addr), "NaN") == 0)
+    {
+      send_msg_client("init", addr);
+      for (int i = 0; true; i++)
+      {
+        if (init[i])
+        {
+          send_msg_client(init[i], addr);
+        }
+        else
+        {
+          break;
+        }
+      }
+      send_msg_client("endinit", addr);
+      init[0] = "/bin/su";
+      init[1] = "-";
+      init[2] = NULL;
+      if (drop_caplist[0] != __INIT_VALUE__)
+      {
+        for (int i = 0; i < CAP_LAST_CAP + 1; i++)
+        {
+          if (drop_caplist[i] != __INIT_VALUE__)
+          {
+            send_msg_client(cap_to_name(drop_caplist[i]), addr);
+            // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+            if (!drop_caplist[i])
+            {
+              send_msg_client(cap_to_name(0), addr);
+            }
+          }
+        }
+      }
+      send_msg_client("endcaplist", addr);
+    }
+    // For setns()
+    usleep(200000);
+    char *container_pid = read_msg_client(addr);
+    char cgroup_ns_file[PATH_MAX];
+    char ipc_ns_file[PATH_MAX];
+    char mount_ns_file[PATH_MAX];
+    char pid_ns_file[PATH_MAX];
+    char time_ns_file[PATH_MAX];
+    char uts_ns_file[PATH_MAX];
+    sprintf(cgroup_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/cgroup");
+    sprintf(ipc_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/ipc");
+    sprintf(mount_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/mnt");
+    sprintf(pid_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/pid");
+    sprintf(time_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/time");
+    sprintf(uts_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/uts");
+    int fd = __INIT_VALUE__;
+    fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
+    if (fd < 0 && !no_warnings)
+    {
+      printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");
+    }
+    else
+    {
+      setns(fd, 0) == 0 ?: perror("setns");
+    }
+    fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
+    if (fd < 0 && !no_warnings)
+    {
+      printf("\033[33mWarning: seems that pid namespace is not supported on this device\033[0m\n");
+    }
+    else
+    {
+      setns(fd, 0) == 0 ?: perror("setns");
+    }
+    fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
+    if (fd < 0 && !no_warnings)
+    {
+      printf("\033[33mWarning: seems that time namespace is not supported on this device\033[0m\n");
+    }
+    else
+    {
+      setns(fd, 0) == 0 ?: perror("setns");
+    }
+    fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
+    if (fd < 0 && !no_warnings)
+    {
+      printf("\033[33mWarning: seems that uts namespace is not supported on this device\033[0m\n");
+    }
+    else
+    {
+      setns(fd, 0) == 0 ?: perror("setns");
+    }
+    fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
+    if (fd < 0 && !no_warnings)
+    {
+      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device\033[0m\n");
+    }
+    else
+    {
+      setns(fd, 0) == 0 ?: perror("setns");
+    }
+    fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
+    if (fd < 0 && !no_warnings)
+    {
+      printf("\033[33mWarning: seems that ipc namespace is not supported on this device\033[0m\n");
+    }
+    else
+    {
+      setns(fd, 0) == 0 ?: perror("setns");
+    }
+    // Fork itself into namespace.
+    // This can fix `can't fork: out of memory` issue.
+    unshare_pid = fork();
+    // Fix `can't access tty` issue.
+    if (unshare_pid > 0)
     {
       usleep(200000);
       waitpid(unshare_pid, NULL, 0);
@@ -569,121 +931,75 @@ void chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *use
     }
   }
   // Check if unshare is enabled.
-  if (unshare_pid == 0 || unshare_pid == INIT_VALUE)
+  if (unshare_pid == 0)
   {
-    // chroot into container.
-    chroot(container_dir);
-    chdir("/");
-    mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-    mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-    mkdir("/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-    // Check if system runtime files are already created.
-    DIR *sysmounted;
-    if ((sysmounted = opendir("/sys/kernel")) == NULL)
+    run_chroot_container(container_dir, drop_caplist, no_warnings, init);
+  }
+  return;
+}
+// Run chroot container.
+// Also used for run_unshare_container and init_unshare_container.
+void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char **init)
+{
+  // Set default init.
+  if (init[0] == NULL)
+  {
+    init[0] = "/bin/su";
+    init[1] = "-";
+    init[2] = NULL;
+  }
+  if (!check_container(container_dir))
+  {
+    exit(1);
+  }
+  // chroot into container.
+  chroot(container_dir);
+  chdir("/");
+  // Check if system runtime files are already created.
+  DIR *direxist;
+  if ((direxist = opendir("/sys/kernel")) == NULL)
+  {
+    init_container();
+  }
+  else
+  {
+    closedir(direxist);
+  }
+  // Drop caps.
+  if (drop_caplist[0] != __INIT_VALUE__)
+  {
+    for (int i = 0; i < CAP_LAST_CAP + 1; i++)
     {
-      // umount /proc for two times because in my device,it has been mounted twice.
-      umount("/proc");
-      umount("/proc");
-      // Fix issues in archlinux containers.
-      mount("/", "/", NULL, MS_BIND, NULL);
-      // mount proc,sys and dev.
-      mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
-      // For /sys,we make it read-only.
-      mount("sysfs", "/sys", "sysfs", MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
-      mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
-      // Continue mounting some other directories in /dev.
-      mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-      mount("devpts", "/dev/pts", "devpts", 0, "gid=4,mode=620");
-      mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-      mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
-      mkdir("/dev/mqune", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-      mount("mqune", "/dev/mqune", "mqune", 0, NULL);
-      // Protect some system runtime directories.
-      mount("/proc/bus", "/proc/bus", "proc", MS_BIND | MS_RDONLY, NULL);
-      mount("/proc/fs", "/proc/fs", "proc", MS_BIND | MS_RDONLY, NULL);
-      mount("/proc/irq", "/proc/irq", "proc", MS_BIND | MS_RDONLY, NULL);
-      mount("/proc/sys", "/proc/sys", "proc", MS_BIND | MS_RDONLY, NULL);
-      mount("/proc/asound", "/proc/asound", "proc", MS_BIND | MS_RDONLY, NULL);
-      mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
-      mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
-      // For making dev nodes.
-      int dev;
-      // Create system runtime nodes in /dev and then fix permissions.
-      dev = makedev(1, 3);
-      mknod("/dev/null", S_IFCHR, dev);
-      chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-      dev = makedev(5, 1);
-      mknod("/dev/console", S_IFCHR, dev);
-      chown("/dev/console", 0, 5);
-      chmod("/dev/console", S_IRUSR | S_IWUSR | S_IWGRP | S_IWOTH);
-      dev = makedev(1, 5);
-      mknod("/dev/zero", S_IFCHR, dev);
-      chmod("/dev/zero", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-      dev = makedev(5, 2);
-      mknod("/dev/ptmx", S_IFCHR, dev);
-      chown("/dev/ptmx", 0, 5);
-      chmod("/dev/ptmx", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-      dev = makedev(5, 0);
-      mknod("/dev/tty", S_IFCHR, dev);
-      chown("/dev/tty", 0, 5);
-      chmod("/dev/tty", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-      dev = makedev(1, 8);
-      mknod("/dev/random", S_IFCHR, dev);
-      chmod("/dev/random", S_IRUSR | S_IRGRP | S_IROTH);
-      dev = makedev(1, 9);
-      mknod("/dev/urandom", S_IFCHR, dev);
-      chmod("/dev/urandom", S_IRUSR | S_IRGRP | S_IROTH);
-      mkdir("/dev/net", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-      dev = makedev(10, 200);
-      mknod("/dev/net/tun", S_IFCHR, dev);
-      // Create some system runtime link files in /dev.
-      symlink("/proc/self/fd", "/dev/fd");
-      symlink("/proc/self/fd/0", "/dev/stdin");
-      symlink("/proc/self/fd/1", "/dev/stdout");
-      symlink("/proc/self/fd/2", "/dev/stderr");
-      symlink("/dev/null", "/dev/tty0");
-      // Fix issues in archlinux containers.
-      remove("/etc/mtab");
-      unlink("/etc/mtab");
-      symlink("/proc/mounts", "/etc/mtab");
-    }
-    // Drop caps.
-    if (drop_caplist[0] != INIT_VALUE)
-    {
-      for (int i = 0; i < CAP_LAST_CAP + 1; i++)
+      if (drop_caplist[i] != __INIT_VALUE__)
       {
-        if (drop_caplist[i] != INIT_VALUE)
+        if (cap_drop_bound(drop_caplist[i]) != 0 && !no_warnings)
         {
-          if (cap_drop_bound(drop_caplist[i]) != 0 && !no_warnings)
-          {
-            fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[i]));
-            fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-          }
+          fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[i]));
+          fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
         }
-        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
-        if (!drop_caplist[i])
+      }
+      // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+      if (!drop_caplist[i])
+      {
+        if (cap_drop_bound(0) != 0 && !no_warnings)
         {
-          if (cap_drop_bound(0) != 0 && !no_warnings)
-          {
-            fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
-            fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-          }
+          fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
+          fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
         }
       }
     }
-    // Login to container.
-    // Use exec() family function because system() may be unavailable now.
-    usleep(200000);
-    if (execv(init[0], init) == -1)
-    {
-      // Catch exceptions.
-      fprintf(stderr, "\033[31mFailed to execute init `%s`\n", init[0]);
-      fprintf(stderr, "execv() returned: %d\n", errno);
-      fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-      exit(1);
-    }
   }
-  return;
+  // Login to container.
+  // Use exec() family function because system() may be unavailable now.
+  usleep(200000);
+  if (execv(init[0], init) == -1)
+  {
+    // Catch exceptions.
+    fprintf(stderr, "\033[31mFailed to execute init `%s`\n", init[0]);
+    fprintf(stderr, "execv() returned: %d\n", errno);
+    fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
+    exit(1);
+  }
 }
 // Umount container.
 void umount_container(char *container_dir)
@@ -729,13 +1045,15 @@ void umount_container(char *container_dir)
     usleep(200000);
     umount2(proc_dir, MNT_DETACH | MNT_FORCE);
     usleep(200000);
+    umount2(container_dir, MNT_DETACH | MNT_FORCE);
+    usleep(200000);
   }
   return;
 }
 int main(int argc, char **argv)
 {
   // Set process name.
-  prctl(PR_SET_NAME, "moe_container", NULL, NULL, NULL);
+  prctl(PR_SET_NAME, "ruri", NULL, NULL, NULL);
   // Check if arguments are given.
   if (argc <= 1)
   {
@@ -750,25 +1068,25 @@ int main(int argc, char **argv)
   char *container_dir = NULL;
   bool *greetings = NULL;
   bool *privileged = NULL;
-  char *init[1024] = {0};
+  char *init[1024] = {NULL};
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
   {
-    drop_caplist[i] = INIT_VALUE;
+    drop_caplist[i] = __INIT_VALUE__;
   }
   cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
   cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
   cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
   {
-    keep_caplist_extra[i] = INIT_VALUE;
+    keep_caplist_extra[i] = __INIT_VALUE__;
   }
   cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
   {
-    drop_caplist_extra[i] = INIT_VALUE;
+    drop_caplist_extra[i] = __INIT_VALUE__;
   }
   cap_value_t cap = -1;
   // Parse command-line arguments.
@@ -779,13 +1097,11 @@ int main(int argc, char **argv)
       show_version_info();
       exit(0);
     }
-#ifdef __CONTAINER_DEV__
-    else if (strcmp(argv[arg_num], "--daemon") == 0)
+    else if (strcmp(argv[arg_num], "-D") == 0)
     {
       container_daemon();
       exit(0);
     }
-#endif
     else if (strcmp(argv[arg_num], "-h") == 0)
     {
       greetings = &on;
@@ -812,7 +1128,7 @@ int main(int argc, char **argv)
     }
     else if (strcmp(argv[arg_num], "-d") == 0)
     {
-      for (int i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++)
+      for (unsigned long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++)
       {
         drop_caplist[i] = drop_caplist_unprivileged[i];
       }
@@ -851,10 +1167,11 @@ int main(int argc, char **argv)
         exit(1);
       }
     }
-    else if ((strchr(argv[arg_num], '/') && strcmp(strchr(argv[arg_num], '/'), argv[arg_num]) == 0) || strchr(argv[arg_num], '.') && strcmp(strchr(argv[arg_num], '.'), argv[arg_num]) == 0)
+    else if ((strchr(argv[arg_num], '/') && strcmp(strchr(argv[arg_num], '/'), argv[arg_num]) == 0) || (strchr(argv[arg_num], '.') && strcmp(strchr(argv[arg_num], '.'), argv[arg_num]) == 0))
     {
       container_dir = argv[arg_num];
       arg_num++;
+      // Arguments after container_dir will be read as init command.
       int init_arg_num = 0;
       if (argv[arg_num])
       {
@@ -865,6 +1182,10 @@ int main(int argc, char **argv)
           init_arg_num++;
         }
       }
+      else
+      {
+        init[0] = NULL;
+      }
     }
     else
     {
@@ -874,42 +1195,43 @@ int main(int argc, char **argv)
     }
   }
   // Set default caplist to drop.
-  if (!privileged && drop_caplist[0] == INIT_VALUE)
+  if (!privileged && drop_caplist[0] == __INIT_VALUE__)
   {
-    for (int i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++)
+    for (unsigned long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++)
     {
       drop_caplist[i] = drop_caplist_common[i];
     }
   }
   // Comply with capability-set policy specified.
-  if (drop_caplist_extra[0] != INIT_VALUE)
+  if (drop_caplist_extra[0] != __INIT_VALUE__)
   {
-    for (int i = 0; i <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
+    for (unsigned long i = 0; i <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
     {
-      if (drop_caplist_extra[i] != INIT_VALUE)
+      if (drop_caplist_extra[i] != __INIT_VALUE__)
       {
         add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[i]);
       }
     }
   }
-  if (keep_caplist_extra[0] != INIT_VALUE)
+  if (keep_caplist_extra[0] != __INIT_VALUE__)
   {
-    for (int i = 0; i <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
+    for (unsigned long i = 0; i <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
     {
-      if (keep_caplist_extra[i] != INIT_VALUE)
+      if (keep_caplist_extra[i] != __INIT_VALUE__)
       {
         del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[i]);
       }
     }
   }
-  // Set default init.
-  if (!init[0])
+  // Pure-chroot and unshare container are two functions now.
+  if (use_unshare)
   {
-    init[0] = "/bin/su";
-    init[1] = "-";
-    init[2] = NULL;
+    run_unshare_container(container_dir, drop_caplist, no_warnings, init);
   }
-  chroot_container(container_dir, drop_caplist, use_unshare, no_warnings, init);
+  else
+  {
+    run_chroot_container(container_dir, drop_caplist, no_warnings, init);
+  }
   return 0;
 }
 //  ██╗ ██╗  ███████╗   ████╗   ███████╗
