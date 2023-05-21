@@ -22,13 +22,12 @@
  */
 #include "ruri.h"
 // For centering output.
-void show_n_char(int num)
+void show_n_spaces(int n)
 {
-  char *space = " ";
   int count;
-  for (count = 1; count <= num; count++)
+  for (count = 1; count <= n; count++)
   {
-    putchar(space[0]);
+    printf(" ");
   }
   return;
 }
@@ -43,49 +42,49 @@ void show_greetings(void)
   // For centering output.
   row -= 44;
   row /= 2;
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "          ▅▅▀▀▀               ▀▀▅▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "     ▅▅▅▀▀            ▅           ▀▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "      ▅▀      ▅▀█▅▅▀▀▅▀▅        ▅▅  ▀▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "     ▅▀   █▅▀▀  ▀     ▀ ▀▀▅▅    █ ▀▀▅ █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "    ▅▀   ▅▀  ▅▀      ▀▅    ▀▅   █▅███▀█");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "  ▅▅█▀▅ █ ▅▅▀          ▀▀   █   ████   █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "      █ █ ▅▅▅▅▅        ▅▅▅▅▅ █  ▀█▀    █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "  ▅▀▅▀ █                     █   █      █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", " █   █ ▀▅ ▅▀▅   ▅▀▅   ▅▅     █   █      ▀▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "▅█▅▅██▅ ▅██  ▀███ ▅████ ▀▅█▀▅▀   █       ▀▅");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "███████ ▀██████████████████▀▀             █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", " █    ▀▅  ██▀ ▀██▀▀██▀▀██▀█     █▀         █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", " ▀▅     ▀▀█              ▅▀     █          █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "   ▀▅    █               █     ██        ▅▀");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "     ▀▅▅▅▀                ▀▀▀▀▀ █        █");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "        ▀                       ▀        ▀");
-  show_n_char(row);
+  show_n_spaces(row);
   printf("%s\n", "");
   return;
 }
@@ -469,40 +468,14 @@ void init_container(void)
   unlink("/etc/mtab");
   symlink("/proc/mounts", "/etc/mtab");
 }
-// kill a container matching container_dir
-// TODO
-void kill_container(char *container_dir)
-{
-  // Set socket address.
-  struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
-  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
-  char *tmpdir = getenv("TMPDIR");
-  if (!tmpdir || (strcmp(tmpdir, "") == 0))
-  {
-    tmpdir = "/tmp";
-  }
-  char socket_path[PATH_MAX] = {0};
-  strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
-  strcpy(addr.sun_path, socket_path);
-  // Try to connect to container.sock and check if it's created by ruri daemon.
-  // Container daemon will return `Nya!`.
-  send_msg_client("Nya?", addr);
-  if (strcmp("Nya!", read_msg_client(addr)) != 0)
-  {
-    printf("\033[33mError: seems that container daemon is not running\033[0m\n");
-  }
-  // kill(container_pid,SIGKILL);
-}
 // Daemon process used to store container information and init unshare container.
 // TODO:del->kill
 // Received messages and reply contents:
 // --------------------------------------------------------------------------------------------------------------------------
 // |                              read                          |           send              |      comment
 // --------------------------------------------------------------------------------------------------------------------------
-// |                              Nya?                          |            Nya!             | Test messasge.
-// |                       Del+${container_dir}                 |                             | Write a container off.
+// |                              Nya?                          |            Nya!             | Test messasge
+// |                       Del+${container_dir}                 |            OK/Fail          | Kill a container
 // |                             info                           |                             | wait for ${container_dir}
 // |                      ${container_dir}                      |   Pid+$container_pid//NAN   | Read container_dir, check if container is already running and send container_pid to ruri
 // | init+${init_command}+endinit+caplist+${caplist}+endcaplist |                             | Read information of container and init container
@@ -980,6 +953,7 @@ void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool 
 // Umount container.
 void umount_container(char *container_dir)
 {
+  realpath(container_dir,container_dir);
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
@@ -1002,6 +976,28 @@ void umount_container(char *container_dir)
   {
     closedir(direxist);
   }
+  // Set socket address.
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+  char *tmpdir = getenv("TMPDIR");
+  if (!tmpdir || (strcmp(tmpdir, "") == 0))
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX] = {0};
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Try to connect to container.sock and check if it's created by ruri daemon.
+  // Container daemon will return `Nya!`.
+  send_msg_client("Nya?", addr);
+  if (strcmp("Nya!", read_msg_client(addr)) != 0)
+  {
+    printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
+  }
+  send_msg_client("Del", addr);
+  send_msg_client(container_dir, addr);
   // Get path to umount.
   char sys_dir[PATH_MAX];
   char proc_dir[PATH_MAX];
@@ -1013,6 +1009,7 @@ void umount_container(char *container_dir)
   strcat(proc_dir, "/proc");
   strcat(dev_dir, "/dev");
   // Force umount all directories for 10 times.
+  printf("\033[1;38;2;254;228;208mUmounting container......\n");
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE);

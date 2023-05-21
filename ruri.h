@@ -29,7 +29,7 @@
 #define __INIT_VALUE__ -114
 // Version info.
 #define __CONTAINER_VERSION__ "2.0-dev"
-void show_n_char(int num);
+void show_n_spaces(int n);
 void show_greetings(void);
 void show_version_info(void);
 void show_helps(bool greetings);
@@ -47,16 +47,15 @@ void container_daemon(void);
 // Info of containers.
 struct CONTAINERS
 {
-    // For container_daemon
+    // For container_daemon()
     char *container_dir;
     char *unshare_pid;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-    // For next container.
     struct CONTAINERS *container;
 };
 // Info of a container to create.
 struct CONTAINER_INFO{
-    // For init_unshare_container
+    // For init_unshare_container()
     char *container_dir;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
     char *init_command[1024];
