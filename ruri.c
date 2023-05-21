@@ -187,7 +187,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 // Add a node to CONTAINER struct.
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *init[1024], struct CONTAINERS *container)
 {
-  if (!container)
+  if (container == NULL)
   {
     // Request memory of container struct.
     container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
@@ -240,7 +240,7 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
   // It will never be true.
-  if (!container)
+  if (container == NULL)
   {
     return container;
   }
@@ -792,7 +792,7 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
       send_msg_client("init", addr);
       for (int i = 0; true; i++)
       {
-        if (init[i])
+        if (init[i] != NULL)
         {
           send_msg_client(init[i], addr);
         }
