@@ -2,7 +2,7 @@ all :
 	clang -lcap -lpthread -O3 -z noexecstack -z now -fstack-protector-all -fPIE -pie ruri.c -o ruri
 	strip ruri
 dev :
-	clang -lcap -lpthread -ggdb -Wall -Wextra ruri.c -o ruri
+	clang -lcap -lpthread -ggdb -Wall -Wextra -D__CONTAINER_DEV__ ruri.c -o ruri
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
