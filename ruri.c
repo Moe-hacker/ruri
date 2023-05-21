@@ -193,7 +193,6 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
     container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
     container->container_dir = strdup(container_dir);
     container->unshare_pid = strdup(unshare_pid);
-    container->active_containers = 1;
     return container;
   }
   else
@@ -236,7 +235,7 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
   }
   return container;
 }
-// Try to delete a container from CONTAINERS struct, if it's still running, just reduse value of active_containers.
+// Delete a container from CONTAINERS struct.
 // TODO: kill_container()
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
@@ -248,14 +247,7 @@ struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *contain
   // If container is the struct to delete.
   else if (strcmp(container->container_dir, container_dir) == 0)
   {
-    if (container->active_containers > 1)
-    {
-      container->active_containers--;
-    }
-    else
-    {
-      container = del_node(container);
-    }
+    container = del_node(container);
   }
   // If not, try the next struct.
   else
@@ -282,21 +274,6 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
   {
     return container_active(container_dir, container->container);
   }
-}
-// Increase the value of active_containers.
-struct CONTAINERS *add_active_containers(char *container_dir, struct CONTAINERS *container)
-{
-  // Found container matching container_dir.
-  if (strcmp(container->container_dir, container_dir) == 0)
-  {
-    container->active_containers += 1;
-  }
-  // Try next struct.
-  else
-  {
-    container = add_active_containers(container_dir, container->container);
-  }
-  return container;
 }
 // For daemon.
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
@@ -493,7 +470,7 @@ void init_container(void)
   symlink("/proc/mounts", "/etc/mtab");
 }
 // kill a container matching container_dir
-//TODO
+// TODO
 void kill_container(char *container_dir)
 {
   // Set socket address.
@@ -617,7 +594,6 @@ void container_daemon(void)
       container_dir = read_msg_server(addr, sockfd);
       if (container_active(container_dir, container))
       {
-        container = add_active_containers(container_dir, container);
         send_msg_server("Pid", addr, sockfd);
         send_msg_server(read_node(container_dir, container)->unshare_pid, addr, sockfd);
       }

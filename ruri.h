@@ -51,8 +51,6 @@ struct CONTAINERS
     char *container_dir;
     char *unshare_pid;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-    // Used to determine whether the container needs to be deleted.
-    unsigned int active_containers;
     // For next container.
     struct CONTAINERS *container;
 };
