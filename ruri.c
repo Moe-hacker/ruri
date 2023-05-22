@@ -639,6 +639,7 @@ void container_daemon(void)
             break;
           }
           container_info.init_command[i] = strdup(msg);
+          container_info.init_command[i + 1] = NULL;
           i++;
         }
         read_msg_server(addr, sockfd);
@@ -1238,6 +1239,7 @@ int main(int argc, char **argv)
         while (arg_num <= argc)
         {
           init[init_arg_num] = argv[arg_num];
+          init[init_arg_num + 1] = NULL;
           arg_num++;
           init_arg_num++;
         }
