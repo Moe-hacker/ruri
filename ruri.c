@@ -699,18 +699,6 @@ bool check_container(char *container_dir)
     return false;
   }
   // Refuse to use `/` for container directory.
-  // FIXME:
-  // Seems that this line will crash on Android 13. I dont't know why now.
-  // Gdb logs:
-  // Breakpoint 2, check_container (
-  // container_dir=0x7ffffffdb0 "./t") at container.c:601
-  // 601       if (strcmp(container_dir, "/") == 0)
-  // (gdb) c
-  // Continuing.
-  //
-  // Program received signal SIGSEGV, Segmentation fault.
-  // 0x0000007ff4505a10 in __strlen_aarch64 ()
-  //  from /apex/com.android.runtime/lib64/bionic/libc.so
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
