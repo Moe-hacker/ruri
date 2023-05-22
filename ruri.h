@@ -60,6 +60,11 @@ int send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_server(struct sockaddr_un addr, int sockfd);
 // For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr);
+//TODO
+// For container_ps().
+void read_all_nodes(struct CONTAINERS *container);
+// List all running unshare containers.
+void container_ps(void);
 // Called by container_daemon(), init an unshare container in the background.
 void *init_unshare_container(void *arg);
 // Run after chroot(), called by run_chroot_container().
