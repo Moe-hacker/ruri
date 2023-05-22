@@ -377,7 +377,7 @@ void read_all_nodes(struct CONTAINERS *container)
 // List all running unshare containers.
 void container_ps(void)
 {
-  //TODO:connect to container_daemon.
+  // TODO:connect to container_daemon.
 }
 // For daemon, init an unshare container in the background.
 void *init_unshare_container(void *arg)
@@ -1180,6 +1180,11 @@ int main(int argc, char **argv)
     {
       greetings = &on;
       show_helps(greetings);
+      exit(0);
+    }
+    else if (strcmp(argv[arg_num], "-l") == 0)
+    {
+      container_ps();
       exit(0);
     }
     else if (strcmp(argv[arg_num], "-u") == 0)
