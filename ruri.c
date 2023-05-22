@@ -91,7 +91,7 @@ void show_greetings(void)
 // For `ruri -v`.
 void show_version_info(void)
 {
-  printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", __CONTAINER_VERSION__, "\n");
+  printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", CONTAINER_VERSION, "\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("\n");
   printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
@@ -156,7 +156,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
   {
     for (int k = 0; k <= length; k++)
     {
-      if (list[k] == __INIT_VALUE__)
+      if (list[k] == INIT_VALUE)
       {
         list[k] = cap;
         break;
@@ -177,14 +177,15 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
         list[i] = list[i + 1];
         i++;
       }
-      list[i] = __INIT_VALUE__;
+      list[i] = INIT_VALUE;
       break;
     }
   }
   return;
 }
 // Add a node to CONTAINER struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *init[1024], struct CONTAINERS *container)
+///////////////////////////////////////////////////////
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container)
 {
   if (container == NULL)
   {
@@ -192,11 +193,22 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
     container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
     container->container_dir = strdup(container_dir);
     container->unshare_pid = strdup(unshare_pid);
+    for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+    {
+      if (drop_caplist[i] != NULL)
+      {
+        container->drop_caplist[i] = strdup(drop_caplist[i]);
+      }
+      else
+      {
+        break;
+      }
+    }
     return container;
   }
   else
   {
-    container->container = add_node(container_dir, unshare_pid, drop_caplist, init, container->container);
+    container->container = add_node(container_dir, unshare_pid, drop_caplist, container->container);
     return container;
   }
 }
@@ -216,7 +228,6 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
   }
   else
   {
-    // TODO: check if read_node returnd null.
     return NULL;
   }
 }
@@ -235,7 +246,6 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
   return container;
 }
 // Delete a container from CONTAINERS struct.
-// TODO: kill_container()
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
   // It will never be true.
@@ -381,9 +391,38 @@ void *init_unshare_container(void *arg)
     strcpy(addr.sun_path, socket_path);
     char container_pid[1024];
     sprintf(container_pid, "%d", unshare_pid);
-    // TODO
     send_msg_client("pid", addr);
     send_msg_client(container_pid, addr);
+    send_msg_client(container_info->container_dir, addr);
+    send_msg_client("init", addr);
+    for (int i = 0; true; i++)
+    {
+      if (container_info->init_command[i] != NULL)
+      {
+        send_msg_client(container_info->init_command[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client("endinit", addr);
+    if (container_info->drop_caplist[0] != INIT_VALUE)
+    {
+      for (int i = 0; i < CAP_LAST_CAP + 1; i++)
+      {
+        if (container_info->drop_caplist[i] != INIT_VALUE)
+        {
+          send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
+          // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+          if (!container_info->drop_caplist[i])
+          {
+            send_msg_client(cap_to_name(0), addr);
+          }
+        }
+      }
+    }
+    send_msg_client("endcaplist", addr);
     usleep(200000);
     waitpid(unshare_pid, NULL, 0);
   }
@@ -469,13 +508,14 @@ void init_container(void)
   symlink("/proc/mounts", "/etc/mtab");
 }
 // Daemon process used to store container information and init unshare container.
-// TODO:del->kill
+// TODO:
+// 遵守caplist
 // Received messages and reply contents:
 // --------------------------------------------------------------------------------------------------------------------------
 // |                              read                          |           send              |      comment
 // --------------------------------------------------------------------------------------------------------------------------
 // |                              Nya?                          |            Nya!             | Test messasge
-// |                       Del+${container_dir}                 |            OK/Fail          | Kill a container
+// |                       del+${container_dir}                 |            OK/Fail          | Kill a container
 // |                             info                           |                             | wait for ${container_dir}
 // |                      ${container_dir}                      |   Pid+$container_pid//NAN   | Read container_dir, check if container is already running and send container_pid to ruri
 // | init+${init_command}+endinit+caplist+${caplist}+endcaplist |                             | Read information of container and init container
@@ -506,6 +546,15 @@ void container_daemon(void)
   // Container info.
   char *container_dir;
   struct CONTAINER_INFO container_info;
+  container_info.container_dir = NULL;
+  *container_info.init_command = NULL;
+  container_info.unshare_pid = NULL;
+  for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
+  {
+    container_info.drop_caplist[i] = INIT_VALUE;
+  }
+  pid_t unshare_pid;
+  char *drop_caplist[CAP_LAST_CAP + 1];
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -555,11 +604,21 @@ void container_daemon(void)
     {
       send_msg_server("Nya!", addr, sockfd);
     }
-    // Del a container from running containers.
+    // Kill a container.
     else if (strcmp("del", msg) == 0)
     {
-      msg = read_msg_server(addr, sockfd);
-      container = del_container(msg, container);
+      container_dir = read_msg_server(addr, sockfd);
+      if (container_active(container_dir, container))
+      {
+        unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
+        kill(unshare_pid, SIGKILL);
+        container = del_container(container_dir, container);
+        send_msg_server("OK", addr, sockfd);
+      }
+      else
+      {
+        send_msg_server("Fail", addr, sockfd);
+      }
     }
     else if (strcmp("info", msg) == 0)
     {
@@ -573,6 +632,13 @@ void container_daemon(void)
       else
       {
         send_msg_server("NaN", addr, sockfd);
+        container_info.container_dir = NULL;
+        *container_info.init_command = NULL;
+        container_info.unshare_pid = NULL;
+        for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
+        {
+          container_info.drop_caplist[i] = INIT_VALUE;
+        }
         // Read init command.
         read_msg_server(addr, sockfd);
         int i = 0;
@@ -604,7 +670,43 @@ void container_daemon(void)
     }
     else if (strcmp("pid", msg) == 0)
     {
-      send_msg_server(read_msg_server(addr, sockfd), addr, sockfd);
+      msg = read_msg_server(addr, sockfd);
+      container_info.unshare_pid = strdup(msg);
+      msg = read_msg_server(addr, sockfd);
+      container_info.container_dir = strdup(msg);
+      read_msg_server(addr, sockfd);
+      for (int i = 0;;)
+      {
+        msg = read_msg_server(addr, sockfd);
+        if (strcmp("endinit", msg) == 0)
+        {
+          break;
+        }
+        container_info.init_command[i] = strdup(msg);
+        i++;
+      }
+      read_msg_server(addr, sockfd);
+      for (int i = 0;;)
+      {
+        msg = read_msg_server(addr, sockfd);
+        if (strcmp("endcaplist", msg) == 0)
+        {
+          break;
+        }
+        drop_caplist[i] = strdup(msg);
+        drop_caplist[i + 1] = NULL;
+        i++;
+      }
+      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, container);
+      //Send $unshare_pid to ruri.
+      send_msg_server(container_info.unshare_pid, addr, sockfd);
+      container_info.container_dir = NULL;
+      *container_info.init_command = NULL;
+      container_info.unshare_pid = NULL;
+      for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
+      {
+        container_info.drop_caplist[i] = INIT_VALUE;
+      }
     }
   }
 }
@@ -671,7 +773,7 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
     init[1] = "-";
     init[2] = NULL;
   }
-  pid_t unshare_pid = __INIT_VALUE__;
+  pid_t unshare_pid = INIT_VALUE;
   // Get the absolute path of container.
   realpath(container_dir, container_dir);
   // Set socket address.
@@ -778,11 +880,11 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
       init[0] = "/bin/su";
       init[1] = "-";
       init[2] = NULL;
-      if (drop_caplist[0] != __INIT_VALUE__)
+      if (drop_caplist[0] != INIT_VALUE)
       {
         for (int i = 0; i < CAP_LAST_CAP + 1; i++)
         {
-          if (drop_caplist[i] != __INIT_VALUE__)
+          if (drop_caplist[i] != INIT_VALUE)
           {
             send_msg_client(cap_to_name(drop_caplist[i]), addr);
             // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
@@ -810,7 +912,7 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
     sprintf(pid_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/pid");
     sprintf(time_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/time");
     sprintf(uts_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/uts");
-    int fd = __INIT_VALUE__;
+    int fd = INIT_VALUE;
     fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
@@ -915,11 +1017,11 @@ void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool 
     closedir(direxist);
   }
   // Drop caps.
-  if (drop_caplist[0] != __INIT_VALUE__)
+  if (drop_caplist[0] != INIT_VALUE)
   {
     for (int i = 0; i < CAP_LAST_CAP + 1; i++)
     {
-      if (drop_caplist[i] != __INIT_VALUE__)
+      if (drop_caplist[i] != INIT_VALUE)
       {
         if (cap_drop_bound(drop_caplist[i]) != 0 && !no_warnings)
         {
@@ -953,7 +1055,7 @@ void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool 
 // Umount container.
 void umount_container(char *container_dir)
 {
-  realpath(container_dir,container_dir);
+  realpath(container_dir, container_dir);
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
@@ -996,8 +1098,15 @@ void umount_container(char *container_dir)
   {
     printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
   }
-  send_msg_client("Del", addr);
-  send_msg_client(container_dir, addr);
+  else
+  {
+    send_msg_client("del", addr);
+    send_msg_client(container_dir, addr);
+    if (strcmp(read_msg_client(addr), "Fail") == 0)
+    {
+      fprintf(stderr, "\033[33mWarning: seems that container is not running\033[0m\n");
+    }
+  }
   // Get path to umount.
   char sys_dir[PATH_MAX];
   char proc_dir[PATH_MAX];
@@ -1047,19 +1156,19 @@ int main(int argc, char **argv)
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
   {
-    drop_caplist[i] = __INIT_VALUE__;
+    drop_caplist[i] = INIT_VALUE;
   }
   cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
   cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
   cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
   {
-    keep_caplist_extra[i] = __INIT_VALUE__;
+    keep_caplist_extra[i] = INIT_VALUE;
   }
   cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
   {
-    drop_caplist_extra[i] = __INIT_VALUE__;
+    drop_caplist_extra[i] = INIT_VALUE;
   }
   cap_value_t cap = -1;
   // Parse command-line arguments.
@@ -1168,7 +1277,7 @@ int main(int argc, char **argv)
     }
   }
   // Set default caplist to drop.
-  if (!privileged && drop_caplist[0] == __INIT_VALUE__)
+  if (!privileged && drop_caplist[0] == INIT_VALUE)
   {
     for (unsigned long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++)
     {
@@ -1176,21 +1285,21 @@ int main(int argc, char **argv)
     }
   }
   // Comply with capability-set policy specified.
-  if (drop_caplist_extra[0] != __INIT_VALUE__)
+  if (drop_caplist_extra[0] != INIT_VALUE)
   {
     for (unsigned long i = 0; i <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
     {
-      if (drop_caplist_extra[i] != __INIT_VALUE__)
+      if (drop_caplist_extra[i] != INIT_VALUE)
       {
         add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[i]);
       }
     }
   }
-  if (keep_caplist_extra[0] != __INIT_VALUE__)
+  if (keep_caplist_extra[0] != INIT_VALUE)
   {
     for (unsigned long i = 0; i <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
     {
-      if (keep_caplist_extra[i] != __INIT_VALUE__)
+      if (keep_caplist_extra[i] != INIT_VALUE)
       {
         del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[i]);
       }

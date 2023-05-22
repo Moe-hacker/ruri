@@ -26,9 +26,9 @@
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
 // For initializing some variables.
-#define __INIT_VALUE__ -114
+#define INIT_VALUE -114
 // Version info.
-#define __CONTAINER_VERSION__ "2.0-dev"
+#define CONTAINER_VERSION "2.0-dev"
 void show_n_spaces(int n);
 void show_greetings(void);
 void show_version_info(void);
@@ -50,15 +50,17 @@ struct CONTAINERS
     // For container_daemon()
     char *container_dir;
     char *unshare_pid;
-    cap_value_t drop_caplist[CAP_LAST_CAP + 1];
+    char *drop_caplist[CAP_LAST_CAP + 1];
     struct CONTAINERS *container;
 };
 // Info of a container to create.
 struct CONTAINER_INFO{
-    // For init_unshare_container()
+    // For init_unshare_container() and container_daemon()
     char *container_dir;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
     char *init_command[1024];
+    // Will be ignored in init_unshare_container()
+    char *unshare_pid;
 };
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
