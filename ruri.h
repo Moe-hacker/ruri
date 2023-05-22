@@ -29,21 +29,29 @@
 #define INIT_VALUE -114
 // Version info.
 #define CONTAINER_VERSION "2.0-dev"
+// Function list.
 void show_n_spaces(int n);
 void show_greetings(void);
 void show_version_info(void);
 void show_helps(bool greetings);
 void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
-void *init_unshare_container(void *arg);
-void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[]);
-void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[]);
-void umount_container(char *container_dir);
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container);
+struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
+struct CONTAINERS *del_node(struct CONTAINERS *container);
+struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container);
+bool container_active(char *container_dir, struct CONTAINERS *container);
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd);
 int send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_server(struct sockaddr_un addr, int sockfd);
 char *read_msg_client(struct sockaddr_un addr);
+void *init_unshare_container(void *arg);
+void init_container(void);
 void container_daemon(void);
+bool check_container(char *container_dir);
+void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[]);
+void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[]);
+void umount_container(char *container_dir);
 // Info of containers.
 struct CONTAINERS
 {

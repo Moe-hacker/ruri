@@ -184,7 +184,6 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   return;
 }
 // Add a node to CONTAINER struct.
-///////////////////////////////////////////////////////
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container)
 {
   if (container == NULL)
@@ -394,19 +393,7 @@ void *init_unshare_container(void *arg)
     send_msg_client("pid", addr);
     send_msg_client(container_pid, addr);
     send_msg_client(container_info->container_dir, addr);
-    send_msg_client("init", addr);
-    for (int i = 0; true; i++)
-    {
-      if (container_info->init_command[i] != NULL)
-      {
-        send_msg_client(container_info->init_command[i], addr);
-      }
-      else
-      {
-        break;
-      }
-    }
-    send_msg_client("endinit", addr);
+    send_msg_client("caplist", addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
       for (int i = 0; i < CAP_LAST_CAP + 1; i++)
@@ -510,16 +497,17 @@ void init_container(void)
 // Daemon process used to store container information and init unshare container.
 // TODO:
 // 遵守caplist
+//XXX
 // Received messages and reply contents:
 // --------------------------------------------------------------------------------------------------------------------------
-// |                              read                          |           send              |      comment
+// |                                 read                               |            send             |      comment
 // --------------------------------------------------------------------------------------------------------------------------
-// |                              Nya?                          |            Nya!             | Test messasge
-// |                       del+${container_dir}                 |            OK/Fail          | Kill a container
-// |                             info                           |                             | wait for ${container_dir}
-// |                      ${container_dir}                      |   Pid+$container_pid//NAN   | Read container_dir, check if container is already running and send container_pid to ruri
-// | init+${init_command}+endinit+caplist+${caplist}+endcaplist |                             | Read information of container and init container
-// |                     pid+${container_pid}                   |                             | Read container_pid from child process
+// |                                 Nya?                               |            Nya!             | Test messasge
+// |                          del+${container_dir}                      |            OK/Fail          | Kill a container
+// |                                 info                               |                             | wait for ${container_dir}
+// |                          ${container_dir}                          |   Pid+$container_pid//NaN   | Read container_dir, check if container is already running and send container_pid to ruri
+// |     init+${init_command}+endinit+caplist+${caplist}+endcaplist     |                             | Read information of container and init container
+// |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
 void container_daemon(void)
 {
   // Set process name.
@@ -674,17 +662,6 @@ void container_daemon(void)
       container_info.unshare_pid = strdup(msg);
       msg = read_msg_server(addr, sockfd);
       container_info.container_dir = strdup(msg);
-      read_msg_server(addr, sockfd);
-      for (int i = 0;;)
-      {
-        msg = read_msg_server(addr, sockfd);
-        if (strcmp("endinit", msg) == 0)
-        {
-          break;
-        }
-        container_info.init_command[i] = strdup(msg);
-        i++;
-      }
       read_msg_server(addr, sockfd);
       for (int i = 0;;)
       {
