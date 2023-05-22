@@ -151,7 +151,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
       break;
     }
   }
-  // Add a cap to caplist.
+  // Add cap to caplist.
   if (!in)
   {
     for (int k = 0; k <= length; k++)
@@ -183,7 +183,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   }
   return;
 }
-// Add a node to CONTAINER struct.
+// Add a node to CONTAINERS struct.
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container)
 {
   if (container == NULL)
@@ -230,7 +230,7 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
     return NULL;
   }
 }
-// Delete a container from CONTAINER struct.
+// Delete a node from CONTAINERS struct.
 struct CONTAINERS *del_node(struct CONTAINERS *container)
 {
   if (container == NULL)
@@ -423,7 +423,7 @@ void *init_unshare_container(void *arg)
   }
   return NULL;
 }
-// Run after chroot()
+// Run after chroot(), called by run_chroot_container()
 void init_container(void)
 {
   // umount /proc.
@@ -454,6 +454,7 @@ void init_container(void)
   mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
   // For making dev nodes.
+  // XXX
   int dev;
   // Create system runtime nodes in /dev and then fix permissions.
   dev = makedev(1, 3);
@@ -494,10 +495,10 @@ void init_container(void)
   unlink("/etc/mtab");
   symlink("/proc/mounts", "/etc/mtab");
 }
-// Daemon process used to store container information and init unshare container.
+// Daemon process used to store unshare container information and init unshare container.
 // TODO:
 // 遵守caplist
-//XXX
+// XXX
 // Received messages and reply contents:
 // --------------------------------------------------------------------------------------------------------------------------
 // |                                 read                               |            send             |      comment
@@ -675,7 +676,7 @@ void container_daemon(void)
         i++;
       }
       container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, container);
-      //Send $unshare_pid to ruri.
+      // Send ${unshare_pid} to ruri.
       send_msg_server(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
       *container_info.init_command = NULL;
@@ -687,7 +688,7 @@ void container_daemon(void)
     }
   }
 }
-// Used for run_chroot_container
+// Used for run_chroot_container, do some checks before chroot()
 bool check_container(char *container_dir)
 {
   // Check if container directory is given.
@@ -1029,7 +1030,7 @@ void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool 
     exit(1);
   }
 }
-// Umount container.
+// Kill&umount container.
 void umount_container(char *container_dir)
 {
   realpath(container_dir, container_dir);
