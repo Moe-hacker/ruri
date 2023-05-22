@@ -20,6 +20,7 @@
  *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  *                     佛祖保佑        永无BUG
  */
+// TODO:__CONTAINER_DEV__
 #include "ruri.h"
 // For centering output.
 void show_n_spaces(int n)
@@ -122,18 +123,20 @@ void show_helps(bool greetings)
     show_greetings();
   }
   printf("\033[1;38;2;254;228;208mUsage:\n");
-  printf("  ruri [options] [container directory] (init command)\n");
-  printf("Options:\n");
-  printf("  -v          :Show version info\n");
-  printf("  -h          :Show helps\n");
-  printf("  -D          :Run rurid\n");
-  printf("  -u          :Enable unshare feature\n");
-  printf("  -U          :Try to umount container,please reboot your device instead for better security\n");
-  printf("  -d          :Drop more capabilities for better security\n");
-  printf("  -p          :Run privileged container\n");
-  printf(" --keep [cap] :Keep the specified cap\n");
-  printf(" --drop [cap] :Drop the specified cap\n");
-  printf("  -w          :Disable warnings\n");
+  printf("  ruri [Other options] / ([Args] <container directory> <init command>)\n");
+  printf("Other options:\n");
+  printf("  -v                 :Show version info\n");
+  printf("  -h                 :Show helps\n");
+  printf("  -D                 :Run rurid\n");
+  printf("  -l                 :List all running unshare containers\n");
+  printf("  -U [container_dir] :Umount&kill a container\n");
+  printf("Args for running a container:\n");
+  printf("  -u                 :Enable unshare feature\n");
+  printf("  -d                 :Drop more capabilities for better security\n");
+  printf("  -p                 :Run privileged container\n");
+  printf(" --keep [cap]        :Keep the specified cap\n");
+  printf(" --drop [cap]        :Drop the specified cap\n");
+  printf("  -w                 :Disable warnings\n");
   printf("This program should be run with root privileges\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
   return;
@@ -203,6 +206,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
+    container->container = NULL;
     return container;
   }
   else
@@ -353,6 +357,27 @@ char *read_msg_client(struct sockaddr_un addr)
   read(sockfd, msg, 4096);
   close(sockfd);
   return msg;
+}
+// TODO
+// For container_ps().
+void read_all_nodes(struct CONTAINERS *container)
+{
+  if (container == NULL)
+  {
+    // TODO:send endps
+    return;
+  }
+  else
+  {
+    // TODO:send container info
+    read_all_nodes(container->container);
+  }
+}
+// TODO
+// List all running unshare containers.
+void container_ps(void)
+{
+  //TODO:connect to container_daemon.
 }
 // For daemon, init an unshare container in the background.
 void *init_unshare_container(void *arg)
