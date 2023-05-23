@@ -20,7 +20,6 @@
  *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  *                     佛祖保佑        永无BUG
  */
-// TODO:__CONTAINER_DEV__
 #include "ruri.h"
 // For centering output.
 void show_n_spaces(int n)
@@ -123,7 +122,7 @@ void show_helps(bool greetings)
     show_greetings();
   }
   printf("\033[1;38;2;254;228;208mUsage:\n");
-  printf("  ruri [Other options] / ([Args] <container directory> <init command>)\n");
+  printf("  ruri [Other options] [<Args> <container directory> <init command>]\n");
   printf("Other options:\n");
   printf("  -v                 :Show version info\n");
   printf("  -h                 :Show helps\n");
@@ -144,6 +143,9 @@ void show_helps(bool greetings)
 // Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
+#ifdef __CONTAINER_DEV__
+  printf("Add %s to drop_caplist.\n", cap_to_name(cap));
+#endif
   bool in = false;
   // Check if the cap to add is already in caplist.
   for (int i = 0; i <= length; i++)
@@ -171,6 +173,9 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 {
+#ifdef __CONTAINER_DEV__
+  printf("Del %s from drop_caplist.\n", cap_to_name(cap));
+#endif
   for (int i = 0; i <= length; i++)
   {
     if (list[i] == cap)
@@ -229,6 +234,7 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
       return read_node(container_dir, container->container);
     }
   }
+  // Will never been run.
   else
   {
     return NULL;
@@ -290,6 +296,9 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
 // For daemon.
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 {
+#ifdef __CONTAINER_DEV__
+  printf("%s%s\n", "Daemon send msg: ", msg);
+#endif
   unsigned int size = sizeof(addr);
   // Accept a connection.
   int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
@@ -303,6 +312,9 @@ int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 // For client.
 int send_msg_client(char *msg, struct sockaddr_un addr)
 {
+#ifdef __CONTAINER_DEV__
+  printf("%s%s\n", "Client send msg: ", msg);
+#endif
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
   {
@@ -334,6 +346,9 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   // Read messages.
   read(sock_new, msg, 4096);
   close(sock_new);
+#ifdef __CONTAINER_DEV__
+  printf("%s%s\n", "Daemon read msg: ", msg);
+#endif
   return msg;
 }
 // For client, return the messages have been read.
@@ -356,6 +371,9 @@ char *read_msg_client(struct sockaddr_un addr)
   // Read messages.
   read(sockfd, msg, 4096);
   close(sockfd);
+#ifdef __CONTAINER_DEV__
+  printf("%s%s\n", "Client read msg: ", msg);
+#endif
   return msg;
 }
 // TODO
@@ -384,6 +402,43 @@ void *init_unshare_container(void *arg)
 {
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
+#ifdef __CONTAINER_DEV__
+  printf("Daemon init container:\n");
+  printf("%s%s\n", "container_dir: ", container_info->container_dir);
+  printf("init command : ");
+  for (int i = 0;;)
+  {
+    if (container_info->init_command[i] != NULL)
+    {
+      printf("%s%s", container_info->init_command[i], " ");
+      i++;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
+  printf("drop caplist: ");
+  for (int i = 0;;)
+  {
+    if (!container_info->drop_caplist[i])
+    {
+      printf("%s%s", cap_to_name(0), " ");
+      i++;
+    }
+    else if (container_info->drop_caplist[i] != INIT_VALUE)
+    {
+      printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
+      i++;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
+#endif
   // Try to create namespaces with unshare(), no warnings to show because daemon shuld be silent.
   unshare(CLONE_NEWNS);
   unshare(CLONE_NEWUTS);
@@ -444,7 +499,7 @@ void *init_unshare_container(void *arg)
     freopen("/dev/null", "r", stdout);
     freopen("/dev/zero", "r", stdout);
     bool no_warinings = true;
-    run_chroot_container(container_info->container_dir, container_info->drop_caplist, &no_warinings, container_info->init_command);
+    run_chroot_container(container_info, &no_warinings);
   }
   return NULL;
 }
@@ -756,18 +811,57 @@ bool check_container(char *container_dir)
   return true;
 }
 // Run unshare container.
-void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[])
+void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
 {
   // Set default init.
-  if (init[0] == NULL)
+  // XXX:maybe it will never be run.
+  if (container_info->init_command[0] == NULL)
   {
-    init[0] = "/bin/su";
-    init[1] = "-";
-    init[2] = NULL;
+    container_info->init_command[0] = "/bin/su";
+    container_info->init_command[1] = "-";
+    container_info->init_command[2] = NULL;
   }
+#ifdef __CONTAINER_DEV__
+  printf("Run unshare container:\n");
+  printf("%s%s\n", "container_dir: ", container_info->container_dir);
+  printf("init command : ");
+  for (int i = 0;;)
+  {
+    if (container_info->init_command[i] != NULL)
+    {
+      printf("%s%s", container_info->init_command[i], " ");
+      i++;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
+  printf("drop caplist: ");
+  for (int i = 0;;)
+  {
+    if (!container_info->drop_caplist[i])
+    {
+      printf("%s%s", cap_to_name(0), " ");
+      i++;
+    }
+    else if (container_info->drop_caplist[i] != INIT_VALUE)
+    {
+      printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
+      i++;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
+#endif
   pid_t unshare_pid = INIT_VALUE;
-  // Get the absolute path of container.
-  realpath(container_dir, container_dir);
+  // TODO:not run realpath here.
+  //  Get the absolute path of container.
+  realpath(container_info->container_dir, container_info->container_dir);
   // Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -853,15 +947,15 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
   else
   {
     send_msg_client("info", addr);
-    send_msg_client(container_dir, addr);
+    send_msg_client(container_info->container_dir, addr);
     if (strcmp(read_msg_client(addr), "NaN") == 0)
     {
       send_msg_client("init", addr);
       for (int i = 0; true; i++)
       {
-        if (init[i] != NULL)
+        if (container_info->init_command[i] != NULL)
         {
-          send_msg_client(init[i], addr);
+          send_msg_client(container_info->init_command[i], addr);
         }
         else
         {
@@ -869,18 +963,18 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
         }
       }
       send_msg_client("endinit", addr);
-      init[0] = "/bin/su";
-      init[1] = "-";
-      init[2] = NULL;
-      if (drop_caplist[0] != INIT_VALUE)
+      container_info->init_command[0] = "/bin/su";
+      container_info->init_command[1] = "-";
+      container_info->init_command[2] = NULL;
+      if (container_info->drop_caplist[0] != INIT_VALUE)
       {
         for (int i = 0; i < CAP_LAST_CAP + 1; i++)
         {
-          if (drop_caplist[i] != INIT_VALUE)
+          if (container_info->drop_caplist[i] != INIT_VALUE)
           {
-            send_msg_client(cap_to_name(drop_caplist[i]), addr);
+            send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
             // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
-            if (!drop_caplist[i])
+            if (!container_info->drop_caplist[i])
             {
               send_msg_client(cap_to_name(0), addr);
             }
@@ -891,7 +985,11 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
     }
     // For setns()
     usleep(200000);
+    // XXX
     char *container_pid = read_msg_client(addr);
+#ifdef __CONTAINER_DEV__
+    printf("%s%s\n", "Container pid from daemon:", container_pid);
+#endif
     char cgroup_ns_file[PATH_MAX];
     char ipc_ns_file[PATH_MAX];
     char mount_ns_file[PATH_MAX];
@@ -976,27 +1074,64 @@ void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool
   // Check if unshare is enabled.
   if (unshare_pid == 0)
   {
-    run_chroot_container(container_dir, drop_caplist, no_warnings, init);
+    run_chroot_container(container_info, no_warnings);
   }
   return;
 }
 // Run chroot container.
 // Also used for run_unshare_container and init_unshare_container.
-void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char **init)
+void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
 {
-  // Set default init.
-  if (init[0] == NULL)
+#ifdef __CONTAINER_DEV__
+  printf("Run chroot container:\n");
+  printf("%s%s\n", "container_dir: ", container_info->container_dir);
+  printf("init command : ");
+  for (int i = 0;;)
   {
-    init[0] = "/bin/su";
-    init[1] = "-";
-    init[2] = NULL;
+    if (container_info->init_command[i] != NULL)
+    {
+      printf("%s%s", container_info->init_command[i], " ");
+      i++;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
   }
-  if (!check_container(container_dir))
+  printf("drop caplist: ");
+  for (int i = 0;;)
+  {
+    if (!container_info->drop_caplist[i])
+    {
+      printf("%s%s", cap_to_name(0), " ");
+      i++;
+    }
+    else if (container_info->drop_caplist[i] != INIT_VALUE)
+    {
+      printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
+      i++;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
+#endif
+  // Set default init.
+  if (container_info->init_command[0] == NULL)
+  {
+    container_info->init_command[0] = "/bin/su";
+    container_info->init_command[1] = "-";
+    container_info->init_command[2] = NULL;
+  }
+  if (!check_container(container_info->container_dir))
   {
     exit(1);
   }
   // chroot into container.
-  chroot(container_dir);
+  chroot(container_info->container_dir);
   chdir("/");
   // Check if system runtime files are already created.
   DIR *direxist;
@@ -1009,20 +1144,12 @@ void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool 
     closedir(direxist);
   }
   // Drop caps.
-  if (drop_caplist[0] != INIT_VALUE)
+  if (container_info->drop_caplist[0] != INIT_VALUE)
   {
     for (int i = 0; i < CAP_LAST_CAP + 1; i++)
     {
-      if (drop_caplist[i] != INIT_VALUE)
-      {
-        if (cap_drop_bound(drop_caplist[i]) != 0 && !no_warnings)
-        {
-          fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(drop_caplist[i]));
-          fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-        }
-      }
       // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
-      if (!drop_caplist[i])
+      if (!container_info->drop_caplist[i])
       {
         if (cap_drop_bound(0) != 0 && !no_warnings)
         {
@@ -1030,15 +1157,27 @@ void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool 
           fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
         }
       }
+      else if (container_info->drop_caplist[i] != INIT_VALUE)
+      {
+        if (cap_drop_bound(container_info->drop_caplist[i]) != 0 && !no_warnings)
+        {
+          fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container_info->drop_caplist[i]));
+          fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
+        }
+      }
+      else
+      {
+        break;
+      }
     }
   }
   // Login to container.
   // Use exec() family function because system() may be unavailable now.
   usleep(200000);
-  if (execv(init[0], init) == -1)
+  if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
-    fprintf(stderr, "\033[31mFailed to execute init `%s`\n", init[0]);
+    fprintf(stderr, "\033[31mFailed to execute init `%s`\n", container_info->init_command[0]);
     fprintf(stderr, "execv() returned: %d\n", errno);
     fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
     exit(1);
@@ -1143,6 +1282,7 @@ int main(int argc, char **argv)
   bool *greetings = NULL;
   bool *privileged = NULL;
   char *init[1024] = {NULL};
+  struct CONTAINER_INFO *container_info;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
@@ -1303,14 +1443,33 @@ int main(int argc, char **argv)
       }
     }
   }
+  container_info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
+  container_info->container_dir = container_dir;
+  for (int i = 0; i <= CAP_LAST_CAP; i++)
+  {
+    container_info->drop_caplist[i] = drop_caplist[i];
+  }
+  for (int i = 0;;)
+  {
+    if (init[i] != NULL)
+    {
+      container_info->init_command[i] = strdup(init[i]);
+      container_info->init_command[i + 1] = NULL;
+      i++;
+    }
+    else
+    {
+      break;
+    }
+  }
   // Pure-chroot and unshare container are two functions now.
   if (use_unshare)
   {
-    run_unshare_container(container_dir, drop_caplist, no_warnings, init);
+    run_unshare_container(container_info, no_warnings);
   }
   else
   {
-    run_chroot_container(container_dir, drop_caplist, no_warnings, init);
+    run_chroot_container(container_info, no_warnings);
   }
   return 0;
 }

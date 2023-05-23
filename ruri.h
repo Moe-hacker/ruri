@@ -29,6 +29,30 @@
 #define INIT_VALUE -114
 // Version info.
 #define CONTAINER_VERSION "2.0-dev"
+// Info of containers.
+struct CONTAINERS
+{
+    // For container_daemon()
+    char *container_dir;
+    char *unshare_pid;
+    char *drop_caplist[CAP_LAST_CAP + 1];
+    // TODO
+    // MAX:128 envs
+    char *env[256];
+    struct CONTAINERS *container;
+};
+// Info of a container to create.
+struct CONTAINER_INFO
+{
+    // For init_unshare_container() and container_daemon()
+    char *container_dir;
+    cap_value_t drop_caplist[CAP_LAST_CAP + 1];
+    char *init_command[1024];
+    // For init_container
+    char *mountpoint[256];
+    // Only be used in container_daemon()
+    char *unshare_pid;
+};
 // Function list.
 // For centering output.
 void show_n_spaces(int n);
@@ -60,8 +84,8 @@ int send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_server(struct sockaddr_un addr, int sockfd);
 // For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr);
-//TODO
-// For container_ps().
+// TODO
+//  For container_ps().
 void read_all_nodes(struct CONTAINERS *container);
 // List all running unshare containers.
 void container_ps(void);
@@ -74,30 +98,11 @@ void container_daemon(void);
 // Used for run_chroot_container, do some checks before chroot().
 bool check_container(char *container_dir);
 // Run unshare container, called by main().
-void run_unshare_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[]);
+void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings);
 // Run chroot container, called by main(), run_unshare_container() and init_unshare_container().
-void run_chroot_container(char *container_dir, cap_value_t drop_caplist[], bool *no_warnings, char *init[]);
+void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnings);
 // Kill&umount container.
 void umount_container(char *container_dir);
-// Info of containers.
-struct CONTAINERS
-{
-    // For container_daemon()
-    char *container_dir;
-    char *unshare_pid;
-    char *drop_caplist[CAP_LAST_CAP + 1];
-    struct CONTAINERS *container;
-};
-// Info of a container to create.
-struct CONTAINER_INFO
-{
-    // For init_unshare_container() and container_daemon()
-    char *container_dir;
-    cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-    char *init_command[1024];
-    // Will be ignored in init_unshare_container()
-    char *unshare_pid;
-};
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

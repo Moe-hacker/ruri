@@ -22,6 +22,7 @@ You can read this doc in :
 ```
 ### About:      
 &emsp;moe-container is now renamed as ruri.    
+&emsp;ruri is pronounced as /lʊlɪ/, or you can call it `瑠璃`. Although it sounds like it should be cyan, I chose <font color=#FEE4D0>#FEE4D0</font>  as its accent color.        
 &emsp;ruri runs a linux container with namespaces and dropped capabilities. It is designed to provide better security for Linux containers on devices that do not support docker.       
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
 &emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.      
@@ -52,7 +53,7 @@ For static compilation:
 - pkg-config
 ### Usage:    
 ```text
-  ruri [Other options] / ([Args] <container directory> <init command>)
+  ruri [Other options] [<Args> <container directory> <init command>]
 Other options:
   -v                 :Show version info
   -h                 :Show helps
