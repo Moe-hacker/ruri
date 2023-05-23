@@ -5,7 +5,7 @@
 
 -----------
 ### 关于：    
-&emsp;moe-container现更名为ruri(琉璃)！      
+&emsp;moe-container现更名为ruri(瑠璃)！      
 &emsp;文章开头那句引用没有对大佬不敬的意思，只是觉得在放在这里挺合适的引用下而已。             
 &emsp;也知道自己就是个萌新，大佬轻喷。         
 &emsp;这里是将来的termux-container中chroot和chroot-unshare容器底层实现，咱自己写的东西咱还是比较喜欢用MIT协议喵～        
@@ -31,7 +31,7 @@ make help       :显示帮助
 ```
 ### 用法：    
 ```text
-  ruri [其他选项] / ([参数] <容器目录> <初始化命令>)
+  ruri [其他选项] [<参数> <容器目录> <初始化命令>]
 其他选项:
   -v            :版本信息
   -h            :显示帮助

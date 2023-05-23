@@ -19,7 +19,7 @@ help :
 	@echo "  make static     :static compile"
 	@echo "  make clean      :clean"
 	@echo "Only for developer:"
-	@echo "  make dev        :compile without optimizations and enable gdb debug information"
+	@echo "  make dev        :compile without optimizations, enable gdb debug information and extra logs."
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
 	@echo "  libpthread,libcap"
