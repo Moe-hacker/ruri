@@ -27,7 +27,7 @@ You can read this doc in :
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
 &emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.      
 ### Features:
-- Written with 100% C programming language.          
+- Written with 100% C.          
 - Light weight, the binary is less than 1M.             
 - Controllable capability set.           
 - Automatically mount system runtime files and login to the container.        
