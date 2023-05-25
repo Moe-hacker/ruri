@@ -1,12 +1,18 @@
+include rule.make
+CC = clang
+OPTIONS = -lcap -lpthread
+RURI = ruri.c -o ruri
+BIN = ruri
+
 all :
-	clang -lcap -lpthread -O3 -z noexecstack -z now -fstack-protector-all -fPIE -pie ruri.c -o ruri
+	$(CC) $(OPTIONS) -O3 -z noexecstack -z now -fstack-protector-all -fPIE -pie $(RURI) 
 	strip ruri
 dev :
-	clang -lcap -lpthread -ggdb -Wall -Wextra -D__CONTAINER_DEV__ ruri.c -o ruri
+	$(CC) $(OPTIONS) -ggdb -Wall -Wextra -D__CONTAINER_DEV__ $(RURI)
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
-	clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -lpthread -O3 -z noexecstack -z now -fstack-protector-all -fPIE ruri.c -o ruri `pkg-config --variable=libdir libcap`/libcap.a 2>/dev/null||clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE ruri.c -o ruri
+	$(CC) $(OPTIONS) -static -ffunction-sections -fdata-sections -Wl,--gc-sections -O3 -z noexecstack -z now -fstack-protector-all -fPIE ruri.c -o ruri `pkg-config --variable=libdir libcap`/libcap.a 2>/dev/null||clang -static -ffunction-sections -fdata-sections -Wl,--gc-sections -lcap -O3 -z noexecstack -z now -fstack-protector-all -fPIE $(RURI) 
 	strip ruri
 install :all
 	install -m 777 ruri ${PREFIX}/bin/ruri
