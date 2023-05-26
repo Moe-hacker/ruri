@@ -496,8 +496,9 @@ void *init_unshare_container(void *arg)
   else if (unshare_pid == 0)
   {
     // Redirect stdin/stdout.
-    freopen("/dev/null", "r", stdout);
-    freopen("/dev/null", "r", stdin);
+    // BUG
+    //freopen("/dev/zero", "r", stdout);
+    //freopen("/dev/null", "r", stdin);
     bool no_warinings = true;
     run_chroot_container(container_info, &no_warinings);
   }
