@@ -496,8 +496,8 @@ void *init_unshare_container(void *arg)
   else if (unshare_pid == 0)
   {
     // XXX
-    //  Redirect stdin/stdout.
-    //  Not work, crashes.
+    // Redirect stdin/stdout.
+    // Not work, crashes.
     // freopen("/dev/zero", "r", stdout);
     // freopen("/dev/null", "r", stdin);
     bool no_warinings = true;
@@ -600,6 +600,7 @@ void container_daemon(void)
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
   sigprocmask(SIG_BLOCK, &sigs, 0);
+  // For pthread_create()
   pthread_t pthread_id;
   // Check if we are running with root privileges.
   if (getuid() != 0)
