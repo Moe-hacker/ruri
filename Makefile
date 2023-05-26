@@ -7,23 +7,23 @@ CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 CC = clang
 STRIP = strip
-CFLAGS = -lcap -lpthread
+LD_FLAGS = -lcap -lpthread
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
 SRC = ruri.c
 BIN = ruri
 RURI = $(SRC) -o $(BIN)
 all :
-	@$(CC) $(CFLAGS) $(OPTIMIZE_CFLAGS) -pie $(RURI)
+	@$(CC) $(OPTIMIZE_CFLAGS) -pie $(RURI) $(LD_FLAGS)
 	$(CC_LOG) $(BIN)
 	@$(STRIP) $(BIN)
 	$(STRIP_LOG) $(BIN)
 dev :
-	$(CC) $(CFLAGS) -ggdb -Wall -Wextra -D__CONTAINER_DEV__ $(RURI)
+	$(CC) -ggdb -Wall -Wextra -D__CONTAINER_DEV__ $(RURI) $(LD_FLAGS)
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
-	@$(CC) $(CFLAGS) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) `pkg-config --variable=libdir libcap`/libcap.a 2>/dev/null||clang $(STATIC_CFLAGS) -lcap $(OPTIMIZE_CFLAGS) $(RURI) 
+	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) -L`pkg-config --variable=libdir libcap` 2>/dev/null||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap 
 	$(CC_LOG) $(BIN)
 	@$(STRIP) $(BIN)
 	$(STRIP_LOG) $(BIN)
