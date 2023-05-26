@@ -495,10 +495,11 @@ void *init_unshare_container(void *arg)
   }
   else if (unshare_pid == 0)
   {
-    // Redirect stdin/stdout.
-    // BUG
-    //freopen("/dev/zero", "r", stdout);
-    //freopen("/dev/null", "r", stdin);
+    // XXX
+    //  Redirect stdin/stdout.
+    //  Not work, crashes.
+    // freopen("/dev/zero", "r", stdout);
+    // freopen("/dev/null", "r", stdin);
     bool no_warinings = true;
     run_chroot_container(container_info, &no_warinings);
   }
@@ -594,6 +595,11 @@ void container_daemon(void)
 {
   // Set process name.
   prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
+  // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
+  sigset_t sigs;
+  sigemptyset(&sigs);
+  sigaddset(&sigs, SIGTTIN);
+  sigprocmask(SIG_BLOCK, &sigs, 0);
   pthread_t pthread_id;
   // Check if we are running with root privileges.
   if (getuid() != 0)
