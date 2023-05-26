@@ -148,7 +148,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 #endif
   bool in = false;
   // Check if the cap to add is already in caplist.
-  for (int i = 0; i <= length; i++)
+  for (int i = 0; i < length; i++)
   {
     if (list[i] == cap)
     {
@@ -159,7 +159,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
   // Add cap to caplist.
   if (!in)
   {
-    for (int k = 0; k <= length; k++)
+    for (int k = 0; k < length; k++)
     {
       if (list[k] == INIT_VALUE)
       {
@@ -176,11 +176,11 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 #ifdef __CONTAINER_DEV__
   printf("Del %s from drop_caplist.\n", cap_to_name(cap));
 #endif
-  for (int i = 0; i <= length; i++)
+  for (int i = 0; i < length; i++)
   {
     if (list[i] == cap)
     {
-      while (i <= length - 1)
+      while (i < length - 1)
       {
         list[i] = list[i + 1];
         i++;
@@ -200,7 +200,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
     container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
     container->container_dir = strdup(container_dir);
     container->unshare_pid = strdup(unshare_pid);
-    for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+    for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
     {
       if (drop_caplist[i] != NULL)
       {
@@ -1286,19 +1286,19 @@ int main(int argc, char **argv)
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
-  for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+  for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     drop_caplist[i] = INIT_VALUE;
   }
   cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND};
   cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
   cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {};
-  for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+  for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     keep_caplist_extra[i] = INIT_VALUE;
   }
   cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {};
-  for (int i = 0; i <= (CAP_LAST_CAP + 1); i++)
+  for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     drop_caplist_extra[i] = INIT_VALUE;
   }
@@ -1425,7 +1425,7 @@ int main(int argc, char **argv)
   // Comply with capability-set policy specified.
   if (drop_caplist_extra[0] != INIT_VALUE)
   {
-    for (unsigned long i = 0; i <= (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
+    for (unsigned long i = 0; i < (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
     {
       if (drop_caplist_extra[i] != INIT_VALUE)
       {
@@ -1435,7 +1435,7 @@ int main(int argc, char **argv)
   }
   if (keep_caplist_extra[0] != INIT_VALUE)
   {
-    for (unsigned long i = 0; i <= (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
+    for (unsigned long i = 0; i < (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
     {
       if (keep_caplist_extra[i] != INIT_VALUE)
       {
