@@ -495,11 +495,6 @@ void *init_unshare_container(void *arg)
   }
   else if (unshare_pid == 0)
   {
-    // XXX
-    // Redirect stdin/stdout.
-    // Not work, crashes.
-    // freopen("/dev/zero", "r", stdout);
-    // freopen("/dev/null", "r", stdin);
     bool no_warinings = true;
     run_chroot_container(container_info, &no_warinings);
   }
@@ -593,6 +588,17 @@ void init_container(void)
 // |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
 void container_daemon(void)
 {
+  // Fork itself into the background.
+  pid_t pid = fork();
+  if (pid > 0)
+  {
+    exit(0);
+  }
+  else if (pid < 0)
+  {
+    perror("fork");
+    exit(1);
+  }
   // Set process name.
   prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
