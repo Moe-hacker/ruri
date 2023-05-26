@@ -497,7 +497,7 @@ void *init_unshare_container(void *arg)
   {
     // Redirect stdin/stdout.
     freopen("/dev/null", "r", stdout);
-    freopen("/dev/zero", "r", stdout);
+    freopen("/dev/null", "r", stdin);
     bool no_warinings = true;
     run_chroot_container(container_info, &no_warinings);
   }
