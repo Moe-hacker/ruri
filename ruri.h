@@ -87,8 +87,15 @@ char *read_msg_client(struct sockaddr_un addr);
 // TODO
 //  For container_ps().
 void read_all_nodes(struct CONTAINERS *container);
+// TODO
 // List all running unshare containers.
 void container_ps(void);
+// TODO
+// Send kill message to daemon.
+void kill_daemon(void);
+// TODO
+// For container_daemon(), kill and umount all containers.
+void umount_all_containers(struct CONTAINERS *container);
 // Called by container_daemon(), init an unshare container in the background.
 void *init_unshare_container(void *arg);
 // Run after chroot(), called by run_chroot_container().

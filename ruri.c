@@ -397,6 +397,14 @@ void container_ps(void)
 {
   // TODO:connect to container_daemon.
 }
+// TODO
+void kill_daemon(void){
+  // TODO
+}
+// TODO
+void umount_all_containers(struct CONTAINERS *container){
+  // TODO
+}
 // For daemon, init an unshare container in the background.
 void *init_unshare_container(void *arg)
 {
