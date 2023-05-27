@@ -330,6 +330,8 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
   // Send messages.
   return send(sockfd, msg, strlen(msg), 0);
 }
+// BUG
+// crash.
 // For daemon, return the messages have been read.
 char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
@@ -347,7 +349,14 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   read(sock_new, msg, 4096);
   close(sock_new);
 #ifdef __CONTAINER_DEV__
-  printf("%s%s\n", "Daemon read msg: ", msg);
+  if (msg != NULL)
+  {
+    printf("%s%s\n", "Daemon read msg: ", msg);
+  }
+  else
+  {
+    printf("%s\n", "Daemon read msg: NULL");
+  }
 #endif
   return msg;
 }
@@ -366,13 +375,22 @@ char *read_msg_client(struct sockaddr_un addr)
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Connect to daemon.
   connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
-  // Maybe unnecessary.
   msg = (char *)malloc(4096);
   // Read messages.
-  read(sockfd, msg, 4096);
+  if (read(sockfd, msg, 4096) <= 0)
+  {
+    msg = NULL;
+  }
   close(sockfd);
 #ifdef __CONTAINER_DEV__
-  printf("%s%s\n", "Client read msg: ", msg);
+  if (msg != NULL)
+  {
+    printf("%s%s\n", "Client read msg: ", msg);
+  }
+  else
+  {
+    printf("%s\n", "Client read msg: NULL");
+  }
 #endif
   return msg;
 }
@@ -398,12 +416,24 @@ void container_ps(void)
   // TODO:connect to container_daemon.
 }
 // TODO
-void kill_daemon(void){
+void kill_daemon(void)
+{
   // TODO
 }
 // TODO
-void umount_all_containers(struct CONTAINERS *container){
+void umount_all_containers(struct CONTAINERS *container)
+{
   // TODO
+  if (container == NULL)
+  {
+    // TODO:send endps
+    return;
+  }
+  else
+  {
+    // TODO:send container info
+    umount_all_containers(container->container);
+  }
 }
 // For daemon, init an unshare container in the background.
 void *init_unshare_container(void *arg)
@@ -633,7 +663,7 @@ void container_daemon(void)
   struct CONTAINERS *container = NULL;
   // Set default value.
   // Message to read.
-  char *msg;
+  char *msg = NULL;
   // Container info.
   char *container_dir;
   struct CONTAINER_INFO container_info;
@@ -667,7 +697,8 @@ void container_daemon(void)
   // Check if container daemon is already running.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
-  if (strcmp("Nya!", read_msg_client(addr)) == 0)
+  msg = read_msg_client(addr);
+  if (msg != NULL && (strcmp("Nya!", msg) == 0))
   {
     close(sockfd);
     printf("\033[31mDaemon already running.\n");
@@ -689,7 +720,12 @@ void container_daemon(void)
   while (true)
   {
     // Get message.
+    msg = NULL;
     msg = read_msg_server(addr, sockfd);
+    if (msg == NULL)
+    {
+      continue;
+    }
     // Test message.
     if (strcmp("Nya?", msg) == 0)
     {
@@ -836,7 +872,6 @@ bool check_container(char *container_dir)
 void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
 {
   // Set default init.
-  // XXX:maybe it will never be run.
   if (container_info->init_command[0] == NULL)
   {
     container_info->init_command[0] = "/bin/su";
@@ -883,7 +918,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   pid_t unshare_pid = INIT_VALUE;
   // TODO:not run realpath here.
   //  Get the absolute path of container.
-  realpath(container_info->container_dir, container_info->container_dir);
+  container_info->container_dir = realpath(container_info->container_dir, NULL);
   // Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -901,7 +936,9 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   // Try to connect to container.sock and check if it's created by ruri daemon.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
-  if (strcmp("Nya!", read_msg_client(addr)) == 0)
+  char *msg;
+  msg = read_msg_client(addr);
+  if (msg != NULL && (strcmp("Nya!", msg) == 0))
   {
     daemon_running = true;
   }
@@ -1032,7 +1069,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     }
     else
     {
-      setns(fd, 0) == 0 ?: perror("setns");
+      setns(fd, 0);
     }
     fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
@@ -1041,7 +1078,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     }
     else
     {
-      setns(fd, 0) == 0 ?: perror("setns");
+      setns(fd, 0);
     }
     fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
@@ -1050,7 +1087,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     }
     else
     {
-      setns(fd, 0) == 0 ?: perror("setns");
+      setns(fd, 0);
     }
     fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
@@ -1059,7 +1096,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     }
     else
     {
-      setns(fd, 0) == 0 ?: perror("setns");
+      setns(fd, 0);
     }
     fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
@@ -1068,7 +1105,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     }
     else
     {
-      setns(fd, 0) == 0 ?: perror("setns");
+      setns(fd, 0);
     }
     fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
@@ -1077,7 +1114,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     }
     else
     {
-      setns(fd, 0) == 0 ?: perror("setns");
+      setns(fd, 0);
     }
     // Fork itself into namespace.
     // This can fix `can't fork: out of memory` issue.
@@ -1208,7 +1245,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
 // Kill&umount container.
 void umount_container(char *container_dir)
 {
-  realpath(container_dir, container_dir);
+  container_dir = realpath(container_dir, NULL);
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
@@ -1481,6 +1518,7 @@ int main(int argc, char **argv)
     }
     else
     {
+      container_info->init_command[i] = NULL;
       break;
     }
   }
