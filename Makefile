@@ -10,25 +10,26 @@ STRIP = strip
 LD_FLAGS = -lcap -lpthread
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
+DEV_CFLAGS = -ggdb -Wall -Wextra -fsanitize=address -fno-stack-protector -fno-omit-frame-pointer -fno-var-tracking  -D__CONTAINER_DEV__
 SRC = ruri.c
-BIN = ruri
-RURI = $(SRC) -o $(BIN)
+BIN_TARGET = ruri
+RURI = $(SRC) -o $(BIN_TARGET)
 all :
-	@$(CC) $(OPTIMIZE_CFLAGS) -pie $(RURI) $(LD_FLAGS)
-	$(CC_LOG) $(BIN)
-	@$(STRIP) $(BIN)
-	$(STRIP_LOG) $(BIN)
+	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
+	$(CC_LOG) $(BIN_TARGET)
+	@$(STRIP) $(BIN_TARGET)
+	$(STRIP_LOG) $(BIN_TARGET)
 dev :
-	$(CC) -ggdb -Wall -Wextra -D__CONTAINER_DEV__ $(RURI) $(LD_FLAGS)
+	$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
-	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) -L`pkg-config --variable=libdir libcap` 2>/dev/null||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap 
-	$(CC_LOG) $(BIN)
-	@$(STRIP) $(BIN)
-	$(STRIP_LOG) $(BIN)
+	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) -L`pkg-config --variable=libdir libcap` 2>/dev/null||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
+	$(CC_LOG) $(BIN_TARGET)
+	@$(STRIP) $(BIN_TARGET)
+	$(STRIP_LOG) $(BIN_TARGET)
 install :all
-	install -m 777 $(BIN) ${PREFIX}/bin/$(BIN)
+	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
 clean :
 	rm ruri||true
 help :
