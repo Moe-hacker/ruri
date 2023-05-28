@@ -330,8 +330,6 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
   // Send messages.
   return send(sockfd, msg, strlen(msg), 0);
 }
-// BUG
-// crash.
 // For daemon, return the messages have been read.
 char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
