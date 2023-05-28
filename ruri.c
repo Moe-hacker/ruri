@@ -332,10 +332,11 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
 }
 // BUG
 // crash.
-// For daemon, read message and write to msg.
-void read_msg_server(struct sockaddr_un addr, int sockfd, char *msg)
+// For daemon, return the messages have been read.
+char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
   char msg_read[PATH_MAX] = {'\000'};
+  char *ret;
   unsigned int size = sizeof(addr);
   // Accept a connection.
   int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
@@ -348,28 +349,29 @@ void read_msg_server(struct sockaddr_un addr, int sockfd, char *msg)
   close(sock_new);
   if (msg_read[0] != '\000')
   {
-    msg = strdup(msg_read);
+    ret = strdup(msg_read);
   }
   else
   {
-    msg = NULL;
+    ret = NULL;
   }
 #ifdef __CONTAINER_DEV__
-  if (msg_read[0] != '\000')
+  if (ret != NULL)
   {
-    printf("%s%s\n", "Daemon read msg: ", msg);
+    printf("%s%s\n", "Daemon read msg: ", ret);
   }
   else
   {
     printf("%s\n", "Daemon read msg: NULL");
   }
 #endif
-  return;
+  return ret;
 }
-// For client, read message and write to msg.
-void read_msg_client(struct sockaddr_un addr, char *msg)
+// For client, return the messages have been read.
+char *read_msg_client(struct sockaddr_un addr)
 {
   char msg_read[PATH_MAX] = {'\000'};
+  char *ret;
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
   {
@@ -385,24 +387,24 @@ void read_msg_client(struct sockaddr_un addr, char *msg)
   read(sockfd, msg_read, PATH_MAX);
   if (msg_read[0] != '\000')
   {
-    msg = strdup(msg_read);
+    ret = strdup(msg_read);
   }
   else
   {
-    msg = NULL;
+    ret = NULL;
   }
   close(sockfd);
 #ifdef __CONTAINER_DEV__
-  if (msg_read[0] != '\000')
+  if (ret != NULL)
   {
-    printf("%s%s\n", "Client read msg: ", msg);
+    printf("%s%s\n", "Client read msg: ", ret);
   }
   else
   {
     printf("%s\n", "Client read msg: NULL");
   }
 #endif
-  return;
+  return ret;
 }
 // TODO
 // For container_ps().
@@ -680,12 +682,14 @@ void container_daemon(void)
   container_info.container_dir = NULL;
   container_info.init_command[0] = NULL;
   container_info.unshare_pid = NULL;
+  container_info.mountpoint[0] = NULL;
+  container_info.env[0] = NULL;
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     container_info.drop_caplist[i] = INIT_VALUE;
   }
   pid_t unshare_pid;
-  char *drop_caplist[CAP_LAST_CAP + 1];
+  char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -707,7 +711,7 @@ void container_daemon(void)
   // Check if container daemon is already running.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
-  read_msg_client(addr, msg);
+  msg = read_msg_client(addr);
   if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
   {
     close(sockfd);
@@ -731,11 +735,17 @@ void container_daemon(void)
   {
     // Get message.
     msg = NULL;
-    read_msg_server(addr, sockfd, msg);
+    msg = read_msg_server(addr, sockfd);
     if (msg == NULL)
     {
       continue;
     }
+#ifdef __CONTAINER_DEV__
+    else
+    {
+      printf("%s%s\n", "daemon msg read", msg);
+    }
+#endif
     // Test message.
     if (strcmp("Nya?", msg) == 0)
     {
@@ -744,7 +754,7 @@ void container_daemon(void)
     // Kill a container.
     else if (strcmp("del", msg) == 0)
     {
-      read_msg_server(addr, sockfd, container_dir);
+      container_dir=read_msg_server(addr, sockfd);
       if (container_active(container_dir, container))
       {
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
@@ -760,7 +770,7 @@ void container_daemon(void)
     else if (strcmp("info", msg) == 0)
     {
       // Get container_dir.
-      read_msg_server(addr, sockfd, container_dir);
+      container_dir=read_msg_server(addr, sockfd);
       if (container_active(container_dir, container))
       {
         send_msg_server("Pid", addr, sockfd);
@@ -777,10 +787,10 @@ void container_daemon(void)
           container_info.drop_caplist[i] = INIT_VALUE;
         }
         // Read init command.
-        read_msg_server(addr, sockfd, msg);
+        msg = read_msg_server(addr, sockfd);
         for (int i = 0;;)
         {
-          read_msg_server(addr, sockfd, msg);
+          msg = read_msg_server(addr, sockfd);
           if (strcmp("endinit", msg) == 0)
           {
             break;
@@ -789,10 +799,10 @@ void container_daemon(void)
           container_info.init_command[i + 1] = NULL;
           i++;
         }
-        read_msg_server(addr, sockfd, msg);
+        msg = read_msg_server(addr, sockfd);
         for (int i = 0;;)
         {
-          read_msg_server(addr, sockfd, msg);
+          msg = read_msg_server(addr, sockfd);
           if (strcmp("endcaplist", msg) == 0)
           {
             break;
@@ -806,14 +816,14 @@ void container_daemon(void)
     }
     else if (strcmp("pid", msg) == 0)
     {
-      read_msg_server(addr, sockfd, msg);
+      msg = read_msg_server(addr, sockfd);
       container_info.unshare_pid = strdup(msg);
-      read_msg_server(addr, sockfd, msg);
+      msg = read_msg_server(addr, sockfd);
       container_info.container_dir = strdup(msg);
-      read_msg_server(addr, sockfd, msg);
+      msg = read_msg_server(addr, sockfd);
       for (int i = 0;;)
       {
-        read_msg_server(addr, sockfd, msg);
+        msg = read_msg_server(addr, sockfd);
         if (strcmp("endcaplist", msg) == 0)
         {
           break;
@@ -945,7 +955,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
   char *msg = NULL;
-  read_msg_client(addr, msg);
+  msg = read_msg_client(addr);
   if (msg != NULL && (strcmp("Nya!", msg) == 0))
   {
     daemon_running = true;
@@ -1015,7 +1025,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   {
     send_msg_client("info", addr);
     send_msg_client(container_info->container_dir, addr);
-    read_msg_client(addr, msg);
+    msg = read_msg_client(addr);
     if (strcmp(msg, "NaN") == 0)
     {
       send_msg_client("init", addr);
@@ -1056,7 +1066,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     // XXX
     // For setns(), we define it as char*.
     char *container_pid = NULL;
-    read_msg_client(addr, container_pid);
+    container_pid = read_msg_client(addr);
 #ifdef __CONTAINER_DEV__
     printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
@@ -1296,7 +1306,7 @@ void umount_container(char *container_dir)
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
   char *msg = NULL;
-  read_msg_client(addr, msg);
+  msg = read_msg_client(addr);
   if (strcmp("Nya!", msg) != 0)
   {
     printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
@@ -1305,7 +1315,7 @@ void umount_container(char *container_dir)
   {
     send_msg_client("del", addr);
     send_msg_client(container_dir, addr);
-    read_msg_client(addr, msg);
+    msg = read_msg_client(addr);
     if (strcmp(msg, "Fail") == 0)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running\033[0m\n");
@@ -1375,7 +1385,7 @@ int main(int argc, char **argv)
   {
     drop_caplist_extra[i] = INIT_VALUE;
   }
-  cap_value_t cap = -1;
+  cap_value_t cap = INIT_VALUE;
   // Parse command-line arguments.
   for (int arg_num = 1; arg_num < argc; arg_num++)
   {

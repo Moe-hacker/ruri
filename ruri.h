@@ -52,6 +52,9 @@ struct CONTAINER_INFO
     char *init_command[1024];
     // For init_container
     char *mountpoint[256];
+    // TODO
+    // MAX:128 envs
+    char *env[256];
     // Only be used in container_daemon()
     // For setns(), we define it as char*.
     char *unshare_pid;
@@ -83,10 +86,10 @@ bool container_active(char *container_dir, struct CONTAINERS *container);
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd);
 // For client, send msg to socket.
 int send_msg_client(char *msg, struct sockaddr_un addr);
-// For daemon, read message and write to msg.
-void read_msg_server(struct sockaddr_un addr, int sockfd, char *msg);
-// For client, read message and write to msg.
-void read_msg_client(struct sockaddr_un addr, char *msg);
+// For daemon, return the messages have been read.
+char *read_msg_server(struct sockaddr_un addr, int sockfd);
+// For client, return the messages have been read.
+char *read_msg_client(struct sockaddr_un addr);
 // TODO
 //  For container_ps().
 void read_all_nodes(struct CONTAINERS *container);
