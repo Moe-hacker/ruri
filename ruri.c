@@ -332,10 +332,10 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
 }
 // BUG
 // crash.
-// For daemon, return the messages have been read.
-char *read_msg_server(struct sockaddr_un addr, int sockfd)
+// For daemon, read message and write to msg.
+void read_msg_server(struct sockaddr_un addr, int sockfd, char *msg)
 {
-  char *msg;
+  char msg_read[PATH_MAX] = {'\000'};
   unsigned int size = sizeof(addr);
   // Accept a connection.
   int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
@@ -343,13 +343,19 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   struct timeval timeout = {3, 0};
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-  // Maybe unnecessary.
-  msg = (char *)malloc(4096);
   // Read messages.
-  read(sock_new, msg, 4096);
+  read(sock_new, msg_read, PATH_MAX);
   close(sock_new);
+  if (msg_read[0] != '\000')
+  {
+    msg = strdup(msg_read);
+  }
+  else
+  {
+    msg = NULL;
+  }
 #ifdef __CONTAINER_DEV__
-  if (msg != NULL)
+  if (msg_read[0] != '\000')
   {
     printf("%s%s\n", "Daemon read msg: ", msg);
   }
@@ -358,12 +364,12 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
     printf("%s\n", "Daemon read msg: NULL");
   }
 #endif
-  return msg;
+  return;
 }
-// For client, return the messages have been read.
-char *read_msg_client(struct sockaddr_un addr)
+// For client, read message and write to msg.
+void read_msg_client(struct sockaddr_un addr, char *msg)
 {
-  char *msg;
+  char msg_read[PATH_MAX] = {'\000'};
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
   {
@@ -375,15 +381,19 @@ char *read_msg_client(struct sockaddr_un addr)
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Connect to daemon.
   connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
-  msg = (char *)malloc(4096);
   // Read messages.
-  if (read(sockfd, msg, 4096) <= 0)
+  read(sockfd, msg_read, PATH_MAX);
+  if (msg_read[0] != '\000')
+  {
+    msg = strdup(msg_read);
+  }
+  else
   {
     msg = NULL;
   }
   close(sockfd);
 #ifdef __CONTAINER_DEV__
-  if (msg != NULL)
+  if (msg_read[0] != '\000')
   {
     printf("%s%s\n", "Client read msg: ", msg);
   }
@@ -392,7 +402,7 @@ char *read_msg_client(struct sockaddr_un addr)
     printf("%s\n", "Client read msg: NULL");
   }
 #endif
-  return msg;
+  return;
 }
 // TODO
 // For container_ps().
@@ -498,7 +508,7 @@ void *init_unshare_container(void *arg)
     addr.sun_family = AF_UNIX;
     // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
     char *tmpdir = getenv("TMPDIR");
-    if (!tmpdir || strcmp(tmpdir, "") == 0)
+    if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
     {
       tmpdir = "/tmp";
     }
@@ -654,7 +664,7 @@ void container_daemon(void)
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
-  if (ld_preload && strcmp(ld_preload, "") != 0)
+  if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
     exit(1);
@@ -665,10 +675,10 @@ void container_daemon(void)
   // Message to read.
   char *msg = NULL;
   // Container info.
-  char *container_dir;
+  char *container_dir = NULL;
   struct CONTAINER_INFO container_info;
   container_info.container_dir = NULL;
-  *container_info.init_command = NULL;
+  container_info.init_command[0] = NULL;
   container_info.unshare_pid = NULL;
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
@@ -686,7 +696,7 @@ void container_daemon(void)
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   char *tmpdir = getenv("TMPDIR");
-  if (!tmpdir || strcmp(tmpdir, "") == 0)
+  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
   {
     tmpdir = "/tmp";
   }
@@ -697,8 +707,8 @@ void container_daemon(void)
   // Check if container daemon is already running.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
-  msg = read_msg_client(addr);
-  if (msg != NULL && (strcmp("Nya!", msg) == 0))
+  read_msg_client(addr, msg);
+  if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
   {
     close(sockfd);
     printf("\033[31mDaemon already running.\n");
@@ -721,7 +731,7 @@ void container_daemon(void)
   {
     // Get message.
     msg = NULL;
-    msg = read_msg_server(addr, sockfd);
+    read_msg_server(addr, sockfd, msg);
     if (msg == NULL)
     {
       continue;
@@ -734,7 +744,7 @@ void container_daemon(void)
     // Kill a container.
     else if (strcmp("del", msg) == 0)
     {
-      container_dir = read_msg_server(addr, sockfd);
+      read_msg_server(addr, sockfd, container_dir);
       if (container_active(container_dir, container))
       {
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
@@ -750,7 +760,7 @@ void container_daemon(void)
     else if (strcmp("info", msg) == 0)
     {
       // Get container_dir.
-      container_dir = read_msg_server(addr, sockfd);
+      read_msg_server(addr, sockfd, container_dir);
       if (container_active(container_dir, container))
       {
         send_msg_server("Pid", addr, sockfd);
@@ -760,18 +770,17 @@ void container_daemon(void)
       {
         send_msg_server("NaN", addr, sockfd);
         container_info.container_dir = NULL;
-        *container_info.init_command = NULL;
+        container_info.init_command[0] = NULL;
         container_info.unshare_pid = NULL;
         for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
         {
           container_info.drop_caplist[i] = INIT_VALUE;
         }
         // Read init command.
-        read_msg_server(addr, sockfd);
-        int i = 0;
-        while (true)
+        read_msg_server(addr, sockfd, msg);
+        for (int i = 0;;)
         {
-          msg = read_msg_server(addr, sockfd);
+          read_msg_server(addr, sockfd, msg);
           if (strcmp("endinit", msg) == 0)
           {
             break;
@@ -780,11 +789,10 @@ void container_daemon(void)
           container_info.init_command[i + 1] = NULL;
           i++;
         }
-        read_msg_server(addr, sockfd);
-        i = 0;
-        while (true)
+        read_msg_server(addr, sockfd, msg);
+        for (int i = 0;;)
         {
-          msg = read_msg_server(addr, sockfd);
+          read_msg_server(addr, sockfd, msg);
           if (strcmp("endcaplist", msg) == 0)
           {
             break;
@@ -798,14 +806,14 @@ void container_daemon(void)
     }
     else if (strcmp("pid", msg) == 0)
     {
-      msg = read_msg_server(addr, sockfd);
+      read_msg_server(addr, sockfd, msg);
       container_info.unshare_pid = strdup(msg);
-      msg = read_msg_server(addr, sockfd);
+      read_msg_server(addr, sockfd, msg);
       container_info.container_dir = strdup(msg);
-      read_msg_server(addr, sockfd);
+      read_msg_server(addr, sockfd, msg);
       for (int i = 0;;)
       {
-        msg = read_msg_server(addr, sockfd);
+        read_msg_server(addr, sockfd, msg);
         if (strcmp("endcaplist", msg) == 0)
         {
           break;
@@ -818,7 +826,7 @@ void container_daemon(void)
       // Send ${unshare_pid} to ruri.
       send_msg_server(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
-      *container_info.init_command = NULL;
+      container_info.init_command[0] = NULL;
       container_info.unshare_pid = NULL;
       for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
       {
@@ -850,7 +858,7 @@ bool check_container(char *container_dir)
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
-  if (ld_preload && (strcmp(ld_preload, "") != 0))
+  if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
     return false;
@@ -924,7 +932,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   addr.sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
   char *tmpdir = getenv("TMPDIR");
-  if (!tmpdir || (strcmp(tmpdir, "") == 0))
+  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
   {
     tmpdir = "/tmp";
   }
@@ -936,8 +944,8 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   // Try to connect to container.sock and check if it's created by ruri daemon.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
-  char *msg;
-  msg = read_msg_client(addr);
+  char *msg = NULL;
+  read_msg_client(addr, msg);
   if (msg != NULL && (strcmp("Nya!", msg) == 0))
   {
     daemon_running = true;
@@ -1007,10 +1015,11 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   {
     send_msg_client("info", addr);
     send_msg_client(container_info->container_dir, addr);
-    if (strcmp(read_msg_client(addr), "NaN") == 0)
+    read_msg_client(addr, msg);
+    if (strcmp(msg, "NaN") == 0)
     {
       send_msg_client("init", addr);
-      for (int i = 0; true; i++)
+      for (int i = 0; i < 1023; i++)
       {
         if (container_info->init_command[i] != NULL)
         {
@@ -1045,7 +1054,9 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     // For setns()
     usleep(200000);
     // XXX
-    char *container_pid = read_msg_client(addr);
+    // For setns(), we define it as char*.
+    char *container_pid = NULL;
+    read_msg_client(addr, container_pid);
 #ifdef __CONTAINER_DEV__
     printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
@@ -1273,7 +1284,7 @@ void umount_container(char *container_dir)
   addr.sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
   char *tmpdir = getenv("TMPDIR");
-  if (!tmpdir || (strcmp(tmpdir, "") == 0))
+  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
   {
     tmpdir = "/tmp";
   }
@@ -1284,7 +1295,9 @@ void umount_container(char *container_dir)
   // Try to connect to container.sock and check if it's created by ruri daemon.
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
-  if (strcmp("Nya!", read_msg_client(addr)) != 0)
+  char *msg = NULL;
+  read_msg_client(addr, msg);
+  if (strcmp("Nya!", msg) != 0)
   {
     printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
   }
@@ -1292,7 +1305,8 @@ void umount_container(char *container_dir)
   {
     send_msg_client("del", addr);
     send_msg_client(container_dir, addr);
-    if (strcmp(read_msg_client(addr), "Fail") == 0)
+    read_msg_client(addr, msg);
+    if (strcmp(msg, "Fail") == 0)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running\033[0m\n");
     }
