@@ -1,5 +1,6 @@
 // Enable Linux features.
 #define _GNU_SOURCE
+#include <features.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -34,6 +35,7 @@ struct CONTAINERS
 {
     // For container_daemon()
     char *container_dir;
+    // For setns(), we define it as char*.
     char *unshare_pid;
     char *drop_caplist[CAP_LAST_CAP + 1];
     // TODO
@@ -51,6 +53,7 @@ struct CONTAINER_INFO
     // For init_container
     char *mountpoint[256];
     // Only be used in container_daemon()
+    // For setns(), we define it as char*.
     char *unshare_pid;
 };
 // Function list.
@@ -80,10 +83,10 @@ bool container_active(char *container_dir, struct CONTAINERS *container);
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd);
 // For client, send msg to socket.
 int send_msg_client(char *msg, struct sockaddr_un addr);
-// For daemon, return the messages have been read.
-char *read_msg_server(struct sockaddr_un addr, int sockfd);
-// For client, return the messages have been read.
-char *read_msg_client(struct sockaddr_un addr);
+// For daemon, read message and write to msg.
+void read_msg_server(struct sockaddr_un addr, int sockfd, char *msg);
+// For client, read message and write to msg.
+void read_msg_client(struct sockaddr_un addr, char *msg);
 // TODO
 //  For container_ps().
 void read_all_nodes(struct CONTAINERS *container);

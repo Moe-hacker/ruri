@@ -10,7 +10,7 @@ STRIP = strip
 LD_FLAGS = -lcap -lpthread
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
-DEV_CFLAGS = -ggdb -Wall -Wextra -fsanitize=address -fno-stack-protector -fno-omit-frame-pointer -fno-var-tracking  -D__CONTAINER_DEV__
+DEV_CFLAGS = -ggdb -Wall -Wextra -fsanitize=address -fno-stack-protector -fno-omit-frame-pointer -D__CONTAINER_DEV__
 SRC = ruri.c
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
