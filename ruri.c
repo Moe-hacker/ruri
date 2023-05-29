@@ -933,33 +933,33 @@ bool check_container(char *container_dir)
   if (container_dir == NULL)
   {
     fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-    return false;
+    exit(1);
   }
   // Refuse to use `/` for container directory.
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
-    return false;
+    exit(1);
   }
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
     fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    return false;
+    exit(1);
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
   if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
-    return false;
+    exit(1);
   }
   // Check if container directory exists.
   DIR *direxist;
   if ((direxist = opendir(container_dir)) == NULL)
   {
     fprintf(stderr, "\033[31mError: container directory does not exist !\033[0m\n");
-    return false;
+    exit(1);
   }
   else
   {
@@ -1015,9 +1015,6 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   }
 #endif
   pid_t unshare_pid = INIT_VALUE;
-  // TODO:not run realpath here.
-  //  Get the absolute path of container.
-  container_info->container_dir = realpath(container_info->container_dir, NULL);
   // Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -1295,10 +1292,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
     container_info->init_command[1] = "-";
     container_info->init_command[2] = NULL;
   }
-  if (!check_container(container_info->container_dir))
-  {
-    exit(1);
-  }
   // chroot into container.
   chroot(container_info->container_dir);
   chdir("/");
@@ -1355,28 +1348,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
 // Kill&umount container.
 void umount_container(char *container_dir)
 {
-  if (strcmp(container_dir, "/") == 0)
-  {
-    fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
-    exit(1);
-  }
-  // Check if we are running with root privileges.
-  if (getuid() != 0)
-  {
-    fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    exit(1);
-  }
-  // Check if container directory exists.
-  DIR *direxist;
-  if ((direxist = opendir(container_dir)) == NULL)
-  {
-    fprintf(stderr, "\033[31mError: container directory does not exist !\033[0m\n");
-    exit(1);
-  }
-  else
-  {
-    closedir(direxist);
-  }
   // Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -1507,9 +1478,12 @@ int main(int argc, char **argv)
       arg_num += 1;
       if (argv[arg_num] != NULL)
       {
-        container_dir = realpath(argv[arg_num], NULL);
-        umount_container(container_dir);
-        exit(0);
+        if (check_container(argv[arg_num]))
+        {
+          container_dir = realpath(argv[arg_num], NULL);
+          umount_container(container_dir);
+          exit(0);
+        }
       }
       else
       {
@@ -1560,7 +1534,12 @@ int main(int argc, char **argv)
     }
     else if ((strchr(argv[arg_num], '/') && strcmp(strchr(argv[arg_num], '/'), argv[arg_num]) == 0) || (strchr(argv[arg_num], '.') && strcmp(strchr(argv[arg_num], '.'), argv[arg_num]) == 0))
     {
-      container_dir = argv[arg_num];
+
+      // Get the absolute path of container.
+      if (check_container(argv[arg_num]))
+      {
+        container_dir = realpath(argv[arg_num], NULL);
+      }
       arg_num++;
       // Arguments after container_dir will be read as init command.
       int init_arg_num = 0;
