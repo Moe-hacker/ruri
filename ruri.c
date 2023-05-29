@@ -31,8 +31,8 @@
 void show_n_spaces(int n)
 {
   /*
-   * In fact it's needless
-   * But when I wrote it, I didn't know what's strcat. So it has been kept
+   * In fact it's needless.
+   * But when I wrote it, I didn't know what's strcat. So it has been kept.
    */
   int count;
   for (count = 1; count <= n; count++)
@@ -602,7 +602,7 @@ void *init_unshare_container(void *arg)
     send_msg_client("pid", addr);
     send_msg_client(container_pid, addr);
     send_msg_client(container_info->container_dir, addr);
-    //XXX
+    // XXX
     send_msg_client("caplist", addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
@@ -718,8 +718,6 @@ void init_container(void)
 // |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
 void container_daemon(void)
 {
-  /*
-  // BUG:
   // Fork itself into the background.
   pid_t pid = fork();
   if (pid > 0)
@@ -731,7 +729,6 @@ void container_daemon(void)
     perror("fork");
     exit(1);
   }
-  */
   // Set process name.
   prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
@@ -969,9 +966,10 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   // Set default init.
   if (container_info->init_command[0] == NULL)
   {
-    container_info->init_command[0] = "/bin/su";
-    container_info->init_command[1] = "-";
-    container_info->init_command[2] = NULL;
+    container_info->init_command[0] = "/bin/sh";
+    container_info->init_command[1] = "-c";
+    container_info->init_command[2] = "while :;do sleep 100s;done";
+    container_info->init_command[3] = NULL;
   }
 #ifdef __CONTAINER_DEV__
   printf("Run unshare container:\n");
@@ -1239,6 +1237,11 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
 // Also used for run_unshare_container and init_unshare_container.
 void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
 {
+  // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
+  sigset_t sigs;
+  sigemptyset(&sigs);
+  sigaddset(&sigs, SIGTTIN);
+  sigprocmask(SIG_BLOCK, &sigs, 0);
 #ifdef __CONTAINER_DEV__
   printf("Run chroot container:\n");
   printf("%s%s\n", "container_dir: ", container_info->container_dir);
