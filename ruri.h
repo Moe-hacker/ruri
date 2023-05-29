@@ -120,10 +120,8 @@ void read_all_nodes(struct CONTAINERS *container);
 // TODO
 // List all running unshare containers.
 void container_ps(void);
-// TODO
-// Send kill message to daemon.
+// For `container -K`
 void kill_daemon(void);
-// TODO
 // For container_daemon(), kill and umount all containers.
 void umount_all_containers(struct CONTAINERS *container);
 // Called by container_daemon(), init an unshare container in the background.
@@ -132,7 +130,6 @@ void *init_unshare_container(void *arg);
 void init_container(void);
 // Daemon process used to store unshare container information and init unshare container.
 void container_daemon(void);
-// TODO :IT should be run in main()
 // Used for run_chroot_container, do some checks before chroot().
 bool check_container(char *container_dir);
 // Run unshare container, called by main().
