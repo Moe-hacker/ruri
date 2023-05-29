@@ -873,6 +873,13 @@ void container_daemon(void)
           container_info.init_command[i + 1] = NULL;
           i++;
         }
+        if (container_info.init_command[0] == NULL)
+        {
+          container_info.init_command[0] = "/bin/sh";
+          container_info.init_command[1] = "-c";
+          container_info.init_command[2] = "while :;do sleep 100s;done";
+          container_info.init_command[3] = NULL;
+        }
         msg = read_msg_server(addr, sockfd);
         for (int i = 0;;)
         {
@@ -966,10 +973,9 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   // Set default init.
   if (container_info->init_command[0] == NULL)
   {
-    container_info->init_command[0] = "/bin/sh";
-    container_info->init_command[1] = "-c";
-    container_info->init_command[2] = "while :;do sleep 100s;done";
-    container_info->init_command[3] = NULL;
+    container_info->init_command[0] = "/bin/su";
+    container_info->init_command[1] = "-";
+    container_info->init_command[2] = NULL;
   }
 #ifdef __CONTAINER_DEV__
   printf("Run unshare container:\n");
@@ -1031,7 +1037,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   send_msg_client("Nya?", addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if (msg != NULL && (strcmp("Nya!", msg) == 0))
+  if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
   {
     daemon_running = true;
   }
@@ -1104,15 +1110,18 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
     if (strcmp(msg, "NaN") == 0)
     {
       send_msg_client("init", addr);
-      for (int i = 0; i < 1023; i++)
+      if (strcmp(container_info->init_command[0], "/bin/su") != 0)
       {
-        if (container_info->init_command[i] != NULL)
+        for (int i = 0; i < 1023; i++)
         {
-          send_msg_client(container_info->init_command[i], addr);
-        }
-        else
-        {
-          break;
+          if (container_info->init_command[i] != NULL)
+          {
+            send_msg_client(container_info->init_command[i], addr);
+          }
+          else
+          {
+            break;
+          }
         }
       }
       send_msg_client("endinit", addr);
