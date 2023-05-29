@@ -148,6 +148,7 @@ void show_helps(bool greetings)
   printf("  -v                 :Show version info\n");
   printf("  -h                 :Show helps\n");
   printf("  -D                 :Run rurid\n");
+  printf("  -K                 :Kill rurid\n");
   printf("  -l                 :List all running unshare containers\n");
   printf("  -U [container_dir] :Umount&kill a container\n");
   printf("Args for running a container:\n");
@@ -500,29 +501,71 @@ void container_ps(void)
    */
   // TODO:connect to container_daemon.
 }
-// TODO
+// For `container -K`
 void kill_daemon(void)
 {
   /*
-   * Not completed, nothing to comment.
+   * It will just send `kill` to rurid.
+   * If rurid is not running, show error and exit.
    */
-  // TODO
+  // Set socket address.
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+  char *tmpdir = getenv("TMPDIR");
+  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX] = {0};
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Try to connect to container.sock and check if it's created by ruri daemon.
+  // Container daemon will return `Nya!`.
+  send_msg_client("Nya?", addr);
+  char *msg = NULL;
+  msg = read_msg_client(addr);
+  if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
+  {
+    fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
+  }
+  send_msg_client("kill", addr);
+  return;
 }
-// TODO
+// For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
 {
   /*
-   * Not completed, nothing to comment.
+   * Kill and umount all containers.
+   * container_daemon() will exit after calling to this function, so free() is needless here.
    */
-  // TODO
   if (container == NULL)
   {
-    // TODO:send endps
     return;
   }
   else
   {
-    // TODO:send container info
+    kill(atoi(container->unshare_pid), SIGKILL);
+    // Get path to umount.
+    char sys_dir[PATH_MAX];
+    char proc_dir[PATH_MAX];
+    char dev_dir[PATH_MAX];
+    strcpy(sys_dir, container->container_dir);
+    strcpy(proc_dir, container->container_dir);
+    strcpy(dev_dir, container->container_dir);
+    strcat(sys_dir, "/sys");
+    strcat(proc_dir, "/proc");
+    strcat(dev_dir, "/dev");
+    // Force umount all directories for 10 times.
+    printf("\033[1;38;2;254;228;208mUmounting container......\n");
+    for (int i = 1; i < 10; i++)
+    {
+      umount2(sys_dir, MNT_DETACH | MNT_FORCE);
+      umount2(dev_dir, MNT_DETACH | MNT_FORCE);
+      umount2(proc_dir, MNT_DETACH | MNT_FORCE);
+      umount2(container->container_dir, MNT_DETACH | MNT_FORCE);
+    }
     umount_all_containers(container->container);
   }
 }
@@ -923,6 +966,11 @@ void container_daemon(void)
       {
         container_info.drop_caplist[i] = INIT_VALUE;
       }
+    }
+    else if (strcmp("kill", msg) == 0)
+    {
+      umount_all_containers(container);
+      exit(0);
     }
   }
 }
@@ -1461,6 +1509,11 @@ int main(int argc, char **argv)
     else if (strcmp(argv[arg_num], "-D") == 0)
     {
       container_daemon();
+      exit(0);
+    }
+    else if (strcmp(argv[arg_num], "-K") == 0)
+    {
+      kill_daemon();
       exit(0);
     }
     else if (strcmp(argv[arg_num], "-h") == 0)

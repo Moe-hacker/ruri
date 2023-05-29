@@ -58,6 +58,7 @@ Other options:
   -v                 :Show version info
   -h                 :Show helps
   -D                 :Run rurid
+  -K                 :Kill rurid
   -l                 :List all running unshare containers
   -U [container_dir] :Umount&kill a container
 Args for running a container:
