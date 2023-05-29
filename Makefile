@@ -15,19 +15,19 @@ SRC = ruri.c
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
 all :
-	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
 	$(CC_LOG) $(BIN_TARGET)
-	@$(STRIP) $(BIN_TARGET)
+	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
+	@$(STRIP) $(BIN_TARGET)
 dev :
 	$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
-	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) -L`pkg-config --variable=libdir libcap` 2>/dev/null||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
 	$(CC_LOG) $(BIN_TARGET)
-	@$(STRIP) $(BIN_TARGET)
+	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) -L`pkg-config --variable=libdir libcap` 2>/dev/null||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
 	$(STRIP_LOG) $(BIN_TARGET)
+	@$(STRIP) $(BIN_TARGET)
 install :all
 	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
 clean :

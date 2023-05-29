@@ -6,5 +6,7 @@ tmpfile
 a.out
 tmp.c
 ruri
+ruri-amd64.zip
+ruri-arm64.zip
 .vscode/
 massif*
