@@ -1125,18 +1125,23 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
       container_info->init_command[0] = "/bin/su";
       container_info->init_command[1] = "-";
       container_info->init_command[2] = NULL;
+      send_msg_client("caplist", addr);
       if (container_info->drop_caplist[0] != INIT_VALUE)
       {
         for (int i = 0; i < CAP_LAST_CAP + 1; i++)
         {
-          if (container_info->drop_caplist[i] != INIT_VALUE)
+          // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+          if (!container_info->drop_caplist[i])
+          {
+            send_msg_client(cap_to_name(0), addr);
+          }
+          else if (container_info->drop_caplist[i] != INIT_VALUE)
           {
             send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
-            // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
-            if (!container_info->drop_caplist[i])
-            {
-              send_msg_client(cap_to_name(0), addr);
-            }
+          }
+          else
+          {
+            break;
           }
         }
       }
@@ -1151,12 +1156,12 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
 #ifdef __CONTAINER_DEV__
     printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
-    char cgroup_ns_file[PATH_MAX];
-    char ipc_ns_file[PATH_MAX];
-    char mount_ns_file[PATH_MAX];
-    char pid_ns_file[PATH_MAX];
-    char time_ns_file[PATH_MAX];
-    char uts_ns_file[PATH_MAX];
+    char cgroup_ns_file[PATH_MAX] = {'\000'};
+    char ipc_ns_file[PATH_MAX] = {'\000'};
+    char mount_ns_file[PATH_MAX] = {'\000'};
+    char pid_ns_file[PATH_MAX] = {'\000'};
+    char time_ns_file[PATH_MAX] = {'\000'};
+    char uts_ns_file[PATH_MAX] = {'\000'};
     sprintf(cgroup_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/cgroup");
     sprintf(ipc_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/ipc");
     sprintf(mount_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/mnt");
@@ -1424,7 +1429,7 @@ int main(int argc, char **argv)
   bool *greetings = NULL;
   bool *privileged = NULL;
   char *init[1024] = {NULL};
-  struct CONTAINER_INFO *container_info;
+  struct CONTAINER_INFO *container_info = NULL;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
