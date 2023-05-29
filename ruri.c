@@ -1355,7 +1355,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
 // Kill&umount container.
 void umount_container(char *container_dir)
 {
-  container_dir = realpath(container_dir, NULL);
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
@@ -1396,7 +1395,7 @@ void umount_container(char *container_dir)
   send_msg_client("Nya?", addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if (strcmp("Nya!", msg) != 0)
+  if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
     printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
   }
@@ -1508,7 +1507,8 @@ int main(int argc, char **argv)
       arg_num += 1;
       if (argv[arg_num] != NULL)
       {
-        umount_container(argv[arg_num]);
+        container_dir = realpath(argv[arg_num], NULL);
+        umount_container(container_dir);
         exit(0);
       }
       else
