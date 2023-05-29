@@ -10,7 +10,8 @@ STRIP = strip
 LD_FLAGS = -lcap -lpthread
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
-DEV_CFLAGS = -ggdb -Wall -Wextra -no-pie -O0 -fsanitize=undefined -fsanitize-recover=address,all -fno-stack-protector -fno-omit-frame-pointer -D__CONTAINER_DEV__
+DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__CONTAINER_DEV__
+ASAN_CFLAGS = -no-pie -O0 -fsanitize=undefined -fsanitize-recover=address,all
 SRC = ruri.c
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
@@ -21,6 +22,8 @@ all :
 	@$(STRIP) $(BIN_TARGET)
 dev :
 	$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+asan :
+	$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
@@ -38,8 +41,9 @@ help :
 	@echo "  make install    :install ruri to \$$PREFIX"
 	@echo "  make static     :static compile"
 	@echo "  make clean      :clean"
-	@echo "Only for developer:"
+	@echo "Only for testing:"
 	@echo "  make dev        :compile without optimizations, enable gdb debug information and extra logs."
+	@echo "  make asan       :enable ASAN"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
 	@echo "  libpthread,libcap"

@@ -40,8 +40,9 @@ You can read this doc in :
   make install    :make all and install ruri to $PREFIX
   make static     :static compile
   make clean      :clean
-*Only for developer:
+*Only for testing: 
   make dev        :compile without optimizations and enable gdb debug information     
+  make asan       :enable ASAN 
 ```
 #### Dependent libraries:
 For dynamic compilation:         

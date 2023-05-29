@@ -290,12 +290,18 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
    */
   if (container == NULL)
   {
-    return container;
+    return NULL;
   }
   else
   {
-    container = container->container;
-    container->container = del_node(container);
+    if (container->container != NULL)
+    {
+      container=container->container;
+      container->container = del_node(container);
+    }
+    else{
+      container=NULL;
+    }
   }
   return container;
 }
@@ -710,7 +716,7 @@ void *init_unshare_container(void *arg)
     bool no_warinings = true;
     run_chroot_container(container_info, &no_warinings);
   }
-  return NULL;
+  return 0;
 }
 // Run after chroot(), called by run_chroot_container()
 void init_container(void)
