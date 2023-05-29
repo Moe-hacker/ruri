@@ -114,11 +114,9 @@ int send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_server(struct sockaddr_un addr, int sockfd);
 // For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr);
-// TODO
 //  For container_ps().
-void read_all_nodes(struct CONTAINERS *container);
-// TODO
-// List all running unshare containers.
+void read_all_nodes(struct CONTAINERS *container,struct sockaddr_un addr, int sockfd);
+// For `ruri -l`
 void container_ps(void);
 // For `container -K`
 void kill_daemon(void);

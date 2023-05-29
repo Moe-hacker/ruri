@@ -474,32 +474,72 @@ char *read_msg_client(struct sockaddr_un addr)
 #endif
   return ret;
 }
-// TODO
 // For container_ps().
-void read_all_nodes(struct CONTAINERS *container)
+void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd)
 {
   /*
-   * Not completed, nothing to comment.
+   * It will read all nodes in container struct and send them to ruri.
+   * If it reaches the end of container struct, send `endps`.
    */
   if (container == NULL)
   {
-    // TODO:send endps
+    send_msg_server("endps", addr, sockfd);
     return;
   }
   else
   {
-    // TODO:send container info
-    read_all_nodes(container->container);
+    send_msg_server(container->container_dir, addr, sockfd);
+    send_msg_server(container->unshare_pid, addr, sockfd);
+    read_all_nodes(container->container, addr, sockfd);
+    return;
   }
 }
-// TODO
-// List all running unshare containers.
+// For `ruri -l`
 void container_ps(void)
 {
   /*
-   * Not completed, nothing to comment.
+   * It will connect to rurid and list running containers.
+   * If rurid is not running, just show error and exit.
    */
-  // TODO:connect to container_daemon.
+  // Set socket address.
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+  char *tmpdir = getenv("TMPDIR");
+  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX] = {0};
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/container.sock");
+  strcpy(addr.sun_path, socket_path);
+  // Try to connect to container.sock and check if it's created by ruri daemon.
+  // Container daemon will return `Nya!`.
+  send_msg_client("Nya?", addr);
+  char *msg = NULL;
+  msg = read_msg_client(addr);
+  if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
+  {
+    fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
+  }
+  send_msg_client("ps", addr);
+  printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
+  printf("\033[1;38;2;152;245;225m=========================\n");
+  while (true)
+  {
+    msg = read_msg_client(addr);
+    if (strcmp(msg, "endps") == 0)
+    {
+      break;
+    }
+    else
+    {
+      printf("\033[1;38;2;254;228;208m%s", msg);
+      msg = read_msg_client(addr);
+      printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
+    }
+  }
 }
 // For `container -K`
 void kill_daemon(void)
@@ -558,7 +598,6 @@ void umount_all_containers(struct CONTAINERS *container)
     strcat(proc_dir, "/proc");
     strcat(dev_dir, "/dev");
     // Force umount all directories for 10 times.
-    printf("\033[1;38;2;254;228;208mUmounting container......\n");
     for (int i = 1; i < 10; i++)
     {
       umount2(sys_dir, MNT_DETACH | MNT_FORCE);
@@ -971,6 +1010,10 @@ void container_daemon(void)
     {
       umount_all_containers(container);
       exit(0);
+    }
+    else if (strcmp("ps", msg) == 0)
+    {
+      read_all_nodes(container,addr,sockfd);
     }
   }
 }
