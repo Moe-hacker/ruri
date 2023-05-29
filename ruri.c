@@ -1,29 +1,39 @@
+// SPDX-License-Identifier: MIT
 /*
- *                             _ooOoo_
- *                            o8888888o
- *                            88" . "88
- *                            (| -_- |)
- *                            O\  =  /O
- *                         ____/`---'\____
- *                       .'  \\|     |//  `.
- *                      /  \\|||  :  |||//  \
- *                     /  _||||| -:- |||||-  \
- *                     |   | \\\  -  /// |   |
- *                     | \_|  ''\---/''  |   |
- *                     \  .-\__  `-`  ___/-. /
- *                   ___`. .'  /--.--\  `. . __
- *                ."" '<  `.___\_<|>_/___.'  >'"".
- *               | | :  `- \`.;`\ _ /`;.`/ - ` : | |
- *               \  \ `-.   \_ __\ /__ _/   .-` /  /
- *          ======`-.____`-.___\_____/___.-`____.-'======
- *                             `=---='
- *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- *                     佛祖保佑        永无BUG
+ * This file is part of ruri.
+ *  MIT License
+ *
+ * Copyright (c) 2022-2023 Moe-hacker
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 #include "ruri.h"
+/*
+ * The macro __CONTAINER_DEV__ will enable extra logs if it's enabled.
+ */
 // For centering output.
 void show_n_spaces(int n)
 {
+  /*
+   * In fact it's needless
+   * But when I wrote it, I didn't know what's strcat. So it has been kept
+   */
   int count;
   for (count = 1; count <= n; count++)
   {
@@ -35,6 +45,9 @@ void show_n_spaces(int n)
 // As an easter agg.
 void show_greetings(void)
 {
+  /*
+   * Nothing's useful at this function, just for fun.
+   */
   // Get the size of terminal.
   struct winsize size;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -91,6 +104,10 @@ void show_greetings(void)
 // For `ruri -v`.
 void show_version_info(void)
 {
+  /*
+   * Just show version info and license.
+   * Version info is defined in macro CONTAINER_VERSION.
+   */
   printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", CONTAINER_VERSION, "\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("\n");
@@ -116,6 +133,10 @@ void show_version_info(void)
 // For `ruri -h`.
 void show_helps(bool greetings)
 {
+  /*
+   * Help page of ruri.
+   * It needs to be perfected.
+   */
   // Do not show greeting if command-line args are wrong.
   if (greetings)
   {
@@ -143,6 +164,10 @@ void show_helps(bool greetings)
 // Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
+  /*
+   * If the cap is already in list, just do nothing and quit.
+   * Caps are initialized by INIT_VALUE, the INIT_VALUE will be ignored when dropping caps.
+   */
 #ifdef __CONTAINER_DEV__
   printf("Add %s to drop_caplist.\n", cap_to_name(cap));
 #endif
@@ -173,6 +198,10 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 {
+  /*
+   * If the cap is not in list, just do nothing and quit.
+   * Or we will overwrite it with the next cap to keep the list continuous.
+   */
 #ifdef __CONTAINER_DEV__
   printf("Del %s from drop_caplist.\n", cap_to_name(cap));
 #endif
@@ -194,6 +223,11 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 // Add a node to CONTAINERS struct.
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container)
 {
+  /*
+   * Use malloc() to request the memory of the node and add container info to node.
+   * If current node is already used, try the next one.
+   * The next node of the node added will be NULL.
+   */
   if (container == NULL)
   {
     // Request memory of container struct.
@@ -223,6 +257,11 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
 // Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
 {
+  /*
+   * It will return the node that matches the container_dir.
+   * NULL pointer will be returned if reaching the end of all nodes.
+   * However, as container_active() will be run before it to check if container's running, NULL pointer will never be returned.
+   */
   if (container != NULL)
   {
     if (strcmp(container->container_dir, container_dir) == 0)
@@ -243,6 +282,11 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
 // Delete a node from CONTAINERS struct.
 struct CONTAINERS *del_node(struct CONTAINERS *container)
 {
+  /*
+   * It will use the next node to overwrite current node.
+   * When the next node is NULL, it will stop.
+   * Not using free() here, needn't because the struct is too small.
+   */
   if (container == NULL)
   {
     return container;
@@ -250,13 +294,17 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
   else
   {
     container = container->container;
-    container = del_node(container);
+    container->container = del_node(container);
   }
   return container;
 }
 // Delete a container from CONTAINERS struct.
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
+  /*
+   * Call to del_node() to delete the node that matches container_dir.
+   * If container is a NULL pointer, just quit, but this will never happen.
+   */
   // It will never be true.
   if (container == NULL)
   {
@@ -277,6 +325,11 @@ struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *contain
 // Check if a container is running.
 bool container_active(char *container_dir, struct CONTAINERS *container)
 {
+  /*
+   * If there's a node that matches container_dir, it will return true.
+   * Or it will return false.
+   * It's used to determine whether a container is running.
+   */
   // Reached the end of container struct.
   if (container == NULL)
   {
@@ -296,6 +349,10 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
 // For daemon.
 int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 {
+  /*
+   * It will accept a new connection and write msg to socket.
+   * Although the returned value has never been used, it will return the number written.
+   */
 #ifdef __CONTAINER_DEV__
   printf("%s%s\n", "Daemon send msg: ", msg);
 #endif
@@ -312,6 +369,10 @@ int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 // For client.
 int send_msg_client(char *msg, struct sockaddr_un addr)
 {
+  /*
+   * It will send msg to socket and quit.
+   * Although the returned value has never been used, it will return the number written.
+   */
 #ifdef __CONTAINER_DEV__
   printf("%s%s\n", "Client send msg: ", msg);
 #endif
@@ -333,6 +394,10 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
 // For daemon, return the messages have been read.
 char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
+  /*
+   * It will return the messages have been read.
+   * Use strdup() to avoid memory problems.
+   */
   char msg_read[PATH_MAX] = {'\000'};
   char *ret;
   unsigned int size = sizeof(addr);
@@ -368,6 +433,10 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
 // For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr)
 {
+  /*
+   * It will return the messages have been read.
+   * Use strdup() to avoid memory problems.
+   */
   char msg_read[PATH_MAX] = {'\000'};
   char *ret;
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -408,6 +477,9 @@ char *read_msg_client(struct sockaddr_un addr)
 // For container_ps().
 void read_all_nodes(struct CONTAINERS *container)
 {
+  /*
+   * Not completed, nothing to comment.
+   */
   if (container == NULL)
   {
     // TODO:send endps
@@ -423,16 +495,25 @@ void read_all_nodes(struct CONTAINERS *container)
 // List all running unshare containers.
 void container_ps(void)
 {
+  /*
+   * Not completed, nothing to comment.
+   */
   // TODO:connect to container_daemon.
 }
 // TODO
 void kill_daemon(void)
 {
+  /*
+   * Not completed, nothing to comment.
+   */
   // TODO
 }
 // TODO
 void umount_all_containers(struct CONTAINERS *container)
 {
+  /*
+   * Not completed, nothing to comment.
+   */
   // TODO
   if (container == NULL)
   {
@@ -521,6 +602,7 @@ void *init_unshare_container(void *arg)
     send_msg_client("pid", addr);
     send_msg_client(container_pid, addr);
     send_msg_client(container_info->container_dir, addr);
+    //XXX
     send_msg_client("caplist", addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
@@ -636,6 +718,8 @@ void init_container(void)
 // |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
 void container_daemon(void)
 {
+  /*
+  // BUG:
   // Fork itself into the background.
   pid_t pid = fork();
   if (pid > 0)
@@ -647,6 +731,7 @@ void container_daemon(void)
     perror("fork");
     exit(1);
   }
+  */
   // Set process name.
   prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
@@ -738,12 +823,6 @@ void container_daemon(void)
     {
       continue;
     }
-#ifdef __CONTAINER_DEV__
-    else
-    {
-      printf("%s%s\n", "daemon msg read", msg);
-    }
-#endif
     // Test message.
     if (strcmp("Nya?", msg) == 0)
     {
@@ -752,7 +831,7 @@ void container_daemon(void)
     // Kill a container.
     else if (strcmp("del", msg) == 0)
     {
-      container_dir=read_msg_server(addr, sockfd);
+      container_dir = read_msg_server(addr, sockfd);
       if (container_active(container_dir, container))
       {
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
@@ -768,7 +847,7 @@ void container_daemon(void)
     else if (strcmp("info", msg) == 0)
     {
       // Get container_dir.
-      container_dir=read_msg_server(addr, sockfd);
+      container_dir = read_msg_server(addr, sockfd);
       if (container_active(container_dir, container))
       {
         send_msg_server("Pid", addr, sockfd);
