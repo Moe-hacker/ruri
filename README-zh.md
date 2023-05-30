@@ -34,20 +34,21 @@ make asan       :开启ASAN
 ```text
   ruri [其他选项] [<参数> <容器目录> <初始化命令>]
 其他选项:
-  -v              :版本信息
-  -h              :显示帮助
-  -D              :运行rurid
-  -K              :杀死rurid
-  -l              :列出所有运行中的unshare容器
-  -U [容器目录]   :杀死容器并解除挂载
+  -v                    :版本信息
+  -h                    :显示帮助
+  -D                    :运行rurid
+  -K                    :杀死rurid
+  -l                    :列出所有运行中的unshare容器
+  -U [容器目录]         :杀死容器并解除挂载
 容器运行参数:
-  -u              :开启unshare特性
-  -d              :移除更多特权以提供更好的安全性
-  -p              :运行特权容器
- --keep [cap]     :保留指定权限
- --drop [cap]     :移除指定权限
-  -e [env] [value]:设置环境变量env为value
-  -w              :抑制警告
+  -u                    :开启unshare特性
+  -d                    :移除更多特权以提供更好的安全性
+  -p                    :运行特权容器
+ --keep [cap]           :保留指定权限
+ --drop [cap]           :移除指定权限
+  -e [env] [value]      :设置环境变量env为value
+  -m [dir] [mountpoint] :挂载dir到mountpoint
+  -w                    :抑制警告
 ```
 &emsp;注：
 - 容器必须以root权限运行。      
