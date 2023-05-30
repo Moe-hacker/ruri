@@ -59,11 +59,9 @@ struct CONTAINERS
 {
     // For container_daemon()
     char *container_dir;
-    // For setns(), we define it as char*.
+    // For write(), we define it as char*.
     char *unshare_pid;
     char *drop_caplist[CAP_LAST_CAP + 1];
-    // TODO
-    // MAX:128 envs
     char *env[256];
     struct CONTAINERS *container;
 };
@@ -74,10 +72,9 @@ struct CONTAINER_INFO
     char *container_dir;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
     char *init_command[1024];
-    // For init_container
-    char *mountpoint[256];
+    // Mount before chroot()
     // TODO
-    // MAX:128 envs
+    char *mountpoint[256];
     char *env[256];
     // Only be used in container_daemon()
     // For setns(), we define it as char*.
@@ -97,7 +94,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container);
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1],char *env[256], struct CONTAINERS *container);
 // Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
 // Delete a node from CONTAINERS struct.
@@ -115,7 +112,7 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd);
 // For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr);
 //  For container_ps().
-void read_all_nodes(struct CONTAINERS *container,struct sockaddr_un addr, int sockfd);
+void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
 // For `ruri -l`
 void container_ps(void);
 // For `container -K`
