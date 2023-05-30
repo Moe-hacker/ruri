@@ -157,6 +157,7 @@ void show_helps(bool greetings)
   printf("  -p                 :Run privileged container\n");
   printf(" --keep [cap]        :Keep the specified cap\n");
   printf(" --drop [cap]        :Drop the specified cap\n");
+  printf("  -e [env] [value]   :Set env to its value\n");
   printf("  -w                 :Disable warnings\n");
   printf("This program should be run with root privileges\n");
   printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
@@ -222,7 +223,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   return;
 }
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], struct CONTAINERS *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[256], struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and add container info to node.
@@ -246,12 +247,23 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
+    for (int i = 0; i < 256; i++)
+    {
+      if (env[i] != NULL)
+      {
+        container->env[i] = strdup(env[i]);
+      }
+      else
+      {
+        break;
+      }
+    }
     container->container = NULL;
     return container;
   }
   else
   {
-    container->container = add_node(container_dir, unshare_pid, drop_caplist, container->container);
+    container->container = add_node(container_dir, unshare_pid, drop_caplist, env, container->container);
     return container;
   }
 }
@@ -296,11 +308,12 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
   {
     if (container->container != NULL)
     {
-      container=container->container;
+      container = container->container;
       container->container = del_node(container);
     }
-    else{
-      container=NULL;
+    else
+    {
+      container = NULL;
     }
   }
   return container;
@@ -528,6 +541,7 @@ void container_ps(void)
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
+    exit(1);
   }
   send_msg_client("ps", addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
@@ -794,6 +808,7 @@ void init_container(void)
 // TODO:
 // 遵守caplist
 // XXX
+// TODO
 // Received messages and reply contents:
 // --------------------------------------------------------------------------------------------------------------------------
 // |                                 read                               |            send             |      comment
@@ -847,6 +862,7 @@ void container_daemon(void)
   }
   pid_t unshare_pid;
   char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
+  char *env[256] = {NULL};
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -1001,7 +1017,8 @@ void container_daemon(void)
         drop_caplist[i + 1] = NULL;
         i++;
       }
-      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, container);
+      // TODO
+      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, container);
       // Send ${unshare_pid} to ruri.
       send_msg_server(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
@@ -1019,7 +1036,7 @@ void container_daemon(void)
     }
     else if (strcmp("ps", msg) == 0)
     {
-      read_all_nodes(container,addr,sockfd);
+      read_all_nodes(container, addr, sockfd);
     }
   }
 }
@@ -1435,6 +1452,20 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
       }
     }
   }
+  // XXX
+  // BUG: not work if init is /bin/su -
+  for (int i = 0;;)
+  {
+    if (container_info->env[i] != NULL)
+    {
+      setenv(container_info->env[i], container_info->env[i + 1], 1);
+      i = i + 2;
+    }
+    else
+    {
+      break;
+    }
+  }
   // Login to container.
   // Use exec() family function because system() may be unavailable now.
   usleep(200000);
@@ -1493,17 +1524,17 @@ void umount_container(char *container_dir)
   strcat(proc_dir, "/proc");
   strcat(dev_dir, "/dev");
   // Force umount all directories for 10 times.
-  printf("\033[1;38;2;254;228;208mUmounting container......\n");
+  printf("\033[1;38;2;254;228;208mUmount container.\n");
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE);
-    usleep(200000);
+    usleep(2000);
     umount2(dev_dir, MNT_DETACH | MNT_FORCE);
-    usleep(200000);
+    usleep(2000);
     umount2(proc_dir, MNT_DETACH | MNT_FORCE);
-    usleep(200000);
+    usleep(2000);
     umount2(container_dir, MNT_DETACH | MNT_FORCE);
-    usleep(200000);
+    usleep(2000);
   }
   return;
 }
@@ -1526,6 +1557,7 @@ int main(int argc, char **argv)
   bool *greetings = NULL;
   bool *privileged = NULL;
   char *init[1024] = {NULL};
+  char *env[256] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
@@ -1613,29 +1645,69 @@ int main(int argc, char **argv)
     {
       no_warnings = &on;
     }
-    else if (strcmp(argv[arg_num], "--keep") == 0)
+    // XXX
+    else if (strcmp(argv[arg_num], "-e") == 0)
     {
       arg_num++;
-      if (cap_from_name(argv[arg_num], &cap) == 0)
+      if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
       {
-        add_to_list(keep_caplist_extra, CAP_LAST_CAP + 1, cap);
+        for (int i = 0; i < 256; i++)
+        {
+          if (env[i] == NULL)
+          {
+            env[i] = strdup(argv[arg_num]);
+            arg_num++;
+            env[i + 1] = strdup(argv[arg_num]);
+            env[i + 2] = NULL;
+            break;
+          }
+        }
       }
       else
       {
-        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+        fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow env");
+        exit(1);
+      }
+    }
+    else if (strcmp(argv[arg_num], "--keep") == 0)
+    {
+      arg_num++;
+      if (argv[arg_num] != NULL)
+      {
+        if (cap_from_name(argv[arg_num], &cap) == 0)
+        {
+          add_to_list(keep_caplist_extra, CAP_LAST_CAP + 1, cap);
+        }
+        else
+        {
+          fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+          exit(1);
+        }
+      }
+      else
+      {
+        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
         exit(1);
       }
     }
     else if (strcmp(argv[arg_num], "--drop") == 0)
     {
       arg_num++;
-      if (cap_from_name(argv[arg_num], &cap) == 0)
+      if (argv[arg_num] != NULL)
       {
-        add_to_list(drop_caplist_extra, CAP_LAST_CAP + 1, cap);
+        if (cap_from_name(argv[arg_num], &cap) == 0)
+        {
+          add_to_list(drop_caplist_extra, CAP_LAST_CAP + 1, cap);
+        }
+        else
+        {
+          fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+          exit(1);
+        }
       }
       else
       {
-        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+        fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
         exit(1);
       }
     }
@@ -1649,6 +1721,7 @@ int main(int argc, char **argv)
       }
       arg_num++;
       // Arguments after container_dir will be read as init command.
+      // XXX
       int init_arg_num = 0;
       if (argv[arg_num])
       {
@@ -1718,6 +1791,19 @@ int main(int argc, char **argv)
     else
     {
       container_info->init_command[i] = NULL;
+      break;
+    }
+  }
+  for (int i = 0; i < 256; i++)
+  {
+    if (env[i] != NULL)
+    {
+      container_info->env[i] = strdup(env[i]);
+      container_info->env[i + 1] = NULL;
+    }
+    else
+    {
+      container_info->env[i] = NULL;
       break;
     }
   }

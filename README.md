@@ -68,6 +68,7 @@ Args for running a container:
   -p                 :Run privileged container
  --keep [cap]        :Keep the specified cap
  --drop [cap]        :Drop the specified cap
+  -e [env] [value]   :Set env to its value
   -w                 :Disable warnings
 ```
 &emsp;This program should be run with root privileges.        
