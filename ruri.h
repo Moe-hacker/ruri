@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 /*
+ *
  * This file is part of ruri.
- *  MIT License
+ *
+ * MIT License
  *
  * Copyright (c) 2022-2023 Moe-hacker
  *
@@ -22,6 +24,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 // Enable Linux features.
 #define _GNU_SOURCE
@@ -62,7 +65,10 @@ struct CONTAINERS
     // For write(), we define it as char*.
     char *unshare_pid;
     char *drop_caplist[CAP_LAST_CAP + 1];
+    // TODO
     char *env[256];
+    // TODO
+    char *mountpoint[256];
     struct CONTAINERS *container;
 };
 // Info of a container to create.
@@ -94,7 +100,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1],char *env[256], struct CONTAINERS *container);
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[256], char *mountpoint[256], struct CONTAINERS *container);
 // Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
 // Delete a node from CONTAINERS struct.

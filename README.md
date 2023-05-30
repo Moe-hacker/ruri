@@ -54,25 +54,26 @@ For static compilation:
 - pkg-config
 ### Usage:    
 ```text
-  ruri [Other options] [<Args> <container directory> <init command>]
+ruri [Other options] [<Args> <container directory> <init command>]
 Other options:
-  -v                 :Show version info
-  -h                 :Show helps
-  -D                 :Run rurid
-  -K                 :Kill rurid
-  -l                 :List all running unshare containers
-  -U [container_dir] :Umount&kill a container
+  -v                    :Show version info
+  -h                    :Show helps
+  -D                    :Run rurid
+  -K                    :Kill rurid
+  -l                    :List all running unshare containers
+  -U [container_dir]    :Umount&kill a container
 Args for running a container:
-  -u                 :Enable unshare feature
-  -d                 :Drop more capabilities for better security
-  -p                 :Run privileged container
- --keep [cap]        :Keep the specified cap
- --drop [cap]        :Drop the specified cap
-  -e [env] [value]   :Set env to its value
-  -w                 :Disable warnings
+  -u                    :Enable unshare feature
+  -d                    :Drop more capabilities for better security
+  -p                    :Run privileged container
+ --keep [cap]           :Keep the specified cap
+ --drop [cap]           :Drop the specified cap
+  -e [env] [value]      :Set env to its value
+  -m [dir] [mountpoint] :Mount dir to mountpoint
+  -w                    :Disable warnings
 ```
 &emsp;This program should be run with root privileges.        
-&emsp;Unset $LD_PRELOAD before running this program to fix issues in termux.         
+&emsp;Please unset $LD_PRELOAD before running this program.              
 ### About rurid:         
 &emsp;Since some functions need to be shared, rurid is not a separate binary program. rurid is a background service process that stores unshare container information and initializes the container so that the same container always runs in the same namespaces. But it is not a necessary process. Pure chroot containers do not rely on rurid, unshare containers will only show a warning if daemon is not running, but it is still recommended to start rurid before running the container.        
 

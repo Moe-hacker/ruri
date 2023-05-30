@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 /*
+ *
  * This file is part of ruri.
- *  MIT License
+ * MIT License
  *
  * Copyright (c) 2022-2023 Moe-hacker
  *
@@ -22,6 +23,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 #include "ruri.h"
 /*
@@ -145,22 +147,23 @@ void show_helps(bool greetings)
   printf("\033[1;38;2;254;228;208mUsage:\n");
   printf("  ruri [Other options] [<Args> <container directory> <init command>]\n");
   printf("Other options:\n");
-  printf("  -v                 :Show version info\n");
-  printf("  -h                 :Show helps\n");
-  printf("  -D                 :Run rurid\n");
-  printf("  -K                 :Kill rurid\n");
-  printf("  -l                 :List all running unshare containers\n");
-  printf("  -U [container_dir] :Umount&kill a container\n");
+  printf("  -v                    :Show version info\n");
+  printf("  -h                    :Show helps\n");
+  printf("  -D                    :Run rurid\n");
+  printf("  -K                    :Kill rurid\n");
+  printf("  -l                    :List all running unshare containers\n");
+  printf("  -U [container_dir]    :Umount&kill a container\n");
   printf("Args for running a container:\n");
-  printf("  -u                 :Enable unshare feature\n");
-  printf("  -d                 :Drop more capabilities for better security\n");
-  printf("  -p                 :Run privileged container\n");
-  printf(" --keep [cap]        :Keep the specified cap\n");
-  printf(" --drop [cap]        :Drop the specified cap\n");
-  printf("  -e [env] [value]   :Set env to its value\n");
-  printf("  -w                 :Disable warnings\n");
+  printf("  -u                    :Enable unshare feature\n");
+  printf("  -d                    :Drop more capabilities for better security\n");
+  printf("  -p                    :Run privileged container\n");
+  printf(" --keep [cap]           :Keep the specified cap\n");
+  printf(" --drop [cap]           :Drop the specified cap\n");
+  printf("  -e [env] [value]      :Set env to its value\n");
+  printf("  -m [dir] [mountpoint] :Mount dir to mountpoint\n");
+  printf("  -w                    :Disable warnings\n");
   printf("This program should be run with root privileges\n");
-  printf("Unset $LD_PRELOAD before running this program to fix issues in termux\033[0m\n");
+  printf("Please unset $LD_PRELOAD before running this program\033[0m\n");
   return;
 }
 // Add a cap to caplist.
@@ -223,7 +226,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   return;
 }
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[256], struct CONTAINERS *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[256], char *mountpoint[256], struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and add container info to node.
@@ -258,12 +261,23 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
+    for (int i = 0; i < 256; i++)
+    {
+      if (mountpoint[i] != NULL)
+      {
+        container->mountpoint[i] = strdup(mountpoint[i]);
+      }
+      else
+      {
+        break;
+      }
+    }
     container->container = NULL;
     return container;
   }
   else
   {
-    container->container = add_node(container_dir, unshare_pid, drop_caplist, env, container->container);
+    container->container = add_node(container_dir, unshare_pid, drop_caplist, env, mountpoint, container->container);
     return container;
   }
 }
@@ -863,6 +877,7 @@ void container_daemon(void)
   pid_t unshare_pid;
   char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
   char *env[256] = {NULL};
+  char *mountpoint[256] = {NULL};
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -1018,7 +1033,7 @@ void container_daemon(void)
         i++;
       }
       // TODO
-      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, container);
+      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
       // Send ${unshare_pid} to ruri.
       send_msg_server(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
@@ -1558,6 +1573,7 @@ int main(int argc, char **argv)
   bool *privileged = NULL;
   char *init[1024] = {NULL};
   char *env[256] = {NULL};
+  char *mountpoint[256] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
@@ -1659,6 +1675,30 @@ int main(int argc, char **argv)
             arg_num++;
             env[i + 1] = strdup(argv[arg_num]);
             env[i + 2] = NULL;
+            break;
+          }
+        }
+      }
+      else
+      {
+        fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow env");
+        exit(1);
+      }
+    }
+    // XXX
+    else if (strcmp(argv[arg_num], "-m") == 0)
+    {
+      arg_num++;
+      if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
+      {
+        for (int i = 0; i < 256; i++)
+        {
+          if (mountpoint[i] == NULL)
+          {
+            mountpoint[i] = strdup(argv[arg_num]);
+            arg_num++;
+            mountpoint[i + 1] = strdup(argv[arg_num]);
+            mountpoint[i + 2] = NULL;
             break;
           }
         }
@@ -1804,6 +1844,19 @@ int main(int argc, char **argv)
     else
     {
       container_info->env[i] = NULL;
+      break;
+    }
+  }
+  for (int i = 0; i < 256; i++)
+  {
+    if (mountpoint[i] != NULL)
+    {
+      container_info->mountpoint[i] = strdup(mountpoint[i]);
+      container_info->mountpoint[i + 1] = NULL;
+    }
+    else
+    {
+      container_info->mountpoint[i] = NULL;
       break;
     }
   }
