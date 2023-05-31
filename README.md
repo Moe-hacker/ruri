@@ -1,6 +1,3 @@
-<p align="center">「 咲誇る花 美しく、</p>    
-<p align="center">散り行く運命 知りながら、</p>    
-<p align="center">僅かな時の彩を 」</p>          
 
 ![](https://github.com/Moe-hacker/ruri/raw/main/logo.png)
 
@@ -80,5 +77,7 @@ Args for running a container:
 &emsp;Since some functions need to be shared, rurid is not a separate binary program. rurid is a background service process that stores unshare container information and initializes the container so that the same container always runs in the same namespaces. But it is not a necessary process. Pure chroot containers do not rely on rurid, unshare containers will only show a warning if daemon is not running, but it is still recommended to start rurid before running the container.        
 
 --------
-<p align="center">「見つけてくれたね ありがとう」</p>
+<p align="center">「 咲誇る花 美しく、</p>    
+<p align="center">散り行く運命 知りながら、</p>    
+<p align="center">僅かな時の彩を 」</p>          
 <p align="center">(>_×)</p>
