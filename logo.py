@@ -38,12 +38,15 @@ else:
 # Set image parameters.
 if no_text==False:
     figure, axes = pyplot.subplots(dpi=200, figsize=(8, 4))
+    pyplot.box(False)
+    pyplot.xticks([])
+    pyplot.yticks([])
 else:
     figure, axes = pyplot.subplots(dpi=128, figsize=(4, 4))
+    axes.set_axis_off()
+    #figure.set_size_inches((4,4))
+    pyplot.subplots_adjust(left=0,bottom=0,right=1,top=1)
 axes.set_aspect(1)
-pyplot.box(False)
-pyplot.xticks([])
-pyplot.yticks([])
 # Draw the sectors.
 draw_circle = patches.Wedge((0, 6), 6, 210, 330, fill=False, linewidth=0.6, color='#fee4d0')
 axes.add_artist(draw_circle)
@@ -74,14 +77,20 @@ else:
     pyplot.plot([0, 0], [-6, 6], linewidth=0.6, color='#fee4d0')
 pyplot.plot([math.sqrt(3) * 3 * (-1), math.sqrt(3) * 3], [-3, 3], linewidth=0.6, color='#fee4d0')
 pyplot.plot([math.sqrt(3) * 3, math.sqrt(3) * 3 * (-1)], [-3, 3], linewidth=0.6, color='#fee4d0')
-pyplot.xlim(-8, 8)
-pyplot.ylim(-8, 8)
+if no_text==False:
+    pyplot.xlim(-8, 8)
+    pyplot.ylim(-8, 8)
+else:
+    pyplot.xlim(-6.3, 6.3)
+    pyplot.ylim(-6.3, 6.3)
 # Draw the title.
 if no_text==False:
     pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.49, fontsize=39, fontweight="ultralight")
     pyplot.text(-0.1, -0.12, "Linux containers, simple & secure", fontsize=16,fontweight="ultralight", transform=axes.transAxes, color='#fee4d0')
     # Save as logo.png.
     pyplot.savefig('logo.png', transparent=True)
+    pyplot.show()
 else:
     # Save as logo.svg.
     pyplot.savefig('logo.svg', transparent=True)
+    pyplot.show()
