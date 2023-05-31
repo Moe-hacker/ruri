@@ -26,8 +26,20 @@
 import matplotlib.pyplot as pyplot
 import matplotlib.patches as patches
 import math
+import sys
+if len(sys.argv)>1:
+    if sys.argv[1]=="-n":
+        no_text=True
+    else:
+        print("Usage: logo.py <-n>")
+        exit(1)
+else:
+    no_text=False
 # Set image parameters.
-figure, axes = pyplot.subplots(dpi=90, figsize=(8, 4))
+if no_text==False:
+    figure, axes = pyplot.subplots(dpi=200, figsize=(8, 4))
+else:
+    figure, axes = pyplot.subplots(dpi=128, figsize=(4, 4))
 axes.set_aspect(1)
 pyplot.box(False)
 pyplot.xticks([])
@@ -56,13 +68,20 @@ pyplot.plot([math.sqrt(3) * 3 * (-1), 0], [3, 6], linewidth=0.6, color='#fee4d0'
 pyplot.plot([math.sqrt(3) * 3 * (-1), 0], [-3, -6], linewidth=0.6, color='#fee4d0')
 '''
 # Draw the diagonals.
-pyplot.plot([-0.0088, -0.0088], [-6, 6], linewidth=0.6, color='#fee4d0')
+if no_text==False:
+    pyplot.plot([-0.003, -0.003], [-6, 6], linewidth=0.6, color='#fee4d0')
+else:
+    pyplot.plot([0, 0], [-6, 6], linewidth=0.6, color='#fee4d0')
 pyplot.plot([math.sqrt(3) * 3 * (-1), math.sqrt(3) * 3], [-3, 3], linewidth=0.6, color='#fee4d0')
 pyplot.plot([math.sqrt(3) * 3, math.sqrt(3) * 3 * (-1)], [-3, 3], linewidth=0.6, color='#fee4d0')
 pyplot.xlim(-8, 8)
 pyplot.ylim(-8, 8)
 # Draw the title.
-pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.49, fontsize=39, fontweight="ultralight")
-pyplot.text(-0.05, -0.12, "Linux containers, simple & secure", fontsize=16,fontweight="ultralight", transform=axes.transAxes, color='#fee4d0')
-# Save as logo.png.
-pyplot.savefig('logo.png', transparent=True)
+if no_text==False:
+    pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.49, fontsize=39, fontweight="ultralight")
+    pyplot.text(-0.1, -0.12, "Linux containers, simple & secure", fontsize=16,fontweight="ultralight", transform=axes.transAxes, color='#fee4d0')
+    # Save as logo.png.
+    pyplot.savefig('logo.png', transparent=True)
+else:
+    # Save as logo.svg.
+    pyplot.savefig('logo.svg', transparent=True)
