@@ -131,7 +131,7 @@ void *init_unshare_container(void *arg);
 void init_container(void);
 // Daemon process used to store unshare container information and init unshare container.
 void container_daemon(void);
-// Used for run_chroot_container, do some checks before chroot().
+// Do some checks before chroot().
 bool check_container(char *container_dir);
 // Run unshare container, called by main().
 void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings);

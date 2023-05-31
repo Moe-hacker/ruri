@@ -645,6 +645,12 @@ void umount_all_containers(struct CONTAINERS *container)
 // For daemon, init an unshare container in the background.
 void *init_unshare_container(void *arg)
 {
+  /*
+   * It is called as a child process of container_daemon()
+   * It will call to unshare(), send unshare_pid after fork() and other information to container_daemon()
+   * and call to run_chroot_container() to exec init command.
+   * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
+   */
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
 #ifdef __CONTAINER_DEV__
@@ -749,6 +755,10 @@ void *init_unshare_container(void *arg)
 // Run after chroot(), called by run_chroot_container()
 void init_container(void)
 {
+  /*
+   * It'll be run after chroot(), so `/` is the root dir of container now.
+   * The device list and permissions are the same as common docker container.
+   */
   // umount /proc.
   umount2("/proc", MNT_DETACH | MNT_FORCE);
   // Fix issues in archlinux containers.
@@ -819,22 +829,28 @@ void init_container(void)
   symlink("/proc/mounts", "/etc/mtab");
 }
 // Daemon process used to store unshare container information and init unshare container.
-// TODO:
-// 遵守caplist
-// XXX
-// TODO
-// Received messages and reply contents:
-// --------------------------------------------------------------------------------------------------------------------------
-// |                                 read                               |            send             |      comment
-// --------------------------------------------------------------------------------------------------------------------------
-// |                                 Nya?                               |            Nya!             | Test messasge
-// |                          del+${container_dir}                      |            OK/Fail          | Kill a container
-// |                                 info                               |                             | wait for ${container_dir}
-// |                          ${container_dir}                          |   Pid+$container_pid//NaN   | Read container_dir, check if container is already running and send container_pid to ruri
-// |     init+${init_command}+endinit+caplist+${caplist}+endcaplist     |                             | Read information of container and init container
-// |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
 void container_daemon(void)
 {
+  // TODO: check if init binary exists.
+  /*
+   *
+   * TODO:
+   * 遵守caplist
+   * XXX
+   * TODO
+   * Received messages and reply contents:
+   * --------------------------------------------------------------------------------------------------------------------------
+   * |                                 read                               |            send             |      comment
+   * --------------------------------------------------------------------------------------------------------------------------
+   * |                                 Nya?                               |            Nya!             | Test messasge
+   * |                          del+${container_dir}                      |            OK/Fail          | Kill a container
+   * |                                 info                               |                             | wait for ${container_dir}
+   * |                          ${container_dir}                          |   Pid+$container_pid//NaN   | Read container_dir, check if container is already running and send container_pid to ruri
+   * |     init+${init_command}+endinit+caplist+${caplist}+endcaplist     |                             | Read information of container and init container
+   * |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
+   *
+   *
+   */
   // Set process name.
   prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
@@ -864,10 +880,12 @@ void container_daemon(void)
   char *msg = NULL;
   // Container info.
   char *container_dir = NULL;
+  // TODO: container_info设置为指针，回收container_info内存并重新创建
   struct CONTAINER_INFO container_info;
   container_info.container_dir = NULL;
   container_info.init_command[0] = NULL;
   container_info.unshare_pid = NULL;
+  // TODO
   container_info.mountpoint[0] = NULL;
   container_info.env[0] = NULL;
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
@@ -1055,9 +1073,13 @@ void container_daemon(void)
     }
   }
 }
-// Used for run_chroot_container, do some checks before chroot()
+// Do some checks before chroot()
 bool check_container(char *container_dir)
 {
+  // TODO: check if init binary exists.
+  /*
+   * It's called to by main() to check if we can run a container in container_dir.
+   */
   // Check if container directory is given.
   if (container_dir == NULL)
   {
@@ -1099,6 +1121,11 @@ bool check_container(char *container_dir)
 // Run unshare container.
 void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
 {
+  /*
+   * If rurid is not running, it will create namespaces itself.
+   * Or it will connect to rurid and use setns() to join namespaces created by rurid.
+   * After fork() to send itself to new namespaces, it will call to run_chroot_container().
+   */
   // Set default init.
   if (container_info->init_command[0] == NULL)
   {
@@ -1374,9 +1401,12 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   return;
 }
 // Run chroot container.
-// Also used for run_unshare_container and init_unshare_container.
 void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
 {
+  /*
+   * It's called to by main(), run_unshare_container() and init_unshare_container()(container_daemon()).
+   * It will chroot() to container_dir, call to init_container(), drop capabilities and exec() init command in container.
+   */
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
@@ -1496,7 +1526,12 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
 // Kill&umount container.
 void umount_container(char *container_dir)
 {
-  // Set socket address.
+  /*
+   * It will try to connect to rurid, and rurid will kill init_unshare_container() process of container if the container is running.
+   * Then it will umount() container_dir and other directories in it.
+   */
+  // TODO: umount() mountpoint
+  //  Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
@@ -1555,6 +1590,9 @@ void umount_container(char *container_dir)
 }
 int main(int argc, char **argv)
 {
+  /*
+   * It will get command-line args, build the info of container and create a container or call to other functions.
+   */
   // Set process name.
   prctl(PR_SET_NAME, "ruri", NULL, NULL, NULL);
   // Check if arguments are given.
@@ -1834,6 +1872,8 @@ int main(int argc, char **argv)
       break;
     }
   }
+  // TODO
+  // 同时需完善dev log
   for (int i = 0; i < 256; i++)
   {
     if (env[i] != NULL)
@@ -1847,6 +1887,7 @@ int main(int argc, char **argv)
       break;
     }
   }
+  // TODO
   for (int i = 0; i < 256; i++)
   {
     if (mountpoint[i] != NULL)

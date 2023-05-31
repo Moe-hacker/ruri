@@ -90,7 +90,6 @@ if no_text==False:
     pyplot.text(-0.12, -0.12, "Linux containers, simple & secure", fontsize=16,fontweight="black", transform=axes.transAxes, color='#fee4d0')
     # Save as logo.png.
     pyplot.savefig('logo.png', transparent=True)
-    pyplot.show()
 else:
     # Save as logo.svg.
     pyplot.savefig('logo.svg', transparent=True)
