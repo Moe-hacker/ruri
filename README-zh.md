@@ -10,6 +10,8 @@
 &emsp;也知道自己就是个萌新，大佬轻喷。         
 &emsp;这里是将来的termux-container中chroot和chroot-unshare容器底层实现，咱自己写的东西咱还是比较喜欢用MIT协议喵～        
 &emsp;也可以作为一个容器应用在普通linux系统下运行。               
+### 关于logo：      
+logo被设计为一朵花和一个容器的结合体，使用数学图形来描述。您可以运行logo.py使用matplotlib绘制它。       
 ### Features:    
 - 纯C语言实现
 - 二进制仅几百kb      
