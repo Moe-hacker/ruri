@@ -2,6 +2,8 @@
 <p align="center">散り行く運命 知りながら、</p>    
 <p align="center">僅かな時の彩を 」</p>          
 
+![](https://github.com/Moe-hacker/ruri/raw/main/logo.png)
+
 ![](https://img.shields.io/github/stars/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=instatus&logoColor=fee4d0)
 ![](https://img.shields.io/github/forks/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
 ![](https://img.shields.io/github/license/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
