@@ -1705,7 +1705,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow env");
+        fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow mountpoint");
         exit(1);
       }
     }
