@@ -1774,16 +1774,20 @@ int main(int argc, char **argv)
       }
       arg_num++;
       // Arguments after container_dir will be read as init command.
-      // XXX
-      int init_arg_num = 0;
       if (argv[arg_num])
       {
-        while (arg_num <= argc)
+        for (int i = 0; i < argc; i++)
         {
-          init[init_arg_num] = argv[arg_num];
-          init[init_arg_num + 1] = NULL;
-          arg_num++;
-          init_arg_num++;
+          if (argv[arg_num])
+          {
+            init[i] = argv[arg_num];
+            init[i + 1] = NULL;
+            arg_num++;
+          }
+          else
+          {
+            break;
+          }
         }
       }
       else
