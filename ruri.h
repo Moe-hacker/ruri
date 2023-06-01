@@ -58,9 +58,9 @@
 // Version info.
 #define CONTAINER_VERSION "2.0-dev"
 // Limitations
-#define MAX_INIT_COMMANDS 1024
-#define MAX_ENVS 128
-#define MAX_MOUNTPOINTS 128
+#define MAX_INIT_COMMANDS 1024 
+#define MAX_ENVS 128*2
+#define MAX_MOUNTPOINTS 128*2
 // Info of containers.
 struct CONTAINERS
 {
@@ -70,9 +70,9 @@ struct CONTAINERS
     char *unshare_pid;
     char *drop_caplist[CAP_LAST_CAP + 1];
     // TODO(Moe-hacker)
-    char *env[MAX_ENVS * 2];
+    char *env[MAX_ENVS];
     // TODO(Moe-hacker)
-    char *mountpoint[MAX_MOUNTPOINTS * 2];
+    char *mountpoint[MAX_MOUNTPOINTS];
     struct CONTAINERS *container;
 };
 // Info of a container to create.
@@ -84,8 +84,8 @@ struct CONTAINER_INFO
     char *init_command[MAX_INIT_COMMANDS];
     // Mount before chroot()
     // TODO(Moe-hacker)
-    char *mountpoint[MAX_MOUNTPOINTS * 2];
-    char *env[MAX_ENVS * 2];
+    char *mountpoint[MAX_MOUNTPOINTS];
+    char *env[MAX_ENVS];
     // Only be used in container_daemon()
     // For setns(), we define it as char*.
     char *unshare_pid;
@@ -104,7 +104,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[256], char *mountpoint[256], struct CONTAINERS *container);
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container);
 // Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
 // Delete a node from CONTAINERS struct.
