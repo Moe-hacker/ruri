@@ -36,12 +36,10 @@ void show_n_spaces(int n)
    * In fact it's needless.
    * But when I wrote it, I didn't know what's strcat. So it has been kept.
    */
-  int count;
-  for (count = 1; count <= n; count++)
+  for (int count = 1; count <= n; count++)
   {
     printf(" ");
   }
-  return;
 }
 // Greeting information.
 // As an easter agg.
@@ -53,7 +51,7 @@ void show_greetings(void)
   // Get the size of terminal.
   struct winsize size;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-  short row = size.ws_col;
+  unsigned short row = size.ws_col;
   // For centering output.
   row -= 44;
   row /= 2;
@@ -101,7 +99,6 @@ void show_greetings(void)
   printf("%s\n", "        ▀                       ▀        ▀");
   show_n_spaces(row);
   printf("%s\n", "");
-  return;
 }
 // For `ruri -v`.
 void show_version_info(void)
@@ -130,7 +127,6 @@ void show_version_info(void)
   printf("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n");
   printf("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n");
   printf("SOFTWARE.\033[0m\n");
-  return;
 }
 // For `ruri -h`.
 void show_helps(bool greetings)
@@ -164,7 +160,6 @@ void show_helps(bool greetings)
   printf("  -w                    :Disable warnings\n");
   printf("This program should be run with root privileges\n");
   printf("Please unset $LD_PRELOAD before running this program\033[0m\n");
-  return;
 }
 // Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
@@ -198,7 +193,6 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
       }
     }
   }
-  return;
 }
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap)
@@ -223,7 +217,6 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
       break;
     }
   }
-  return;
 }
 // Add a node to CONTAINERS struct.
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container)
@@ -233,6 +226,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
    * If current node is already used, try the next one.
    * The next node of the node added will be NULL.
    */
+  // If current node is NULL, add container info here.
   if (container == NULL)
   {
     // Request memory of container struct.
@@ -275,11 +269,9 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
     container->container = NULL;
     return container;
   }
-  else
-  {
-    container->container = add_node(container_dir, unshare_pid, drop_caplist, env, mountpoint, container->container);
-    return container;
-  }
+  // If current node is not NULL, try the next.
+  container->container = add_node(container_dir, unshare_pid, drop_caplist, env, mountpoint, container->container);
+  return container;
 }
 // Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
@@ -291,20 +283,16 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
    */
   if (container != NULL)
   {
+    // If container matches container_dir.
     if (strcmp(container->container_dir, container_dir) == 0)
     {
       return container;
     }
-    else
-    {
-      return read_node(container_dir, container->container);
-    }
+    // If not, try the next node.
+    return read_node(container_dir, container->container);
   }
   // Will never been run.
-  else
-  {
-    return NULL;
-  }
+  return NULL;
 }
 // Delete a node from CONTAINERS struct.
 struct CONTAINERS *del_node(struct CONTAINERS *container)
@@ -314,21 +302,19 @@ struct CONTAINERS *del_node(struct CONTAINERS *container)
    * When the next node is NULL, it will stop.
    * Not using free() here, needn't because the struct is too small.
    */
+  // Will never be run.
   if (container == NULL)
   {
     return NULL;
   }
+  if (container->container != NULL)
+  {
+    container = container->container;
+    container->container = del_node(container);
+  }
   else
   {
-    if (container->container != NULL)
-    {
-      container = container->container;
-      container->container = del_node(container);
-    }
-    else
-    {
-      container = NULL;
-    }
+    container = NULL;
   }
   return container;
 }
@@ -345,7 +331,7 @@ struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *contain
     return container;
   }
   // If container is the struct to delete.
-  else if (strcmp(container->container_dir, container_dir) == 0)
+  if (strcmp(container->container_dir, container_dir) == 0)
   {
     container = del_node(container);
   }
@@ -370,18 +356,15 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
     return false;
   }
   // Found container matching container_dir.
-  else if (strcmp(container->container_dir, container_dir) == 0)
+  if (strcmp(container->container_dir, container_dir) == 0)
   {
     return true;
   }
   // Try the next struct.
-  else
-  {
-    return container_active(container_dir, container->container);
-  }
+  return container_active(container_dir, container->container);
 }
 // For daemon.
-int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
+ssize_t send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 {
   /*
    * It will accept a new connection and write msg to socket.
@@ -401,7 +384,7 @@ int send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
   return write(sock_new, msg, strlen(msg));
 }
 // For client.
-int send_msg_client(char *msg, struct sockaddr_un addr)
+ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
 {
   /*
    * It will send msg to socket and quit.
@@ -421,7 +404,10 @@ int send_msg_client(char *msg, struct sockaddr_un addr)
   setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Connect to daemon.
-  connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
+  if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == -1)
+  {
+    return -1;
+  }
   // Send messages.
   return send(sockfd, msg, strlen(msg), 0);
 }
@@ -475,7 +461,11 @@ char *read_msg_client(struct sockaddr_un addr)
   setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Connect to daemon.
-  connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
+  if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == -1)
+  {
+    free(ret);
+    return NULL;
+  }
   // Read messages.
   if (read(sockfd, ret, PATH_MAX) == -1)
   {
@@ -507,16 +497,12 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
     send_msg_server("endps", addr, sockfd);
     return;
   }
-  else
-  {
-    send_msg_server(container->container_dir, addr, sockfd);
-    send_msg_server(container->unshare_pid, addr, sockfd);
-    read_all_nodes(container->container, addr, sockfd);
-    return;
-  }
+  send_msg_server(container->container_dir, addr, sockfd);
+  send_msg_server(container->unshare_pid, addr, sockfd);
+  read_all_nodes(container->container, addr, sockfd);
 }
 // For `ruri -l`
-void container_ps(void)
+int container_ps(void)
 {
   /*
    * It will connect to rurid and list running containers.
@@ -543,7 +529,7 @@ void container_ps(void)
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
-    exit(1);
+    return 1;
   }
   send_msg_client("ps", addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
@@ -555,16 +541,14 @@ void container_ps(void)
     {
       break;
     }
-    else
-    {
-      printf("\033[1;38;2;254;228;208m%s", msg);
-      msg = read_msg_client(addr);
-      printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
-    }
+    printf("\033[1;38;2;254;228;208m%s", msg);
+    msg = read_msg_client(addr);
+    printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
   }
+  return 0;
 }
 // For `container -K`
-void kill_daemon(void)
+int kill_daemon(void)
 {
   /*
    * It will just send `kill` to rurid.
@@ -591,10 +575,10 @@ void kill_daemon(void)
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
-    exit(1);
+    return 1;
   }
   send_msg_client("kill", addr);
-  return;
+  return 0;
 }
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
@@ -607,29 +591,26 @@ void umount_all_containers(struct CONTAINERS *container)
   {
     return;
   }
-  else
+  kill(atoi(container->unshare_pid), SIGKILL);
+  // Get path to umount.
+  char sys_dir[PATH_MAX];
+  char proc_dir[PATH_MAX];
+  char dev_dir[PATH_MAX];
+  strcpy(sys_dir, container->container_dir);
+  strcpy(proc_dir, container->container_dir);
+  strcpy(dev_dir, container->container_dir);
+  strcat(sys_dir, "/sys");
+  strcat(proc_dir, "/proc");
+  strcat(dev_dir, "/dev");
+  // Force umount all directories for 10 times.
+  for (int i = 1; i < 10; i++)
   {
-    kill(atoi(container->unshare_pid), SIGKILL);
-    // Get path to umount.
-    char sys_dir[PATH_MAX];
-    char proc_dir[PATH_MAX];
-    char dev_dir[PATH_MAX];
-    strcpy(sys_dir, container->container_dir);
-    strcpy(proc_dir, container->container_dir);
-    strcpy(dev_dir, container->container_dir);
-    strcat(sys_dir, "/sys");
-    strcat(proc_dir, "/proc");
-    strcat(dev_dir, "/dev");
-    // Force umount all directories for 10 times.
-    for (int i = 1; i < 10; i++)
-    {
-      umount2(sys_dir, MNT_DETACH | MNT_FORCE);
-      umount2(dev_dir, MNT_DETACH | MNT_FORCE);
-      umount2(proc_dir, MNT_DETACH | MNT_FORCE);
-      umount2(container->container_dir, MNT_DETACH | MNT_FORCE);
-    }
-    umount_all_containers(container->container);
+    umount2(sys_dir, MNT_DETACH | MNT_FORCE);
+    umount2(dev_dir, MNT_DETACH | MNT_FORCE);
+    umount2(proc_dir, MNT_DETACH | MNT_FORCE);
+    umount2(container->container_dir, MNT_DETACH | MNT_FORCE);
   }
+  umount_all_containers(container->container);
 }
 // For daemon, init an unshare container in the background.
 void *init_unshare_container(void *arg)
@@ -776,7 +757,7 @@ void init_container(void)
   mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
   // For making dev nodes.
   // XXX
-  int dev;
+  dev_t dev = 0;
   // Create system runtime nodes in /dev and then fix permissions.
   dev = makedev(1, 3);
   mknod("/dev/null", S_IFCHR, dev);
@@ -817,7 +798,7 @@ void init_container(void)
   symlink("/proc/mounts", "/etc/mtab");
 }
 // Daemon process used to store unshare container information and init unshare container.
-void container_daemon(void)
+int container_daemon(void)
 {
   // TODO(Moe-hacker): 检查msg是否为NULL
   // TODO(Moe-hacker): strdup()后free()
@@ -849,19 +830,19 @@ void container_daemon(void)
   sigaddset(&sigs, SIGTTIN);
   sigprocmask(SIG_BLOCK, &sigs, 0);
   // For pthread_create()
-  pthread_t pthread_id;
+  pthread_t pthread_id = 0;
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
     fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    exit(1);
+    return 1;
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
   if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
-    exit(1);
+    return 1;
   }
   // Create container struct.
   struct CONTAINERS *container = NULL;
@@ -882,7 +863,7 @@ void container_daemon(void)
   {
     container_info.drop_caplist[i] = INIT_VALUE;
   }
-  pid_t unshare_pid;
+  pid_t unshare_pid = 0;
   char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
   char *env[MAX_ENVS] = {NULL};
   char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
@@ -891,7 +872,7 @@ void container_daemon(void)
   if (sockfd < 0)
   {
     fprintf(stderr, "\033[31mError: cannot create socket.\n");
-    return;
+    return 1;
   }
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -912,29 +893,26 @@ void container_daemon(void)
   {
     close(sockfd);
     printf("\033[31mDaemon already running.\n");
-    exit(1);
+    return 1;
   }
-  else
+  // Fork itself into the background.
+  pid_t pid = fork();
+  if (pid > 0)
   {
-    // Fork itself into the background.
-    pid_t pid = fork();
-    if (pid > 0)
-    {
-      exit(0);
-    }
-    else if (pid < 0)
-    {
-      perror("fork");
-      exit(1);
-    }
-    // Create container.sock
-    remove(socket_path);
-    unlink(socket_path);
-    if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
-    {
-      perror("bind");
-      exit(1);
-    }
+    return 0;
+  }
+  if (pid < 0)
+  {
+    perror("fork");
+    return 1;
+  }
+  // Create container.sock
+  remove(socket_path);
+  unlink(socket_path);
+  if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
+  {
+    perror("bind");
+    return 1;
   }
   listen(sockfd, 16);
   // Read message from ruri.
@@ -1067,7 +1045,7 @@ void container_daemon(void)
     else if (strcmp("kill", msg) == 0)
     {
       umount_all_containers(container);
-      exit(0);
+      return 0;
     }
     else if (strcmp("ps", msg) == 0)
     {
@@ -1114,14 +1092,11 @@ bool check_container(char *container_dir)
     fprintf(stderr, "\033[31mError: container directory does not exist !\033[0m\n");
     return false;
   }
-  else
-  {
-    closedir(direxist);
-  }
+  closedir(direxist);
   return true;
 }
 // Run unshare container.
-void run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
+int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
   /*
    * If rurid is not running, it will create namespaces itself.
@@ -1255,6 +1230,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_
     else if (unshare_pid < 0)
     {
       fprintf(stderr, "\033[31mFork error\n");
+      return 1;
     }
   }
   else
@@ -1393,6 +1369,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_
     else if (unshare_pid < 0)
     {
       fprintf(stderr, "\033[31mFork error\n");
+      return 1;
     }
   }
   // Check if unshare is enabled.
@@ -1400,7 +1377,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_
   {
     run_chroot_container(container_info, no_warnings);
   }
-  return;
+  return 0;
 }
 // Run chroot container.
 void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
@@ -1522,7 +1499,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     fprintf(stderr, "\033[31mFailed to execute init `%s`\n", container_info->init_command[0]);
     fprintf(stderr, "execv() returned: %d\n", errno);
     fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-    exit(1);
+    return;
   }
 }
 // Kill&umount container.
@@ -1588,7 +1565,6 @@ void umount_container(char *container_dir)
     umount2(container_dir, MNT_DETACH | MNT_FORCE);
     usleep(2000);
   }
-  return;
 }
 int main(int argc, char **argv)
 {
@@ -1645,13 +1621,11 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[arg_num], "-D") == 0)
     {
-      container_daemon();
-      return 0;
+      return container_daemon();
     }
     if (strcmp(argv[arg_num], "-K") == 0)
     {
-      kill_daemon();
-      return 0;
+      return kill_daemon();
     }
     if (strcmp(argv[arg_num], "-h") == 0)
     {
@@ -1661,8 +1635,7 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[arg_num], "-l") == 0)
     {
-      container_ps();
-      return 0;
+      return container_ps();
     }
     //=========End of [Other options]===========
     if (strcmp(argv[arg_num], "-u") == 0)
