@@ -801,7 +801,6 @@ void init_container(void)
 int container_daemon(void)
 {
   // TODO(Moe-hacker): 检查msg是否为NULL
-  // TODO(Moe-hacker): strdup()后free()
   // TODO(Moe-hacker): check if init binary exists.
   /*
    *
@@ -823,7 +822,7 @@ int container_daemon(void)
    *
    */
   // Set process name.
-  prctl(PR_SET_NAME, "rurid", NULL, NULL, NULL);
+  prctl(PR_SET_NAME, "rurid");
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
@@ -1572,7 +1571,7 @@ int main(int argc, char **argv)
    * It will get command-line args, build the info of container and create a container or call to other functions.
    */
   // Set process name.
-  prctl(PR_SET_NAME, "ruri", NULL, NULL, NULL);
+  prctl(PR_SET_NAME, "ruri");
   // Check if arguments are given.
   if (argc <= 1)
   {
