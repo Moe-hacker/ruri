@@ -7,6 +7,9 @@ CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 CC = clang
 STRIP = strip
+CHECKER = clang-tidy
+CHECK_ARG = --checks=-clang-analyzer-security.insecureAPI.strcpy,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+STRICT_CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
 LD_FLAGS = -lcap -lpthread
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
@@ -33,17 +36,23 @@ static :
 	@$(STRIP) $(BIN_TARGET)
 install :all
 	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
+check :
+	$(CHECKER) $(CHECK_ARG) $(SRC)
+strictcheck :
+	$(CHECKER) $(STRICT_CHECK_ARG) $(SRC)
 clean :
 	rm ruri||true
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
-	@echo "  make all        :compile"
-	@echo "  make install    :install ruri to \$$PREFIX"
-	@echo "  make static     :static compile"
-	@echo "  make clean      :clean"
+	@echo "  make all         :compile"
+	@echo "  make install     :install ruri to \$$PREFIX"
+	@echo "  make static      :static compile"
+	@echo "  make clean       :clean"
 	@echo "Only for testing:"
-	@echo "  make dev        :compile without optimizations, enable gdb debug information and extra logs."
-	@echo "  make asan       :enable ASAN"
+	@echo "  make dev         :compile without optimizations, enable gdb debug information and extra logs."
+	@echo "  make asan        :enable ASAN"
+	@echo "  make check       :run clang-tidy"
+	@echo "  make strictcheck :run clang-tidy for more checks"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
 	@echo "  libpthread,libcap"

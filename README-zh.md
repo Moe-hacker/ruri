@@ -23,14 +23,16 @@ logo被设计为一朵花和一个容器的结合体，使用数学图形来描�
 libcap动态库用于动态编译，libc和libcap静态库用于静态编译,pkg-config用于获取库路径。           
 #### 编译选项：     
 ```text
-make all        :默认动态编译
-make install    :默认动态编译并安装为ruri命令
-make static     :静态编译
-make clean      :清理生成文件
-make help       :显示帮助
+make all         :默认动态编译
+make install     :默认动态编译并安装为ruri命令
+make static      :静态编译
+make clean       :清理生成文件
+make help        :显示帮助
 *仅供开发者
-make dev        :关闭优化选项，开启gdb支持以及额外日志信息
-make asan       :开启ASAN
+make dev         :关闭优化选项，开启gdb支持以及额外日志信息
+make asan        :开启ASAN
+make check       :运行clang-tidy检查
+make strictcheck :运行clang-tidy执行更为严格的检查
 ```
 ### 用法：    
 ```text

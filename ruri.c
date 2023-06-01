@@ -226,7 +226,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   return;
 }
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[256], char *mountpoint[256], struct CONTAINERS *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS * 2], char *mountpoint[MAX_MOUNTPOINTS * 2], struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and add container info to node.
@@ -250,7 +250,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < MAX_ENVS * 2; i++)
     {
       if (env[i] != NULL)
       {
@@ -261,7 +261,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < MAX_MOUNTPOINTS * 2; i++)
     {
       if (mountpoint[i] != NULL)
       {
@@ -736,8 +736,7 @@ void *init_unshare_container(void *arg)
   }
   else if (unshare_pid == 0)
   {
-    bool no_warinings = true;
-    run_chroot_container(container_info, &no_warinings);
+    run_chroot_container(container_info, true);
   }
   return 0;
 }
@@ -820,15 +819,15 @@ void init_container(void)
 // Daemon process used to store unshare container information and init unshare container.
 void container_daemon(void)
 {
-  // TODO: 检查msg是否为NULL
-  // TODO: strdup()后free()
-  // TODO: check if init binary exists.
+  // TODO(Moe-hacker): 检查msg是否为NULL
+  // TODO(Moe-hacker): strdup()后free()
+  // TODO(Moe-hacker): check if init binary exists.
   /*
    *
-   * TODO:
+   * TODO(Moe-hacker):
    * 遵守caplist
    * XXX
-   * TODO
+   * TODO(Moe-hacker)
    * Received messages and reply contents:
    * --------------------------------------------------------------------------------------------------------------------------
    * |                                 read                               |            send             |      comment
@@ -871,12 +870,12 @@ void container_daemon(void)
   char *msg = NULL;
   // Container info.
   char *container_dir = NULL;
-  // TODO: container_info设置为指针，回收container_info内存并重新创建
+  // TODO(Moe-hacker): container_info设置为指针，回收container_info内存并重新创建
   struct CONTAINER_INFO container_info;
   container_info.container_dir = NULL;
   container_info.init_command[0] = NULL;
   container_info.unshare_pid = NULL;
-  // TODO
+  // TODO(Moe-hacker)
   container_info.mountpoint[0] = NULL;
   container_info.env[0] = NULL;
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
@@ -885,8 +884,8 @@ void container_daemon(void)
   }
   pid_t unshare_pid;
   char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
-  char *env[256] = {NULL};
-  char *mountpoint[256] = {NULL};
+  char *env[MAX_ENVS * 2] = {NULL};
+  char *mountpoint[MAX_MOUNTPOINTS * 2] = {NULL};
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -1053,7 +1052,7 @@ void container_daemon(void)
         drop_caplist[i + 1] = NULL;
         i++;
       }
-      // TODO
+      // TODO(Moe-hacker)
       container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
       // Send ${unshare_pid} to ruri.
       send_msg_server(container_info.unshare_pid, addr, sockfd);
@@ -1079,7 +1078,7 @@ void container_daemon(void)
 // Do some checks before chroot()
 bool check_container(char *container_dir)
 {
-  // TODO: check if init binary exists.
+  // TODO(Moe-hacker): check if init binary exists.
   /*
    * It's called to by main() to check if we can run a container in container_dir.
    */
@@ -1087,33 +1086,33 @@ bool check_container(char *container_dir)
   if (container_dir == NULL)
   {
     fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-    exit(1);
+    return false;
   }
   // Refuse to use `/` for container directory.
   if (strcmp(container_dir, "/") == 0)
   {
     fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
-    exit(1);
+    return false;
   }
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
     fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    exit(1);
+    return false;
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
   if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
     fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
-    exit(1);
+    return false;
   }
   // Check if container directory exists.
-  DIR *direxist;
+  DIR *direxist = NULL;
   if ((direxist = opendir(container_dir)) == NULL)
   {
     fprintf(stderr, "\033[31mError: container directory does not exist !\033[0m\n");
-    exit(1);
+    return false;
   }
   else
   {
@@ -1122,7 +1121,7 @@ bool check_container(char *container_dir)
   return true;
 }
 // Run unshare container.
-void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
+void run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
   /*
    * If rurid is not running, it will create namespaces itself.
@@ -1404,7 +1403,7 @@ void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warni
   return;
 }
 // Run chroot container.
-void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnings)
+void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
   /*
    * It's called to by main(), run_unshare_container() and init_unshare_container()(container_daemon()).
@@ -1463,7 +1462,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnin
   chroot(container_info->container_dir);
   chdir("/");
   // Check if system runtime files are already created.
-  DIR *direxist;
+  DIR *direxist = NULL;
   if ((direxist = opendir("/sys/kernel")) == NULL)
   {
     init_container();
@@ -1533,7 +1532,7 @@ void umount_container(char *container_dir)
    * It will try to connect to rurid, and rurid will kill init_unshare_container() process of container if the container is running.
    * Then it will umount() container_dir and other directories in it.
    */
-  // TODO: umount() mountpoint
+  // TODO(Moe-hacker): umount() mountpoint
   //  Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -1603,18 +1602,17 @@ int main(int argc, char **argv)
   {
     fprintf(stderr, "\033[31mError: too few arguments !\033[0m\n");
     show_helps(0);
-    exit(1);
+    return 1;
   }
   // Set default value.
-  bool on = true;
-  bool *use_unshare = NULL;
-  bool *no_warnings = NULL;
-  char *container_dir = NULL;
-  bool *greetings = NULL;
-  bool *privileged = NULL;
-  char *init[1024] = {NULL};
-  char *env[256] = {NULL};
-  char *mountpoint[256] = {NULL};
+  bool use_unshare = false;
+  bool no_warnings = false;
+  char *container_dir = false;
+  bool greetings = NULL;
+  bool privileged = false;
+  char *init[MAX_INIT_COMMANDS] = {NULL};
+  char *env[MAX_ENVS * 2] = {NULL};
+  char *mountpoint[MAX_MOUNTPOINTS * 2] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
@@ -1639,35 +1637,37 @@ int main(int argc, char **argv)
   // Parse command-line arguments.
   for (int arg_num = 1; arg_num < argc; arg_num++)
   {
+    //============== [Other options] ==============
     if (strcmp(argv[arg_num], "-v") == 0)
     {
       show_version_info();
-      exit(0);
+      return 0;
     }
-    else if (strcmp(argv[arg_num], "-D") == 0)
+    if (strcmp(argv[arg_num], "-D") == 0)
     {
       container_daemon();
-      exit(0);
+      return 0;
     }
-    else if (strcmp(argv[arg_num], "-K") == 0)
+    if (strcmp(argv[arg_num], "-K") == 0)
     {
       kill_daemon();
-      exit(0);
+      return 0;
     }
-    else if (strcmp(argv[arg_num], "-h") == 0)
+    if (strcmp(argv[arg_num], "-h") == 0)
     {
-      greetings = &on;
+      greetings = true;
       show_helps(greetings);
-      exit(0);
+      return 0;
     }
-    else if (strcmp(argv[arg_num], "-l") == 0)
+    if (strcmp(argv[arg_num], "-l") == 0)
     {
       container_ps();
-      exit(0);
+      return 0;
     }
-    else if (strcmp(argv[arg_num], "-u") == 0)
+    //=========End of [Other options]===========
+    if (strcmp(argv[arg_num], "-u") == 0)
     {
-      use_unshare = &on;
+      use_unshare = true;
     }
     else if (strcmp(argv[arg_num], "-U") == 0)
     {
@@ -1678,13 +1678,13 @@ int main(int argc, char **argv)
         {
           container_dir = realpath(argv[arg_num], NULL);
           umount_container(container_dir);
-          exit(0);
+          return 0;
         }
       }
       else
       {
         fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-        exit(1);
+        return 1;
       }
     }
     else if (strcmp(argv[arg_num], "-d") == 0)
@@ -1696,11 +1696,11 @@ int main(int argc, char **argv)
     }
     else if (strcmp(argv[arg_num], "-p") == 0)
     {
-      privileged = &on;
+      privileged = true;
     }
     else if (strcmp(argv[arg_num], "-w") == 0)
     {
-      no_warnings = &on;
+      no_warnings = true;
     }
     // XXX
     else if (strcmp(argv[arg_num], "-e") == 0)
@@ -1708,7 +1708,7 @@ int main(int argc, char **argv)
       arg_num++;
       if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
       {
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < MAX_ENVS * 2; i++)
         {
           if (env[i] == NULL)
           {
@@ -1723,7 +1723,7 @@ int main(int argc, char **argv)
       else
       {
         fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow env");
-        exit(1);
+        return 1;
       }
     }
     // XXX
@@ -1732,7 +1732,7 @@ int main(int argc, char **argv)
       arg_num++;
       if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
       {
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < MAX_MOUNTPOINTS * 2; i++)
         {
           if (mountpoint[i] == NULL)
           {
@@ -1747,7 +1747,7 @@ int main(int argc, char **argv)
       else
       {
         fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow mountpoint");
-        exit(1);
+        return 1;
       }
     }
     else if (strcmp(argv[arg_num], "--keep") == 0)
@@ -1762,13 +1762,13 @@ int main(int argc, char **argv)
         else
         {
           fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
-          exit(1);
+          return 1;
         }
       }
       else
       {
         fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
-        exit(1);
+        return 1;
       }
     }
     else if (strcmp(argv[arg_num], "--drop") == 0)
@@ -1783,13 +1783,13 @@ int main(int argc, char **argv)
         else
         {
           fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
-          exit(1);
+          return 1;
         }
       }
       else
       {
         fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
-        exit(1);
+        return 1;
       }
     }
     else if ((strchr(argv[arg_num], '/') && strcmp(strchr(argv[arg_num], '/'), argv[arg_num]) == 0) || (strchr(argv[arg_num], '.') && strcmp(strchr(argv[arg_num], '.'), argv[arg_num]) == 0))
@@ -1823,7 +1823,7 @@ int main(int argc, char **argv)
     {
       fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg_num], "`");
       show_helps(greetings);
-      exit(1);
+      return 1;
     }
   }
   // Set default caplist to drop.
@@ -1875,9 +1875,9 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // TODO
+  // TODO(Moe-hacker)
   // 同时需完善dev log
-  for (int i = 0; i < 256; i++)
+  for (int i = 0; i < MAX_ENVS * 2; i++)
   {
     if (env[i] != NULL)
     {
@@ -1890,8 +1890,8 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // TODO
-  for (int i = 0; i < 256; i++)
+  // TODO(Moe-hacker)
+  for (int i = 0; i < MAX_MOUNTPOINTS * 2; i++)
   {
     if (mountpoint[i] != NULL)
     {
