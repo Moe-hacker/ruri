@@ -57,6 +57,10 @@
 #define INIT_VALUE -114
 // Version info.
 #define CONTAINER_VERSION "2.0-dev"
+// Limitations
+#define MAX_INIT_COMMANDS 1024
+#define MAX_ENVS 128
+#define MAX_MOUNTPOINTS 128
 // Info of containers.
 struct CONTAINERS
 {
@@ -65,10 +69,10 @@ struct CONTAINERS
     // For write(), we define it as char*.
     char *unshare_pid;
     char *drop_caplist[CAP_LAST_CAP + 1];
-    // TODO
-    char *env[256];
-    // TODO
-    char *mountpoint[256];
+    // TODO(Moe-hacker)
+    char *env[MAX_ENVS * 2];
+    // TODO(Moe-hacker)
+    char *mountpoint[MAX_MOUNTPOINTS * 2];
     struct CONTAINERS *container;
 };
 // Info of a container to create.
@@ -77,11 +81,11 @@ struct CONTAINER_INFO
     // For init_unshare_container() and container_daemon()
     char *container_dir;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-    char *init_command[1024];
+    char *init_command[MAX_INIT_COMMANDS];
     // Mount before chroot()
-    // TODO
-    char *mountpoint[256];
-    char *env[256];
+    // TODO(Moe-hacker)
+    char *mountpoint[MAX_MOUNTPOINTS * 2];
+    char *env[MAX_ENVS * 2];
     // Only be used in container_daemon()
     // For setns(), we define it as char*.
     char *unshare_pid;
@@ -134,9 +138,9 @@ void container_daemon(void);
 // Do some checks before chroot().
 bool check_container(char *container_dir);
 // Run unshare container, called by main().
-void run_unshare_container(struct CONTAINER_INFO *container_info, bool *no_warnings);
+void run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings);
 // Run chroot container, called by main(), run_unshare_container() and init_unshare_container().
-void run_chroot_container(struct CONTAINER_INFO *container_info, bool *no_warnings);
+void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings);
 // Kill&umount container.
 void umount_container(char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗

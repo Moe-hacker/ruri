@@ -37,13 +37,15 @@ It is a combination of a flower and a container. It is described as a mathematic
 - Run `make install` in the source directory.      
 #### make options:
 ```text
-  make all        :compile
-  make install    :make all and install ruri to $PREFIX
-  make static     :static compile
-  make clean      :clean
-*Only for testing: 
-  make dev        :compile without optimizations and enable gdb debug information     
-  make asan       :enable ASAN 
+  make all         :compile
+  make install     :install ruri to $PREFIX
+  make static      :static compile
+  make clean       :clean
+Only for testing:
+  make dev         :compile without optimizations, enable gdb debug information and extra logs.
+  make asan        :enable ASAN
+  make check       :run clang-tidy
+  make strictcheck :run clang-tidy for more checks
 ```
 #### Dependent libraries:
 For dynamic compilation:         
