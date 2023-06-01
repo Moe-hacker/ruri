@@ -375,7 +375,7 @@ ssize_t send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
 #endif
   unsigned int size = sizeof(addr);
   // Accept a connection.
-  int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+  int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
   // Set timeout duration.
   struct timeval timeout = {3, 0};
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
@@ -393,7 +393,7 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
 #ifdef __CONTAINER_DEV__
   printf("%s%s\n", "Client send msg: ", msg);
 #endif
-  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
     perror("socket");
@@ -420,7 +420,7 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   char *ret = (char *)malloc(PATH_MAX);
   unsigned int size = sizeof(addr);
   // Accept a connection.
-  int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
+  int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
   // Set timeout duration.
   struct timeval timeout = {3, 0};
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
@@ -451,7 +451,7 @@ char *read_msg_client(struct sockaddr_un addr)
    * It will return the messages have been read.
    */
   char *ret = (char *)malloc(PATH_MAX);
-  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
     perror("socket");
@@ -867,7 +867,7 @@ int container_daemon(void)
   char *env[MAX_ENVS] = {NULL};
   char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
   // Create socket
-  int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+  int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
     fprintf(stderr, "\033[31mError: cannot create socket.\n");
