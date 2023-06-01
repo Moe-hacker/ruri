@@ -430,10 +430,8 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
   /*
    * It will return the messages have been read.
-   * Use strdup() to avoid memory problems.
    */
-  char msg_read[PATH_MAX] = {'\000'};
-  char *ret;
+  char *ret = (char *)malloc(PATH_MAX);
   unsigned int size = sizeof(addr);
   // Accept a connection.
   int sock_new = accept(sockfd, (struct sockaddr *)&addr, &size);
@@ -442,16 +440,12 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Read messages.
-  read(sock_new, msg_read, PATH_MAX);
-  close(sock_new);
-  if (msg_read[0] != '\000')
+  if (read(sock_new, ret, PATH_MAX) == -1)
   {
-    ret = strdup(msg_read);
-  }
-  else
-  {
+    free(ret);
     ret = NULL;
   }
+  close(sock_new);
 #ifdef __CONTAINER_DEV__
   if (ret != NULL)
   {
@@ -469,10 +463,8 @@ char *read_msg_client(struct sockaddr_un addr)
 {
   /*
    * It will return the messages have been read.
-   * Use strdup() to avoid memory problems.
    */
-  char msg_read[PATH_MAX] = {'\000'};
-  char *ret;
+  char *ret = (char *)malloc(PATH_MAX);
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
   {
@@ -485,13 +477,9 @@ char *read_msg_client(struct sockaddr_un addr)
   // Connect to daemon.
   connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr));
   // Read messages.
-  read(sockfd, msg_read, PATH_MAX);
-  if (msg_read[0] != '\000')
+  if (read(sockfd, ret, PATH_MAX) == -1)
   {
-    ret = strdup(msg_read);
-  }
-  else
-  {
+    free(ret);
     ret = NULL;
   }
   close(sockfd);
@@ -603,6 +591,7 @@ void kill_daemon(void)
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
+    exit(1);
   }
   send_msg_client("kill", addr);
   return;
@@ -831,6 +820,8 @@ void init_container(void)
 // Daemon process used to store unshare container information and init unshare container.
 void container_daemon(void)
 {
+  // TODO: 检查msg是否为NULL
+  // TODO: strdup()后free()
   // TODO: check if init binary exists.
   /*
    *
@@ -999,6 +990,10 @@ void container_daemon(void)
         }
         // Read init command.
         msg = read_msg_server(addr, sockfd);
+        if (strcmp(msg, "init") != 0)
+        {
+          continue;
+        }
         for (int i = 0;;)
         {
           msg = read_msg_server(addr, sockfd);
@@ -1018,6 +1013,10 @@ void container_daemon(void)
           container_info.init_command[3] = NULL;
         }
         msg = read_msg_server(addr, sockfd);
+        if (strcmp(msg, "caplist") != 0)
+        {
+          continue;
+        }
         for (int i = 0;;)
         {
           msg = read_msg_server(addr, sockfd);
@@ -1039,6 +1038,10 @@ void container_daemon(void)
       msg = read_msg_server(addr, sockfd);
       container_info.container_dir = strdup(msg);
       msg = read_msg_server(addr, sockfd);
+      if (strcmp(msg, "caplist") != 0)
+      {
+        continue;
+      }
       for (int i = 0;;)
       {
         msg = read_msg_server(addr, sockfd);
