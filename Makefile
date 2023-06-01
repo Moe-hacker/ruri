@@ -43,14 +43,14 @@ check :
 	@$(CHECKER) $(CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
 	@$(CHECKER) $(CHECK_ARG) $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
-	@printf ' \033[1;38;2;254;228;208mDONE.'
+	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 strictcheck :
 	@printf "\033[1;38;2;254;228;208mCheck list:\n"
 	@sleep 1.5s
 	@$(CHECKER) $(STRICT_CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
 	@$(CHECKER) $(STRICT_CHECK_ARG) $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
-	@printf ' \033[1;38;2;254;228;208mDONE.'
+	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 clean :
 	rm ruri||true
 help :
