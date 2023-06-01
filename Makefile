@@ -1,13 +1,12 @@
-CCCOLOR     = \033[34m
-STRIPCOLOR  = \033[34;1m
-SRCCOLOR    = \033[33m
-BINCOLOR    = \033[37;1m
+CCCOLOR     = \033[1;38;2;254;228;208m
+STRIPCOLOR  = \033[1;38;2;254;228;208m
+BINCOLOR    = \033[34;1m
 ENDCOLOR    = \033[0m
 CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 CC = clang
 STRIP = strip
-CHECKER = clang-tidy
+CHECKER = clang-tidy --use-color
 CHECK_ARG = --checks=-clang-analyzer-security.insecureAPI.strcpy,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
 STRICT_CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-misc-no-recursion,-bugprone-easily-swappable-parameters,-readability-identifier-length,-cert-err34-c,-bugprone-assignment-in-if-condition
 LD_FLAGS = -lcap -lpthread
@@ -24,9 +23,11 @@ all :
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 dev :
-	$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	$(CC_LOG) $(BIN_TARGET)
+	@$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
 asan :
-	$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
+	$(CC_LOG) $(BIN_TARGET)
+	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
 static :
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
@@ -37,9 +38,19 @@ static :
 install :all
 	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
 check :
-	$(CHECKER) $(CHECK_ARG) $(SRC)
+	@printf "\033[1;38;2;254;228;208mCheck list:\n"
+	@sleep 1.5s
+	@$(CHECKER) $(CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
+	@$(CHECKER) $(CHECK_ARG) $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	@printf ' \033[1;38;2;254;228;208mDONE.'
 strictcheck :
-	$(CHECKER) $(STRICT_CHECK_ARG) $(SRC)
+	@printf "\033[1;38;2;254;228;208mCheck list:\n"
+	@sleep 1.5s
+	@$(CHECKER) $(STRICT_CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
+	@$(CHECKER) $(STRICT_CHECK_ARG) $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	@printf ' \033[1;38;2;254;228;208mDONE.'
 clean :
 	rm ruri||true
 help :

@@ -28,39 +28,39 @@
  */
 // Enable Linux features.
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <sched.h>
 #include <dirent.h>
 #include <errno.h>
-#include <stdbool.h>
+#include <fcntl.h>
+#include <linux/limits.h>
+#include <linux/sched.h>
+#include <linux/stat.h>
 // This program need to be linked with `-lpthread` on some devices.
 #include <pthread.h>
-#include <linux/stat.h>
-#include <linux/sched.h>
-#include <linux/limits.h>
-#include <sys/prctl.h>
+#include <sched.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+// This program need to be linked with `-lcap`
+#include <sys/capability.h>
+#include <sys/ioctl.h>
 #include <sys/mount.h>
+#include <sys/prctl.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
-#include <sys/wait.h>
-#include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/un.h>
-// This program need to be linked with `-lcap`.
-#include <sys/capability.h>
+#include <sys/wait.h>
+#include <unistd.h>
 // For initializing some variables.
-#define INIT_VALUE -114
+#define INIT_VALUE (-114)
 // Version info.
 #define CONTAINER_VERSION "2.0-dev"
 // Limitations
 #define MAX_INIT_COMMANDS 1024
-#define MAX_ENVS 128*2
-#define MAX_MOUNTPOINTS 128*2
+#define MAX_ENVS (128 * 2)
+#define MAX_MOUNTPOINTS (128 * 2)
 // Info of containers.
 struct CONTAINERS
 {
@@ -138,9 +138,9 @@ int container_daemon(void);
 // Do some checks before chroot().
 bool check_container(char *container_dir);
 // Run unshare container, called by main().
-int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings);
+int run_unshare_container(struct CONTAINER_INFO *container_info, bool no_warnings);
 // Run chroot container, called by main(), run_unshare_container() and init_unshare_container().
-void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings);
+void run_chroot_container(struct CONTAINER_INFO *container_info, bool no_warnings);
 // Kill&umount container.
 void umount_container(char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
