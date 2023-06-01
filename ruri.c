@@ -226,7 +226,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   return;
 }
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS * 2], char *mountpoint[MAX_MOUNTPOINTS * 2], struct CONTAINERS *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and add container info to node.
@@ -250,7 +250,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
-    for (int i = 0; i < MAX_ENVS * 2; i++)
+    for (int i = 0; i < MAX_ENVS; i++)
     {
       if (env[i] != NULL)
       {
@@ -261,7 +261,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
         break;
       }
     }
-    for (int i = 0; i < MAX_MOUNTPOINTS * 2; i++)
+    for (int i = 0; i < MAX_MOUNTPOINTS; i++)
     {
       if (mountpoint[i] != NULL)
       {
@@ -884,8 +884,8 @@ void container_daemon(void)
   }
   pid_t unshare_pid;
   char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
-  char *env[MAX_ENVS * 2] = {NULL};
-  char *mountpoint[MAX_MOUNTPOINTS * 2] = {NULL};
+  char *env[MAX_ENVS] = {NULL};
+  char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
   // Create socket
   int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sockfd < 0)
@@ -1611,8 +1611,8 @@ int main(int argc, char **argv)
   bool greetings = NULL;
   bool privileged = false;
   char *init[MAX_INIT_COMMANDS] = {NULL};
-  char *env[MAX_ENVS * 2] = {NULL};
-  char *mountpoint[MAX_MOUNTPOINTS * 2] = {NULL};
+  char *env[MAX_ENVS] = {NULL};
+  char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
@@ -1708,7 +1708,7 @@ int main(int argc, char **argv)
       arg_num++;
       if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
       {
-        for (int i = 0; i < MAX_ENVS * 2; i++)
+        for (int i = 0; i < MAX_ENVS; i++)
         {
           if (env[i] == NULL)
           {
@@ -1732,7 +1732,7 @@ int main(int argc, char **argv)
       arg_num++;
       if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
       {
-        for (int i = 0; i < MAX_MOUNTPOINTS * 2; i++)
+        for (int i = 0; i < MAX_MOUNTPOINTS; i++)
         {
           if (mountpoint[i] == NULL)
           {
@@ -1877,7 +1877,7 @@ int main(int argc, char **argv)
   }
   // TODO(Moe-hacker)
   // 同时需完善dev log
-  for (int i = 0; i < MAX_ENVS * 2; i++)
+  for (int i = 0; i < MAX_ENVS; i++)
   {
     if (env[i] != NULL)
     {
@@ -1891,7 +1891,7 @@ int main(int argc, char **argv)
     }
   }
   // TODO(Moe-hacker)
-  for (int i = 0; i < MAX_MOUNTPOINTS * 2; i++)
+  for (int i = 0; i < MAX_MOUNTPOINTS; i++)
   {
     if (mountpoint[i] != NULL)
     {
