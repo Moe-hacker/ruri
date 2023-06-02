@@ -1348,6 +1348,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     {
       setns(fd, 0);
     }
+    unshare(CLONE_FILES);
     // Fork itself into namespace.
     // This can fix `can't fork: out of memory` issue.
     unshare_pid = fork();
