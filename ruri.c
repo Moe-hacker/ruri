@@ -294,35 +294,11 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
   // Will never been run.
   return NULL;
 }
-// Delete a node from CONTAINERS struct.
-struct CONTAINERS *del_node(struct CONTAINERS *container)
-{
-  /*
-   * It will use the next node to overwrite current node.
-   * When the next node is NULL, it will stop.
-   * Not using free() here, needn't because the struct is too small.
-   */
-  // Will never be run.
-  if (container == NULL)
-  {
-    return NULL;
-  }
-  if (container->container != NULL)
-  {
-    container = container->container;
-    container->container = del_node(container);
-  }
-  else
-  {
-    container = NULL;
-  }
-  return container;
-}
 // Delete a container from CONTAINERS struct.
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
   /*
-   * Call to del_node() to delete the node that matches container_dir.
+   * TODO
    * If container is a NULL pointer, just quit, but this will never happen.
    */
   // It will never be true.
@@ -333,7 +309,9 @@ struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *contain
   // If container is the struct to delete.
   if (strcmp(container->container_dir, container_dir) == 0)
   {
-    container = del_node(container);
+    struct CONTAINERS *next_node = container->container;
+    free(container);
+    container = next_node;
   }
   // If not, try the next struct.
   else
@@ -417,7 +395,8 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   /*
    * It will return the messages have been read.
    */
-  char *ret = (char *)malloc(PATH_MAX);
+  char buf[PATH_MAX] = {0};
+  static const char *ret = NULL;
   unsigned int size = sizeof(addr);
   // Accept a connection.
   int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
@@ -426,10 +405,13 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Read messages.
-  if (read(sock_new, ret, PATH_MAX) == -1)
+  if (read(sock_new, buf, PATH_MAX) == -1)
   {
-    free(ret);
     ret = NULL;
+  }
+  else
+  {
+    ret = strdup(buf);
   }
   close(sock_new);
 #ifdef __CONTAINER_DEV__
@@ -442,7 +424,7 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
     printf("%s\n", "Daemon read msg: NULL");
   }
 #endif
-  return ret;
+  return (char *)ret;
 }
 // For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr)
@@ -450,7 +432,8 @@ char *read_msg_client(struct sockaddr_un addr)
   /*
    * It will return the messages have been read.
    */
-  char *ret = (char *)malloc(PATH_MAX);
+  char buf[PATH_MAX] = {0};
+  static const char *ret = NULL;
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
@@ -463,14 +446,16 @@ char *read_msg_client(struct sockaddr_un addr)
   // Connect to daemon.
   if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == -1)
   {
-    free(ret);
     return NULL;
   }
   // Read messages.
-  if (read(sockfd, ret, PATH_MAX) == -1)
+  if (read(sockfd, buf, PATH_MAX) == -1)
   {
-    free(ret);
     ret = NULL;
+  }
+  else
+  {
+    ret = strdup(buf);
   }
   close(sockfd);
 #ifdef __CONTAINER_DEV__
@@ -483,7 +468,7 @@ char *read_msg_client(struct sockaddr_un addr)
     printf("%s\n", "Client read msg: NULL");
   }
 #endif
-  return ret;
+  return (char *)ret;
 }
 // For container_ps().
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd)
@@ -932,7 +917,7 @@ int container_daemon(void)
     // Kill a container.
     else if (strcmp("del", msg) == 0)
     {
-      container_dir = read_msg_server(addr, sockfd);
+      container_dir = strdup(read_msg_server(addr, sockfd));
       if (container_active(container_dir, container))
       {
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
@@ -948,7 +933,7 @@ int container_daemon(void)
     else if (strcmp("info", msg) == 0)
     {
       // Get container_dir.
-      container_dir = read_msg_server(addr, sockfd);
+      container_dir = strdup(read_msg_server(addr, sockfd));
       if (container_active(container_dir, container))
       {
         send_msg_server("Pid", addr, sockfd);
@@ -1014,6 +999,7 @@ int container_daemon(void)
       msg = read_msg_server(addr, sockfd);
       container_info.container_dir = strdup(msg);
       msg = read_msg_server(addr, sockfd);
+      // TODO(Moe-hacker)
       if (strcmp(msg, "caplist") != 0)
       {
         continue;
@@ -1165,6 +1151,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Container daemon will return `Nya!`.
   send_msg_client("Nya?", addr);
   char *msg = NULL;
+  char *container_pid = NULL;
   msg = read_msg_client(addr);
   if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
   {
@@ -1177,6 +1164,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
     }
   }
+  free(msg);
+  msg = NULL;
   // Unshare itself into new namespaces.
   if (!daemon_running)
   {
@@ -1225,8 +1214,9 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     {
       usleep(200000);
       waitpid(unshare_pid, NULL, 0);
+      return 0;
     }
-    else if (unshare_pid < 0)
+    if (unshare_pid < 0)
     {
       fprintf(stderr, "\033[31mFork error\n");
       return 1;
@@ -1282,10 +1272,10 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     }
     // For setns()
     usleep(200000);
-    // XXX
-    // For setns(), we define it as char*.
-    char *container_pid = NULL;
-    container_pid = read_msg_client(addr);
+    msg = read_msg_client(addr);
+    container_pid = strdup(msg);
+    free(msg);
+    msg = NULL;
 #ifdef __CONTAINER_DEV__
     printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
@@ -1301,6 +1291,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     sprintf(pid_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/pid");
     sprintf(time_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/time");
     sprintf(uts_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/uts");
+    free(container_pid);
+    container_pid = NULL;
     int fd = INIT_VALUE;
     fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
@@ -1364,8 +1356,9 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     {
       usleep(200000);
       waitpid(unshare_pid, NULL, 0);
+      return 0;
     }
-    else if (unshare_pid < 0)
+    if (unshare_pid < 0)
     {
       fprintf(stderr, "\033[31mFork error\n");
       return 1;
