@@ -166,7 +166,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
   /*
    * If the cap is already in list, just do nothing and quit.
-   * Caps are initialized by INIT_VALUE, the INIT_VALUE will be ignored when dropping caps.
+   * Caps are initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
    */
 #ifdef __CONTAINER_DEV__
   printf("Add %s to drop_caplist.\n", cap_to_name(cap));
@@ -267,6 +267,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
       }
     }
     container->container = NULL;
+    // Return node added.
     return container;
   }
   // If current node is not NULL, try the next.
@@ -298,8 +299,8 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container)
 {
   /*
-   * TODO
    * If container is a NULL pointer, just quit, but this will never happen.
+   * Or it will find the node that matching container_dir , free() its memory and use the next node to overwrite it.
    */
   // It will never be true.
   if (container == NULL)
@@ -526,6 +527,7 @@ int container_ps(void)
     {
       break;
     }
+    // Print the received container info.
     printf("\033[1;38;2;254;228;208m%s", msg);
     msg = read_msg_client(addr);
     printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
@@ -562,6 +564,7 @@ int kill_daemon(void)
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
     return 1;
   }
+  // Rurid will kill itself after received this message.
   send_msg_client("kill", addr);
   return 0;
 }
@@ -606,6 +609,7 @@ void *init_unshare_container(void *arg)
    * and call to run_chroot_container() to exec init command.
    * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
    */
+  // TODO(Moe-hacker): send `die` to daemon after init process is die.
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
 #ifdef __CONTAINER_DEV__
@@ -658,7 +662,6 @@ void *init_unshare_container(void *arg)
   // Fork itself into namespace.
   // This can fix `can't fork: out of memory` issue.
   pid_t unshare_pid = fork();
-  // Fix `can't access tty` issue.
   if (unshare_pid > 0)
   {
     // Set socket address.
@@ -685,23 +688,26 @@ void *init_unshare_container(void *arg)
     {
       for (int i = 0; i < CAP_LAST_CAP + 1; i++)
       {
-        if (container_info->drop_caplist[i] != INIT_VALUE)
+        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+        if (!container_info->drop_caplist[i])
+        {
+          send_msg_client(cap_to_name(0), addr);
+        }
+        else if (container_info->drop_caplist[i] != INIT_VALUE)
         {
           send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
-          // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
-          if (!container_info->drop_caplist[i])
-          {
-            send_msg_client(cap_to_name(0), addr);
-          }
         }
       }
     }
     send_msg_client("endcaplist", addr);
+    // Fix the bug that the terminal was stuck.
     usleep(200000);
+    // Fix `can't access tty` issue.
     waitpid(unshare_pid, NULL, 0);
   }
   else if (unshare_pid == 0)
   {
+    // The things to do next is same as a chroot container.
     run_chroot_container(container_info, true);
   }
   return 0;
@@ -713,7 +719,7 @@ void init_container(void)
    * It'll be run after chroot(), so `/` is the root dir of container now.
    * The device list and permissions are the same as common docker container.
    */
-  // umount /proc.
+  // umount /proc before we mount it.
   umount2("/proc", MNT_DETACH | MNT_FORCE);
   // Fix issues in archlinux containers.
   mount("/", "/", NULL, MS_BIND, NULL);
@@ -741,7 +747,6 @@ void init_container(void)
   mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
   // For making dev nodes.
-  // XXX
   dev_t dev = 0;
   // Create system runtime nodes in /dev and then fix permissions.
   dev = makedev(1, 3);
@@ -1044,6 +1049,7 @@ bool check_container(char *container_dir)
   // TODO(Moe-hacker): check if init binary exists.
   /*
    * It's called to by main() to check if we can run a container in container_dir.
+   * Note that it can only do basic checks. We can't know if container_dir is really right.
    */
   // Check if container directory is given.
   if (container_dir == NULL)
@@ -1224,6 +1230,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   }
   else
   {
+    // XXX
     send_msg_client("info", addr);
     send_msg_client(container_info->container_dir, addr);
     msg = read_msg_client(addr);
@@ -1279,6 +1286,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
 #ifdef __CONTAINER_DEV__
     printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
+    // Use setns() to enter namespaces created by rurid.
     char cgroup_ns_file[PATH_MAX] = {'\000'};
     char ipc_ns_file[PATH_MAX] = {'\000'};
     char mount_ns_file[PATH_MAX] = {'\000'};
@@ -1348,6 +1356,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     {
       setns(fd, 0);
     }
+    // Close fds after fork()
     unshare(CLONE_FILES);
     // Fork itself into namespace.
     // This can fix `can't fork: out of memory` issue.
@@ -1379,6 +1388,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
    * It's called to by main(), run_unshare_container() and init_unshare_container()(container_daemon()).
    * It will chroot() to container_dir, call to init_container(), drop capabilities and exec() init command in container.
    */
+  // TODO(Moe-hacker): mount other mountpoints.
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
@@ -1442,7 +1452,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     closedir(direxist);
   }
   // Drop caps.
-  if (container_info->drop_caplist[0] != INIT_VALUE)
+  if ((container_info->drop_caplist[0] != INIT_VALUE) || !container_info->drop_caplist[0])
   {
     for (int i = 0; i < CAP_LAST_CAP + 1; i++)
     {
@@ -1604,45 +1614,45 @@ int main(int argc, char **argv)
   }
   cap_value_t cap = INIT_VALUE;
   // Parse command-line arguments.
-  for (int arg_num = 1; arg_num < argc; arg_num++)
+  for (int index = 1; index < argc; index++)
   {
     //============== [Other options] ==============
-    if (strcmp(argv[arg_num], "-v") == 0)
+    if (strcmp(argv[index], "-v") == 0)
     {
       show_version_info();
       return 0;
     }
-    if (strcmp(argv[arg_num], "-D") == 0)
+    if (strcmp(argv[index], "-D") == 0)
     {
       return container_daemon();
     }
-    if (strcmp(argv[arg_num], "-K") == 0)
+    if (strcmp(argv[index], "-K") == 0)
     {
       return kill_daemon();
     }
-    if (strcmp(argv[arg_num], "-h") == 0)
+    if (strcmp(argv[index], "-h") == 0)
     {
       greetings = true;
       show_helps(greetings);
       return 0;
     }
-    if (strcmp(argv[arg_num], "-l") == 0)
+    if (strcmp(argv[index], "-l") == 0)
     {
       return container_ps();
     }
     //=========End of [Other options]===========
-    if (strcmp(argv[arg_num], "-u") == 0)
+    if (strcmp(argv[index], "-u") == 0)
     {
       use_unshare = true;
     }
-    else if (strcmp(argv[arg_num], "-U") == 0)
+    else if (strcmp(argv[index], "-U") == 0)
     {
-      arg_num += 1;
-      if (argv[arg_num] != NULL)
+      index += 1;
+      if (argv[index] != NULL)
       {
-        if (check_container(argv[arg_num]))
+        if (check_container(argv[index]))
         {
-          container_dir = realpath(argv[arg_num], NULL);
+          container_dir = realpath(argv[index], NULL);
           umount_container(container_dir);
           return 0;
         }
@@ -1653,34 +1663,34 @@ int main(int argc, char **argv)
         return 1;
       }
     }
-    else if (strcmp(argv[arg_num], "-d") == 0)
+    else if (strcmp(argv[index], "-d") == 0)
     {
       for (unsigned long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++)
       {
         drop_caplist[i] = drop_caplist_unprivileged[i];
       }
     }
-    else if (strcmp(argv[arg_num], "-p") == 0)
+    else if (strcmp(argv[index], "-p") == 0)
     {
       privileged = true;
     }
-    else if (strcmp(argv[arg_num], "-w") == 0)
+    else if (strcmp(argv[index], "-w") == 0)
     {
       no_warnings = true;
     }
     // XXX
-    else if (strcmp(argv[arg_num], "-e") == 0)
+    else if (strcmp(argv[index], "-e") == 0)
     {
-      arg_num++;
-      if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
+      index++;
+      if ((argv[index] != NULL) && (argv[index + 1] != NULL))
       {
         for (int i = 0; i < MAX_ENVS; i++)
         {
           if (env[i] == NULL)
           {
-            env[i] = strdup(argv[arg_num]);
-            arg_num++;
-            env[i + 1] = strdup(argv[arg_num]);
+            env[i] = strdup(argv[index]);
+            index++;
+            env[i + 1] = strdup(argv[index]);
             env[i + 2] = NULL;
             break;
           }
@@ -1693,18 +1703,18 @@ int main(int argc, char **argv)
       }
     }
     // XXX
-    else if (strcmp(argv[arg_num], "-m") == 0)
+    else if (strcmp(argv[index], "-m") == 0)
     {
-      arg_num++;
-      if ((argv[arg_num] != NULL) && (argv[arg_num + 1] != NULL))
+      index++;
+      if ((argv[index] != NULL) && (argv[index + 1] != NULL))
       {
         for (int i = 0; i < MAX_MOUNTPOINTS; i++)
         {
           if (mountpoint[i] == NULL)
           {
-            mountpoint[i] = strdup(argv[arg_num]);
-            arg_num++;
-            mountpoint[i + 1] = strdup(argv[arg_num]);
+            mountpoint[i] = strdup(argv[index]);
+            index++;
+            mountpoint[i + 1] = strdup(argv[index]);
             mountpoint[i + 2] = NULL;
             break;
           }
@@ -1716,18 +1726,18 @@ int main(int argc, char **argv)
         return 1;
       }
     }
-    else if (strcmp(argv[arg_num], "--keep") == 0)
+    else if (strcmp(argv[index], "--keep") == 0)
     {
-      arg_num++;
-      if (argv[arg_num] != NULL)
+      index++;
+      if (argv[index] != NULL)
       {
-        if (cap_from_name(argv[arg_num], &cap) == 0)
+        if (cap_from_name(argv[index], &cap) == 0)
         {
           add_to_list(keep_caplist_extra, CAP_LAST_CAP + 1, cap);
         }
         else
         {
-          fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+          fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[index], "`");
           return 1;
         }
       }
@@ -1737,18 +1747,18 @@ int main(int argc, char **argv)
         return 1;
       }
     }
-    else if (strcmp(argv[arg_num], "--drop") == 0)
+    else if (strcmp(argv[index], "--drop") == 0)
     {
-      arg_num++;
-      if (argv[arg_num] != NULL)
+      index++;
+      if (argv[index] != NULL)
       {
-        if (cap_from_name(argv[arg_num], &cap) == 0)
+        if (cap_from_name(argv[index], &cap) == 0)
         {
           add_to_list(drop_caplist_extra, CAP_LAST_CAP + 1, cap);
         }
         else
         {
-          fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[arg_num], "`");
+          fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[index], "`");
           return 1;
         }
       }
@@ -1758,25 +1768,25 @@ int main(int argc, char **argv)
         return 1;
       }
     }
-    else if ((strchr(argv[arg_num], '/') && strcmp(strchr(argv[arg_num], '/'), argv[arg_num]) == 0) || (strchr(argv[arg_num], '.') && strcmp(strchr(argv[arg_num], '.'), argv[arg_num]) == 0))
+    else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0))
     {
 
       // Get the absolute path of container.
-      if (check_container(argv[arg_num]))
+      if (check_container(argv[index]))
       {
-        container_dir = realpath(argv[arg_num], NULL);
+        container_dir = realpath(argv[index], NULL);
       }
-      arg_num++;
+      index++;
       // Arguments after container_dir will be read as init command.
-      if (argv[arg_num])
+      if (argv[index])
       {
         for (int i = 0; i < argc; i++)
         {
-          if (argv[arg_num])
+          if (argv[index])
           {
-            init[i] = argv[arg_num];
+            init[i] = argv[index];
             init[i + 1] = NULL;
-            arg_num++;
+            index++;
           }
           else
           {
@@ -1791,7 +1801,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[arg_num], "`");
+      fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[index], "`");
       show_helps(greetings);
       return 1;
     }
