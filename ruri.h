@@ -107,9 +107,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container);
 // Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
-// Delete a node from CONTAINERS struct.
-struct CONTAINERS *del_node(struct CONTAINERS *container);
-// Delete a container from CONTAINERS struct. It will call to del_node().
+// Delete a container from CONTAINERS struct.
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container);
 // Check if a container is running.
 bool container_active(char *container_dir, struct CONTAINERS *container);
