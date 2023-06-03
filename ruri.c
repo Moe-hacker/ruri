@@ -517,6 +517,8 @@ int container_ps(void)
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
     return 1;
   }
+  free(msg);
+  msg = NULL;
   send_msg_client("ps", addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
   printf("\033[1;38;2;152;245;225m=========================\n");
@@ -525,12 +527,18 @@ int container_ps(void)
     msg = read_msg_client(addr);
     if (strcmp(msg, "endps") == 0)
     {
+      free(msg);
+      msg = NULL;
       break;
     }
     // Print the received container info.
     printf("\033[1;38;2;254;228;208m%s", msg);
+    free(msg);
+    msg = NULL;
     msg = read_msg_client(addr);
     printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
+    free(msg);
+    msg = NULL;
   }
   return 0;
 }
@@ -564,6 +572,8 @@ int kill_daemon(void)
     fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
     return 1;
   }
+  free(msg);
+  msg = NULL;
   // Rurid will kill itself after received this message.
   send_msg_client("kill", addr);
   return 0;
@@ -1097,8 +1107,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Set default init.
   if (container_info->init_command[0] == NULL)
   {
-    container_info->init_command[0] = "/bin/su";
-    container_info->init_command[1] = "-";
+    container_info->init_command[0] = strdup("/bin/su");
+    container_info->init_command[1] = strdup("-");
     container_info->init_command[2] = NULL;
   }
 #ifdef __CONTAINER_DEV__
@@ -1244,17 +1254,19 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
           if (container_info->init_command[i] != NULL)
           {
             send_msg_client(container_info->init_command[i], addr);
+            free(container_info->init_command[i]);
+            container_info->init_command[i] = NULL;
           }
           else
           {
             break;
           }
         }
+        container_info->init_command[0] = strdup("/bin/su");
+        container_info->init_command[1] = strdup("-");
+        container_info->init_command[2] = NULL;
       }
       send_msg_client("endinit", addr);
-      container_info->init_command[0] = "/bin/su";
-      container_info->init_command[1] = "-";
-      container_info->init_command[2] = NULL;
       send_msg_client("caplist", addr);
       if (container_info->drop_caplist[0] != INIT_VALUE)
       {
@@ -1277,6 +1289,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       }
       send_msg_client("endcaplist", addr);
     }
+    free(msg);
+    msg = NULL;
     // For setns()
     usleep(200000);
     msg = read_msg_client(addr);
@@ -1377,6 +1391,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Check if unshare is enabled.
   if (unshare_pid == 0)
   {
+    usleep(200000);
     run_chroot_container(container_info, no_warnings);
   }
   return 0;
