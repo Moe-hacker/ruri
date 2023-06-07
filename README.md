@@ -1,5 +1,5 @@
 
-![](https://github.com/Moe-hacker/ruri/raw/main/logo.png)
+![](https://github.com/Moe-hacker/ruri/raw/main/logo/logo.png)
 
 ![](https://img.shields.io/github/stars/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=instatus&logoColor=fee4d0)
 ![](https://img.shields.io/github/forks/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
@@ -26,7 +26,7 @@ You can read this doc in :
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
 &emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.      
 ### About the logo:      
-It is a combination of a flower and a container. It is described as a mathematical graph, and you can use logo.py to plot it using matplotlib.      
+It is a combination of a flower and a container. It is described as a mathematical graph, and you can use logo/logo.py to plot it using matplotlib.      
 ### Features:
 - Written with 100% C.          
 - Light weight, the binary is less than 1M.             
