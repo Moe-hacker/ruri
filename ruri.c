@@ -231,6 +231,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
   {
     // Request memory of container struct.
     container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
+    // Add info of container.
     container->container_dir = strdup(container_dir);
     container->unshare_pid = strdup(unshare_pid);
     for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
@@ -301,6 +302,8 @@ struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *contain
   /*
    * If container is a NULL pointer, just quit, but this will never happen.
    * Or it will find the node that matching container_dir , free() its memory and use the next node to overwrite it.
+   * NULL pointer will be returned if reaching the end of all nodes.
+   * However, as container_active() will be run before it to check if container's running, NULL pointer will never be returned.
    */
   // It will never be true.
   if (container == NULL)
@@ -334,12 +337,12 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
   {
     return false;
   }
-  // Found container matching container_dir.
+  // If container matches container_dir.
   if (strcmp(container->container_dir, container_dir) == 0)
   {
     return true;
   }
-  // Try the next struct.
+  // If not, try the next struct.
   return container_active(container_dir, container->container);
 }
 // For daemon.
@@ -395,6 +398,7 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
 {
   /*
    * It will return the messages have been read.
+   * free() the memory of msg after used it to avoid leak of memory.
    */
   char buf[PATH_MAX] = {0};
   static const char *ret = NULL;
@@ -432,6 +436,7 @@ char *read_msg_client(struct sockaddr_un addr)
 {
   /*
    * It will return the messages have been read.
+   * free() the memory of msg after used it to avoid leak of memory.
    */
   char buf[PATH_MAX] = {0};
   static const char *ret = NULL;
@@ -478,13 +483,16 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
    * It will read all nodes in container struct and send them to ruri.
    * If it reaches the end of container struct, send `endps`.
    */
+  // Reached the end of container struct.
   if (container == NULL)
   {
     send_msg_server("endps", addr, sockfd);
     return;
   }
+  // Send info to ruri.
   send_msg_server(container->container_dir, addr, sockfd);
   send_msg_server(container->unshare_pid, addr, sockfd);
+  // Read the next node.
   read_all_nodes(container->container, addr, sockfd);
 }
 // For `ruri -l`
@@ -519,12 +527,14 @@ int container_ps(void)
   }
   free(msg);
   msg = NULL;
+  // rurid will return the info of running containers.
   send_msg_client("ps", addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
   printf("\033[1;38;2;152;245;225m=========================\n");
   while (true)
   {
     msg = read_msg_client(addr);
+    // End of container info.
     if (strcmp(msg, "endps") == 0)
     {
       free(msg);
@@ -619,7 +629,6 @@ void *init_unshare_container(void *arg)
    * and call to run_chroot_container() to exec init command.
    * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
    */
-  // TODO(Moe-hacker): send `die` to daemon after init process is die.
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
 #ifdef __CONTAINER_DEV__
@@ -674,6 +683,7 @@ void *init_unshare_container(void *arg)
   pid_t unshare_pid = fork();
   if (unshare_pid > 0)
   {
+    char *container_dir = strdup(container_info->container_dir);
     // Set socket address.
     struct sockaddr_un addr;
     addr.sun_family = AF_UNIX;
@@ -714,6 +724,9 @@ void *init_unshare_container(void *arg)
     usleep(200000);
     // Fix `can't access tty` issue.
     waitpid(unshare_pid, NULL, 0);
+    // If init process died.
+    send_msg_client("die", addr);
+    send_msg_client(container_dir, addr);
   }
   else if (unshare_pid == 0)
   {
@@ -1051,6 +1064,25 @@ int container_daemon(void)
     {
       read_all_nodes(container, addr, sockfd);
     }
+    // XXX
+    else if (strcmp("die", msg) == 0)
+    {
+      container_dir = strdup(read_msg_server(addr, sockfd));
+      container = del_container(container_dir, container);
+    }
+    // XXX
+    else if (strcmp("ok?", msg) == 0)
+    {
+      container_dir = strdup(read_msg_server(addr, sockfd));
+      if (container_active(container_dir, container))
+      {
+        send_msg_server("ok", addr, sockfd);
+      }
+      else
+      {
+        send_msg_server("no", addr, sockfd);
+      }
+    }
   }
 }
 // Do some checks before chroot()
@@ -1380,6 +1412,14 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     {
       usleep(200000);
       waitpid(unshare_pid, NULL, 0);
+      usleep(200000);
+      // XXX
+      send_msg_client("ok?", addr);
+      send_msg_client(container_info->container_dir, addr);
+      if (strcmp(read_msg_client(addr), "ok") != 0)
+      {
+        fprintf(stderr, "\033[31mError: Init process died.\n");
+      }
       return 0;
     }
     if (unshare_pid < 0)
@@ -1552,6 +1592,7 @@ void umount_container(char *container_dir)
   }
   else
   {
+    // Kill the container from daemon.
     send_msg_client("del", addr);
     send_msg_client(container_dir, addr);
     msg = read_msg_client(addr);
@@ -1586,9 +1627,6 @@ void umount_container(char *container_dir)
 }
 int main(int argc, char **argv)
 {
-  /*
-   * It will get command-line args, build the info of container and create a container or call to other functions.
-   */
   // Set process name.
   prctl(PR_SET_NAME, "ruri");
   // Check if arguments are given.
@@ -1850,6 +1888,7 @@ int main(int argc, char **argv)
       }
     }
   }
+  // Build container_info struct.
   container_info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
   container_info->container_dir = container_dir;
   for (int i = 0; i <= CAP_LAST_CAP; i++)
