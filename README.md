@@ -54,7 +54,6 @@ For dynamic compilation:
 For static compilation:         
 - libcap-static
 - libc-static         
-- pkg-config
 ### Usage:    
 ```text
 ruri [Other options] [<Args> <container directory> <init command>]
