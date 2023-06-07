@@ -727,6 +727,7 @@ void *init_unshare_container(void *arg)
     // If init process died.
     send_msg_client("die", addr);
     send_msg_client(container_dir, addr);
+    free(container_dir);
   }
   else if (unshare_pid == 0)
   {
