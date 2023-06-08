@@ -91,6 +91,8 @@ struct CONTAINER_INFO
     char *unshare_pid;
 };
 // Function list.
+// Show error msg and exit.
+void error(char *msg);
 // For centering output.
 void show_n_spaces(int n);
 // As an easter agg.
