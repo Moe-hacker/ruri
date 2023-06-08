@@ -1569,7 +1569,7 @@ void umount_container(char *container_dir)
    * Then it will umount() container_dir and other directories in it.
    */
   // TODO(Moe-hacker): umount() mountpoint
-  //  Set socket address.
+  // Set socket address.
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
@@ -1829,6 +1829,10 @@ int main(int argc, char **argv)
       if (check_container(argv[index]))
       {
         container_dir = realpath(argv[index], NULL);
+      }
+      else
+      {
+        exit(1);
       }
       index++;
       // Arguments after container_dir will be read as init command.
