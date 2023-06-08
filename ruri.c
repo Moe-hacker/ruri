@@ -29,6 +29,18 @@
 /*
  * The macro __CONTAINER_DEV__ will enable extra logs if it's enabled.
  */
+// Show error msg and exit.
+void error(char *msg)
+{
+  fprintf(stderr, "\033[31m%s\033[0m\n", msg);
+  fprintf(stderr, "\033[31m%s\033[0m\n", "  .^.   .^.");
+  fprintf(stderr, "\033[31m%s\033[0m\n", "  /⋀\\_ﾉ_/⋀\\");
+  fprintf(stderr, "\033[31m%s\033[0m\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
+  fprintf(stderr, "\033[31m%s\033[0m\n", "|ﾙﾘﾘ >  x )ﾘ");
+  fprintf(stderr, "\033[31m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
+  fprintf(stderr, "\033[31m%s\033[0m\n", "      ⠁⠁");
+  exit(1);
+}
 // For centering output.
 void show_n_spaces(int n)
 {
@@ -107,7 +119,9 @@ void show_version_info(void)
    * Just show version info and license.
    * Version info is defined in macro CONTAINER_VERSION.
    */
+  printf("\n");
   printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", CONTAINER_VERSION, "\n");
+  printf("\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("\n");
   printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
@@ -522,8 +536,7 @@ int container_ps(void)
   msg = read_msg_client(addr);
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
-    fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
-    return 1;
+    error("Error: seems that container daemon is not running QAQ");
   }
   free(msg);
   msg = NULL;
@@ -579,8 +592,7 @@ int kill_daemon(void)
   msg = read_msg_client(addr);
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
-    fprintf(stderr, "\033[31mError: seems that container daemon is not running\033[0m\n");
-    return 1;
+    error("Error: seems that container daemon is not running QAQ");
   }
   free(msg);
   msg = NULL;
@@ -847,15 +859,13 @@ int container_daemon(void)
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
-    fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    return 1;
+    error("Error: this program should be run with root privileges QAQ");
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
   if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
-    fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
-    return 1;
+    error("Error: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QWQ");
   }
   // Create container struct.
   struct CONTAINERS *container = NULL;
@@ -884,8 +894,7 @@ int container_daemon(void)
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
-    fprintf(stderr, "\033[31mError: cannot create socket.\n");
-    return 1;
+    error("Error: cannot create socket QWQ");
   }
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
@@ -905,8 +914,7 @@ int container_daemon(void)
   if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
   {
     close(sockfd);
-    printf("\033[31mDaemon already running.\n");
-    return 1;
+    error("Daemon already running QAQ");
   }
   // Fork itself into the background.
   pid_t pid = fork();
@@ -1097,34 +1105,29 @@ bool check_container(char *container_dir)
   // Check if container directory is given.
   if (container_dir == NULL)
   {
-    fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-    return false;
+    error("Error: container directory is not set QwQ");
   }
   // Refuse to use `/` for container directory.
   if (strcmp(container_dir, "/") == 0)
   {
-    fprintf(stderr, "\033[31mError: `/` is not allowed to use as a container directory.\033[0m\n");
-    return false;
+    error("Error: `/` is not allowed to use as a container directory QwQ");
   }
   // Check if we are running with root privileges.
   if (getuid() != 0)
   {
-    fprintf(stderr, "\033[31mError: this program should be run with root privileges !\033[0m\n");
-    return false;
+    error("Error: this program should be run with root privileges QwQ");
   }
   // Check if $LD_PRELOAD is unset.
   char *ld_preload = getenv("LD_PRELOAD");
   if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
-    fprintf(stderr, "\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run.\033[0m\n");
-    return false;
+    error("Error: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ");
   }
   // Check if container directory exists.
   DIR *direxist = NULL;
   if ((direxist = opendir(container_dir)) == NULL)
   {
-    fprintf(stderr, "\033[31mError: container directory does not exist !\033[0m\n");
-    return false;
+    error("Error: container directory does not exist QwQ");
   }
   closedir(direxist);
   return true;
@@ -1210,7 +1213,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     if (!no_warnings)
     {
-      printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
+      printf("\033[33mWarning: seems that container daemon is not running qwq\033[0m\n");
     }
   }
   free(msg);
@@ -1221,39 +1224,39 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     // Create namespace here because container_daemon is not running.
     if (unshare(CLONE_NEWNS) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that mount namespace is not supported on this device QAQ\033[0m\n");
     }
     if (unshare(CLONE_NEWUTS) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that uts namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that uts namespace is not supported on this device QWQ\033[0m\n");
     }
     if (unshare(CLONE_NEWIPC) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that ipc namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that ipc namespace is not supported on this device (つ﹏⊂)\033[0m\n");
     }
     if (unshare(CLONE_NEWPID) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that pid namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that pid namespace is not supported on this device T_T\033[0m\n");
     }
     if (unshare(CLONE_NEWCGROUP) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device (Ｔ▽Ｔ)\033[0m\n");
     }
     if (unshare(CLONE_NEWTIME) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that time namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that time namespace is not supported on this device (〒︿〒)\033[0m\n");
     }
     if (unshare(CLONE_SYSVSEM) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that semaphore namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that semaphore namespace is not supported on this device (☍﹏⁰)\033[0m\n");
     }
     if (unshare(CLONE_FILES) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that we could not unshare file descriptors with child process\033[0m\n");
+      printf("\033[33mWarning: seems that we could not unshare file descriptors with child process ( ͒˃̩̩⌂˂̩̩ ͒)\033[0m\n");
     }
     if (unshare(CLONE_FS) == -1 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that we could not unshare filesystem information with child process\033[0m\n");
+      printf("\033[33mWarning: seems that we could not unshare filesystem information with child process （>﹏<）\033[0m\n");
     }
     // Fork itself into namespace.
     // This can fix `can't fork: out of memory` issue.
@@ -1267,8 +1270,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     }
     if (unshare_pid < 0)
     {
-      fprintf(stderr, "\033[31mFork error\n");
-      return 1;
+      error("Fork error QwQ?");
     }
   }
   else
@@ -1352,7 +1354,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that mount namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that mount namespace is not supported on this device QAQ\033[0m\n");
     }
     else
     {
@@ -1361,7 +1363,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that pid namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that pid namespace is not supported on this device QWQ\033[0m\n");
     }
     else
     {
@@ -1370,7 +1372,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that time namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that time namespace is not supported on this device T_T\033[0m\n");
     }
     else
     {
@@ -1379,7 +1381,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that uts namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that uts namespace is not supported on this device (つ﹏⊂)\033[0m\n");
     }
     else
     {
@@ -1388,7 +1390,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device (Ｔ▽Ｔ)\033[0m\n");
     }
     else
     {
@@ -1397,7 +1399,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
     if (fd < 0 && !no_warnings)
     {
-      printf("\033[33mWarning: seems that ipc namespace is not supported on this device\033[0m\n");
+      printf("\033[33mWarning: seems that ipc namespace is not supported on this device (☍﹏⁰)\033[0m\n");
     }
     else
     {
@@ -1419,13 +1421,13 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       send_msg_client(container_info->container_dir, addr);
       if (strcmp(read_msg_client(addr), "ok") != 0)
       {
-        fprintf(stderr, "\033[31mError: Init process died.\n");
+        error("Error: Init process died QAQ");
       }
       return 0;
     }
     if (unshare_pid < 0)
     {
-      fprintf(stderr, "\033[31mFork error\n");
+      error("Fork error QWQ?");
       return 1;
     }
   }
@@ -1558,7 +1560,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     fprintf(stderr, "\033[31mFailed to execute init `%s`\n", container_info->init_command[0]);
     fprintf(stderr, "execv() returned: %d\n", errno);
     fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-    return;
+    error("QAQ");
   }
 }
 // Kill&umount container.
@@ -1589,7 +1591,7 @@ void umount_container(char *container_dir)
   msg = read_msg_client(addr);
   if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
   {
-    printf("\033[33mWarning: seems that container daemon is not running\033[0m\n");
+    printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
   }
   else
   {
@@ -1599,7 +1601,7 @@ void umount_container(char *container_dir)
     msg = read_msg_client(addr);
     if (strcmp(msg, "Fail") == 0)
     {
-      fprintf(stderr, "\033[33mWarning: seems that container is not running\033[0m\n");
+      fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
     }
   }
   // Get path to umount.
@@ -1633,7 +1635,7 @@ int main(int argc, char **argv)
   // Check if arguments are given.
   if (argc <= 1)
   {
-    fprintf(stderr, "\033[31mError: too few arguments !\033[0m\n");
+    fprintf(stderr, "\033[31mError: too few arguments QAQ\033[0m\n");
     show_helps(0);
     return 1;
   }
@@ -1713,8 +1715,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        fprintf(stderr, "\033[31mError: container directory is not set !\033[0m\n");
-        return 1;
+        error("Error: container directory is not set QAQ");
       }
     }
     else if (strcmp(argv[index], "-d") == 0)
@@ -1752,8 +1753,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow env");
-        return 1;
+        error("Error: unknow env QWQ");
       }
     }
     // XXX
@@ -1776,8 +1776,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        fprintf(stderr, "%s\033[0m\n", "\033[31mError: unknow mountpoint");
-        return 1;
+        error("Error: unknow mountpoint QAQ");
       }
     }
     else if (strcmp(argv[index], "--keep") == 0)
@@ -1792,13 +1791,13 @@ int main(int argc, char **argv)
         else
         {
           fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[index], "`");
-          return 1;
+          error("QAQ");
         }
       }
       else
       {
         fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
-        return 1;
+        error("QWQ");
       }
     }
     else if (strcmp(argv[index], "--drop") == 0)
@@ -1813,13 +1812,13 @@ int main(int argc, char **argv)
         else
         {
           fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[index], "`");
-          return 1;
+          error("QWQ");
         }
       }
       else
       {
         fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
-        return 1;
+        error("QWQ");
       }
     }
     else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0))
@@ -1863,6 +1862,11 @@ int main(int argc, char **argv)
       show_helps(greetings);
       return 1;
     }
+  }
+  // Check if container_dir is given.
+  if (!container_dir)
+  {
+    error("Error: container directory is not set QwQ");
   }
   // Set default caplist to drop.
   if (!privileged && drop_caplist[0] == INIT_VALUE)
