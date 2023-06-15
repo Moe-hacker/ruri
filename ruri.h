@@ -61,6 +61,11 @@
 #define MAX_INIT_COMMANDS 1024
 #define MAX_ENVS (128 * 2)
 #define MAX_MOUNTPOINTS (128 * 2)
+// Used for interprocess communication.
+#define SOCK_FILE "ruri.sock"
+// The real value of them is not important here.
+#define TEST_MESSAGE_CLIENT "Nya?"
+#define TEST_MESSAGE_SERVER "Nya!"
 // Info of containers.
 struct CONTAINERS
 {
