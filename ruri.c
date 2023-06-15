@@ -2,6 +2,7 @@
 /*
  *
  * This file is part of ruri, with ABSOLUTELY NO WARRANTY.
+ *
  * MIT License
  *
  * Copyright (c) 2022-2023 Moe-hacker
@@ -34,6 +35,7 @@ void error(char *msg)
 {
   /*
    * Show error message and exit here.
+   * You can never know if a customer will order a rice at the bar.
    * It's a `moe` program, but also should be preciseness.
    */
   fprintf(stderr, "\033[31m%s\033[0m\n", msg);
@@ -50,7 +52,7 @@ void show_n_spaces(int n)
 {
   /*
    * In fact it's needless.
-   * But when I wrote it, I didn't know what's strcat. So it has been kept.
+   * But when I wrote it, I didn't know what's strcat(), so it has been kept.
    */
   for (int count = 1; count <= n; count++)
   {
@@ -531,14 +533,14 @@ int container_ps(void)
   }
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
+  strcat(socket_path, "/");
+  strcat(socket_path, SOCK_FILE);
   strcpy(addr.sun_path, socket_path);
-  // Try to connect to container.sock and check if it's created by ruri daemon.
-  // Container daemon will return `Nya!`.
-  send_msg_client("Nya?", addr);
+  // Try to connect to socket file and check if it's created by ruri daemon.
+  send_msg_client(TEST_MESSAGE_CLIENT, addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
+  if ((msg == NULL) || (strcmp(TEST_MESSAGE_SERVER, msg) != 0))
   {
     error("Error: seems that container daemon is not running QwQ");
   }
@@ -587,14 +589,14 @@ int kill_daemon(void)
   }
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
+  strcat(socket_path, "/");
+  strcat(socket_path, SOCK_FILE);
   strcpy(addr.sun_path, socket_path);
-  // Try to connect to container.sock and check if it's created by ruri daemon.
-  // Container daemon will return `Nya!`.
-  send_msg_client("Nya?", addr);
+  // Try to connect to the socket file and check if it's created by ruri daemon.
+  send_msg_client(TEST_MESSAGE_CLIENT, addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
+  if ((msg == NULL) || (strcmp(TEST_MESSAGE_SERVER, msg) != 0))
   {
     error("Error: seems that container daemon is not running QwQ");
   }
@@ -711,7 +713,8 @@ void *init_unshare_container(void *arg)
     }
     char socket_path[PATH_MAX] = {0};
     strcat(socket_path, tmpdir);
-    strcat(socket_path, "/container.sock");
+    strcat(socket_path, "/");
+    strcat(socket_path, SOCK_FILE);
     strcpy(addr.sun_path, socket_path);
     char container_pid[1024];
     sprintf(container_pid, "%d", unshare_pid);
@@ -830,25 +833,10 @@ void init_container(void)
 // Daemon process used to store unshare container information and init unshare container.
 int container_daemon(void)
 {
-  // TODO(Moe-hacker): 检查msg是否为NULL
-  // TODO(Moe-hacker): check if init binary exists.
   /*
    *
    * TODO(Moe-hacker):
-   * 遵守caplist
-   * XXX
-   * TODO(Moe-hacker)
-   * Received messages and reply contents:
-   * --------------------------------------------------------------------------------------------------------------------------
-   * |                                 read                               |            send             |      comment
-   * --------------------------------------------------------------------------------------------------------------------------
-   * |                                 Nya?                               |            Nya!             | Test messasge
-   * |                          del+${container_dir}                      |            OK/Fail          | Kill a container
-   * |                                 info                               |                             | wait for ${container_dir}
-   * |                          ${container_dir}                          |   Pid+$container_pid//NaN   | Read container_dir, check if container is already running and send container_pid to ruri
-   * |     init+${init_command}+endinit+caplist+${caplist}+endcaplist     |                             | Read information of container and init container
-   * |pid+${container_pid}+${contaiiner_dir}+caplist+${caplist}+endcaplist|                             | Read container info from child process
-   *
+   * 遵守caplist mountpoint env
    *
    */
   // Set process name.
@@ -909,17 +897,19 @@ int container_daemon(void)
   }
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
+  strcat(socket_path, "/");
+  strcat(socket_path, SOCK_FILE);
   strcpy(addr.sun_path, socket_path);
   // Check if container daemon is already running.
-  // Container daemon will return `Nya!`.
-  send_msg_client("Nya?", addr);
+  send_msg_client(TEST_MESSAGE_CLIENT, addr);
   msg = read_msg_client(addr);
-  if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
+  if ((msg != NULL) && (strcmp(TEST_MESSAGE_SERVER, msg) == 0))
   {
     close(sockfd);
     error("Daemon already running QwQ");
   }
+  free(msg);
+  msg = NULL;
   // Fork itself into the background.
   pid_t pid = fork();
   if (pid > 0)
@@ -931,7 +921,7 @@ int container_daemon(void)
     perror("fork");
     return 1;
   }
-  // Create container.sock
+  // Create socket file
   remove(socket_path);
   unlink(socket_path);
   if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
@@ -951,14 +941,25 @@ int container_daemon(void)
       continue;
     }
     // Test message.
-    if (strcmp("Nya?", msg) == 0)
+    if (strcmp(TEST_MESSAGE_CLIENT, msg) == 0)
     {
-      send_msg_server("Nya!", addr, sockfd);
+      free(msg);
+      msg = NULL;
+      send_msg_server(TEST_MESSAGE_SERVER, addr, sockfd);
     }
     // Kill a container.
     else if (strcmp("del", msg) == 0)
     {
-      container_dir = strdup(read_msg_server(addr, sockfd));
+      free(msg);
+      msg = NULL;
+      msg = read_msg_server(addr, sockfd);
+      if (msg == NULL)
+      {
+        continue;
+      }
+      container_dir = strdup(msg);
+      free(msg);
+      msg = NULL;
       if (container_active(container_dir, container))
       {
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
@@ -970,11 +971,22 @@ int container_daemon(void)
       {
         send_msg_server("Fail", addr, sockfd);
       }
+      free(container_dir);
+      container_dir = NULL;
     }
     else if (strcmp("info", msg) == 0)
     {
+      free(msg);
+      msg = NULL;
       // Get container_dir.
-      container_dir = strdup(read_msg_server(addr, sockfd));
+      msg = read_msg_server(addr, sockfd);
+      if (msg == NULL)
+      {
+        continue;
+      }
+      container_dir = strdup(msg);
+      free(msg);
+      msg = NULL;
       if (container_active(container_dir, container))
       {
         send_msg_server("Pid", addr, sockfd);
@@ -992,19 +1004,33 @@ int container_daemon(void)
         }
         // Read init command.
         msg = read_msg_server(addr, sockfd);
-        if (strcmp(msg, "init") != 0)
+        if (msg == NULL)
         {
           continue;
+        }
+        if (strcmp(msg, "init") != 0)
+        {
+          free(msg);
+          msg = NULL;
+          goto _continue;
         }
         for (int i = 0;;)
         {
           msg = read_msg_server(addr, sockfd);
+          if (msg == NULL)
+          {
+            goto _continue;
+          }
           if (strcmp("endinit", msg) == 0)
           {
+            free(msg);
+            msg = NULL;
             break;
           }
           container_info.init_command[i] = strdup(msg);
           container_info.init_command[i + 1] = NULL;
+          free(msg);
+          msg = NULL;
           i++;
         }
         if (container_info.init_command[0] == NULL)
@@ -1015,45 +1041,88 @@ int container_daemon(void)
           container_info.init_command[3] = NULL;
         }
         msg = read_msg_server(addr, sockfd);
+        if (msg == NULL)
+        {
+          continue;
+        }
         if (strcmp(msg, "caplist") != 0)
         {
+          free(msg);
+          msg = NULL;
           continue;
         }
         for (int i = 0;;)
         {
           msg = read_msg_server(addr, sockfd);
+          if (msg == NULL)
+          {
+            goto _continue;
+          }
           if (strcmp("endcaplist", msg) == 0)
           {
+            free(msg);
+            msg = NULL;
             break;
           }
           cap_from_name(msg, &container_info.drop_caplist[i]);
+          free(msg);
+          msg = NULL;
           i++;
         }
         container_info.container_dir = strdup(container_dir);
+        free(container_dir);
         pthread_create(&pthread_id, NULL, init_unshare_container, (void *)&container_info);
       }
     }
     else if (strcmp("pid", msg) == 0)
     {
       msg = read_msg_server(addr, sockfd);
+      if (msg == NULL)
+      {
+        continue;
+      }
       container_info.unshare_pid = strdup(msg);
+      free(msg);
+      msg = NULL;
       msg = read_msg_server(addr, sockfd);
+      if (msg == NULL)
+      {
+        continue;
+      }
       container_info.container_dir = strdup(msg);
+      if (msg == NULL)
+      {
+        continue;
+      }
       msg = read_msg_server(addr, sockfd);
+      if (msg == NULL)
+      {
+        continue;
+      }
       // TODO(Moe-hacker)
       if (strcmp(msg, "caplist") != 0)
       {
+        free(msg);
+        msg = NULL;
         continue;
       }
       for (int i = 0;;)
       {
         msg = read_msg_server(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
         if (strcmp("endcaplist", msg) == 0)
         {
+          free(msg);
+          msg = NULL;
           break;
         }
         drop_caplist[i] = strdup(msg);
         drop_caplist[i + 1] = NULL;
+        free(msg);
+        msg = NULL;
         i++;
       }
       // TODO(Moe-hacker)
@@ -1070,23 +1139,43 @@ int container_daemon(void)
     }
     else if (strcmp("kill", msg) == 0)
     {
+      free(msg);
+      msg = NULL;
       umount_all_containers(container);
+      // It will exit at main()
       return 0;
     }
     else if (strcmp("ps", msg) == 0)
     {
+      free(msg);
+      msg = NULL;
       read_all_nodes(container, addr, sockfd);
     }
     // XXX
     else if (strcmp("die", msg) == 0)
     {
+      free(msg);
+      msg = NULL;
       container_dir = strdup(read_msg_server(addr, sockfd));
+      if (container_dir == NULL)
+      {
+        continue;
+      }
       container = del_container(container_dir, container);
     }
     // XXX
     else if (strcmp("ok?", msg) == 0)
     {
-      container_dir = strdup(read_msg_server(addr, sockfd));
+      free(msg);
+      msg = NULL;
+      msg = read_msg_server(addr, sockfd);
+      if (msg == NULL)
+      {
+        continue;
+      }
+      container_dir = strdup(msg);
+      free(msg);
+      msg = NULL;
       if (container_active(container_dir, container))
       {
         send_msg_server("ok", addr, sockfd);
@@ -1096,6 +1185,9 @@ int container_daemon(void)
         send_msg_server("no", addr, sockfd);
       }
     }
+    // Jump out of the loop.
+  _continue:
+    continue;
   }
 }
 // Do some checks before chroot()
@@ -1200,16 +1292,16 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   }
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
+  strcat(socket_path, "/");
+  strcat(socket_path, SOCK_FILE);
   strcpy(addr.sun_path, socket_path);
   bool daemon_running = false;
-  // Try to connect to container.sock and check if it's created by ruri daemon.
-  // Container daemon will return `Nya!`.
-  send_msg_client("Nya?", addr);
+  // Try to connect to socket file and check if it's created by ruri daemon.
+  send_msg_client(TEST_MESSAGE_CLIENT, addr);
   char *msg = NULL;
   char *container_pid = NULL;
   msg = read_msg_client(addr);
-  if ((msg != NULL) && (strcmp("Nya!", msg) == 0))
+  if ((msg != NULL) && (strcmp(TEST_MESSAGE_SERVER, msg) == 0))
   {
     daemon_running = true;
   }
@@ -1586,14 +1678,14 @@ void umount_container(char *container_dir)
   }
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
-  strcat(socket_path, "/container.sock");
+  strcat(socket_path, "/");
+  strcat(socket_path, SOCK_FILE);
   strcpy(addr.sun_path, socket_path);
-  // Try to connect to container.sock and check if it's created by ruri daemon.
-  // Container daemon will return `Nya!`.
-  send_msg_client("Nya?", addr);
+  // Try to connect to socket file and check if it's created by ruri daemon.
+  send_msg_client(TEST_MESSAGE_CLIENT, addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp("Nya!", msg) != 0))
+  if ((msg == NULL) || (strcmp(TEST_MESSAGE_SERVER, msg) != 0))
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
   }
@@ -1737,7 +1829,6 @@ int main(int argc, char **argv)
     {
       no_warnings = true;
     }
-    // XXX
     else if (strcmp(argv[index], "-e") == 0)
     {
       index++;
@@ -1753,6 +1844,11 @@ int main(int argc, char **argv)
             env[i + 2] = NULL;
             break;
           }
+          // Max 128 envs.
+          if (i == (MAX_ENVS - 1))
+          {
+            error("Too many envs QwQ");
+          }
         }
       }
       else
@@ -1760,7 +1856,6 @@ int main(int argc, char **argv)
         error("Error: unknow env QwQ");
       }
     }
-    // XXX
     else if (strcmp(argv[index], "-m") == 0)
     {
       index++;
@@ -1775,6 +1870,11 @@ int main(int argc, char **argv)
             mountpoint[i + 1] = strdup(argv[index]);
             mountpoint[i + 2] = NULL;
             break;
+          }
+          // Max 128 mountpoints.
+          if (i == (MAX_MOUNTPOINTS - 1))
+          {
+            error("Too many mountpoints QwQ");
           }
         }
       }
@@ -1866,6 +1966,27 @@ int main(int argc, char **argv)
       show_helps(greetings);
       return 1;
     }
+  }
+  // Check if init binary exists and is not a directory.
+  char init_binary[PATH_MAX];
+  strcpy(init_binary, container_dir);
+  if (init[0] != NULL)
+  {
+    strcat(init_binary, init[0]);
+  }
+  else
+  {
+    strcat(init_binary, "/bin/su");
+  }
+  struct stat init_binary_stat;
+  // lstat() will return -1 while the init_binary does not exist.
+  if (lstat(init_binary, &init_binary_stat) != 0)
+  {
+    error("Init binary does not exist, please check if container_dir and init command are correct QwQ");
+  }
+  if (S_ISDIR(init_binary_stat.st_mode))
+  {
+    error("Init binary is a directory, RUOK? T_T");
   }
   // Check if container_dir is given.
   if (!container_dir)
