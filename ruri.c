@@ -25,6 +25,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
+ *
  */
 #include "ruri.h"
 /*
@@ -175,9 +176,10 @@ void show_helps(bool greetings)
   printf("  -p                    :Run privileged container\n");
   printf(" --keep [cap]           :Keep the specified cap\n");
   printf(" --drop [cap]           :Drop the specified cap\n");
-  printf("  -e [env] [value]      :Set env to its value\n");
+  printf("  -e [env] [value]      :Set env to its value *Not work if init command is like `su -`\n");
   printf("  -m [dir] [mountpoint] :Mount dir to mountpoint\n");
   printf("  -w                    :Disable warnings\n");
+  printf("Default init command is `/bin/su -` if it's not set\n");
   printf("This program should be run with root privileges\n");
   printf("Please unset $LD_PRELOAD before running this program\033[0m\n");
 }
@@ -506,7 +508,7 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
   // Reached the end of container struct.
   if (container == NULL)
   {
-    send_msg_server("endps", addr, sockfd);
+    send_msg_server(FROM_DAEMON__END_OF_PS_INFO, addr, sockfd);
     return;
   }
   // Send info to ruri.
@@ -534,27 +536,27 @@ int container_ps(void)
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
-  strcat(socket_path, SOCK_FILE);
+  strcat(socket_path, SOCKET_FILE);
   strcpy(addr.sun_path, socket_path);
   // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(TEST_MESSAGE_CLIENT, addr);
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp(TEST_MESSAGE_SERVER, msg) != 0))
+  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
   {
     error("Error: seems that container daemon is not running QwQ");
   }
   free(msg);
   msg = NULL;
   // rurid will return the info of running containers.
-  send_msg_client("ps", addr);
+  send_msg_client(FROM_CLIENT__GET_PS_INFO, addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
   printf("\033[1;38;2;152;245;225m=========================\n");
   while (true)
   {
     msg = read_msg_client(addr);
     // End of container info.
-    if (strcmp(msg, "endps") == 0)
+    if (strcmp(msg, FROM_DAEMON__END_OF_PS_INFO) == 0)
     {
       free(msg);
       msg = NULL;
@@ -590,20 +592,20 @@ int kill_daemon(void)
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
-  strcat(socket_path, SOCK_FILE);
+  strcat(socket_path, SOCKET_FILE);
   strcpy(addr.sun_path, socket_path);
   // Try to connect to the socket file and check if it's created by ruri daemon.
-  send_msg_client(TEST_MESSAGE_CLIENT, addr);
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp(TEST_MESSAGE_SERVER, msg) != 0))
+  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
   {
     error("Error: seems that container daemon is not running QwQ");
   }
   free(msg);
   msg = NULL;
   // Rurid will kill itself after received this message.
-  send_msg_client("kill", addr);
+  send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
   return 0;
 }
 // For container_daemon(), kill & umount all containers.
@@ -714,15 +716,15 @@ void *init_unshare_container(void *arg)
     char socket_path[PATH_MAX] = {0};
     strcat(socket_path, tmpdir);
     strcat(socket_path, "/");
-    strcat(socket_path, SOCK_FILE);
+    strcat(socket_path, SOCKET_FILE);
     strcpy(addr.sun_path, socket_path);
     char container_pid[1024];
     sprintf(container_pid, "%d", unshare_pid);
-    send_msg_client("pid", addr);
+    send_msg_client(FROM_PTHREAD__UNSHARE_CONTAINER_PID, addr);
     send_msg_client(container_pid, addr);
     send_msg_client(container_info->container_dir, addr);
     // XXX
-    send_msg_client("caplist", addr);
+    send_msg_client(FROM_PTHREAD__CAP_TO_DROP, addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
       for (int i = 0; i < CAP_LAST_CAP + 1; i++)
@@ -738,13 +740,13 @@ void *init_unshare_container(void *arg)
         }
       }
     }
-    send_msg_client("endcaplist", addr);
+    send_msg_client(FROM_PTHREAD__END_OF_CAP_TO_DROP, addr);
     // Fix the bug that the terminal was stuck.
     usleep(200000);
     // Fix `can't access tty` issue.
     waitpid(unshare_pid, NULL, 0);
     // If init process died.
-    send_msg_client("die", addr);
+    send_msg_client(FROM_PTHREAD__INIT_PROCESS_DIED, addr);
     send_msg_client(container_dir, addr);
     free(container_dir);
   }
@@ -898,12 +900,12 @@ int container_daemon(void)
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
-  strcat(socket_path, SOCK_FILE);
+  strcat(socket_path, SOCKET_FILE);
   strcpy(addr.sun_path, socket_path);
   // Check if container daemon is already running.
-  send_msg_client(TEST_MESSAGE_CLIENT, addr);
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   msg = read_msg_client(addr);
-  if ((msg != NULL) && (strcmp(TEST_MESSAGE_SERVER, msg) == 0))
+  if ((msg != NULL) && (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0))
   {
     close(sockfd);
     error("Daemon already running QwQ");
@@ -941,14 +943,14 @@ int container_daemon(void)
       continue;
     }
     // Test message.
-    if (strcmp(TEST_MESSAGE_CLIENT, msg) == 0)
+    if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0)
     {
       free(msg);
       msg = NULL;
-      send_msg_server(TEST_MESSAGE_SERVER, addr, sockfd);
+      send_msg_server(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
     }
     // Kill a container.
-    else if (strcmp("del", msg) == 0)
+    else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
       free(msg);
       msg = NULL;
@@ -965,16 +967,17 @@ int container_daemon(void)
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
         kill(unshare_pid, SIGKILL);
         container = del_container(container_dir, container);
-        send_msg_server("OK", addr, sockfd);
+        send_msg_server(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
       }
       else
       {
-        send_msg_server("Fail", addr, sockfd);
+        send_msg_server(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
       }
       free(container_dir);
       container_dir = NULL;
     }
-    else if (strcmp("info", msg) == 0)
+    // Register a new container or send the info of an existing container to ruri.
+    else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0)
     {
       free(msg);
       msg = NULL;
@@ -989,12 +992,12 @@ int container_daemon(void)
       msg = NULL;
       if (container_active(container_dir, container))
       {
-        send_msg_server("Pid", addr, sockfd);
+        send_msg_server(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
         send_msg_server(read_node(container_dir, container)->unshare_pid, addr, sockfd);
       }
       else
       {
-        send_msg_server("NaN", addr, sockfd);
+        send_msg_server(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
         container_info.container_dir = NULL;
         container_info.init_command[0] = NULL;
         container_info.unshare_pid = NULL;
@@ -1008,12 +1011,6 @@ int container_daemon(void)
         {
           continue;
         }
-        if (strcmp(msg, "init") != 0)
-        {
-          free(msg);
-          msg = NULL;
-          goto _continue;
-        }
         for (int i = 0;;)
         {
           msg = read_msg_server(addr, sockfd);
@@ -1021,7 +1018,7 @@ int container_daemon(void)
           {
             goto _continue;
           }
-          if (strcmp("endinit", msg) == 0)
+          if (strcmp(FROM_CLIENT__END_OF_INIT_COMMAND, msg) == 0)
           {
             free(msg);
             msg = NULL;
@@ -1045,12 +1042,6 @@ int container_daemon(void)
         {
           continue;
         }
-        if (strcmp(msg, "caplist") != 0)
-        {
-          free(msg);
-          msg = NULL;
-          continue;
-        }
         for (int i = 0;;)
         {
           msg = read_msg_server(addr, sockfd);
@@ -1058,7 +1049,7 @@ int container_daemon(void)
           {
             goto _continue;
           }
-          if (strcmp("endcaplist", msg) == 0)
+          if (strcmp(FROM_CLIENT__END_OF_CAP_TO_DROP, msg) == 0)
           {
             free(msg);
             msg = NULL;
@@ -1074,7 +1065,8 @@ int container_daemon(void)
         pthread_create(&pthread_id, NULL, init_unshare_container, (void *)&container_info);
       }
     }
-    else if (strcmp("pid", msg) == 0)
+    // Get container info from subprocess and add them to container struct.
+    else if (strcmp(FROM_PTHREAD__UNSHARE_CONTAINER_PID, msg) == 0)
     {
       msg = read_msg_server(addr, sockfd);
       if (msg == NULL)
@@ -1099,13 +1091,6 @@ int container_daemon(void)
       {
         continue;
       }
-      // TODO(Moe-hacker)
-      if (strcmp(msg, "caplist") != 0)
-      {
-        free(msg);
-        msg = NULL;
-        continue;
-      }
       for (int i = 0;;)
       {
         msg = read_msg_server(addr, sockfd);
@@ -1113,7 +1098,7 @@ int container_daemon(void)
         {
           goto _continue;
         }
-        if (strcmp("endcaplist", msg) == 0)
+        if (strcmp(FROM_PTHREAD__END_OF_CAP_TO_DROP, msg) == 0)
         {
           free(msg);
           msg = NULL;
@@ -1137,7 +1122,8 @@ int container_daemon(void)
         container_info.drop_caplist[i] = INIT_VALUE;
       }
     }
-    else if (strcmp("kill", msg) == 0)
+    // Kill daemon itself.
+    else if (strcmp(FROM_CLIENT__KILL_DAEMON, msg) == 0)
     {
       free(msg);
       msg = NULL;
@@ -1145,14 +1131,14 @@ int container_daemon(void)
       // It will exit at main()
       return 0;
     }
-    else if (strcmp("ps", msg) == 0)
+    // Get info of all registered containers.
+    else if (strcmp(FROM_CLIENT__GET_PS_INFO, msg) == 0)
     {
       free(msg);
       msg = NULL;
       read_all_nodes(container, addr, sockfd);
     }
-    // XXX
-    else if (strcmp("die", msg) == 0)
+    else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0)
     {
       free(msg);
       msg = NULL;
@@ -1163,8 +1149,7 @@ int container_daemon(void)
       }
       container = del_container(container_dir, container);
     }
-    // XXX
-    else if (strcmp("ok?", msg) == 0)
+    else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0)
     {
       free(msg);
       msg = NULL;
@@ -1178,11 +1163,11 @@ int container_daemon(void)
       msg = NULL;
       if (container_active(container_dir, container))
       {
-        send_msg_server("ok", addr, sockfd);
+        send_msg_server(FROM_DAEMON__INIT_IS_ACTIVE, addr, sockfd);
       }
       else
       {
-        send_msg_server("no", addr, sockfd);
+        send_msg_server(FROM_DAEMON__INIT_IS_NOT_ACTIVE, addr, sockfd);
       }
     }
     // Jump out of the loop.
@@ -1293,15 +1278,15 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
-  strcat(socket_path, SOCK_FILE);
+  strcat(socket_path, SOCKET_FILE);
   strcpy(addr.sun_path, socket_path);
   bool daemon_running = false;
   // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(TEST_MESSAGE_CLIENT, addr);
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   char *msg = NULL;
   char *container_pid = NULL;
   msg = read_msg_client(addr);
-  if ((msg != NULL) && (strcmp(TEST_MESSAGE_SERVER, msg) == 0))
+  if ((msg != NULL) && (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0))
   {
     daemon_running = true;
   }
@@ -1372,12 +1357,12 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   else
   {
     // XXX
-    send_msg_client("info", addr);
+    send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
     send_msg_client(container_info->container_dir, addr);
     msg = read_msg_client(addr);
-    if (strcmp(msg, "NaN") == 0)
+    if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
     {
-      send_msg_client("init", addr);
+      send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
       if (strcmp(container_info->init_command[0], "/bin/su") != 0)
       {
         for (int i = 0; i < 1023; i++)
@@ -1397,8 +1382,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
         container_info->init_command[1] = strdup("-");
         container_info->init_command[2] = NULL;
       }
-      send_msg_client("endinit", addr);
-      send_msg_client("caplist", addr);
+      send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
+      send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
       if (container_info->drop_caplist[0] != INIT_VALUE)
       {
         for (int i = 0; i < CAP_LAST_CAP + 1; i++)
@@ -1418,7 +1403,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
           }
         }
       }
-      send_msg_client("endcaplist", addr);
+      send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
     }
     free(msg);
     msg = NULL;
@@ -1513,9 +1498,9 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       waitpid(unshare_pid, NULL, 0);
       usleep(200000);
       // XXX
-      send_msg_client("ok?", addr);
+      send_msg_client(FROM_CLIENT__IS_INIT_ACTIVE, addr);
       send_msg_client(container_info->container_dir, addr);
-      if (strcmp(read_msg_client(addr), "ok") != 0)
+      if (strcmp(read_msg_client(addr), FROM_DAEMON__INIT_IS_ACTIVE) != 0)
       {
         error("Error: Init process died QwQ");
       }
@@ -1679,23 +1664,23 @@ void umount_container(char *container_dir)
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
-  strcat(socket_path, SOCK_FILE);
+  strcat(socket_path, SOCKET_FILE);
   strcpy(addr.sun_path, socket_path);
   // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(TEST_MESSAGE_CLIENT, addr);
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   char *msg = NULL;
   msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp(TEST_MESSAGE_SERVER, msg) != 0))
+  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
   }
   else
   {
     // Kill the container from daemon.
-    send_msg_client("del", addr);
+    send_msg_client(FROM_CLIENT__KILL_A_CONTAINER, addr);
     send_msg_client(container_dir, addr);
     msg = read_msg_client(addr);
-    if (strcmp(msg, "Fail") == 0)
+    if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
     }
