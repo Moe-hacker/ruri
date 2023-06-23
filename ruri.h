@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /*
  *
- * This file is part of ruri.
+ * This file is part of ruri, with ABSOLUTELY NO WARRANTY.
  *
  * MIT License
  *
@@ -24,6 +24,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
+ *
  *
  */
 // Enable Linux features.
@@ -62,10 +64,32 @@
 #define MAX_ENVS (128 * 2)
 #define MAX_MOUNTPOINTS (128 * 2)
 // Used for interprocess communication.
-#define SOCK_FILE "ruri.sock"
+#define SOCKET_FILE "ruri.sock"
 // The real value of them is not important here.
-#define TEST_MESSAGE_CLIENT "Nya?"
-#define TEST_MESSAGE_SERVER "Nya!"
+// XXX
+#define FROM_CLIENT__TEST_MESSAGE            "Nya?"
+#define FROM_CLIENT__KILL_A_CONTAINER        "0x01"
+#define FROM_CLIENT__REGISTER_A_CONTAINER    "0x02"
+#define FROM_CLIENT__KILL_DAEMON             "0x03"
+#define FROM_CLIENT__GET_PS_INFO             "0x04"
+#define FROM_CLIENT__IS_INIT_ACTIVE          "0x05"
+#define FROM_CLIENT__INIT_COMMAND            "0x06"
+#define FROM_CLIENT__END_OF_INIT_COMMAND     "0x07"
+#define FROM_CLIENT__CAP_TO_DROP             "0x08"
+#define FROM_CLIENT__END_OF_CAP_TO_DROP      "0x09"
+#define FROM_PTHREAD__INIT_PROCESS_DIED      "0x0a"
+#define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x0b"
+#define FROM_PTHREAD__CAP_TO_DROP            "0x0c"
+#define FROM_PTHREAD__END_OF_CAP_TO_DROP     "0x0d"
+#define FROM_DAEMON__TEST_MESSAGE            "Nya!"
+#define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x0e"
+#define FROM_DAEMON__CONTAINER_KILLED        "0x0f"
+#define FROM_DAEMON__CONTAINER_NOT_RUNNING   "0x10"
+#define FROM_DAEMON__CONTAINER_IS_ACTIVE     "0x11"
+#define FROM_DAEMON__CONTAINER_IS_NOT_ACTIVE "0x12"
+#define FROM_DAEMON__INIT_IS_ACTIVE          "0x13"
+#define FROM_DAEMON__INIT_IS_NOT_ACTIVE      "0x14"
+#define FROM_DAEMON__END_OF_PS_INFO          "0x15"
 // Info of containers.
 struct CONTAINERS
 {
