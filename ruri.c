@@ -1724,7 +1724,6 @@ int main(int argc, char **argv)
   bool use_unshare = false;
   bool no_warnings = false;
   char *container_dir = false;
-  bool greetings = NULL;
   bool privileged = false;
   char *init[MAX_INIT_COMMANDS] = {NULL};
   char *env[MAX_ENVS] = {NULL};
@@ -1769,8 +1768,7 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[index], "-h") == 0)
     {
-      greetings = true;
-      show_helps(greetings);
+      show_helps(true);
       return 0;
     }
     if (strcmp(argv[index], "-l") == 0)
@@ -1948,7 +1946,7 @@ int main(int argc, char **argv)
     else
     {
       fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[index], "`");
-      show_helps(greetings);
+      show_helps(false);
       return 1;
     }
   }
