@@ -31,7 +31,7 @@ if len(sys.argv)>1:
     if sys.argv[1]=="-n":
         no_text=True
     else:
-        print("Usage: logo.py <-n>")
+        print("Usage: logo.py (-n)")
         exit(1)
 else:
     no_text=False
@@ -45,7 +45,6 @@ if no_text==False:
 else:
     figure, axes = pyplot.subplots(dpi=128, figsize=(4, 4))
     axes.set_axis_off()
-    #figure.set_size_inches((4,4))
     pyplot.subplots_adjust(left=0,bottom=0,right=1,top=1)
 axes.set_aspect(1)
 # Draw the sectors.
@@ -61,16 +60,6 @@ draw_circle = patches.Wedge((math.sqrt(3) * 3, -3), 6, 90, 210, fill=False, line
 axes.add_artist(draw_circle)
 draw_circle = patches.Wedge((math.sqrt(3) * 3 * (-1), -3), 6, 330, 450, fill=False, linewidth=1.5, color='#fee4d0')
 axes.add_artist(draw_circle)
-'''
-# Draw the hexagons, unnecessary because patches.Wedge() draws it as well.
-pyplot.plot([-0.00039, -0.00039], [-6, 6], linewidth=1.5, color='#fee4d0')
-pyplot.plot([math.sqrt(3) * 3, 0], [3, 6], linewidth=1.5, color='#fee4d0')
-pyplot.plot([math.sqrt(3) * 3 * (-1), math.sqrt(3) * 3 * (-1)], [3, -3], linewidth=1.5, color='#fee4d0')
-pyplot.plot([math.sqrt(3) * 3, math.sqrt(3) * 3], [3, -3], linewidth=1.5, color='#fee4d0')
-pyplot.plot([math.sqrt(3) * 3, 0], [-3, -6], linewidth=1.5, color='#fee4d0')
-pyplot.plot([math.sqrt(3) * 3 * (-1), 0], [3, 6], linewidth=1.5, color='#fee4d0')
-pyplot.plot([math.sqrt(3) * 3 * (-1), 0], [-3, -6], linewidth=1.5, color='#fee4d0')
-'''
 # Draw the diagonals.
 if no_text==False:
     pyplot.plot([-0.003, -0.003], [-6, 6], linewidth=1.5, color='#fee4d0')
