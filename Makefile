@@ -17,7 +17,29 @@ ASAN_CFLAGS = -no-pie -O0 -fsanitize=scudo -fsanitize-recover=address,all
 SRC = ruri.c
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
-all :
+.license_accepted :
+	@echo
+	@echo "\033[33mRURI PUBLISHED WITH MIT LICENSE"
+	@echo
+	@echo "FROM THE AUTHOR (MOE-HACKER):"
+	@echo
+	@echo "///////////WARNING:///////////"
+	@echo
+	@echo "* Your warranty is now void."
+	@echo "* I am not responsible for anything that may happen to your device by using this program."
+	@echo "* You do it at your own risk and take the responsibility upon yourself."
+	@echo "* And you are not to blame the author or Github and its developers."
+	@echo "* This program has no Super Cow Powers"
+	@echo
+	@echo "//////////////////////////////"
+	@echo
+	@echo "Make sure you have already read this message."
+	@echo "Now you can press CTRL-C to exit"
+	@echo "or agree the MIT License and :"
+	@echo "Press Enter to continue."
+	@read x
+	@touch .license_accepted
+all : .license_accepted
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
@@ -28,7 +50,7 @@ dev :
 asan :
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
-static :
+static : .license_accepted
 # The first command is for ubuntu-amd64 and the other is for termux.
 # Compilation can be completed by successfully executing any of the two commands.
 	$(CC_LOG) $(BIN_TARGET)

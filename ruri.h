@@ -67,6 +67,7 @@
 #define SOCKET_FILE "ruri.sock"
 // The real value of them is not important here.
 // XXX
+// From client.
 #define FROM_CLIENT__TEST_MESSAGE            "Nya?"
 #define FROM_CLIENT__KILL_A_CONTAINER        "0x01"
 #define FROM_CLIENT__REGISTER_A_CONTAINER    "0x02"
@@ -77,10 +78,12 @@
 #define FROM_CLIENT__END_OF_INIT_COMMAND     "0x07"
 #define FROM_CLIENT__CAP_TO_DROP             "0x08"
 #define FROM_CLIENT__END_OF_CAP_TO_DROP      "0x09"
+// From subprocess of rurid.
 #define FROM_PTHREAD__INIT_PROCESS_DIED      "0x0a"
 #define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x0b"
 #define FROM_PTHREAD__CAP_TO_DROP            "0x0c"
 #define FROM_PTHREAD__END_OF_CAP_TO_DROP     "0x0d"
+// From rurid.
 #define FROM_DAEMON__TEST_MESSAGE            "Nya!"
 #define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x0e"
 #define FROM_DAEMON__CONTAINER_KILLED        "0x0f"
