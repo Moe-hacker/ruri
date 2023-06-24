@@ -52,7 +52,8 @@ Only for testing:
 #### Dependent libraries:
 For dynamic compilation:         
 - libcap       
-- libpthread      
+- libpthread 
+     
 For static compilation:         
 - libcap-static
 - libc-static         
