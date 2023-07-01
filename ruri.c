@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 /*
- * The macro __CONTAINER_DEV__ will enable extra logs if it's enabled.
+ * The macro __RURI_DEV__ will enable extra logs if it's enabled.
  */
 // Show error msg and exit.
 void error(char *msg)
@@ -46,6 +46,9 @@ void error(char *msg)
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "|ﾙﾘﾘ >  x )ﾘ");
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");
+  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:");
+  fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");
+  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "(才不是出bug了呢, 哼~)");
   exit(1);
 }
 // For centering output.
@@ -124,10 +127,10 @@ void show_version_info(void)
 {
   /*
    * Just show version info and license.
-   * Version info is defined in macro CONTAINER_VERSION.
+   * Version info is defined in macro RURI_VERSION.
    */
   printf("\n");
-  printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", CONTAINER_VERSION, "\n");
+  printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", RURI_VERSION, "\n");
   printf("\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("\n");
@@ -190,7 +193,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
    * If the cap is already in list, just do nothing and quit.
    * Caps are initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
    */
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("Add %s to drop_caplist.\n", cap_to_name(cap));
 #endif
   bool in = false;
@@ -223,7 +226,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
    * If the cap is not in list, just do nothing and quit.
    * Or we will overwrite it with the next cap to keep the list continuous.
    */
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("Del %s from drop_caplist.\n", cap_to_name(cap));
 #endif
   for (int i = 0; i < length; i++)
@@ -374,7 +377,7 @@ ssize_t send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
    * It will accept a new connection and write msg to socket.
    * Although the returned value has never been used, it will return the number written.
    */
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("%s%s\n", "Daemon send msg: ", msg);
 #endif
   unsigned int size = sizeof(addr);
@@ -394,7 +397,7 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
    * It will send msg to socket and quit.
    * Although the returned value has never been used, it will return the number written.
    */
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("%s%s\n", "Client send msg: ", msg);
 #endif
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
@@ -441,7 +444,7 @@ char *read_msg_server(struct sockaddr_un addr, int sockfd)
     ret = strdup(buf);
   }
   close(sock_new);
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   if (ret != NULL)
   {
     printf("%s%s\n", "Daemon read msg: ", ret);
@@ -486,7 +489,7 @@ char *read_msg_client(struct sockaddr_un addr)
     ret = strdup(buf);
   }
   close(sockfd);
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   if (ret != NULL)
   {
     printf("%s%s\n", "Client read msg: ", ret);
@@ -651,7 +654,7 @@ void *init_unshare_container(void *arg)
    */
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("Daemon init container:\n");
   printf("%s%s\n", "container_dir: ", container_info->container_dir);
   printf("init command : ");
@@ -1178,7 +1181,6 @@ int container_daemon(void)
 // Do some checks before chroot()
 bool check_container(char *container_dir)
 {
-  // TODO(Moe-hacker): check if init binary exists.
   /*
    * It's called to by main() to check if we can run a container in container_dir.
    * Note that it can only do basic checks. We can't know if container_dir is really right.
@@ -1228,7 +1230,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     container_info->init_command[1] = strdup("-");
     container_info->init_command[2] = NULL;
   }
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("Run unshare container:\n");
   printf("%s%s\n", "container_dir: ", container_info->container_dir);
   printf("init command : ");
@@ -1413,7 +1415,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
     container_pid = strdup(msg);
     free(msg);
     msg = NULL;
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
     printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
     // Use setns() to enter namespaces created by rurid.
@@ -1497,7 +1499,6 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       usleep(200000);
       waitpid(unshare_pid, NULL, 0);
       usleep(200000);
-      // XXX
       send_msg_client(FROM_CLIENT__IS_INIT_ACTIVE, addr);
       send_msg_client(container_info->container_dir, addr);
       if (strcmp(read_msg_client(addr), FROM_DAEMON__INIT_IS_ACTIVE) != 0)
@@ -1533,7 +1534,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
   sigprocmask(SIG_BLOCK, &sigs, 0);
-#ifdef __CONTAINER_DEV__
+#ifdef __RURI_DEV__
   printf("Run chroot container:\n");
   printf("%s%s\n", "container_dir: ", container_info->container_dir);
   printf("init command : ");
@@ -1618,7 +1619,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       }
     }
   }
-  // XXX
   // BUG: not work if init is /bin/su -
   for (int i = 0;;)
   {

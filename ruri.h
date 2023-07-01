@@ -58,7 +58,7 @@
 // For initializing some variables.
 #define INIT_VALUE (-114)
 // Version info.
-#define CONTAINER_VERSION "2.0-dev"
+#define RURI_VERSION "2.0-dev"
 // Limitations
 #define MAX_INIT_COMMANDS 1024
 #define MAX_ENVS (128 * 2)
@@ -66,7 +66,6 @@
 // Used for interprocess communication.
 #define SOCKET_FILE "ruri.sock"
 // The real value of them is not important here.
-// XXX
 // From client.
 #define FROM_CLIENT__TEST_MESSAGE            "Nya?"
 #define FROM_CLIENT__KILL_A_CONTAINER        "0x01"
