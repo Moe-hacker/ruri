@@ -12,14 +12,14 @@ STRICT_CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-alter
 LD_FLAGS = -lcap -lpthread
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
-DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__CONTAINER_DEV__
+DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__
 ASAN_CFLAGS = -no-pie -O0 -fsanitize=scudo -fsanitize-recover=address,all
 SRC = ruri.c
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
 .license_accepted :
 	@echo
-	@echo "\033[33mRURI PUBLISHED WITH MIT LICENSE"
+	@echo "\033[33mRURI PUBLISHED WITH THE MIT LICENSE"
 	@echo
 	@echo "FROM THE AUTHOR (MOE-HACKER):"
 	@echo
@@ -29,13 +29,13 @@ RURI = $(SRC) -o $(BIN_TARGET)
 	@echo "* I am not responsible for anything that may happen to your device by using this program."
 	@echo "* You do it at your own risk and take the responsibility upon yourself."
 	@echo "* And you are not to blame the author or Github and its developers."
-	@echo "* This program has no Super Cow Powers"
+	@echo "* This program has no Super Cow Powers."
 	@echo
 	@echo "//////////////////////////////"
 	@echo
-	@echo "Make sure you have already read this message."
+	@echo "Make sure you have already read this message, and you agree with ALL OF THEM."
 	@echo "Now you can press CTRL-C to exit"
-	@echo "or agree the MIT License and :"
+	@echo "or agree with THE MIT LICENSE and :"
 	@echo "Press Enter to continue."
 	@read x
 	@touch .license_accepted
@@ -51,7 +51,7 @@ asan :
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
 static : .license_accepted
-# The first command is for ubuntu-amd64 and the other is for termux.
+# The first command is for common GNU/Linux (with glibc or musl) and the other is for termux (with bionic).
 # Compilation can be completed by successfully executing any of the two commands.
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) ||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
