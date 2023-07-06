@@ -28,9 +28,9 @@
  *
  */
 #include "ruri.h"
-/*
- * The macro __RURI_DEV__ will enable extra logs if it's enabled.
- */
+// The macro __RURI_DEV__ will enable extra logs.
+// Do not uncomment it, use `-D__RURI_DEV__` to compile instead.
+// #define __RURI_DEV__
 // Show error msg and exit.
 void error(char *msg)
 {
@@ -51,18 +51,6 @@ void error(char *msg)
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "(才不是出bug了呢, 哼~)");
   exit(1);
 }
-// For centering output.
-void show_n_spaces(int n)
-{
-  /*
-   * In fact it's needless.
-   * But when I wrote it, I didn't know what's strcat(), so it has been kept.
-   */
-  for (int count = 1; count <= n; count++)
-  {
-    printf(" ");
-  }
-}
 // Greeting information.
 // As an easter agg.
 void show_greetings(void)
@@ -73,53 +61,48 @@ void show_greetings(void)
   // Get the size of terminal.
   struct winsize size;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-  unsigned short row = size.ws_col;
+  unsigned short col = size.ws_col;
+  if (col % 2 == 1)
+  {
+    col -= 1;
+  }
   // For centering output.
-  row -= 44;
-  row /= 2;
-  show_n_spaces(row);
-  printf("%s\n", "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
-  show_n_spaces(row);
-  printf("%s\n", "          ▅▅▀▀▀               ▀▀▅▅");
-  show_n_spaces(row);
-  printf("%s\n", "     ▅▅▅▀▀            ▅           ▀▅");
-  show_n_spaces(row);
-  printf("%s\n", "      ▅▀      ▅▀█▅▅▀▀▅▀▅        ▅▅  ▀▅");
-  show_n_spaces(row);
-  printf("%s\n", "     ▅▀   █▅▀▀  ▀     ▀ ▀▀▅▅    █ ▀▀▅ █");
-  show_n_spaces(row);
-  printf("%s\n", "    ▅▀   ▅▀  ▅▀      ▀▅    ▀▅   █▅███▀█");
-  show_n_spaces(row);
-  printf("%s\n", "  ▅▅█▀▅ █ ▅▅▀          ▀▀   █   ████   █");
-  show_n_spaces(row);
-  printf("%s\n", "      █ █ ▅▅▅▅▅        ▅▅▅▅▅ █  ▀█▀    █");
-  show_n_spaces(row);
-  printf("%s\n", "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
-  show_n_spaces(row);
-  printf("%s\n", "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
-  show_n_spaces(row);
-  printf("%s\n", "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
-  show_n_spaces(row);
-  printf("%s\n", "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
-  show_n_spaces(row);
-  printf("%s\n", "  ▅▀▅▀ █                     █   █      █");
-  show_n_spaces(row);
-  printf("%s\n", " █   █ ▀▅ ▅▀▅   ▅▀▅   ▅▅     █   █      ▀▅");
-  show_n_spaces(row);
-  printf("%s\n", "▅█▅▅██▅ ▅██  ▀███ ▅████ ▀▅█▀▅▀   █       ▀▅");
-  show_n_spaces(row);
-  printf("%s\n", "███████ ▀██████████████████▀▀             █");
-  show_n_spaces(row);
-  printf("%s\n", " █    ▀▅  ██▀ ▀██▀▀██▀▀██▀█     █▀         █");
-  show_n_spaces(row);
-  printf("%s\n", " ▀▅     ▀▀█              ▅▀     █          █");
-  show_n_spaces(row);
-  printf("%s\n", "   ▀▅    █               █     ██        ▅▀");
-  show_n_spaces(row);
-  printf("%s\n", "     ▀▅▅▅▀                ▀▀▀▀▀ █        █");
-  show_n_spaces(row);
-  printf("%s\n", "        ▀                       ▀        ▀");
-  show_n_spaces(row);
+  char space[col / 2 + 1];
+  space[0]='\000';
+  if (col > 46)
+  {
+    col /= 2;
+    col -= 22;
+    for (unsigned short i = 1; i <= col; i++)
+    {
+      strcat(space, " ");
+    }
+  }
+  else
+  {
+    strcat(space, "");
+  }
+  printf("%s%s\n", space, "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
+  printf("%s%s\n", space, "          ▅▅▀▀▀               ▀▀▅▅");
+  printf("%s%s\n", space, "     ▅▅▅▀▀            ▅           ▀▅");
+  printf("%s%s\n", space, "      ▅▀      ▅▀█▅▅▀▀▅▀▅        ▅▅  ▀▅");
+  printf("%s%s\n", space, "     ▅▀   █▅▀▀  ▀     ▀ ▀▀▅▅    █ ▀▀▅ █");
+  printf("%s%s\n", space, "    ▅▀   ▅▀  ▅▀      ▀▅    ▀▅   █▅███▀█");
+  printf("%s%s\n", space, "  ▅▅█▀▅ █ ▅▅▀          ▀▀   █   ████   █");
+  printf("%s%s\n", space, "      █ █ ▅▅▅▅▅        ▅▅▅▅▅ █  ▀█▀    █");
+  printf("%s%s\n", space, "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
+  printf("%s%s\n", space, "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
+  printf("%s%s\n", space, "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
+  printf("%s%s\n", space, "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
+  printf("%s%s\n", space, "  ▅▀▅▀ █                     █   █      █");
+  printf("%s%s\n", space, " █   █ ▀▅ ▅▀▅   ▅▀▅   ▅▅     █   █      ▀▅");
+  printf("%s%s\n", space, "▅█▅▅██▅ ▅██  ▀███ ▅████ ▀▅█▀▅▀   █       ▀▅");
+  printf("%s%s\n", space, "███████ ▀██████████████████▀▀             █");
+  printf("%s%s\n", space, " █    ▀▅  ██▀ ▀██▀▀██▀▀██▀█     █▀         █");
+  printf("%s%s\n", space, " ▀▅     ▀▀█              ▅▀     █          █");
+  printf("%s%s\n", space, "   ▀▅    █               █     ██        ▅▀");
+  printf("%s%s\n", space, "     ▀▅▅▅▀                ▀▀▀▀▀ █        █");
+  printf("%s%s\n", space, "        ▀                       ▀        ▀");
   printf("%s\n", "");
 }
 // For `ruri -v`.
