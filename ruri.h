@@ -109,7 +109,7 @@ struct CONTAINERS
 // Info of a container to create.
 struct CONTAINER_INFO
 {
-    // For init_unshare_container() and container_daemon()
+    // For daemon_init_unshare_container() and container_daemon()
     char *container_dir;
     cap_value_t drop_caplist[CAP_LAST_CAP + 1];
     char *init_command[MAX_INIT_COMMANDS];
@@ -161,16 +161,20 @@ int kill_daemon(void);
 // For container_daemon(), kill and umount all containers.
 void umount_all_containers(struct CONTAINERS *container);
 // Called by container_daemon(), init an unshare container in the background.
-void *init_unshare_container(void *arg);
+void *daemon_init_unshare_container(void *arg);
 // Run after chroot(), called by run_chroot_container().
 void init_container(void);
 // Daemon process used to store unshare container information and init unshare container.
 int container_daemon(void);
 // Do some checks before chroot().
 bool check_container(char *container_dir);
+// For run_unshare_container().
+pid_t init_unshare_container(bool no_warnings);
+// For run_unshare_container().
+pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings);
 // Run unshare container, called by main().
 int run_unshare_container(struct CONTAINER_INFO *container_info, bool no_warnings);
-// Run chroot container, called by main(), run_unshare_container() and init_unshare_container().
+// Run chroot container, called by main(), run_unshare_container() and daemon_init_unshare_container().
 void run_chroot_container(struct CONTAINER_INFO *container_info, bool no_warnings);
 // Kill&umount container.
 void umount_container(char *container_dir);

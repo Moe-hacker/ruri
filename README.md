@@ -19,7 +19,7 @@ You can read this doc in :
 * I am not responsible for anything that may happen to your device by using this program.
 * You do it at your own risk and take the responsibility upon yourself.
 * And you are not to blame the author or Github and its developers.
-* This program has no Super Cow Powers
+* This program has no Super Cow Powers.
 ```
 ### About:      
 &emsp;moe-container is now renamed as ruri.    
