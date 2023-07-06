@@ -644,7 +644,7 @@ void umount_all_containers(struct CONTAINERS *container)
   umount_all_containers(container->container);
 }
 // For daemon, init an unshare container in the background.
-void *init_unshare_container(void *arg)
+void *daemon_init_unshare_container(void *arg)
 {
   /*
    * It is called as a child process of container_daemon()
@@ -1065,7 +1065,7 @@ int container_daemon(void)
         }
         container_info.container_dir = strdup(container_dir);
         free(container_dir);
-        pthread_create(&pthread_id, NULL, init_unshare_container, (void *)&container_info);
+        pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
       }
     }
     // Get container info from subprocess and add them to container struct.
@@ -1215,6 +1215,231 @@ bool check_container(char *container_dir)
   closedir(direxist);
   return true;
 }
+// For run_unshare_container()
+pid_t init_unshare_container(bool no_warnings)
+{
+  /*
+   * Use unshare() to create new namespaces and fork() to join them.
+   * unshare_pid in forked process is 0.
+   */
+  pid_t unshare_pid = INIT_VALUE;
+  if (unshare(CLONE_NEWNS) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_NEWUTS) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_NEWIPC) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_NEWPID) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_NEWCGROUP) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_NEWTIME) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_SYSVSEM) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that semaphore namespace is not supported on this device QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_FILES) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that we could not unshare file descriptors with child process QwQ\033[0m\n");
+  }
+  if (unshare(CLONE_FS) == -1 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that we could not unshare filesystem information with child process QwQ\033[0m\n");
+  }
+  // Fork itself into namespace.
+  // This can fix `can't fork: out of memory` issue.
+  unshare_pid = fork();
+  // Fix `can't access tty` issue.
+  if (unshare_pid > 0)
+  {
+    usleep(200000);
+    waitpid(unshare_pid, NULL, 0);
+  }
+  else if (unshare_pid < 0)
+  {
+    error("Fork error QwQ?");
+  }
+  return unshare_pid;
+}
+// For run_unshare_container()
+pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
+{
+  /*
+   * Request container_pid from daemon, use setns() to join namespaces and then fork() itself into them.
+   * unshare_pid in forked process is 0.
+   * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
+   */
+  pid_t unshare_pid = INIT_VALUE;
+  char *msg = NULL;
+  char *container_pid = NULL;
+  // XXX
+  send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
+  send_msg_client(container_info->container_dir, addr);
+  msg = read_msg_client(addr);
+  if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
+  {
+    send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
+    if (strcmp(container_info->init_command[0], "/bin/su") != 0)
+    {
+      for (int i = 0; i < 1023; i++)
+      {
+        if (container_info->init_command[i] != NULL)
+        {
+          send_msg_client(container_info->init_command[i], addr);
+          free(container_info->init_command[i]);
+          container_info->init_command[i] = NULL;
+        }
+        else
+        {
+          break;
+        }
+      }
+      container_info->init_command[0] = strdup("/bin/su");
+      container_info->init_command[1] = strdup("-");
+      container_info->init_command[2] = NULL;
+    }
+    send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
+    send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
+    if (container_info->drop_caplist[0] != INIT_VALUE)
+    {
+      for (int i = 0; i < CAP_LAST_CAP + 1; i++)
+      {
+        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+        if (!container_info->drop_caplist[i])
+        {
+          send_msg_client(cap_to_name(0), addr);
+        }
+        else if (container_info->drop_caplist[i] != INIT_VALUE)
+        {
+          send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
+        }
+        else
+        {
+          break;
+        }
+      }
+    }
+    send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
+  }
+  free(msg);
+  msg = NULL;
+  // For setns()
+  usleep(200000);
+  msg = read_msg_client(addr);
+  container_pid = strdup(msg);
+  free(msg);
+  msg = NULL;
+#ifdef __RURI_DEV__
+  printf("%s%s\n", "Container pid from daemon:", container_pid);
+#endif
+  // Use setns() to enter namespaces created by rurid.
+  char cgroup_ns_file[PATH_MAX] = {'\000'};
+  char ipc_ns_file[PATH_MAX] = {'\000'};
+  char mount_ns_file[PATH_MAX] = {'\000'};
+  char pid_ns_file[PATH_MAX] = {'\000'};
+  char time_ns_file[PATH_MAX] = {'\000'};
+  char uts_ns_file[PATH_MAX] = {'\000'};
+  sprintf(cgroup_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/cgroup");
+  sprintf(ipc_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/ipc");
+  sprintf(mount_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/mnt");
+  sprintf(pid_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/pid");
+  sprintf(time_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/time");
+  sprintf(uts_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/uts");
+  free(container_pid);
+  container_pid = NULL;
+  int fd = INIT_VALUE;
+  fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
+  }
+  else
+  {
+    setns(fd, 0);
+  }
+  fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
+  }
+  else
+  {
+    setns(fd, 0);
+  }
+  fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
+  }
+  else
+  {
+    setns(fd, 0);
+  }
+  fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
+  }
+  else
+  {
+    setns(fd, 0);
+  }
+  fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
+  }
+  else
+  {
+    setns(fd, 0);
+  }
+  fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 && !no_warnings)
+  {
+    printf("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
+  }
+  else
+  {
+    setns(fd, 0);
+  }
+  // Close fds after fork()
+  unshare(CLONE_FILES);
+  // Fork itself into namespace.
+  // This can fix `can't fork: out of memory` issue.
+  unshare_pid = fork();
+  // Fix `can't access tty` issue.
+  if (unshare_pid > 0)
+  {
+    usleep(200000);
+    waitpid(unshare_pid, NULL, 0);
+    usleep(200000);
+    send_msg_client(FROM_CLIENT__IS_INIT_ACTIVE, addr);
+    send_msg_client(container_info->container_dir, addr);
+    if (strcmp(read_msg_client(addr), FROM_DAEMON__INIT_IS_ACTIVE) != 0)
+    {
+      error("Error: Init process died QwQ");
+    }
+  }
+  else if (unshare_pid < 0)
+  {
+    error("Fork error QwQ?");
+    return 1;
+  }
+  return unshare_pid;
+}
 // Run unshare container.
 int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
@@ -1286,7 +1511,6 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Try to connect to socket file and check if it's created by ruri daemon.
   send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   char *msg = NULL;
-  char *container_pid = NULL;
   msg = read_msg_client(addr);
   if ((msg != NULL) && (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0))
   {
@@ -1301,217 +1525,14 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   }
   free(msg);
   msg = NULL;
-  // Unshare itself into new namespaces.
+  // Unshare() itself into new namespaces.
   if (!daemon_running)
   {
-    // Create namespace here because container_daemon is not running.
-    if (unshare(CLONE_NEWNS) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_NEWUTS) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_NEWIPC) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_NEWPID) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_NEWCGROUP) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_NEWTIME) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_SYSVSEM) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that semaphore namespace is not supported on this device QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_FILES) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that we could not unshare file descriptors with child process QwQ\033[0m\n");
-    }
-    if (unshare(CLONE_FS) == -1 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that we could not unshare filesystem information with child process QwQ\033[0m\n");
-    }
-    // Fork itself into namespace.
-    // This can fix `can't fork: out of memory` issue.
-    unshare_pid = fork();
-    // Fix `can't access tty` issue.
-    if (unshare_pid > 0)
-    {
-      usleep(200000);
-      waitpid(unshare_pid, NULL, 0);
-      return 0;
-    }
-    if (unshare_pid < 0)
-    {
-      error("Fork error QwQ?");
-    }
+    unshare_pid = init_unshare_container(no_warnings);
   }
   else
   {
-    // XXX
-    send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
-    send_msg_client(container_info->container_dir, addr);
-    msg = read_msg_client(addr);
-    if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
-    {
-      send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
-      if (strcmp(container_info->init_command[0], "/bin/su") != 0)
-      {
-        for (int i = 0; i < 1023; i++)
-        {
-          if (container_info->init_command[i] != NULL)
-          {
-            send_msg_client(container_info->init_command[i], addr);
-            free(container_info->init_command[i]);
-            container_info->init_command[i] = NULL;
-          }
-          else
-          {
-            break;
-          }
-        }
-        container_info->init_command[0] = strdup("/bin/su");
-        container_info->init_command[1] = strdup("-");
-        container_info->init_command[2] = NULL;
-      }
-      send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
-      send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
-      if (container_info->drop_caplist[0] != INIT_VALUE)
-      {
-        for (int i = 0; i < CAP_LAST_CAP + 1; i++)
-        {
-          // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
-          if (!container_info->drop_caplist[i])
-          {
-            send_msg_client(cap_to_name(0), addr);
-          }
-          else if (container_info->drop_caplist[i] != INIT_VALUE)
-          {
-            send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
-          }
-          else
-          {
-            break;
-          }
-        }
-      }
-      send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
-    }
-    free(msg);
-    msg = NULL;
-    // For setns()
-    usleep(200000);
-    msg = read_msg_client(addr);
-    container_pid = strdup(msg);
-    free(msg);
-    msg = NULL;
-#ifdef __RURI_DEV__
-    printf("%s%s\n", "Container pid from daemon:", container_pid);
-#endif
-    // Use setns() to enter namespaces created by rurid.
-    char cgroup_ns_file[PATH_MAX] = {'\000'};
-    char ipc_ns_file[PATH_MAX] = {'\000'};
-    char mount_ns_file[PATH_MAX] = {'\000'};
-    char pid_ns_file[PATH_MAX] = {'\000'};
-    char time_ns_file[PATH_MAX] = {'\000'};
-    char uts_ns_file[PATH_MAX] = {'\000'};
-    sprintf(cgroup_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/cgroup");
-    sprintf(ipc_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/ipc");
-    sprintf(mount_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/mnt");
-    sprintf(pid_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/pid");
-    sprintf(time_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/time");
-    sprintf(uts_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/uts");
-    free(container_pid);
-    container_pid = NULL;
-    int fd = INIT_VALUE;
-    fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
-    if (fd < 0 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
-    }
-    else
-    {
-      setns(fd, 0);
-    }
-    fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
-    if (fd < 0 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
-    }
-    else
-    {
-      setns(fd, 0);
-    }
-    fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
-    if (fd < 0 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
-    }
-    else
-    {
-      setns(fd, 0);
-    }
-    fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
-    if (fd < 0 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
-    }
-    else
-    {
-      setns(fd, 0);
-    }
-    fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
-    if (fd < 0 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
-    }
-    else
-    {
-      setns(fd, 0);
-    }
-    fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
-    if (fd < 0 && !no_warnings)
-    {
-      printf("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
-    }
-    else
-    {
-      setns(fd, 0);
-    }
-    // Close fds after fork()
-    unshare(CLONE_FILES);
-    // Fork itself into namespace.
-    // This can fix `can't fork: out of memory` issue.
-    unshare_pid = fork();
-    // Fix `can't access tty` issue.
-    if (unshare_pid > 0)
-    {
-      usleep(200000);
-      waitpid(unshare_pid, NULL, 0);
-      usleep(200000);
-      send_msg_client(FROM_CLIENT__IS_INIT_ACTIVE, addr);
-      send_msg_client(container_info->container_dir, addr);
-      if (strcmp(read_msg_client(addr), FROM_DAEMON__INIT_IS_ACTIVE) != 0)
-      {
-        error("Error: Init process died QwQ");
-      }
-      return 0;
-    }
-    if (unshare_pid < 0)
-    {
-      error("Fork error QwQ?");
-      return 1;
-    }
+    unshare_pid = join_ns_from_daemon(container_info, addr, no_warnings);
   }
   // Check if unshare is enabled.
   if (unshare_pid == 0)
@@ -1525,7 +1546,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
 void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
   /*
-   * It's called to by main(), run_unshare_container() and init_unshare_container()(container_daemon()).
+   * It's called to by main(), run_unshare_container() and daemon_init_unshare_container()(container_daemon()).
    * It will chroot() to container_dir, call to init_container(), drop capabilities and exec() init command in container.
    */
   // TODO(Moe-hacker): mount other mountpoints.
@@ -1648,7 +1669,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 void umount_container(char *container_dir)
 {
   /*
-   * It will try to connect to rurid, and rurid will kill init_unshare_container() process of container if the container is running.
+   * It will try to connect to rurid, and rurid will kill daemon_init_unshare_container() process of container if the container is running.
    * Then it will umount() container_dir and other directories in it.
    */
   // TODO(Moe-hacker): umount() mountpoint
@@ -1711,6 +1732,10 @@ void umount_container(char *container_dir)
 }
 int main(int argc, char **argv)
 {
+  /*
+   * 100% shit-code in main()
+   * At least it works...
+   */
   // Set process name.
   prctl(PR_SET_NAME, "ruri");
   // Check if arguments are given.
