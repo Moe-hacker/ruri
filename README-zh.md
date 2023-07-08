@@ -41,6 +41,7 @@ make dev         :关闭优化选项，开启gdb支持以及额外日志信息
 make asan        :开启ASAN
 make check       :运行clang-tidy检查
 make strictcheck :运行clang-tidy执行更为严格的检查
+make format      :格式化代码
 ```
 ### 用法：    
 ```text

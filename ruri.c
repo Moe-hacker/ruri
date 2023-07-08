@@ -68,7 +68,7 @@ void show_greetings(void)
   }
   // For centering output.
   char space[col / 2 + 1];
-  space[0]='\000';
+  space[0] = '\000';
   if (col > 46)
   {
     col /= 2;

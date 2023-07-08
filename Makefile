@@ -4,6 +4,7 @@ BINCOLOR    = \033[34;1m
 ENDCOLOR    = \033[0m
 CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
+FORMATER = clang-format -i
 CC = clang
 STRIP = strip
 CHECKER = clang-tidy --use-color
@@ -15,6 +16,7 @@ STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
 DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__
 ASAN_CFLAGS = -no-pie -O0 -fsanitize=scudo -fsanitize-recover=address,all
 SRC = ruri.c
+HEADER = ruri.h
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
 .license_accepted :
@@ -73,6 +75,9 @@ strictcheck :
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
 	@$(CHECKER) $(STRICT_CHECK_ARG) $(SRC) -- $(LD_FLAGS)
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
+format :
+	$(FORMATER) $(SRC)
+	$(FORMATER) $(HEADER)
 clean :
 	rm ruri||true
 help :
@@ -81,11 +86,12 @@ help :
 	@echo "  make install     :install ruri to \$$PREFIX"
 	@echo "  make static      :static compile"
 	@echo "  make clean       :clean"
-	@echo "Only for testing:"
+	@echo "Only for developers:"
 	@echo "  make dev         :compile without optimizations, enable gdb debug information and extra logs."
 	@echo "  make asan        :enable ASAN"
 	@echo "  make check       :run clang-tidy"
 	@echo "  make strictcheck :run clang-tidy for more checks"
+	@echo "  make format      :format code"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
 	@echo "  libpthread,libcap"

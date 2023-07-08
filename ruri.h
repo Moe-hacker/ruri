@@ -65,6 +65,8 @@
 #define MAX_MOUNTPOINTS (128 * 2)
 // Used for interprocess communication.
 #define SOCKET_FILE "ruri.sock"
+// Do not format this.
+// clang-format off
 // The real value of them is not important here.
 // From client.
 #define FROM_CLIENT__TEST_MESSAGE            "Nya?"
@@ -92,34 +94,35 @@
 #define FROM_DAEMON__INIT_IS_ACTIVE          "0x13"
 #define FROM_DAEMON__INIT_IS_NOT_ACTIVE      "0x14"
 #define FROM_DAEMON__END_OF_PS_INFO          "0x15"
+// clang-format on
 // Info of containers.
 struct CONTAINERS
 {
-    // For container_daemon()
-    char *container_dir;
-    // For write(), we define it as char*.
-    char *unshare_pid;
-    char *drop_caplist[CAP_LAST_CAP + 1];
-    // TODO(Moe-hacker)
-    char *env[MAX_ENVS];
-    // TODO(Moe-hacker)
-    char *mountpoint[MAX_MOUNTPOINTS];
-    struct CONTAINERS *container;
+  // For container_daemon()
+  char *container_dir;
+  // For write(), we define it as char*.
+  char *unshare_pid;
+  char *drop_caplist[CAP_LAST_CAP + 1];
+  // TODO(Moe-hacker)
+  char *env[MAX_ENVS];
+  // TODO(Moe-hacker)
+  char *mountpoint[MAX_MOUNTPOINTS];
+  struct CONTAINERS *container;
 };
 // Info of a container to create.
 struct CONTAINER_INFO
 {
-    // For daemon_init_unshare_container() and container_daemon()
-    char *container_dir;
-    cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-    char *init_command[MAX_INIT_COMMANDS];
-    // Mount before chroot()
-    // TODO(Moe-hacker)
-    char *mountpoint[MAX_MOUNTPOINTS];
-    char *env[MAX_ENVS];
-    // Only be used in container_daemon()
-    // For setns(), we define it as char*.
-    char *unshare_pid;
+  // For daemon_init_unshare_container() and container_daemon()
+  char *container_dir;
+  cap_value_t drop_caplist[CAP_LAST_CAP + 1];
+  char *init_command[MAX_INIT_COMMANDS];
+  // Mount before chroot()
+  // TODO(Moe-hacker)
+  char *mountpoint[MAX_MOUNTPOINTS];
+  char *env[MAX_ENVS];
+  // Only be used in container_daemon()
+  // For setns(), we define it as char*.
+  char *unshare_pid;
 };
 // Function list.
 // Show error msg and exit.
