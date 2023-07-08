@@ -48,6 +48,7 @@ Only for testing:
   make asan        :enable ASAN
   make check       :run clang-tidy
   make strictcheck :run clang-tidy for more checks
+  make format      :format code
 ```
 #### Dependent libraries:
 For dynamic compilation:         
