@@ -51,6 +51,7 @@ make format      :格式化代码
   -h                    :显示帮助
   -D                    :运行rurid
   -K                    :杀死rurid
+  -t                    :检查rurid是否在运行
   -l                    :列出所有运行中的unshare容器
   -U [容器目录]         :杀死容器并解除挂载
 容器运行参数:

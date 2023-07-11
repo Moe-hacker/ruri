@@ -66,6 +66,7 @@ Other options:
   -h                    :Show helps
   -D                    :Run rurid
   -K                    :Kill rurid
+  -t                    :Check if rurid is running
   -l                    :List all running unshare containers
   -U [container_dir]    :Umount&kill a container
 Args for running a container:
