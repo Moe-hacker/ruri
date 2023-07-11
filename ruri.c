@@ -154,6 +154,7 @@ void show_helps(bool greetings)
   printf("  -h                    :Show helps\n");
   printf("  -D                    :Run rurid\n");
   printf("  -K                    :Kill rurid\n");
+  printf("  -t                    :Check if rurid is running\n");
   printf("  -l                    :List all running unshare containers\n");
   printf("  -U [container_dir]    :Umount&kill a container\n");
   printf("Args for running a container:\n");
@@ -559,7 +560,40 @@ int container_ps(void)
   }
   return 0;
 }
-// For `container -K`
+// For `ruri -t`
+int test_daemon(void)
+{
+  /*
+   * Check if rurid is running.
+   */
+  // Set socket address.
+  struct sockaddr_un addr;
+  addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
+  char *tmpdir = getenv("TMPDIR");
+  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
+  {
+    tmpdir = "/tmp";
+  }
+  char socket_path[PATH_MAX] = {0};
+  strcat(socket_path, tmpdir);
+  strcat(socket_path, "/");
+  strcat(socket_path, SOCKET_FILE);
+  strcpy(addr.sun_path, socket_path);
+  // Try to connect to socket file and check if it's created by ruri daemon.
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
+  char *msg = NULL;
+  msg = read_msg_client(addr);
+  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
+  {
+    printf("\033[31mrurid is not running.\033[0m\n");
+    return 1;
+  }
+  free(msg);
+  printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+  return 0;
+}
+// For `ruri -K`
 int kill_daemon(void)
 {
   /*
@@ -1782,6 +1816,10 @@ int main(int argc, char **argv)
     if (strcmp(argv[index], "-l") == 0)
     {
       return container_ps();
+    }
+    if (strcmp(argv[index], "-t") == 0)
+    {
+      return test_daemon();
     }
     //=========End of [Other options]===========
     if (strcmp(argv[index], "-u") == 0)

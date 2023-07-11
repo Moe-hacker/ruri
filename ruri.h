@@ -157,8 +157,10 @@ char *read_msg_client(struct sockaddr_un addr);
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
 // For `ruri -l`
 int container_ps(void);
-// For `container -K`
+// For `ruri -K`
 int kill_daemon(void);
+// For `ruri -t`
+int test_daemon(void);
 // For container_daemon(), kill and umount all containers.
 void umount_all_containers(struct CONTAINERS *container);
 // Called by container_daemon(), init an unshare container in the background.
