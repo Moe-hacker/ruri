@@ -135,9 +135,9 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container);
 bool container_active(char *container_dir, struct CONTAINERS *container);
-ssize_t send_msg_server(char *msg, struct sockaddr_un addr, int sockfd);
+ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
-char *read_msg_server(struct sockaddr_un addr, int sockfd);
+char *read_msg_daemon(struct sockaddr_un addr, int sockfd);
 char *read_msg_client(struct sockaddr_un addr);
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
 int container_ps(void);
