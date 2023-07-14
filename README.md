@@ -21,22 +21,18 @@ You can read this doc in :
 * And you are not to blame the author or Github and its developers.
 * This program has no Super Cow Powers.
 ```
-### About:      
-&emsp;moe-container is now renamed as ruri.    
-&emsp;ruri is pronounced as /lʊlɪ/, or you can call it `瑠璃`. Although it sounds like it should be cyan, I chose <font color=#FEE4D0>#FEE4D0</font>  as its accent color.        
-&emsp;ruri runs a linux container with namespaces and dropped capabilities. It is designed to provide better security for Linux containers on devices that do not support docker.       
+### About:         
+&emsp;ruri is pronounced as /lʊlɪ/, or you can call it `瑠璃`. 
+&emsp;ruri runs a linux container with unshare namespaces and dropped capabilities. It is designed to provide better security for Linux containers on devices that do not support docker.       
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
-&emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.      
-### About the logo:      
-It is a combination of a flower and a container. It is described as a mathematical graph, and you can use logo/logo.py to plot it using matplotlib.      
-### Features:
-- Written with 100% C.          
-- Light weight, the binary is less than 1M.             
-- Controllable capability set.           
-- Automatically mount system runtime files and login to the container.        
-### Installation:
-- Clone the source code.          
-- Run `make install` in the source directory.      
+&emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.          
+&emsp;The default capability set is the same as the docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
+### Quick start:      
+```
+git clone https://github.com/Moe-hacker/ruri
+cd ruri
+sudo make install
+```
 #### make options:
 ```text
   make all         :compile
@@ -82,7 +78,7 @@ Args for running a container:
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
 ### About rurid:         
-&emsp;Since some functions need to be shared, rurid is not a separate binary program. rurid is a background service process that stores unshare container information and initializes the container so that the same container always runs in the same namespaces. But it is not a necessary process. Pure chroot containers do not rely on rurid, unshare containers will only show a warning if daemon is not running, but it is still recommended to start rurid before running the container.        
+&emsp;Rurid is the daemon of ruri. It can store the info of unshare containers and ensure that the same containers run in the same namespaces. It's not a necessary process and pure chroot containers will not communicate with the daemon.     
 
 --------
 <p align="center">「 咲誇る花 美しく、</p>    
