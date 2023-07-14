@@ -359,7 +359,7 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
   return container_active(container_dir, container->container);
 }
 // For daemon.
-ssize_t send_msg_server(char *msg, struct sockaddr_un addr, int sockfd)
+ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd)
 {
   /*
    * It will accept a new connection and write msg to socket.
@@ -407,7 +407,7 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
   return send(sockfd, msg, strlen(msg), 0);
 }
 // For daemon, return the messages have been read.
-char *read_msg_server(struct sockaddr_un addr, int sockfd)
+char *read_msg_daemon(struct sockaddr_un addr, int sockfd)
 {
   /*
    * It will return the messages have been read.
@@ -499,12 +499,12 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
   // Reached the end of container struct.
   if (container == NULL)
   {
-    send_msg_server(FROM_DAEMON__END_OF_PS_INFO, addr, sockfd);
+    send_msg_daemon(FROM_DAEMON__END_OF_PS_INFO, addr, sockfd);
     return;
   }
   // Send info to ruri.
-  send_msg_server(container->container_dir, addr, sockfd);
-  send_msg_server(container->unshare_pid, addr, sockfd);
+  send_msg_daemon(container->container_dir, addr, sockfd);
+  send_msg_daemon(container->unshare_pid, addr, sockfd);
   // Read the next node.
   read_all_nodes(container->container, addr, sockfd);
 }
@@ -961,7 +961,7 @@ int container_daemon(void)
   {
     // Get message.
     msg = NULL;
-    msg = read_msg_server(addr, sockfd);
+    msg = read_msg_daemon(addr, sockfd);
     if (msg == NULL)
     {
       continue;
@@ -971,14 +971,14 @@ int container_daemon(void)
     {
       free(msg);
       msg = NULL;
-      send_msg_server(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
+      send_msg_daemon(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
     }
     // Kill a container.
     else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
       free(msg);
       msg = NULL;
-      msg = read_msg_server(addr, sockfd);
+      msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         continue;
@@ -991,11 +991,11 @@ int container_daemon(void)
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
         kill(unshare_pid, SIGKILL);
         container = del_container(container_dir, container);
-        send_msg_server(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
       }
       else
       {
-        send_msg_server(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
       }
       free(container_dir);
       container_dir = NULL;
@@ -1006,7 +1006,7 @@ int container_daemon(void)
       free(msg);
       msg = NULL;
       // Get container_dir.
-      msg = read_msg_server(addr, sockfd);
+      msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         continue;
@@ -1016,12 +1016,12 @@ int container_daemon(void)
       msg = NULL;
       if (container_active(container_dir, container))
       {
-        send_msg_server(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
-        send_msg_server(read_node(container_dir, container)->unshare_pid, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
+        send_msg_daemon(read_node(container_dir, container)->unshare_pid, addr, sockfd);
       }
       else
       {
-        send_msg_server(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
         container_info.container_dir = NULL;
         container_info.init_command[0] = NULL;
         container_info.unshare_pid = NULL;
@@ -1030,14 +1030,14 @@ int container_daemon(void)
           container_info.drop_caplist[i] = INIT_VALUE;
         }
         // Read init command.
-        msg = read_msg_server(addr, sockfd);
+        msg = read_msg_daemon(addr, sockfd);
         if (msg == NULL)
         {
           continue;
         }
         for (int i = 0;;)
         {
-          msg = read_msg_server(addr, sockfd);
+          msg = read_msg_daemon(addr, sockfd);
           if (msg == NULL)
           {
             goto _continue;
@@ -1061,14 +1061,14 @@ int container_daemon(void)
           container_info.init_command[2] = "while :;do sleep 100s;done";
           container_info.init_command[3] = NULL;
         }
-        msg = read_msg_server(addr, sockfd);
+        msg = read_msg_daemon(addr, sockfd);
         if (msg == NULL)
         {
           continue;
         }
         for (int i = 0;;)
         {
-          msg = read_msg_server(addr, sockfd);
+          msg = read_msg_daemon(addr, sockfd);
           if (msg == NULL)
           {
             goto _continue;
@@ -1092,7 +1092,7 @@ int container_daemon(void)
     // Get container info from subprocess and add them to container struct.
     else if (strcmp(FROM_PTHREAD__UNSHARE_CONTAINER_PID, msg) == 0)
     {
-      msg = read_msg_server(addr, sockfd);
+      msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         continue;
@@ -1100,7 +1100,7 @@ int container_daemon(void)
       container_info.unshare_pid = strdup(msg);
       free(msg);
       msg = NULL;
-      msg = read_msg_server(addr, sockfd);
+      msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         continue;
@@ -1110,14 +1110,14 @@ int container_daemon(void)
       {
         continue;
       }
-      msg = read_msg_server(addr, sockfd);
+      msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         continue;
       }
       for (int i = 0;;)
       {
-        msg = read_msg_server(addr, sockfd);
+        msg = read_msg_daemon(addr, sockfd);
         if (msg == NULL)
         {
           goto _continue;
@@ -1137,7 +1137,7 @@ int container_daemon(void)
       // TODO(Moe-hacker)
       container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
       // Send ${unshare_pid} to ruri.
-      send_msg_server(container_info.unshare_pid, addr, sockfd);
+      send_msg_daemon(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
       container_info.init_command[0] = NULL;
       container_info.unshare_pid = NULL;
@@ -1166,7 +1166,7 @@ int container_daemon(void)
     {
       free(msg);
       msg = NULL;
-      container_dir = strdup(read_msg_server(addr, sockfd));
+      container_dir = strdup(read_msg_daemon(addr, sockfd));
       if (container_dir == NULL)
       {
         continue;
@@ -1177,7 +1177,7 @@ int container_daemon(void)
     {
       free(msg);
       msg = NULL;
-      msg = read_msg_server(addr, sockfd);
+      msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         continue;
@@ -1187,11 +1187,11 @@ int container_daemon(void)
       msg = NULL;
       if (container_active(container_dir, container))
       {
-        send_msg_server(FROM_DAEMON__INIT_IS_ACTIVE, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__INIT_IS_ACTIVE, addr, sockfd);
       }
       else
       {
-        send_msg_server(FROM_DAEMON__INIT_IS_NOT_ACTIVE, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__INIT_IS_NOT_ACTIVE, addr, sockfd);
       }
     }
     // Jump out of the loop.
