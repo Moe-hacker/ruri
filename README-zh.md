@@ -12,21 +12,16 @@
 * 您不应为此项目而责怪其作者和Github以及其开发者
 * 此项目没有超级牛力
 ```
-### 关于：    
-&emsp;moe-container现更名为ruri(瑠璃)！      
+### 关于：         
 &emsp;文章开头那句引用没有对大佬不敬的意思，只是觉得在放在这里挺合适的引用下而已。             
 &emsp;也知道自己就是个萌新，大佬轻喷。         
-&emsp;这里是将来的termux-container中chroot和chroot-unshare容器底层实现，咱自己写的东西咱还是比较喜欢用MIT协议喵～        
-&emsp;也可以作为一个容器应用在普通linux系统下运行。               
-### 关于logo：      
-logo被设计为一朵花和一个容器的结合体，使用数学图形来描述。您可以运行logo/logo.py使用matplotlib绘制它。       
-### Features:    
-- 纯C语言实现
-- 二进制仅几百kb      
-- 容器权限可控
-- ns隔离功能
-- 容器内自动挂载系统目录
+&emsp;Ruri是一个用C语言写的容器，除了网络和用户之外的隔离在unshare容器中会自动开启，权限默认和docker容器相同，可通过-d来降低或-p来提高容器权限，也可以自行定义。      
 ### 安装：    
+```
+git clone https://github.com/Moe-hacker/ruri
+cd ruri
+sudo make install
+```
 #### 编译依赖：         
 libcap动态库用于动态编译，libc和libcap静态库用于静态编译。           
 #### 编译选项：     
@@ -70,4 +65,4 @@ make format      :格式化代码
 ### 关于namespace：      
 &emsp;unshare()中的`CLONE_NEWUSER`和`CLONE_NEWNET`功能未被开启。         
 ### 关于rurid：      
-&emsp;由于部分函数需要共享，rurid并非独立二进制文件。rurid是一个用于存储容器信息并初始化容器的服务进程，以确保同一容器始终运行在相同命名空间。它并非必要进程，纯chroot容器将不会与rurid进行通信，unshare容器仅会在服务未运行时发出警告，但仍建议在运行容器前启动rurid。
+&emsp;rurid是一个用于存储容器信息并初始化容器的服务进程，以确保同一容器始终运行在相同命名空间。它并非必要进程，纯chroot容器将不会与rurid进行通信，unshare容器仅会在服务未运行时发出警告，但仍建议在运行容器前启动rurid。

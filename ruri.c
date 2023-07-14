@@ -28,6 +28,10 @@
  *
  */
 #include "ruri.h"
+/*
+ * If the code is hard to write,
+ * it should be hard to read.
+ */
 // The macro __RURI_DEV__ will enable extra logs.
 // Do not uncomment it, use `-D__RURI_DEV__` to compile instead.
 // #define __RURI_DEV__
