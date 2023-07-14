@@ -125,61 +125,33 @@ struct CONTAINER_INFO
   char *unshare_pid;
 };
 // Function list.
-// Show error msg and exit.
 void error(char *msg);
-// As an easter agg.
 void show_greetings(void);
-// For `ruri -v`.
 void show_version_info(void);
-// For `ruri -h`.
 void show_helps(bool greetings);
-// Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap);
-// Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
-// Add a node to CONTAINERS struct.
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container);
-// Return info of a container.
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
-// Delete a container from CONTAINERS struct.
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container);
-// Check if a container is running.
 bool container_active(char *container_dir, struct CONTAINERS *container);
-// For daemon, send msg to socket.
 ssize_t send_msg_server(char *msg, struct sockaddr_un addr, int sockfd);
-// For client, send msg to socket.
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
-// For daemon, return the messages have been read.
 char *read_msg_server(struct sockaddr_un addr, int sockfd);
-// For client, return the messages have been read.
 char *read_msg_client(struct sockaddr_un addr);
-//  For container_ps().
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
-// For `ruri -l`
 int container_ps(void);
-// For `ruri -K`
 int kill_daemon(void);
-// For `ruri -t`
 int test_daemon(void);
-// For container_daemon(), kill and umount all containers.
 void umount_all_containers(struct CONTAINERS *container);
-// Called by container_daemon(), init an unshare container in the background.
 void *daemon_init_unshare_container(void *arg);
-// Run after chroot(), called by run_chroot_container().
 void init_container(void);
-// Daemon process used to store unshare container information and init unshare container.
 int container_daemon(void);
-// Do some checks before chroot().
 bool check_container(char *container_dir);
-// For run_unshare_container().
 pid_t init_unshare_container(bool no_warnings);
-// For run_unshare_container().
 pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings);
-// Run unshare container, called by main().
 int run_unshare_container(struct CONTAINER_INFO *container_info, bool no_warnings);
-// Run chroot container, called by main(), run_unshare_container() and daemon_init_unshare_container().
 void run_chroot_container(struct CONTAINER_INFO *container_info, bool no_warnings);
-// Kill&umount container.
 void umount_container(char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
