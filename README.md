@@ -22,7 +22,7 @@ You can read this doc in :
 * This program has no Super Cow Powers.
 ```
 ### About:         
-&emsp;ruri is pronounced as /lʊlɪ/, or you can call it `瑠璃`. 
+&emsp;ruri is pronounced as /lʊlɪ/, or you can call it `瑠璃`.       
 &emsp;ruri runs a linux container with unshare namespaces and dropped capabilities. It is designed to provide better security for Linux containers on devices that do not support docker.       
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
 &emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.          
