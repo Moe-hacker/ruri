@@ -509,7 +509,7 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
   read_all_nodes(container->container, addr, sockfd);
 }
 // For `ruri -l`
-int container_ps(void)
+void container_ps(void)
 {
   /*
    * It will connect to rurid and list running containers.
@@ -517,28 +517,12 @@ int container_ps(void)
    */
   // Set socket address.
   struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
-  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
-  char *tmpdir = getenv("TMPDIR");
-  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
+  if (!connect_to_daemon(&addr))
   {
-    tmpdir = "/tmp";
+    error("Daemon not running.");
   }
-  char socket_path[PATH_MAX] = {0};
-  strcat(socket_path, tmpdir);
-  strcat(socket_path, "/");
-  strcat(socket_path, SOCKET_FILE);
-  strcpy(addr.sun_path, socket_path);
-  // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
+  // Message to read.
   char *msg = NULL;
-  msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
-  {
-    error("Error: seems that container daemon is not running QwQ");
-  }
-  free(msg);
-  msg = NULL;
   // rurid will return the info of running containers.
   send_msg_client(FROM_CLIENT__GET_PS_INFO, addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
@@ -562,17 +546,15 @@ int container_ps(void)
     free(msg);
     msg = NULL;
   }
-  return 0;
 }
 // For `ruri -t`
-int test_daemon(void)
+bool connect_to_daemon(struct sockaddr_un *addr)
 {
   /*
    * Check if rurid is running.
    */
   // Set socket address.
-  struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
+  addr->sun_family = AF_UNIX;
   // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
   char *tmpdir = getenv("TMPDIR");
   if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
@@ -583,22 +565,20 @@ int test_daemon(void)
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
   strcat(socket_path, SOCKET_FILE);
-  strcpy(addr.sun_path, socket_path);
+  strcpy(addr->sun_path, socket_path);
   // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
+  send_msg_client(FROM_CLIENT__TEST_MESSAGE, *addr);
   char *msg = NULL;
-  msg = read_msg_client(addr);
+  msg = read_msg_client(*addr);
   if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
   {
-    printf("\033[31mrurid is not running.\033[0m\n");
-    return 1;
+    return false;
   }
   free(msg);
-  printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
-  return 0;
+  return true;
 }
 // For `ruri -K`
-int kill_daemon(void)
+void kill_daemon(void)
 {
   /*
    * It will just send `kill` to rurid.
@@ -606,31 +586,16 @@ int kill_daemon(void)
    */
   // Set socket address.
   struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
-  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
-  char *tmpdir = getenv("TMPDIR");
-  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
+  if (!connect_to_daemon(&addr))
   {
-    tmpdir = "/tmp";
+    error("Daemon not running");
   }
-  char socket_path[PATH_MAX] = {0};
-  strcat(socket_path, tmpdir);
-  strcat(socket_path, "/");
-  strcat(socket_path, SOCKET_FILE);
-  strcpy(addr.sun_path, socket_path);
-  // Try to connect to the socket file and check if it's created by ruri daemon.
-  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
-  char *msg = NULL;
-  msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
+  else
   {
-    error("Error: seems that container daemon is not running QwQ");
+    // Rurid will kill itself after received this message.
+    send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
+    return;
   }
-  free(msg);
-  msg = NULL;
-  // Rurid will kill itself after received this message.
-  send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
-  return 0;
 }
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
@@ -730,18 +695,7 @@ void *daemon_init_unshare_container(void *arg)
     char *container_dir = strdup(container_info->container_dir);
     // Set socket address.
     struct sockaddr_un addr;
-    addr.sun_family = AF_UNIX;
-    // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
-    char *tmpdir = getenv("TMPDIR");
-    if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
-    {
-      tmpdir = "/tmp";
-    }
-    char socket_path[PATH_MAX] = {0};
-    strcat(socket_path, tmpdir);
-    strcat(socket_path, "/");
-    strcat(socket_path, SOCKET_FILE);
-    strcpy(addr.sun_path, socket_path);
+    connect_to_daemon(&addr);
     char container_pid[1024];
     sprintf(container_pid, "%d", unshare_pid);
     send_msg_client(FROM_PTHREAD__UNSHARE_CONTAINER_PID, addr);
@@ -857,7 +811,7 @@ void init_container(void)
   symlink("/proc/mounts", "/etc/mtab");
 }
 // Daemon process used to store unshare container information and init unshare container.
-int container_daemon(void)
+void container_daemon(void)
 {
   /*
    *
@@ -940,12 +894,12 @@ int container_daemon(void)
   pid_t pid = fork();
   if (pid > 0)
   {
-    return 0;
+    return;
   }
   if (pid < 0)
   {
     perror("fork");
-    return 1;
+    return;
   }
   // Create socket file
   remove(socket_path);
@@ -953,7 +907,7 @@ int container_daemon(void)
   if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
   {
     perror("bind");
-    return 1;
+    return;
   }
   listen(sockfd, 16);
   // Read message from ruri.
@@ -1153,7 +1107,7 @@ int container_daemon(void)
       msg = NULL;
       umount_all_containers(container);
       // It will exit at main()
-      return 0;
+      return;
     }
     // Get info of all registered containers.
     else if (strcmp(FROM_CLIENT__GET_PS_INFO, msg) == 0)
@@ -1516,24 +1470,10 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   pid_t unshare_pid = INIT_VALUE;
   // Set socket address.
   struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
-  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
-  char *tmpdir = getenv("TMPDIR");
-  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
-  {
-    tmpdir = "/tmp";
-  }
-  char socket_path[PATH_MAX] = {0};
-  strcat(socket_path, tmpdir);
-  strcat(socket_path, "/");
-  strcat(socket_path, SOCKET_FILE);
-  strcpy(addr.sun_path, socket_path);
-  bool daemon_running = false;
-  // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
+  // Message to read.
   char *msg = NULL;
-  msg = read_msg_client(addr);
-  if ((msg != NULL) && (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0))
+  bool daemon_running = false;
+  if (connect_to_daemon(&addr))
   {
     daemon_running = true;
   }
@@ -1696,23 +1636,8 @@ void umount_container(char *container_dir)
   // TODO(Moe-hacker): umount() mountpoint
   // Set socket address.
   struct sockaddr_un addr;
-  addr.sun_family = AF_UNIX;
-  // In termux, $TMPDIR is not /tmp, so we get $TMPDIR for tmp path.
-  char *tmpdir = getenv("TMPDIR");
-  if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
-  {
-    tmpdir = "/tmp";
-  }
-  char socket_path[PATH_MAX] = {0};
-  strcat(socket_path, tmpdir);
-  strcat(socket_path, "/");
-  strcat(socket_path, SOCKET_FILE);
-  strcpy(addr.sun_path, socket_path);
-  // Try to connect to socket file and check if it's created by ruri daemon.
-  send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
   char *msg = NULL;
-  msg = read_msg_client(addr);
-  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
+  if (!connect_to_daemon(&addr))
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
   }
@@ -1806,11 +1731,13 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[index], "-D") == 0)
     {
-      return container_daemon();
+      container_daemon();
+      return 0;
     }
     if (strcmp(argv[index], "-K") == 0)
     {
-      return kill_daemon();
+      kill_daemon();
+      return 0;
     }
     if (strcmp(argv[index], "-h") == 0)
     {
@@ -1819,11 +1746,19 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[index], "-l") == 0)
     {
-      return container_ps();
+      container_ps();
+      return 0;
     }
     if (strcmp(argv[index], "-t") == 0)
     {
-      return test_daemon();
+      struct sockaddr_un addr;
+      if (connect_to_daemon(&addr))
+      {
+        printf("\033[31mrurid is not running.\033[0m\n");
+        return 1;
+      }
+      printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+      return 0;
     }
     //=========End of [Other options]===========
     if (strcmp(argv[index], "-u") == 0)
