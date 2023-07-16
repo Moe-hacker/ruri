@@ -23,17 +23,27 @@ RURI = $(SRC) -o $(BIN_TARGET)
 	@echo
 	@echo "\033[33mRURI PUBLISHED WITH THE MIT LICENSE"
 	@echo
-	@echo "FROM THE AUTHOR (MOE-HACKER):"
+	@echo "////////////////////////////////THE MIT LICENSE////////////////////////////////"
 	@echo
-	@echo "///////////WARNING:///////////"
+	@echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
+	@echo "of this software and associated documentation files (the \"Software\"), to deal"
+	@echo "in the Software without restriction, including without limitation the rights"
+	@echo "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell"
+	@echo "copies of the Software, and to permit persons to whom the Software is"
+	@echo "furnished to do so, subject to the following conditions:"
 	@echo
-	@echo "* Your warranty is now void."
-	@echo "* I am not responsible for anything that may happen to your device by using this program."
-	@echo "* You do it at your own risk and take the responsibility upon yourself."
-	@echo "* And you are not to blame the author or Github and its developers."
-	@echo "* This program has no Super Cow Powers."
+	@echo "The above copyright notice and this permission notice shall be included in all"
+	@echo "copies or substantial portions of the Software."
 	@echo
-	@echo "//////////////////////////////"
+	@echo "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR"
+	@echo "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,"
+	@echo "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL TH"
+	@echo "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+	@echo "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,"
+	@echo "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE"
+	@echo "SOFTWARE."
+	@echo
+	@echo "//////////////////////////////////////////////////////////////////////////////"
 	@echo
 	@echo "Make sure you have already read this message, and you agree with ALL OF THEM."
 	@echo "Now you can press CTRL-C to exit"
