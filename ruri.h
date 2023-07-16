@@ -129,8 +129,8 @@ struct CONTAINER_INFO
 };
 // Function list.
 void error(char *msg);
-void show_greetings(void);
-void show_version_info(void);
+void show_greetings();
+void show_version_info();
 void show_helps(bool greetings);
 void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
@@ -143,13 +143,13 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_daemon(struct sockaddr_un addr, int sockfd);
 char *read_msg_client(struct sockaddr_un addr);
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
-void container_ps(void);
-void kill_daemon(void);
+void container_ps();
+void kill_daemon();
 bool connect_to_daemon(struct sockaddr_un *addr);
 void umount_all_containers(struct CONTAINERS *container);
 void *daemon_init_unshare_container(void *arg);
-void init_container(void);
-void container_daemon(void);
+void init_container();
+void container_daemon();
 bool check_container(char *container_dir);
 pid_t init_unshare_container(bool no_warnings);
 pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings);

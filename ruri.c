@@ -57,7 +57,7 @@ void error(char *msg)
 }
 // Greeting information.
 // As an easter agg.
-void show_greetings(void)
+void show_greetings()
 {
   /*
    * Nothing's useful at this function, just for fun.
@@ -110,7 +110,7 @@ void show_greetings(void)
   printf("%s\n", "");
 }
 // For `ruri -v`.
-void show_version_info(void)
+void show_version_info()
 {
   /*
    * Just show version info and license.
@@ -509,7 +509,7 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
   read_all_nodes(container->container, addr, sockfd);
 }
 // For `ruri -l`
-void container_ps(void)
+void container_ps()
 {
   /*
    * It will connect to rurid and list running containers.
@@ -578,7 +578,7 @@ bool connect_to_daemon(struct sockaddr_un *addr)
   return true;
 }
 // For `ruri -K`
-void kill_daemon(void)
+void kill_daemon()
 {
   /*
    * It will just send `kill` to rurid.
@@ -736,7 +736,7 @@ void *daemon_init_unshare_container(void *arg)
   return 0;
 }
 // Run after chroot(), called by run_chroot_container()
-void init_container(void)
+void init_container()
 {
   /*
    * It'll be run after chroot(), so `/` is the root dir of container now.
@@ -811,7 +811,7 @@ void init_container(void)
   symlink("/proc/mounts", "/etc/mtab");
 }
 // Daemon process used to store unshare container information and init unshare container.
-void container_daemon(void)
+void container_daemon()
 {
   /*
    *
