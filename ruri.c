@@ -1694,7 +1694,7 @@ int main(int argc, char **argv)
   // Set default value.
   bool use_unshare = false;
   bool no_warnings = false;
-  char *container_dir = false;
+  char *container_dir = NULL;
   bool privileged = false;
   char *init[MAX_INIT_COMMANDS] = {NULL};
   char *env[MAX_ENVS] = {NULL};
