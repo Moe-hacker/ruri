@@ -28,6 +28,9 @@
  *
  *
  */
+#ifndef __linux__
+#error "This program is only for linux"
+#endif
 // Enable Linux features.
 #define _GNU_SOURCE
 #include <dirent.h>

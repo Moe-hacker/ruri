@@ -144,7 +144,7 @@ void show_helps(bool greetings)
 {
   /*
    * Help page of ruri.
-   * It needs to be perfected.
+   * I think you can understand...
    */
   // Do not show greeting if command-line args are wrong.
   if (greetings)
