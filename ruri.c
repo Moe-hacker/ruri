@@ -1752,7 +1752,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[index], "-t") == 0)
     {
       struct sockaddr_un addr;
-      if (connect_to_daemon(&addr))
+      if (!connect_to_daemon(&addr))
       {
         printf("\033[31mrurid is not running.\033[0m\n");
         return 1;
