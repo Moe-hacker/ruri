@@ -547,11 +547,11 @@ void container_ps()
     msg = NULL;
   }
 }
-// For `ruri -t`
+// Connect to daemon.
 bool connect_to_daemon(struct sockaddr_un *addr)
 {
   /*
-   * Check if rurid is running.
+   * Set socket address and check if rurid is running.
    */
   // Set socket address.
   addr->sun_family = AF_UNIX;
@@ -1552,7 +1552,69 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       break;
     }
   }
+  printf("Mountpoints: \n");
+  for (int i = 0;;)
+  {
+    if (container_info->mountpoint[i] != NULL)
+    {
+      printf("%s%s", container_info->mountpoint[i], " to ");
+      printf("%s%s", container_info->mountpoint[i], "\n");
+      i += 2;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
+  printf("Envs: \n");
+  for (int i = 0;;)
+  {
+    if (container_info->env[i] != NULL)
+    {
+      printf("%s%s", container_info->env[i], " = ");
+      printf("%s%s", container_info->env[i], "\n");
+      i += 2;
+    }
+    else
+    {
+      printf("\n");
+      break;
+    }
+  }
 #endif
+  // Mount mountpoints
+  for (int i = 0;;)
+  {
+    if (container_info->mountpoint[i] != NULL)
+    {
+      // Set mountpoint.
+      char *mountpoint_dir = (char *)malloc(strlen(container_info->mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
+      strcpy(mountpoint_dir, container_info->container_dir);
+      strcat(mountpoint_dir, container_info->mountpoint[i + 1]);
+      // Check if mountpoint exists.
+      DIR *test = NULL;
+      if ((test = opendir(mountpoint_dir)) == NULL)
+      {
+        if (mkdir(mountpoint_dir, 0755) != 0)
+        {
+          error("Could not create mountpoint directory");
+        }
+      }
+      else
+      {
+        closedir(test);
+      }
+      // Mount other mountpoints.
+      mount(container_info->mountpoint[i], mountpoint_dir, NULL, MS_BIND, NULL);
+      i += 2;
+      free(mountpoint_dir);
+    }
+    else
+    {
+      break;
+    }
+  }
   // Set default init.
   if (container_info->init_command[0] == NULL)
   {
