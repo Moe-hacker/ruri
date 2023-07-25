@@ -124,6 +124,17 @@ void container_daemon()
       send_msg_daemon(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
       goto _continue;
     }
+
+
+
+
+
+
+
+
+
+
+    
     // Kill a container.
     else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
@@ -156,6 +167,17 @@ void container_daemon()
       container_dir = NULL;
       goto _continue;
     }
+
+
+
+
+
+
+
+
+
+
+
     // Register a new container or send the info of an existing container to ruri.
     else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0)
     {
@@ -253,6 +275,13 @@ void container_daemon()
       }
       goto _continue;
     }
+
+
+
+
+
+
+
     // Get container info from subprocess and add them to container struct.
     else if (strcmp(FROM_PTHREAD__UNSHARE_CONTAINER_PID, msg) == 0)
     {
@@ -317,7 +346,7 @@ void container_daemon()
       free(msg);
       msg = NULL;
       umount_all_containers(container);
-      // It will exit at main()
+      // Exit daemon.
       exit(EXIT_SUCCESS);
     }
     // Get ps info of all registered containers.
