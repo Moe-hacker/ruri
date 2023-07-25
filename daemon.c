@@ -63,11 +63,13 @@ void container_daemon()
   }
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp.
   char *tmpdir = getenv("TMPDIR");
   if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
   {
     tmpdir = "/tmp";
   }
+  // Set socket path.
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
@@ -109,11 +111,12 @@ void container_daemon()
     // Get message.
     msg = NULL;
     msg = read_msg_daemon(addr, sockfd);
+    // Avoid crashes by null pointer.
     if (msg == NULL)
     {
       goto _continue;
     }
-    // Test message.
+    // Test message, to check if daemon is active.
     else if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0)
     {
       free(msg);
@@ -134,10 +137,14 @@ void container_daemon()
       container_dir = strdup(msg);
       free(msg);
       msg = NULL;
+      // Check if container is active.
       if (container_active(container_dir, container))
       {
+        // Kill container.
+        // It will just kill init process, so on devices which has no pid ns enabled, some process in container will still be alive.
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
         kill(unshare_pid, SIGKILL);
+        // Deregister the container.
         container = del_container(container_dir, container);
         send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
       }
@@ -163,12 +170,15 @@ void container_daemon()
       container_dir = strdup(msg);
       free(msg);
       msg = NULL;
+      // If container is active, send unshare_pid to client.
+      // XXX
       if (container_active(container_dir, container))
       {
         send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
         send_msg_daemon(read_node(container_dir, container)->unshare_pid, addr, sockfd);
         goto _continue;
       }
+      // If container is not active, init and register it.
       else
       {
         send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
@@ -236,6 +246,8 @@ void container_daemon()
         }
         container_info.container_dir = strdup(container_dir);
         free(container_dir);
+        // Init container in new pthread.
+        // It will send all the info of the container back to register it.
         pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
         goto _continue;
       }
@@ -308,7 +320,7 @@ void container_daemon()
       // It will exit at main()
       exit(EXIT_SUCCESS);
     }
-    // Get info of all registered containers.
+    // Get ps info of all registered containers.
     else if (strcmp(FROM_CLIENT__GET_PS_INFO, msg) == 0)
     {
       free(msg);
@@ -316,6 +328,7 @@ void container_daemon()
       read_all_nodes(container, addr, sockfd);
       goto _continue;
     }
+    // If init process died, deregister the container.
     else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0)
     {
       free(msg);
@@ -328,6 +341,7 @@ void container_daemon()
       container = del_container(container_dir, container);
       goto _continue;
     }
+    // Check if init prrocess is active.
     else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0)
     {
       free(msg);
@@ -350,7 +364,7 @@ void container_daemon()
       }
       goto _continue;
     }
-    // Jump to the next loop.
+    // Continue the loop.
   _continue:
     continue;
   }
