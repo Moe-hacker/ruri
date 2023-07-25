@@ -82,21 +82,33 @@
 #define FROM_CLIENT__END_OF_INIT_COMMAND     "0x07"
 #define FROM_CLIENT__CAP_TO_DROP             "0x08"
 #define FROM_CLIENT__END_OF_CAP_TO_DROP      "0x09"
+#define FROM_CLIENT__MOUNTPOINT              "0x0a"
+#define FROM_CLIENT__END_OF_MOUNTPOINT       "0x0b"
+#define FROM_CLIENT__ENV                     "0x0c"
+#define FROM_CLIENT__END_OF_ENV              "0x0d"
 // From subprocess of rurid.
-#define FROM_PTHREAD__INIT_PROCESS_DIED      "0x0a"
-#define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x0b"
-#define FROM_PTHREAD__CAP_TO_DROP            "0x0c"
-#define FROM_PTHREAD__END_OF_CAP_TO_DROP     "0x0d"
+#define FROM_PTHREAD__INIT_PROCESS_DIED      "0x0e"
+#define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x0f"
+#define FROM_PTHREAD__CAP_TO_DROP            "0x10"
+#define FROM_PTHREAD__END_OF_CAP_TO_DROP     "0x11"
+#define FROM_PTHREAD__MOUNTPOINT             "0x12"
+#define FROM_PTHREAD__END_OF_MOUNTPOINT      "0x13"
+#define FROM_PTHREAD__ENV                    "0x14"
+#define FROM_PTHREAD__END_OF_ENV             "0x15"
 // From rurid.
 #define FROM_DAEMON__TEST_MESSAGE            "Nya!"
-#define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x0e"
-#define FROM_DAEMON__CONTAINER_KILLED        "0x0f"
-#define FROM_DAEMON__CONTAINER_NOT_RUNNING   "0x10"
-#define FROM_DAEMON__CONTAINER_IS_ACTIVE     "0x11"
-#define FROM_DAEMON__CONTAINER_IS_NOT_ACTIVE "0x12"
-#define FROM_DAEMON__INIT_IS_ACTIVE          "0x13"
-#define FROM_DAEMON__INIT_IS_NOT_ACTIVE      "0x14"
-#define FROM_DAEMON__END_OF_PS_INFO          "0x15"
+#define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x16"
+#define FROM_DAEMON__CAP_TO_DROP             "0x17"
+#define FROM_DAEMON__END_OF_CAP_TO_DROP      "0x18"
+#define FROM_DAEMON__ENV                     "0x19"
+#define FROM_DAEMON__END_OF_ENV              "0x1a"
+#define FROM_DAEMON__CONTAINER_KILLED        "0x1b"
+#define FROM_DAEMON__CONTAINER_NOT_RUNNING   "0x1c"
+#define FROM_DAEMON__CONTAINER_IS_ACTIVE     "0x1d"
+#define FROM_DAEMON__CONTAINER_IS_NOT_ACTIVE "0x1e"
+#define FROM_DAEMON__INIT_IS_ACTIVE          "0x1f"
+#define FROM_DAEMON__INIT_IS_NOT_ACTIVE      "0x20"
+#define FROM_DAEMON__END_OF_PS_INFO          "0x21"
 // clang-format on
 // Info of containers.
 struct CONTAINERS
@@ -127,7 +139,7 @@ struct CONTAINER_INFO
   // For setns(), we define it as char*.
   char *unshare_pid;
 };
-// Function list.
+// Function Declarations.
 void error(char *msg);
 void show_greetings();
 void show_version_info();
