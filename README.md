@@ -21,9 +21,9 @@ You can read this doc in :
 * And you are not to blame the author or Github and its developers.
 * This program has no Super Cow Powers.
 ```
-### About:         
-&emsp;ruri is pronounced as /lʊlɪ/, or you can call it `瑠璃`.       
-&emsp;ruri runs a linux container with unshare namespaces and dropped capabilities. It is designed to provide better security for Linux containers on devices that do not support docker.       
+### About ruri:         
+&emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
+&emsp;ruri is the Romaji acronym of Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
 &emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.          
 &emsp;The default capability set is the same as the docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
