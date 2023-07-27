@@ -1477,13 +1477,24 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[index], "-t") == 0)
     {
+      if (geteuid() != 0)
+      {
+        fprintf(stderr, "\033[31mError: this program should be run with root.\033[0m\n");
+        return 1;
+      }
       struct sockaddr_un addr;
       if (!connect_to_daemon(&addr))
       {
-        printf("\033[31mrurid is not running.\033[0m\n");
+        if (!no_warnings)
+        {
+          printf("\033[31mrurid is not running.\033[0m\n");
+        }
         return 1;
       }
-      printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+      if (!no_warnings)
+      {
+        printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+      }
       return 0;
     }
     //=========End of [Other options]===========
