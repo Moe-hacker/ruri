@@ -719,6 +719,19 @@ void *daemon_init_unshare_container(void *arg)
       }
     }
     send_msg_client(FROM_PTHREAD__END_OF_CAP_TO_DROP, addr);
+    send_msg_client(FROM_PTHREAD__MOUNTPOINT, addr);
+    for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+    {
+      if (container_info->mountpoint[i] != NULL)
+      {
+        send_msg_client(container_info->mountpoint[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client(FROM_PTHREAD__END_OF_MOUNTPOINT, addr);
     // Fix the bug that the terminal was stuck.
     usleep(200000);
     // Fix `can't access tty` issue.
@@ -811,11 +824,6 @@ void init_container()
   symlink("/proc/mounts", "/etc/mtab");
 }
 // Daemon process used to store unshare container information and init unshare container.
-
-
-
-
-
 
 // Do some checks before chroot()
 bool check_container(char *container_dir)
@@ -972,6 +980,19 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
     }
     send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
+    send_msg_client(FROM_CLIENT__MOUNTPOINT, addr);
+    for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+    {
+      if (container_info->mountpoint[i] != NULL)
+      {
+        send_msg_client(container_info->mountpoint[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client(FROM_CLIENT__END_OF_MOUNTPOINT, addr);
   }
   free(msg);
   msg = NULL;
@@ -1362,6 +1383,8 @@ void umount_container(char *container_dir)
   // Set socket address.
   struct sockaddr_un addr;
   char *msg = NULL;
+  char *mountpoint[MAX_MOUNTPOINTS / 2];
+  mountpoint[0] = NULL;
   if (!connect_to_daemon(&addr))
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
@@ -1376,11 +1399,32 @@ void umount_container(char *container_dir)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
     }
+    else
+    {
+      msg = read_msg_client(addr);
+      free(msg);
+      msg = NULL;
+      for (int i = 0;;)
+      {
+        msg = read_msg_client(addr);
+        if (strcmp(msg, FROM_DAEMON__END_OF_MOUNTPOINT) == 0)
+        {
+          free(msg);
+          msg = NULL;
+          break;
+        }
+        mountpoint[i] = strdup(msg);
+        mountpoint[i + 1] = NULL;
+        free(msg);
+        msg = NULL;
+      }
+    }
   }
   // Get path to umount.
   char sys_dir[PATH_MAX];
   char proc_dir[PATH_MAX];
   char dev_dir[PATH_MAX];
+  char to_umountpoint[PATH_MAX];
   strcpy(sys_dir, container_dir);
   strcpy(proc_dir, container_dir);
   strcpy(dev_dir, container_dir);
@@ -1389,6 +1433,20 @@ void umount_container(char *container_dir)
   strcat(dev_dir, "/dev");
   // Force umount all directories for 10 times.
   printf("\033[1;38;2;254;228;208mUmount container.\n");
+  for (int i = 0;;)
+  {
+    if (mountpoint[i] != NULL)
+    {
+      strcpy(to_umountpoint, container_dir);
+      strcat(to_umountpoint, mountpoint[i]);
+      umount(to_umountpoint);
+      i++;
+    }
+    else
+    {
+      break;
+    }
+  }
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE);

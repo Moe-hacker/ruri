@@ -1,4 +1,5 @@
 #include "ruri.h"
+
 void container_daemon()
 {
   /*
@@ -125,16 +126,6 @@ void container_daemon()
       goto _continue;
     }
 
-
-
-
-
-
-
-
-
-
-    
     // Kill a container.
     else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
@@ -155,9 +146,24 @@ void container_daemon()
         // It will just kill init process, so on devices which has no pid ns enabled, some process in container will still be alive.
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
         kill(unshare_pid, SIGKILL);
+        send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
+        // XXX
+        send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
+        for (int i = 0;;)
+        {
+          if (read_node(container_dir, container)->mountpoint[i + 1] != NULL)
+          {
+            send_msg_daemon(read_node(container_dir, container)->mountpoint[i + 1], addr, sockfd);
+            i += 2;
+          }
+          else
+          {
+            break;
+          }
+        }
+        send_msg_daemon(FROM_DAEMON__END_OF_MOUNTPOINT, addr, sockfd);
         // Deregister the container.
         container = del_container(container_dir, container);
-        send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
       }
       else
       {
@@ -167,16 +173,6 @@ void container_daemon()
       container_dir = NULL;
       goto _continue;
     }
-
-
-
-
-
-
-
-
-
-
 
     // Register a new container or send the info of an existing container to ruri.
     else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0)
@@ -266,6 +262,30 @@ void container_daemon()
           msg = NULL;
           i++;
         }
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        for (int i = 0;;)
+        {
+          msg = read_msg_daemon(addr, sockfd);
+          if (msg == NULL)
+          {
+            goto _continue;
+          }
+          if (strcmp(FROM_CLIENT__END_OF_MOUNTPOINT, msg) == 0)
+          {
+            free(msg);
+            msg = NULL;
+            break;
+          }
+          container_info.mountpoint[i] = strdup(msg);
+          container_info.mountpoint[i + 1] = NULL;
+          free(msg);
+          msg = NULL;
+          i++;
+        }
         container_info.container_dir = strdup(container_dir);
         free(container_dir);
         // Init container in new pthread.
@@ -275,12 +295,6 @@ void container_daemon()
       }
       goto _continue;
     }
-
-
-
-
-
-
 
     // Get container info from subprocess and add them to container struct.
     else if (strcmp(FROM_PTHREAD__UNSHARE_CONTAINER_PID, msg) == 0)
@@ -327,6 +341,30 @@ void container_daemon()
         msg = NULL;
         i++;
       }
+      msg = read_msg_daemon(addr, sockfd);
+      if (msg == NULL)
+      {
+        goto _continue;
+      }
+      for (int i = 0;;)
+      {
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0)
+        {
+          free(msg);
+          msg = NULL;
+          break;
+        }
+        mountpoint[i] = strdup(msg);
+        mountpoint[i + 1] = NULL;
+        free(msg);
+        msg = NULL;
+        i++;
+      }
       // TODO(Moe-hacker)
       container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
       // Send ${unshare_pid} to ruri.
@@ -337,6 +375,10 @@ void container_daemon()
       for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
       {
         container_info.drop_caplist[i] = INIT_VALUE;
+      }
+      for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+      {
+        mountpoint[i] = NULL;
       }
       goto _continue;
     }
