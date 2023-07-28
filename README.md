@@ -27,12 +27,31 @@ You can read this doc in :
 &emsp;It's like `chroot` and `unshare`, but it is more secure.       
 &emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.          
 &emsp;The default capability set is the same as the docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
-### Quick start:      
+### Install:      
 ```
 git clone https://github.com/Moe-hacker/ruri
 cd ruri
 sudo make install
 ```
+### Quick start(with rootfstool):
+#### First, download and unpack a rootfs:
+```
+git clone https://github.com/Moe-hacker/rootfstool
+cd rootfstool
+./rootfstool download -d alpine -v edge
+mkdir /tmp/alpine
+sudo tar -xvf rootfs.tar.xz -C /tmp/alpine
+```
+#### Then:
+```
+sudo ruri -u /tmp/alpine
+```
+Or:      
+```
+sudo ruri -D
+sudo ruri -u /tmp/alpine
+```
+Very simple as you can see.    
 #### make options:
 ```text
   make all         :compile
