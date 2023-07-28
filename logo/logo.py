@@ -75,8 +75,8 @@ else:
     pyplot.ylim(-6.3, 6.3)
 # Draw the title.
 if no_text==False:
-    pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.475, fontsize=39, fontweight="normal")
-    pyplot.text(-0.12, -0.12, "Linux containers, simple & secure", fontsize=16,fontweight="black", transform=axes.transAxes, color='#fee4d0')
+    pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.478, fontsize=39, fontweight="normal")
+    pyplot.text(-0.45, -0.12, "Lightweight, User-friendly Linux-container Implementation", fontsize=13,fontweight="black", transform=axes.transAxes, color='#fee4d0')
     # Save as logo.png.
     pyplot.savefig('logo.png', transparent=True)
 else:
