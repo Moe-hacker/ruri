@@ -1174,7 +1174,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
    * It's called to by main(), run_unshare_container() and daemon_init_unshare_container()(container_daemon()).
    * It will chroot() to container_dir, call to init_container(), drop capabilities and exec() init command in container.
    */
-  // TODO(Moe-hacker): mount other mountpoints.
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
@@ -1327,7 +1326,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       }
     }
   }
-  // BUG: not work if init is /bin/su -
+  // XXX: not work if init is /bin/su -
   for (int i = 0;;)
   {
     if (container_info->env[i] != NULL)
@@ -1748,8 +1747,6 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // TODO(Moe-hacker)
-  // 同时需完善dev log
   for (int i = 0; i < MAX_ENVS; i++)
   {
     if (env[i] != NULL)
@@ -1763,7 +1760,6 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // TODO(Moe-hacker)
   for (int i = 0; i < MAX_MOUNTPOINTS; i++)
   {
     if (mountpoint[i] != NULL)
