@@ -13,12 +13,31 @@
 ### 关于：                 
 &emsp;名字直接读作`瑠璃`即可，查了下应该没重名的就用了。        
 &emsp;Ruri是一个用C语言写的容器，除了网络和用户之外的隔离在unshare容器中会自动开启，权限默认和docker容器相同，可通过-d来降低或-p来提高容器权限，也可以自行定义。      
-### 安装：    
+### 安装:      
 ```
 git clone https://github.com/Moe-hacker/ruri
 cd ruri
 sudo make install
 ```
+### 快速入门(使用rootfstool):
+#### 首先，下载并解压rootfs:
+```
+git clone https://github.com/Moe-hacker/rootfstool
+cd rootfstool
+./rootfstool download -d alpine -v edge
+mkdir /tmp/alpine
+sudo tar -xvf rootfs.tar.xz -C /tmp/alpine
+```
+#### 然后:
+```
+sudo ruri -u /tmp/alpine
+```
+或者:      
+```
+sudo ruri -D
+sudo ruri -u /tmp/alpine
+```
+十分的简单，甚至九分的简单。    
 #### 编译依赖：         
 libcap动态库用于动态编译，libc和libcap静态库用于静态编译。           
 #### 编译选项：     
