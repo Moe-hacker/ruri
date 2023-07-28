@@ -170,7 +170,7 @@ void show_helps(bool greetings)
   printf("  -e [env] [value]      :Set env to its value *Not work if init command is like `su -`\n");
   printf("  -m [dir] [mountpoint] :Mount dir to mountpoint\n");
   printf("  -w                    :Disable warnings\n");
-  printf("Default init command is `/bin/su -` if it's not set\n");
+  printf("Default init command is `/bin/su` if it's not set\n");
   printf("This program should be run with root privileges\n");
   printf("Please unset $LD_PRELOAD before running this program\033[0m\n");
 }
@@ -459,7 +459,7 @@ char *read_msg_client(struct sockaddr_un addr)
     perror("socket");
   }
   // Set timeout duration.
-  struct timeval timeout = {0, 100};
+  struct timeval timeout = {1, 100};
   setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Connect to daemon.
@@ -701,7 +701,6 @@ void *daemon_init_unshare_container(void *arg)
     send_msg_client(FROM_PTHREAD__UNSHARE_CONTAINER_PID, addr);
     send_msg_client(container_pid, addr);
     send_msg_client(container_info->container_dir, addr);
-    // XXX
     send_msg_client(FROM_PTHREAD__CAP_TO_DROP, addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
@@ -719,6 +718,32 @@ void *daemon_init_unshare_container(void *arg)
       }
     }
     send_msg_client(FROM_PTHREAD__END_OF_CAP_TO_DROP, addr);
+    send_msg_client(FROM_PTHREAD__MOUNTPOINT, addr);
+    for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+    {
+      if (container_info->mountpoint[i] != NULL)
+      {
+        send_msg_client(container_info->mountpoint[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client(FROM_PTHREAD__END_OF_MOUNTPOINT, addr);
+    send_msg_client(FROM_PTHREAD__ENV, addr);
+    for (int i = 0; i < MAX_ENVS; i++)
+    {
+      if (container_info->env[i] != NULL)
+      {
+        send_msg_client(container_info->env[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client(FROM_PTHREAD__END_OF_ENV, addr);
     // Fix the bug that the terminal was stuck.
     usleep(200000);
     // Fix `can't access tty` issue.
@@ -814,6 +839,11 @@ void init_container()
 void container_daemon()
 {
   /*
+   * 100% shit code at container_daemon.
+   * If the code is hard to write,
+   * it should be hard to read.
+   */
+  /*
    *
    * TODO(Moe-hacker):
    * 遵守caplist mountpoint env
@@ -846,12 +876,11 @@ void container_daemon()
   char *msg = NULL;
   // Container info.
   char *container_dir = NULL;
-  // TODO(Moe-hacker): container_info设置为指针，回收container_info内存并重新创建
+  // Info of a new container.
   struct CONTAINER_INFO container_info;
   container_info.container_dir = NULL;
   container_info.init_command[0] = NULL;
   container_info.unshare_pid = NULL;
-  // TODO(Moe-hacker)
   container_info.mountpoint[0] = NULL;
   container_info.env[0] = NULL;
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
@@ -870,11 +899,13 @@ void container_daemon()
   }
   struct sockaddr_un addr;
   addr.sun_family = AF_UNIX;
+  // In termux, $TMPDIR is not /tmp.
   char *tmpdir = getenv("TMPDIR");
   if ((tmpdir == NULL) || (strcmp(tmpdir, "") == 0))
   {
     tmpdir = "/tmp";
   }
+  // Set socket path.
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
@@ -916,17 +947,20 @@ void container_daemon()
     // Get message.
     msg = NULL;
     msg = read_msg_daemon(addr, sockfd);
+    // Avoid crashes by null pointer.
     if (msg == NULL)
     {
-      continue;
+      goto _continue;
     }
-    // Test message.
-    if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0)
+    // Test message, to check if daemon is active.
+    else if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0)
     {
       free(msg);
       msg = NULL;
       send_msg_daemon(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
+      goto _continue;
     }
+
     // Kill a container.
     else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
@@ -935,17 +969,35 @@ void container_daemon()
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       container_dir = strdup(msg);
       free(msg);
       msg = NULL;
+      // Check if container is active.
       if (container_active(container_dir, container))
       {
+        // Kill container.
+        // It will just kill init process, so on devices which has no pid ns enabled, some process in container will still be alive.
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
         kill(unshare_pid, SIGKILL);
-        container = del_container(container_dir, container);
         send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
+        for (int i = 0;;)
+        {
+          if (read_node(container_dir, container)->mountpoint[i + 1] != NULL)
+          {
+            send_msg_daemon(read_node(container_dir, container)->mountpoint[i + 1], addr, sockfd);
+            i += 2;
+          }
+          else
+          {
+            break;
+          }
+        }
+        send_msg_daemon(FROM_DAEMON__END_OF_MOUNTPOINT, addr, sockfd);
+        // Deregister the container.
+        container = del_container(container_dir, container);
       }
       else
       {
@@ -953,6 +1005,7 @@ void container_daemon()
       }
       free(container_dir);
       container_dir = NULL;
+      goto _continue;
     }
     // Register a new container or send the info of an existing container to ruri.
     else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0)
@@ -963,16 +1016,32 @@ void container_daemon()
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       container_dir = strdup(msg);
       free(msg);
       msg = NULL;
+      // If container is active, send unshare_pid to client.
       if (container_active(container_dir, container))
       {
+        send_msg_daemon(FROM_DAEMON__ENV, addr, sockfd);
+        for (int i = 0; i < MAX_ENVS; i++)
+        {
+          if (read_node(container_dir, container)->env[i] != NULL)
+          {
+            send_msg_daemon(read_node(container_dir, container)->env[i], addr, sockfd);
+          }
+          else
+          {
+            break;
+          }
+        }
+        send_msg_daemon(FROM_DAEMON__END_OF_ENV, addr, sockfd);
         send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
         send_msg_daemon(read_node(container_dir, container)->unshare_pid, addr, sockfd);
+        goto _continue;
       }
+      // If container is not active, init and register it.
       else
       {
         send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
@@ -987,7 +1056,7 @@ void container_daemon()
         msg = read_msg_daemon(addr, sockfd);
         if (msg == NULL)
         {
-          continue;
+          goto _continue;
         }
         for (int i = 0;;)
         {
@@ -1018,7 +1087,7 @@ void container_daemon()
         msg = read_msg_daemon(addr, sockfd);
         if (msg == NULL)
         {
-          continue;
+          goto _continue;
         }
         for (int i = 0;;)
         {
@@ -1038,10 +1107,62 @@ void container_daemon()
           msg = NULL;
           i++;
         }
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        for (int i = 0;;)
+        {
+          msg = read_msg_daemon(addr, sockfd);
+          if (msg == NULL)
+          {
+            goto _continue;
+          }
+          if (strcmp(FROM_CLIENT__END_OF_MOUNTPOINT, msg) == 0)
+          {
+            free(msg);
+            msg = NULL;
+            break;
+          }
+          container_info.mountpoint[i] = strdup(msg);
+          container_info.mountpoint[i + 1] = NULL;
+          free(msg);
+          msg = NULL;
+          i++;
+        }
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        for (int i = 0;;)
+        {
+          msg = read_msg_daemon(addr, sockfd);
+          if (msg == NULL)
+          {
+            goto _continue;
+          }
+          if (strcmp(FROM_CLIENT__END_OF_ENV, msg) == 0)
+          {
+            free(msg);
+            msg = NULL;
+            break;
+          }
+          container_info.env[i] = strdup(msg);
+          container_info.env[i + 1] = NULL;
+          free(msg);
+          msg = NULL;
+          i++;
+        }
         container_info.container_dir = strdup(container_dir);
         free(container_dir);
+        // Init container in new pthread.
+        // It will send all the info of the container back to register it.
         pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
+        goto _continue;
       }
+      goto _continue;
     }
     // Get container info from subprocess and add them to container struct.
     else if (strcmp(FROM_PTHREAD__UNSHARE_CONTAINER_PID, msg) == 0)
@@ -1049,7 +1170,7 @@ void container_daemon()
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       container_info.unshare_pid = strdup(msg);
       free(msg);
@@ -1057,17 +1178,17 @@ void container_daemon()
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       container_info.container_dir = strdup(msg);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       for (int i = 0;;)
       {
@@ -1088,9 +1209,58 @@ void container_daemon()
         msg = NULL;
         i++;
       }
-      // TODO(Moe-hacker)
+      msg = read_msg_daemon(addr, sockfd);
+      if (msg == NULL)
+      {
+        goto _continue;
+      }
+      for (int i = 0;;)
+      {
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0)
+        {
+          free(msg);
+          msg = NULL;
+          break;
+        }
+        mountpoint[i] = strdup(msg);
+        mountpoint[i + 1] = NULL;
+        free(msg);
+        msg = NULL;
+        i++;
+      }
+      msg = read_msg_daemon(addr, sockfd);
+      if (msg == NULL)
+      {
+        goto _continue;
+      }
+      for (int i = 0;;)
+      {
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        if (strcmp(FROM_PTHREAD__END_OF_ENV, msg) == 0)
+        {
+          free(msg);
+          msg = NULL;
+          break;
+        }
+        env[i] = strdup(msg);
+        env[i + 1] = NULL;
+        free(msg);
+        msg = NULL;
+        i++;
+      }
       container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
-      // Send ${unshare_pid} to ruri.
+      // Send unshare_pid to ruri.
+      usleep(200000);
+      send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
       send_msg_daemon(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
       container_info.init_command[0] = NULL;
@@ -1099,6 +1269,11 @@ void container_daemon()
       {
         container_info.drop_caplist[i] = INIT_VALUE;
       }
+      for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+      {
+        mountpoint[i] = NULL;
+      }
+      goto _continue;
     }
     // Kill daemon itself.
     else if (strcmp(FROM_CLIENT__KILL_DAEMON, msg) == 0)
@@ -1106,16 +1281,18 @@ void container_daemon()
       free(msg);
       msg = NULL;
       umount_all_containers(container);
-      // It will exit at main()
-      return;
+      // Exit daemon.
+      exit(EXIT_SUCCESS);
     }
-    // Get info of all registered containers.
+    // Get ps info of all registered containers.
     else if (strcmp(FROM_CLIENT__GET_PS_INFO, msg) == 0)
     {
       free(msg);
       msg = NULL;
       read_all_nodes(container, addr, sockfd);
+      goto _continue;
     }
+    // If init process died, deregister the container.
     else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0)
     {
       free(msg);
@@ -1123,10 +1300,12 @@ void container_daemon()
       container_dir = strdup(read_msg_daemon(addr, sockfd));
       if (container_dir == NULL)
       {
-        continue;
+        goto _continue;
       }
       container = del_container(container_dir, container);
+      goto _continue;
     }
+    // Check if init prrocess is active.
     else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0)
     {
       free(msg);
@@ -1134,7 +1313,7 @@ void container_daemon()
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
-        continue;
+        goto _continue;
       }
       container_dir = strdup(msg);
       free(msg);
@@ -1147,8 +1326,9 @@ void container_daemon()
       {
         send_msg_daemon(FROM_DAEMON__INIT_IS_NOT_ACTIVE, addr, sockfd);
       }
+      goto _continue;
     }
-    // Jump out of the loop.
+    // Continue the loop.
   _continue:
     continue;
   }
@@ -1260,10 +1440,10 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   pid_t unshare_pid = INIT_VALUE;
   char *msg = NULL;
   char *container_pid = NULL;
-  // XXX
   send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
   send_msg_client(container_info->container_dir, addr);
   msg = read_msg_client(addr);
+  // XXX
   if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
   {
     send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
@@ -1283,8 +1463,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
         }
       }
       container_info->init_command[0] = strdup("/bin/su");
-      container_info->init_command[1] = strdup("-");
-      container_info->init_command[2] = NULL;
+      container_info->init_command[1] = NULL;
     }
     send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
     send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
@@ -1308,11 +1487,56 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
     }
     send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
+    send_msg_client(FROM_CLIENT__MOUNTPOINT, addr);
+    for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+    {
+      if (container_info->mountpoint[i] != NULL)
+      {
+        send_msg_client(container_info->mountpoint[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client(FROM_CLIENT__END_OF_MOUNTPOINT, addr);
+    send_msg_client(FROM_CLIENT__ENV, addr);
+    for (int i = 0; i < MAX_ENVS; i++)
+    {
+      if (container_info->env[i] != NULL)
+      {
+        send_msg_client(container_info->env[i], addr);
+      }
+      else
+      {
+        break;
+      }
+    }
+    send_msg_client(FROM_CLIENT__END_OF_ENV, addr);
   }
+  else
+  {
+    // XXX
+    for (int i = 0; i < MAX_ENVS; i++)
+    {
+      msg = read_msg_client(addr);
+      if (strcmp(msg, FROM_DAEMON__END_OF_ENV) == 0)
+      {
+        break;
+      }
+      container_info->env[i] = strdup(msg);
+      container_info->env[i + 1] = NULL;
+      printf("%d\n", i);
+      free(msg);
+      msg = NULL;
+    }
+  }
+  // Ignore FROM_DAEMON__UNSHARE_CONTAINER_PID
+  usleep(400000);
+  msg = read_msg_client(addr);
   free(msg);
   msg = NULL;
   // For setns()
-  usleep(200000);
   msg = read_msg_client(addr);
   container_pid = strdup(msg);
   free(msg);
@@ -1427,8 +1651,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   if (container_info->init_command[0] == NULL)
   {
     container_info->init_command[0] = strdup("/bin/su");
-    container_info->init_command[1] = strdup("-");
-    container_info->init_command[2] = NULL;
+    container_info->init_command[1] = NULL;
   }
 #ifdef __RURI_DEV__
   printf("Run unshare container:\n");
@@ -1510,7 +1733,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
    * It's called to by main(), run_unshare_container() and daemon_init_unshare_container()(container_daemon()).
    * It will chroot() to container_dir, call to init_container(), drop capabilities and exec() init command in container.
    */
-  // TODO(Moe-hacker): mount other mountpoints.
   // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
@@ -1558,7 +1780,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     if (container_info->mountpoint[i] != NULL)
     {
       printf("%s%s", container_info->mountpoint[i], " to ");
-      printf("%s%s", container_info->mountpoint[i], "\n");
+      printf("%s%s", container_info->mountpoint[i + 1], "\n");
       i += 2;
     }
     else
@@ -1573,7 +1795,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     if (container_info->env[i] != NULL)
     {
       printf("%s%s", container_info->env[i], " = ");
-      printf("%s%s", container_info->env[i], "\n");
+      printf("%s%s", container_info->env[i + 1], "\n");
       i += 2;
     }
     else
@@ -1619,8 +1841,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   if (container_info->init_command[0] == NULL)
   {
     container_info->init_command[0] = "/bin/su";
-    container_info->init_command[1] = "-";
-    container_info->init_command[2] = NULL;
+    container_info->init_command[1] = NULL;
   }
   // chroot into container.
   chroot(container_info->container_dir);
@@ -1663,7 +1884,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       }
     }
   }
-  // BUG: not work if init is /bin/su -
   for (int i = 0;;)
   {
     if (container_info->env[i] != NULL)
@@ -1695,10 +1915,11 @@ void umount_container(char *container_dir)
    * It will try to connect to rurid, and rurid will kill daemon_init_unshare_container() process of container if the container is running.
    * Then it will umount() container_dir and other directories in it.
    */
-  // TODO(Moe-hacker): umount() mountpoint
   // Set socket address.
   struct sockaddr_un addr;
   char *msg = NULL;
+  char *mountpoint[MAX_MOUNTPOINTS / 2];
+  mountpoint[0] = NULL;
   if (!connect_to_daemon(&addr))
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
@@ -1713,11 +1934,32 @@ void umount_container(char *container_dir)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
     }
+    else
+    {
+      msg = read_msg_client(addr);
+      free(msg);
+      msg = NULL;
+      for (int i = 0;;)
+      {
+        msg = read_msg_client(addr);
+        if (strcmp(msg, FROM_DAEMON__END_OF_MOUNTPOINT) == 0)
+        {
+          free(msg);
+          msg = NULL;
+          break;
+        }
+        mountpoint[i] = strdup(msg);
+        mountpoint[i + 1] = NULL;
+        free(msg);
+        msg = NULL;
+      }
+    }
   }
   // Get path to umount.
   char sys_dir[PATH_MAX];
   char proc_dir[PATH_MAX];
   char dev_dir[PATH_MAX];
+  char to_umountpoint[PATH_MAX];
   strcpy(sys_dir, container_dir);
   strcpy(proc_dir, container_dir);
   strcpy(dev_dir, container_dir);
@@ -1726,6 +1968,20 @@ void umount_container(char *container_dir)
   strcat(dev_dir, "/dev");
   // Force umount all directories for 10 times.
   printf("\033[1;38;2;254;228;208mUmount container.\n");
+  for (int i = 0;;)
+  {
+    if (mountpoint[i] != NULL)
+    {
+      strcpy(to_umountpoint, container_dir);
+      strcat(to_umountpoint, mountpoint[i]);
+      umount(to_umountpoint);
+      i++;
+    }
+    else
+    {
+      break;
+    }
+  }
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE);
@@ -1813,13 +2069,24 @@ int main(int argc, char **argv)
     }
     if (strcmp(argv[index], "-t") == 0)
     {
+      if (geteuid() != 0)
+      {
+        fprintf(stderr, "\033[31mError: this program should be run with root.\033[0m\n");
+        return 1;
+      }
       struct sockaddr_un addr;
       if (!connect_to_daemon(&addr))
       {
-        printf("\033[31mrurid is not running.\033[0m\n");
+        if (!no_warnings)
+        {
+          printf("\033[31mrurid is not running.\033[0m\n");
+        }
         return 1;
       }
-      printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+      if (!no_warnings)
+      {
+        printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+      }
       return 0;
     }
     //=========End of [Other options]===========
@@ -2073,8 +2340,6 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // TODO(Moe-hacker)
-  // 同时需完善dev log
   for (int i = 0; i < MAX_ENVS; i++)
   {
     if (env[i] != NULL)
@@ -2088,7 +2353,6 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // TODO(Moe-hacker)
   for (int i = 0; i < MAX_MOUNTPOINTS; i++)
   {
     if (mountpoint[i] != NULL)
