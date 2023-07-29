@@ -79,6 +79,7 @@ ruri [Other options] [<Args> <container directory> <init command>]
 Other options:
   -v                    :Show version info
   -h                    :Show helps
+  -hh                   :Show helps and commandline examples
   -D                    :Run rurid
   -K                    :Kill rurid
   -t                    :Check if rurid is running

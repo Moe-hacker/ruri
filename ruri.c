@@ -27,6 +27,7 @@
  *
  *
  */
+// TODO: 遵守caps。
 #include "ruri.h"
 /*
  * If the code is hard to write,
@@ -41,7 +42,7 @@ void error(char *msg)
   /*
    * Show error message and exit here.
    * You can never know if a customer will order a rice at the bar.
-   * It's a `moe` program, but also should be preciseness.
+   * It's a `moe` program, but also should be standardized and rigorous.
    */
   fprintf(stderr, "\033[31m%s\033[0m\n", msg);
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  .^.   .^.");
@@ -156,6 +157,7 @@ void show_helps(bool greetings)
   printf("Other options:\n");
   printf("  -v                    :Show version info\n");
   printf("  -h                    :Show helps\n");
+  printf("  -hh                   :Show helps and commandline examples\n");
   printf("  -D                    :Run rurid\n");
   printf("  -K                    :Kill rurid\n");
   printf("  -t                    :Check if rurid is running\n");
@@ -173,6 +175,46 @@ void show_helps(bool greetings)
   printf("Default init command is `/bin/su` if it's not set\n");
   printf("This program should be run with root privileges\n");
   printf("Please unset $LD_PRELOAD before running this program\033[0m\n");
+}
+// For `ruri -hh`.
+void show_examples()
+{
+  /*
+   * I hope you can understand...
+   */
+  printf("\n");
+  printf("\033[1;38;2;254;228;208m#Quickly setup a container(with rootfstool):\n");
+  printf("  \033[32mgit \033[33mclone \033[35mhttps://github.com/Moe-hacker/rootfstool\n");
+  printf("  \033[32mcd \033[35mrootfstool\n");
+  printf("  \033[32m./rootfstool \033[33mdownload \033[34m-d \033[35malpine \033[34m-v \033[35medge\n");
+  printf("  \033[32mmkdir \033[35m/tmp/alpine\n");
+  printf("  \033[32msudo tar \033[34m-xvf \033[35mrootfs.tar.xz \033[34m-C \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#Run chroot container:\n");
+  printf("  \033[32msudo ruri \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#Very simple as you can see.\n");
+  printf("#About the capabilities:\n");
+  printf("#Run privileged chroot container:\n");
+  printf("  \033[32msudo ruri \033[34m-p \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#But if you want to make the container more secure:\n");
+  printf("  \033[32msudo ruri \033[34m-d \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#If you want to run privileged chroot container,\n");
+  printf("#but you don't want to give the container cap_sys_chroot privileges:\n");
+  printf("  \033[32msudo ruri \033[34m-p --drop \033[36mcap_sys_chroot \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#If you want to run chroot container with common privileges,\n");
+  printf("#but you want cap_sys_admin to be kept:\n");
+  printf("  \033[32msudo ruri \033[34m--keep \033[36mcap_sys_admin \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#About unshare:\n");
+  printf("#Unshare container's capability options are same with chroot.\n");
+  printf("#But it's recommended to start rurid before running unshare containers:\n");
+  printf("  \033[32msudo ruri \033[34m-D\n");
+  printf("\033[1;38;2;254;228;208m#Run unshare container:\n");
+  printf("  \033[32msudo ruri \033[34m-u \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#List running containers:\n");
+  printf("  \033[32msudo ruri \033[34m-l\n");
+  printf("\033[1;38;2;254;228;208m#Umount the container:\n");
+  printf("  \033[32msudo ruri \033[34m-U \033[35m/tmp/alpine\n");
+  printf("\033[1;38;2;254;228;208m#Finally, kill the daemon:\n");
+  printf("  \033[32msudo ruri \033[34m-K\n");
 }
 // Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
@@ -212,7 +254,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 {
   /*
    * If the cap is not in list, just do nothing and quit.
-   * Or we will overwrite it with the next cap to keep the list continuous.
+   * Or we will overwrite it and caps after it with theirs next cap to keep the list continuous.
    */
 #ifdef __RURI_DEV__
   printf("Del %s from drop_caplist.\n", cap_to_name(cap));
@@ -600,6 +642,7 @@ void kill_daemon()
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
 {
+  // XXX
   /*
    * Kill and umount all containers.
    * container_daemon() will exit after calling to this function, so free() is needless here.
@@ -2060,6 +2103,12 @@ int main(int argc, char **argv)
     if (strcmp(argv[index], "-h") == 0)
     {
       show_helps(true);
+      return 0;
+    }
+    if (strcmp(argv[index], "-hh") == 0)
+    {
+      show_helps(true);
+      show_examples();
       return 0;
     }
     if (strcmp(argv[index], "-l") == 0)
