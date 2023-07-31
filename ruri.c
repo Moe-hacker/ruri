@@ -53,7 +53,6 @@ void error(char *msg)
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:");
   fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "(才不是出bug了呢, 哼~)");
   exit(1);
 }
 // Greeting information.
@@ -180,6 +179,7 @@ void show_helps(bool greetings)
 void show_examples()
 {
   /*
+   * Command line examples.
    * I hope you can understand...
    */
   printf("\n");
@@ -277,7 +277,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container)
 {
   /*
-   * Use malloc() to request the memory of the node and add container info to node.
+   * Use malloc() to request the memory of the node and then add container info to node.
    * If current node is already used, try the next one.
    * The next node of the node added will be NULL.
    */
@@ -348,7 +348,7 @@ struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container)
     // If not, try the next node.
     return read_node(container_dir, container->container);
   }
-  // Will never been run.
+  // Will never be run.
   return NULL;
 }
 // Delete a container from CONTAINERS struct.
@@ -357,7 +357,7 @@ struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *contain
   /*
    * If container is a NULL pointer, just quit, but this will never happen.
    * Or it will find the node that matching container_dir , free() its memory and use the next node to overwrite it.
-   * NULL pointer will be returned if reaching the end of all nodes.
+   * NULL pointer will be returned if reached the end of all nodes.
    * However, as container_active() will be run before it to check if container's running, NULL pointer will never be returned.
    */
   // It will never be true.
@@ -632,17 +632,14 @@ void kill_daemon()
   {
     error("Daemon not running");
   }
-  else
-  {
-    // Rurid will kill itself after received this message.
-    send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
-    return;
-  }
+  // Rurid will kill itself after received this message.
+  send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
+  return;
 }
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
 {
-  // XXX
+  // TODO
   /*
    * Kill and umount all containers.
    * container_daemon() will exit after calling to this function, so free() is needless here.
@@ -720,7 +717,7 @@ void *daemon_init_unshare_container(void *arg)
     }
   }
 #endif
-  // Try to create namespaces with unshare(), no warnings to show because daemon shuld be silent.
+  // Try to create namespaces with unshare(), no warnings to show because daemon will be run in the background.
   unshare(CLONE_NEWNS);
   unshare(CLONE_NEWUTS);
   unshare(CLONE_NEWIPC);
@@ -814,7 +811,7 @@ void init_container()
   umount2("/proc", MNT_DETACH | MNT_FORCE);
   // Fix issues in archlinux containers.
   mount("/", "/", NULL, MS_BIND, NULL);
-  // mount proc,sys and dev.
+  // Mount proc,sys and dev.
   mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
   mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
   mkdir("/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
@@ -837,9 +834,9 @@ void init_container()
   mount("/proc/asound", "/proc/asound", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
-  // For making dev nodes.
+  // For getting dev nodes.
   dev_t dev = 0;
-  // Create system runtime nodes in /dev and then fix permissions.
+  // Create system runtime files in /dev and then fix permissions.
   dev = makedev(1, 3);
   mknod("/dev/null", S_IFCHR, dev);
   chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
@@ -884,17 +881,11 @@ void container_daemon()
   /*
    * 100% shit code at container_daemon.
    * If the code is hard to write,
-   * it should be hard to read.
-   */
-  /*
-   *
-   * TODO(Moe-hacker):
-   * 遵守caplist mountpoint env
-   *
+   * it should be hard to read nya~
    */
   // Set process name.
   prctl(PR_SET_NAME, "rurid");
-  // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
+  // Ignore SIGTTIN, since rurid is running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
@@ -914,7 +905,6 @@ void container_daemon()
   }
   // Create container struct.
   struct CONTAINERS *container = NULL;
-  // Set default value.
   // Message to read.
   char *msg = NULL;
   // Container info.
@@ -934,7 +924,7 @@ void container_daemon()
   char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
   char *env[MAX_ENVS] = {NULL};
   char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
-  // Create socket
+  // Create socket.
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
@@ -975,7 +965,7 @@ void container_daemon()
     perror("fork");
     return;
   }
-  // Create socket file
+  // Create socket file.
   remove(socket_path);
   unlink(socket_path);
   if (bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) != 0)
@@ -1003,7 +993,6 @@ void container_daemon()
       send_msg_daemon(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
       goto _continue;
     }
-
     // Kill a container.
     else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
@@ -1025,6 +1014,7 @@ void container_daemon()
         unshare_pid = atoi(read_node(container_dir, container)->unshare_pid);
         kill(unshare_pid, SIGKILL);
         send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
+        // Extra mountpoints will also be umounted in ruri client.
         send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
         for (int i = 0;;)
         {
@@ -1064,7 +1054,7 @@ void container_daemon()
       container_dir = strdup(msg);
       free(msg);
       msg = NULL;
-      // If container is active, send unshare_pid to client.
+      // If container is active, send unshare_pid and other info to client.
       if (container_active(container_dir, container))
       {
         send_msg_daemon(FROM_DAEMON__ENV, addr, sockfd);
@@ -1101,6 +1091,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        // Get init command.
         for (int i = 0;;)
         {
           msg = read_msg_daemon(addr, sockfd);
@@ -1132,6 +1123,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        // Get caps to drop.
         for (int i = 0;;)
         {
           msg = read_msg_daemon(addr, sockfd);
@@ -1155,6 +1147,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        // Get mountpoints.
         for (int i = 0;;)
         {
           msg = read_msg_daemon(addr, sockfd);
@@ -1179,6 +1172,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        // Get envs.
         for (int i = 0;;)
         {
           msg = read_msg_daemon(addr, sockfd);
@@ -1233,6 +1227,7 @@ void container_daemon()
       {
         goto _continue;
       }
+      // Get caps to drop.
       for (int i = 0;;)
       {
         msg = read_msg_daemon(addr, sockfd);
@@ -1257,6 +1252,7 @@ void container_daemon()
       {
         goto _continue;
       }
+      // Get mountpoints.
       for (int i = 0;;)
       {
         msg = read_msg_daemon(addr, sockfd);
@@ -1281,6 +1277,7 @@ void container_daemon()
       {
         goto _continue;
       }
+      // Get envs.
       for (int i = 0;;)
       {
         msg = read_msg_daemon(addr, sockfd);
@@ -1300,6 +1297,7 @@ void container_daemon()
         msg = NULL;
         i++;
       }
+      // Register the container.
       container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
       // Send unshare_pid to ruri.
       usleep(200000);
@@ -1348,7 +1346,7 @@ void container_daemon()
       container = del_container(container_dir, container);
       goto _continue;
     }
-    // Check if init prrocess is active.
+    // Check if init process is active.
     else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0)
     {
       free(msg);
@@ -1399,6 +1397,7 @@ bool check_container(char *container_dir)
     error("Error: this program should be run with root privileges QwQ");
   }
   // Check if $LD_PRELOAD is unset.
+  // If LD_PRELOAD is set, container might will not run properly.
   char *ld_preload = getenv("LD_PRELOAD");
   if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0))
   {
@@ -1413,14 +1412,16 @@ bool check_container(char *container_dir)
   closedir(direxist);
   return true;
 }
-// For run_unshare_container()
+// For run_unshare_container().
 pid_t init_unshare_container(bool no_warnings)
 {
   /*
    * Use unshare() to create new namespaces and fork() to join them.
+   * Return pid of forked process.
    * unshare_pid in forked process is 0.
    */
   pid_t unshare_pid = INIT_VALUE;
+  // Create namespaces.
   if (unshare(CLONE_NEWNS) == -1 && !no_warnings)
   {
     printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
@@ -1472,12 +1473,11 @@ pid_t init_unshare_container(bool no_warnings)
   }
   return unshare_pid;
 }
-// For run_unshare_container()
+// For run_unshare_container().
 pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
 {
   /*
    * Request container_pid from daemon, use setns() to join namespaces and then fork() itself into them.
-   * unshare_pid in forked process is 0.
    * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
    */
   pid_t unshare_pid = INIT_VALUE;
@@ -1486,9 +1486,9 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
   send_msg_client(container_info->container_dir, addr);
   msg = read_msg_client(addr);
-  // XXX
   if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
   {
+    // Send init command to daemon.
     send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
     if (strcmp(container_info->init_command[0], "/bin/su") != 0)
     {
@@ -1509,12 +1509,13 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       container_info->init_command[1] = NULL;
     }
     send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
+    // Send the cap to drop to daemon.
     send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
       for (int i = 0; i < CAP_LAST_CAP + 1; i++)
       {
-        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
         if (!container_info->drop_caplist[i])
         {
           send_msg_client(cap_to_name(0), addr);
@@ -1530,6 +1531,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
     }
     send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
+    // Send mountpoint to daemon.
     send_msg_client(FROM_CLIENT__MOUNTPOINT, addr);
     for (int i = 0; i < MAX_MOUNTPOINTS; i++)
     {
@@ -1543,6 +1545,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
     }
     send_msg_client(FROM_CLIENT__END_OF_MOUNTPOINT, addr);
+    // Send envs to daemon.
     send_msg_client(FROM_CLIENT__ENV, addr);
     for (int i = 0; i < MAX_ENVS; i++)
     {
@@ -1574,12 +1577,13 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       msg = NULL;
     }
   }
-  // Ignore FROM_DAEMON__UNSHARE_CONTAINER_PID
+  // Fix a bug that read_msg_client() returns NULL because container has not been registered properly.
   usleep(400000);
+  // Ignore FROM_DAEMON__UNSHARE_CONTAINER_PID.
   msg = read_msg_client(addr);
   free(msg);
   msg = NULL;
-  // For setns()
+  // Pid for setns().
   msg = read_msg_client(addr);
   container_pid = strdup(msg);
   free(msg);
@@ -1657,7 +1661,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   {
     setns(fd, 0);
   }
-  // Close fds after fork()
+  // Close fds after fork().
   unshare(CLONE_FILES);
   // Fork itself into namespace.
   // This can fix `can't fork: out of memory` issue.
@@ -1848,7 +1852,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     }
   }
 #endif
-  // Mount mountpoints
+  // Mount mountpoints.
   for (int i = 0;;)
   {
     if (container_info->mountpoint[i] != NULL)
@@ -1870,7 +1874,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       {
         closedir(test);
       }
-      // Mount other mountpoints.
+      // Mount mountpoints.
       mount(container_info->mountpoint[i], mountpoint_dir, NULL, MS_BIND, NULL);
       i += 2;
       free(mountpoint_dir);
@@ -1893,6 +1897,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   DIR *direxist = NULL;
   if ((direxist = opendir("/sys/kernel")) == NULL)
   {
+    // Create system runtime files.
     init_container();
   }
   else
@@ -1904,7 +1909,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     for (int i = 0; i < CAP_LAST_CAP + 1; i++)
     {
-      // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+      // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
       if (!container_info->drop_caplist[i])
       {
         if (cap_drop_bound(0) != 0 && !no_warnings)
@@ -1927,6 +1932,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       }
     }
   }
+  // Set envs.
   for (int i = 0;;)
   {
     if (container_info->env[i] != NULL)
@@ -1982,6 +1988,7 @@ void umount_container(char *container_dir)
       msg = read_msg_client(addr);
       free(msg);
       msg = NULL;
+      // Get other mountpoints.
       for (int i = 0;;)
       {
         msg = read_msg_client(addr);
@@ -2009,8 +2016,8 @@ void umount_container(char *container_dir)
   strcat(sys_dir, "/sys");
   strcat(proc_dir, "/proc");
   strcat(dev_dir, "/dev");
-  // Force umount all directories for 10 times.
   printf("\033[1;38;2;254;228;208mUmount container.\n");
+  // Umount other mountpoints.
   for (int i = 0;;)
   {
     if (mountpoint[i] != NULL)
@@ -2025,6 +2032,7 @@ void umount_container(char *container_dir)
       break;
     }
   }
+  // Force umount system runtime directories for 10 times.
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE);
@@ -2037,10 +2045,11 @@ void umount_container(char *container_dir)
     usleep(2000);
   }
 }
+// It works on my machine!!!
 int main(int argc, char **argv)
 {
   /*
-   * 100% shit-code in main()
+   * 100% shit-code in main().
    * At least it works...
    */
   // Set process name.
@@ -2052,7 +2061,6 @@ int main(int argc, char **argv)
     show_helps(0);
     return 1;
   }
-  // Set default value.
   bool use_unshare = false;
   bool no_warnings = false;
   char *container_dir = NULL;
@@ -2062,7 +2070,7 @@ int main(int argc, char **argv)
   char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
   // These caps are kept by default:
-  // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID
+  // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID.
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
@@ -2273,7 +2281,6 @@ int main(int argc, char **argv)
     }
     else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0))
     {
-
       // Get the absolute path of container.
       if (check_container(argv[index]))
       {

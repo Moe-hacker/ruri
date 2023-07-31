@@ -138,7 +138,6 @@ struct CONTAINER_INFO
   // For setns(), we define it as char*.
   char *unshare_pid;
 };
-// Function Declarations.
 void error(char *msg);
 void show_greetings();
 void show_version_info();
