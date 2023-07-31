@@ -29,7 +29,7 @@
  *
  */
 #ifndef __linux__
-#error "This program is only for linux"
+#error "This program is only for linux."
 #endif
 // Enable Linux features.
 #define _GNU_SOURCE
@@ -39,6 +39,10 @@
 #include <linux/limits.h>
 #include <linux/sched.h>
 #include <linux/stat.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 0, 0)
+#warning "This program has not been tested on Linux 3.x or earlier."
+#endif
 // This program need to be linked with `-lpthread` on some devices.
 #include <pthread.h>
 #include <sched.h>
