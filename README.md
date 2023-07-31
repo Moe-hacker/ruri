@@ -54,16 +54,17 @@ sudo ruri -u /tmp/alpine
 Very simple as you can see.    
 #### make options:
 ```text
-  make all         :compile
-  make install     :install ruri to $PREFIX
-  make static      :static compile
-  make clean       :clean
+  make all            :compile
+  make install        :install ruri to $PREFIX
+  make static         :static compile,with musl or glibc
+   make static-bionic :static compile,with bionic
+  make clean          :clean
 Only for testing:
-  make dev         :compile without optimizations, enable gdb debug information and extra logs.
-  make asan        :enable ASAN
-  make check       :run clang-tidy
-  make strictcheck :run clang-tidy for more checks
-  make format      :format code
+  make dev            :compile without optimizations, enable gdb debug information and extra logs.
+  make asan           :enable ASAN
+  make check          :run clang-tidy
+  make strictcheck    :run clang-tidy for more checks
+  make format         :format code
 ```
 #### Dependent libraries:
 For dynamic compilation:         

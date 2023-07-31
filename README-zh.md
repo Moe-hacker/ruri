@@ -42,17 +42,18 @@ sudo ruri -u /tmp/alpine
 libcap动态库用于动态编译，libc和libcap静态库用于静态编译。           
 #### 编译选项：     
 ```text
-make all         :默认动态编译
-make install     :默认动态编译并安装为ruri命令
-make static      :静态编译
-make clean       :清理生成文件
-make help        :显示帮助
+make all           :默认动态编译
+make install       :默认动态编译并安装为ruri命令
+make static        :静态编译,用于glibc或musl
+make static-bionic :静态编译,用于bionic
+make clean         :清理生成文件
+make help          :显示帮助
 *仅供开发者
-make dev         :关闭优化选项，开启gdb支持以及额外日志信息
-make asan        :开启ASAN
-make check       :运行clang-tidy检查
-make strictcheck :运行clang-tidy执行更为严格的检查
-make format      :格式化代码
+make dev           :关闭优化选项，开启gdb支持以及额外日志信息
+make asan          :开启ASAN
+make check         :运行clang-tidy检查
+make strictcheck   :运行clang-tidy执行更为严格的检查
+make format        :格式化代码
 ```
 ### 用法：    
 ```text
