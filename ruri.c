@@ -2408,7 +2408,7 @@ int main(int argc, char **argv)
   }
   if (S_ISDIR(init_binary_stat.st_mode))
   {
-    error("Init binary is a directory, RUOK? T_T");
+    error("Init binary is a directory, RUOK? Die job death car?");
   }
   // Check if container_dir is given.
   if (!container_dir)
@@ -2491,6 +2491,8 @@ int main(int argc, char **argv)
       break;
     }
   }
+  // Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in containers.
+  setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
   // Pure-chroot and unshare container are two functions now.
   if (use_unshare)
   {
