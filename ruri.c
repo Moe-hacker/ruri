@@ -215,6 +215,29 @@ void show_examples()
   printf("\033[1;38;2;254;228;208m#Finally, kill the daemon:\n");
   printf("  \033[32msudo ruri \033[34m-K\n");
 }
+// Return the same value as mkdir()
+int mkdirs(char *dir, mode_t mode)
+{
+  /*
+   * A very simple implementation of mkdir -p
+   * I don't know why it seems that there isn't an existing function to do this...
+   */
+  char buf[PATH_MAX];
+  for (int i = 1; i < strlen(dir); i++)
+  {
+    if (dir[i] == '/')
+    {
+      buf[0] = '/';
+      for (int j = 1; j < i; j++)
+      {
+        buf[j] = dir[j];
+        buf[j + 1] = '\0';
+      }
+      mkdir(buf, mode);
+    }
+  }
+  return mkdir(dir, mode);
+}
 // Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
@@ -1901,7 +1924,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       DIR *test = NULL;
       if ((test = opendir(mountpoint_dir)) == NULL)
       {
-        if (mkdir(mountpoint_dir, 0755) != 0)
+        if (mkdirs(mountpoint_dir, 0755) != 0)
         {
           error("Could not create mountpoint directory");
         }
