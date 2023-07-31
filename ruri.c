@@ -223,12 +223,12 @@ int mkdirs(char *dir, mode_t mode)
    * I don't know why it seems that there isn't an existing function to do this...
    */
   char buf[PATH_MAX];
-  for (int i = 1; i < strlen(dir); i++)
+  for (unsigned long i = 1; i < strlen(dir); i++)
   {
     if (dir[i] == '/')
     {
       buf[0] = '/';
-      for (int j = 1; j < i; j++)
+      for (unsigned long j = 1; j < i; j++)
       {
         buf[j] = dir[j];
         buf[j + 1] = '\0';
@@ -331,6 +331,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
       }
       else
       {
+        container->env[i] = NULL;
         break;
       }
     }
@@ -342,6 +343,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
       }
       else
       {
+        container->mountpoint[i] = NULL;
         break;
       }
     }
@@ -661,7 +663,6 @@ void kill_daemon()
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
 {
-  // TODO
   /*
    * Kill and umount all containers.
    * container_daemon() will exit after calling to this function, so free() is needless here.
@@ -671,6 +672,26 @@ void umount_all_containers(struct CONTAINERS *container)
     return;
   }
   kill(atoi(container->unshare_pid), SIGKILL);
+  // Umount other mountpoints.
+  char buf[PATH_MAX];
+  for (int i = 0;;)
+  {
+    if (container->mountpoint[i + 1] != NULL)
+    {
+      strcpy(buf, container->container_dir);
+      strcat(buf, container->mountpoint[i + 1]);
+      i += 2;
+      for (int j = 0; j < 10; j++)
+      {
+        umount2(buf, MNT_DETACH | MNT_FORCE);
+        umount(buf);
+      }
+    }
+    else
+    {
+      break;
+    }
+  }
   // Get path to umount.
   char sys_dir[PATH_MAX];
   char proc_dir[PATH_MAX];
@@ -2026,8 +2047,8 @@ void umount_container(char *container_dir)
   // Set socket address.
   struct sockaddr_un addr;
   char *msg = NULL;
-  char *mountpoint[MAX_MOUNTPOINTS / 2];
-  mountpoint[0] = NULL;
+  char mountpoint[MAX_MOUNTPOINTS / 2][PATH_MAX];
+  mountpoint[0][0] = '\0';
   if (!connect_to_daemon(&addr))
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
@@ -2041,9 +2062,13 @@ void umount_container(char *container_dir)
     if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
+      free(msg);
+      msg = NULL;
     }
     else
     {
+      free(msg);
+      msg = NULL;
       msg = read_msg_client(addr);
       free(msg);
       msg = NULL;
@@ -2057,8 +2082,8 @@ void umount_container(char *container_dir)
           msg = NULL;
           break;
         }
-        mountpoint[i] = strdup(msg);
-        mountpoint[i + 1] = NULL;
+        strcpy(mountpoint[i], msg);
+        mountpoint[i + 1][0] = '\0';
         free(msg);
         msg = NULL;
       }
@@ -2079,11 +2104,16 @@ void umount_container(char *container_dir)
   // Umount other mountpoints.
   for (int i = 0;;)
   {
-    if (mountpoint[i] != NULL)
+    if (mountpoint[i][0] != 0)
     {
       strcpy(to_umountpoint, container_dir);
       strcat(to_umountpoint, mountpoint[i]);
-      umount(to_umountpoint);
+      for (int j = 0; j < 10; j++)
+      {
+        umount2(to_umountpoint, MNT_DETACH | MNT_FORCE | MNT_EXPIRE);
+        umount(to_umountpoint);
+        usleep(20000);
+      }
       i++;
     }
     else
@@ -2122,7 +2152,7 @@ int main(int argc, char **argv)
   }
   bool use_unshare = false;
   bool no_warnings = false;
-  char *container_dir = NULL;
+  char container_dir[PATH_MAX] = {'\0'};
   bool privileged = false;
   char *init[MAX_INIT_COMMANDS] = {NULL};
   char *env[MAX_ENVS] = {NULL};
@@ -2217,7 +2247,7 @@ int main(int argc, char **argv)
       {
         if (check_container(argv[index]))
         {
-          container_dir = realpath(argv[index], NULL);
+          realpath(argv[index], container_dir);
           umount_container(container_dir);
           return 0;
         }
@@ -2343,7 +2373,7 @@ int main(int argc, char **argv)
       // Get the absolute path of container.
       if (check_container(argv[index]))
       {
-        container_dir = realpath(argv[index], NULL);
+        realpath(argv[index], container_dir);
       }
       else
       {
@@ -2379,6 +2409,11 @@ int main(int argc, char **argv)
       return 1;
     }
   }
+  // Check if container_dir is given.
+  if (container_dir[0] == '\0')
+  {
+    error("Error: container directory is not set QwQ");
+  }
   // Check Linux version.
   if (!no_warnings)
   {
@@ -2409,11 +2444,6 @@ int main(int argc, char **argv)
   if (S_ISDIR(init_binary_stat.st_mode))
   {
     error("Init binary is a directory, RUOK? Die job death car?");
-  }
-  // Check if container_dir is given.
-  if (!container_dir)
-  {
-    error("Error: container directory is not set QwQ");
   }
   // Set default caplist to drop.
   if (!privileged && drop_caplist[0] == INIT_VALUE)
