@@ -1572,7 +1572,6 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
       container_info->env[i] = strdup(msg);
       container_info->env[i + 1] = NULL;
-      printf("%d\n", i);
       free(msg);
       msg = NULL;
     }
@@ -2318,6 +2317,16 @@ int main(int argc, char **argv)
       fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[index], "`");
       show_helps(false);
       return 1;
+    }
+  }
+  // Check Linux version.
+  if (!no_warnings)
+  {
+    struct utsname uts;
+    uname(&uts);
+    if (atoi(&uts.release[0]) < 4)
+    {
+      fprintf(stderr, "\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
     }
   }
   // Check if init binary exists and is not a directory.
