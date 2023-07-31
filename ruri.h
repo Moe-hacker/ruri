@@ -40,7 +40,7 @@
 #include <linux/sched.h>
 #include <linux/stat.h>
 #include <linux/version.h>
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 0, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 #warning "This program has not been tested on Linux 3.x or earlier."
 #endif
 // This program need to be linked with `-lpthread` on some devices.
@@ -60,6 +60,7 @@
 #include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
 // For initializing some variables.
