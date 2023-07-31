@@ -52,6 +52,7 @@ sudo ruri -D
 sudo ruri -u /tmp/alpine
 ```
 Very simple as you can see.    
+#### For command line examples, please see `ruri -hh`
 #### make options:
 ```text
   make all            :compile
@@ -99,7 +100,7 @@ Args for running a container:
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
 ### About rurid:         
-&emsp;Rurid is the daemon of ruri. It can store the info of unshare containers and ensure that the same containers run in the same namespaces. It's not a necessary process and pure chroot containers will not communicate with the daemon.     
+&emsp;Rurid is the daemon of ruri. It can store the info of unshare containers and ensure that the same containers run in the same namespaces. It's not a necessary process, and pure chroot containers will not communicate with the daemon.     
 
 --------
 <p align="center">「 咲誇る花 美しく、</p>    

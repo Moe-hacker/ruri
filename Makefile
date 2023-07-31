@@ -69,7 +69,7 @@ static : .license_accepted
 	@$(STRIP) $(BIN_TARGET)
 static-bionic :
 	$(CC_LOG) $(BIN_TARGET)
-	$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
+	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 install :all

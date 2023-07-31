@@ -27,7 +27,6 @@
  *
  *
  */
-// TODO: 遵守caps。
 #include "ruri.h"
 /*
  * If the code is hard to write,
@@ -297,6 +296,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
       }
       else
       {
+        container->drop_caplist[i] = NULL;
         break;
       }
     }
@@ -634,7 +634,6 @@ void kill_daemon()
   }
   // Rurid will kill itself after received this message.
   send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
-  return;
 }
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
@@ -738,6 +737,7 @@ void *daemon_init_unshare_container(void *arg)
     connect_to_daemon(&addr);
     char container_pid[1024];
     sprintf(container_pid, "%d", unshare_pid);
+    send_msg_client(FROM_PTHREAD__REGISTER_CONTAINER, addr);
     send_msg_client(FROM_PTHREAD__UNSHARE_CONTAINER_PID, addr);
     send_msg_client(container_pid, addr);
     send_msg_client(container_info->container_dir, addr);
@@ -1070,6 +1070,20 @@ void container_daemon()
           }
         }
         send_msg_daemon(FROM_DAEMON__END_OF_ENV, addr, sockfd);
+        send_msg_daemon(FROM_DAEMON__CAP_TO_DROP, addr, sockfd);
+        for (int i = 0;;)
+        {
+          if (read_node(container_dir, container)->drop_caplist[i] != NULL)
+          {
+            send_msg_daemon(read_node(container_dir, container)->drop_caplist[i], addr, sockfd);
+            i++;
+          }
+          else
+          {
+            break;
+          }
+        }
+        send_msg_daemon(FROM_DAEMON__END_OF_CAP_TO_DROP, addr, sockfd);
         send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
         send_msg_daemon(read_node(container_dir, container)->unshare_pid, addr, sockfd);
         goto _continue;
@@ -1202,8 +1216,16 @@ void container_daemon()
       goto _continue;
     }
     // Get container info from subprocess and add them to container struct.
-    else if (strcmp(FROM_PTHREAD__UNSHARE_CONTAINER_PID, msg) == 0)
+    else if (strcmp(FROM_PTHREAD__REGISTER_CONTAINER, msg) == 0)
     {
+      // Ignore FROM_PTHREAD__UNSHARE_CONTAINER_PID.
+      msg = read_msg_daemon(addr, sockfd);
+      if (msg == NULL)
+      {
+        goto _continue;
+      }
+      free(msg);
+      msg = NULL;
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
@@ -1562,7 +1584,6 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   }
   else
   {
-    // XXX
     for (int i = 0; i < MAX_ENVS; i++)
     {
       msg = read_msg_client(addr);
@@ -1572,6 +1593,22 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
       container_info->env[i] = strdup(msg);
       container_info->env[i + 1] = NULL;
+      free(msg);
+      msg = NULL;
+    }
+    free(msg);
+    msg = read_msg_client(addr);
+    free(msg);
+    for (int i = 0;;)
+    {
+      msg = read_msg_client(addr);
+      if (strcmp(msg, FROM_DAEMON__END_OF_CAP_TO_DROP) == 0)
+      {
+        break;
+      }
+      cap_from_name(msg, &container_info->drop_caplist[i]);
+      container_info->drop_caplist[i + 1] = INIT_VALUE;
+      i++;
       free(msg);
       msg = NULL;
     }
