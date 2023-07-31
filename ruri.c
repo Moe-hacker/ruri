@@ -296,7 +296,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   }
 }
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_caplist[CAP_LAST_CAP + 1], char *env[MAX_ENVS], char *mountpoint[MAX_MOUNTPOINTS], struct CONTAINERS *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and then add container info to node.
@@ -313,7 +313,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
     container->unshare_pid = strdup(unshare_pid);
     for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
     {
-      if (drop_caplist[i] != NULL)
+      if (drop_caplist[i][0] != '\0')
       {
         container->drop_caplist[i] = strdup(drop_caplist[i]);
       }
@@ -337,7 +337,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char *drop_c
     }
     for (int i = 0; i < MAX_MOUNTPOINTS; i++)
     {
-      if (mountpoint[i] != NULL)
+      if (mountpoint[i][0] != '\0')
       {
         container->mountpoint[i] = strdup(mountpoint[i]);
       }
@@ -676,7 +676,7 @@ void umount_all_containers(struct CONTAINERS *container)
   char buf[PATH_MAX];
   for (int i = 0;;)
   {
-    if (container->mountpoint[i + 1] != NULL)
+    if (container->mountpoint[i] != NULL)
     {
       strcpy(buf, container->container_dir);
       strcat(buf, container->mountpoint[i + 1]);
@@ -965,9 +965,11 @@ void container_daemon()
     container_info.drop_caplist[i] = INIT_VALUE;
   }
   pid_t unshare_pid = 0;
-  char *drop_caplist[CAP_LAST_CAP + 1] = {NULL};
+  char drop_caplist[CAP_LAST_CAP + 1][128];
+  drop_caplist[0][0] = '\0';
   char *env[MAX_ENVS] = {NULL};
-  char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
+  char mountpoint[MAX_MOUNTPOINTS][PATH_MAX];
+  mountpoint[0][0] = '\0';
   // Create socket.
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
@@ -1062,7 +1064,7 @@ void container_daemon()
         send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
         for (int i = 0;;)
         {
-          if (read_node(container_dir, container)->mountpoint[i + 1] != NULL)
+          if (read_node(container_dir, container)->mountpoint[i] != NULL)
           {
             send_msg_daemon(read_node(container_dir, container)->mountpoint[i + 1], addr, sockfd);
             i += 2;
@@ -1149,6 +1151,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        free(msg);
         // Get init command.
         for (int i = 0;;)
         {
@@ -1181,6 +1184,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        free(msg);
         // Get caps to drop.
         for (int i = 0;;)
         {
@@ -1191,6 +1195,7 @@ void container_daemon()
           }
           if (strcmp(FROM_CLIENT__END_OF_CAP_TO_DROP, msg) == 0)
           {
+            container_info.drop_caplist[i] = INIT_VALUE;
             free(msg);
             msg = NULL;
             break;
@@ -1205,6 +1210,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        free(msg);
         // Get mountpoints.
         for (int i = 0;;)
         {
@@ -1230,6 +1236,7 @@ void container_daemon()
         {
           goto _continue;
         }
+        free(msg);
         // Get envs.
         for (int i = 0;;)
         {
@@ -1262,6 +1269,7 @@ void container_daemon()
     // Get container info from subprocess and add them to container struct.
     else if (strcmp(FROM_PTHREAD__REGISTER_CONTAINER, msg) == 0)
     {
+      free(msg);
       // Ignore FROM_PTHREAD__UNSHARE_CONTAINER_PID.
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
@@ -1269,7 +1277,6 @@ void container_daemon()
         goto _continue;
       }
       free(msg);
-      msg = NULL;
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
@@ -1277,18 +1284,16 @@ void container_daemon()
       }
       container_info.unshare_pid = strdup(msg);
       free(msg);
-      msg = NULL;
       msg = read_msg_daemon(addr, sockfd);
       if (msg == NULL)
       {
         goto _continue;
       }
       container_info.container_dir = strdup(msg);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      free(msg);
+      // Ignore FROM_PTHREAD__CAP_TO_DROP
       msg = read_msg_daemon(addr, sockfd);
+      free(msg);
       if (msg == NULL)
       {
         goto _continue;
@@ -1303,12 +1308,12 @@ void container_daemon()
         }
         if (strcmp(FROM_PTHREAD__END_OF_CAP_TO_DROP, msg) == 0)
         {
+          drop_caplist[i][0] = '\0';
           free(msg);
           msg = NULL;
           break;
         }
-        drop_caplist[i] = strdup(msg);
-        drop_caplist[i + 1] = NULL;
+        strcpy(drop_caplist[i], msg);
         free(msg);
         msg = NULL;
         i++;
@@ -1318,6 +1323,8 @@ void container_daemon()
       {
         goto _continue;
       }
+      free(msg);
+      msg = NULL;
       // Get mountpoints.
       for (int i = 0;;)
       {
@@ -1328,12 +1335,12 @@ void container_daemon()
         }
         if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0)
         {
+          mountpoint[i][0] = '\0';
           free(msg);
           msg = NULL;
           break;
         }
-        mountpoint[i] = strdup(msg);
-        mountpoint[i + 1] = NULL;
+        strcpy(mountpoint[i], msg);
         free(msg);
         msg = NULL;
         i++;
@@ -1343,6 +1350,7 @@ void container_daemon()
       {
         goto _continue;
       }
+      free(msg);
       // Get envs.
       for (int i = 0;;)
       {
@@ -1378,7 +1386,7 @@ void container_daemon()
       }
       for (int i = 0; i < MAX_MOUNTPOINTS; i++)
       {
-        mountpoint[i] = NULL;
+        mountpoint[i][0] = '\0';
       }
       goto _continue;
     }
@@ -1437,7 +1445,8 @@ void container_daemon()
     }
     // Continue the loop.
   _continue:
-    continue;
+    free(msg);
+    msg = NULL;
   }
 }
 // Do some checks before chroot()
