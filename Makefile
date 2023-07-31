@@ -63,10 +63,13 @@ asan :
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
 static : .license_accepted
-# The first command is for common GNU/Linux (with glibc or musl) and the other is for termux (with bionic).
-# Compilation can be completed by successfully executing any of the two commands.
 	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS) ||$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
+	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
+	$(STRIP_LOG) $(BIN_TARGET)
+	@$(STRIP) $(BIN_TARGET)
+static-bionic :
+	$(CC_LOG) $(BIN_TARGET)
+	$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 install :all
@@ -92,16 +95,17 @@ clean :
 	rm ruri||true
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
-	@echo "  make all         :compile"
-	@echo "  make install     :install ruri to \$$PREFIX"
-	@echo "  make static      :static compile"
-	@echo "  make clean       :clean"
+	@echo "  make all           :compile"
+	@echo "  make install       :install ruri to \$$PREFIX"
+	@echo "  make static        :static compile,with musl or glibc"
+	@echo "  make static-bionic :static compile,with bionic"
+	@echo "  make clean         :clean"
 	@echo "Only for developers:"
-	@echo "  make dev         :compile without optimizations, enable gdb debug information and extra logs."
-	@echo "  make asan        :enable ASAN"
-	@echo "  make check       :run clang-tidy"
-	@echo "  make strictcheck :run clang-tidy for more checks"
-	@echo "  make format      :format code"
+	@echo "  make dev           :compile without optimizations, enable gdb debug information and extra logs."
+	@echo "  make asan          :enable ASAN"
+	@echo "  make check         :run clang-tidy"
+	@echo "  make strictcheck   :run clang-tidy for more checks"
+	@echo "  make format        :format code"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
 	@echo "  libpthread,libcap"
