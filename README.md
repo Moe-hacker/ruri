@@ -11,7 +11,7 @@
 -----------------     
 You can read this doc in :
 
-**[<kbd> <br> 简体中文 <br> </kbd>](https://github.com/Moe-hacker/ruri/blob/main/README-zh.md)**&emsp;**[<kbd> <br> English <br> </kbd>](https://github.com/Moe-hacker/ruri/blob/main/README.md)**
+**[<kbd> <br> 简体中文 <br> </kbd>](https://github.com/Moe-hacker/ruri/blob/main/doc/README-zh.md)**&emsp;**[<kbd> <br> English <br> </kbd>](https://github.com/Moe-hacker/ruri/blob/main/README.md)**
 
 ### WARNING:      
 ```
