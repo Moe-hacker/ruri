@@ -315,7 +315,8 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_ca
     {
       if (drop_caplist[i][0] != '\0')
       {
-        container->drop_caplist[i] = strdup(drop_caplist[i]);
+        container->drop_caplist[i] = malloc(sizeof(char) * (strlen(drop_caplist[i]) + 1));
+        strcpy(container->drop_caplist[i], drop_caplist[i]);
       }
       else
       {
@@ -327,7 +328,8 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_ca
     {
       if (env[i] != NULL)
       {
-        container->env[i] = strdup(env[i]);
+        container->env[i] = malloc(sizeof(char) * (strlen(env[i]) + 1));
+        strcpy(container->env[i], env[i]);
       }
       else
       {
@@ -339,7 +341,8 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_ca
     {
       if (mountpoint[i][0] != '\0')
       {
-        container->mountpoint[i] = strdup(mountpoint[i]);
+        container->mountpoint[i] = malloc(sizeof(char) * (strlen(mountpoint[i]) + 1));
+        strcpy(container->mountpoint[i], mountpoint[i]);
       }
       else
       {
@@ -1411,12 +1414,14 @@ void container_daemon()
     else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0)
     {
       free(msg);
-      msg = NULL;
-      container_dir = strdup(read_msg_daemon(addr, sockfd));
-      if (container_dir == NULL)
+      msg = read_msg_daemon(addr, sockfd);
+      if (msg == NULL)
       {
         goto _continue;
       }
+      container_dir = strdup(msg);
+      free(msg);
+      msg = NULL;
       container = del_container(container_dir, container);
       goto _continue;
     }
@@ -1563,6 +1568,8 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   msg = read_msg_client(addr);
   if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
   {
+    free(msg);
+    msg = NULL;
     // Send init command to daemon.
     send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
     if (strcmp(container_info->init_command[0], "/bin/su") != 0)
@@ -1637,11 +1644,15 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   }
   else
   {
+    free(msg);
+    msg = NULL;
     for (int i = 0; i < MAX_ENVS; i++)
     {
       msg = read_msg_client(addr);
       if (strcmp(msg, FROM_DAEMON__END_OF_ENV) == 0)
       {
+        free(msg);
+        msg = NULL;
         break;
       }
       container_info->env[i] = strdup(msg);
@@ -1657,6 +1668,8 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       msg = read_msg_client(addr);
       if (strcmp(msg, FROM_DAEMON__END_OF_CAP_TO_DROP) == 0)
       {
+        free(msg);
+        msg = NULL;
         break;
       }
       cap_from_name(msg, &container_info->drop_caplist[i]);
