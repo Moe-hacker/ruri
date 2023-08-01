@@ -726,43 +726,6 @@ void *daemon_init_unshare_container(void *arg)
    */
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
-#ifdef __RURI_DEV__
-  printf("Daemon init container:\n");
-  printf("%s%s\n", "container_dir: ", container_info->container_dir);
-  printf("init command : ");
-  for (int i = 0;;)
-  {
-    if (container_info->init_command[i] != NULL)
-    {
-      printf("%s%s", container_info->init_command[i], " ");
-      i++;
-    }
-    else
-    {
-      printf("\n");
-      break;
-    }
-  }
-  printf("drop caplist: ");
-  for (int i = 0;;)
-  {
-    if (!container_info->drop_caplist[i])
-    {
-      printf("%s%s", cap_to_name(0), " ");
-      i++;
-    }
-    else if (container_info->drop_caplist[i] != INIT_VALUE)
-    {
-      printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-      i++;
-    }
-    else
-    {
-      printf("\n");
-      break;
-    }
-  }
-#endif
   // Try to create namespaces with unshare(), no warnings to show because daemon will be run in the background.
   unshare(CLONE_NEWNS);
   unshare(CLONE_NEWUTS);
@@ -791,7 +754,7 @@ void *daemon_init_unshare_container(void *arg)
     send_msg_client(FROM_PTHREAD__CAP_TO_DROP, addr);
     if (container_info->drop_caplist[0] != INIT_VALUE)
     {
-      for (int i = 0; i < CAP_LAST_CAP + 1; i++)
+      for (int i = 0; i < CAP_LAST_CAP; i++)
       {
         // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
         if (!container_info->drop_caplist[i])
@@ -801,6 +764,10 @@ void *daemon_init_unshare_container(void *arg)
         else if (container_info->drop_caplist[i] != INIT_VALUE)
         {
           send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
+        }
+        else
+        {
+          break;
         }
       }
     }
@@ -963,7 +930,7 @@ void container_daemon()
   container_info.unshare_pid = NULL;
   container_info.mountpoint[0] = NULL;
   container_info.env[0] = NULL;
-  for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
+  for (int i = 0; i < (CAP_LAST_CAP); i++)
   {
     container_info.drop_caplist[i] = INIT_VALUE;
   }
@@ -1204,6 +1171,7 @@ void container_daemon()
             break;
           }
           cap_from_name(msg, &container_info.drop_caplist[i]);
+          container_info.drop_caplist[i + 1] = INIT_VALUE;
           free(msg);
           msg = NULL;
           i++;
@@ -1317,6 +1285,7 @@ void container_daemon()
           break;
         }
         strcpy(drop_caplist[i], msg);
+        drop_caplist[i + 1][0] = '\0';
         free(msg);
         msg = NULL;
         i++;
