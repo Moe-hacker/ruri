@@ -2128,10 +2128,15 @@ void umount_container(char *container_dir)
 // It works on my machine!!!
 int main(int argc, char **argv)
 {
-  /*
-   * 100% shit-code in main().
-   * At least it works...
-   */
+/*
+ * 100% shit-code in main().
+ * At least it works...
+ */
+// Dev version warning.
+#ifdef __RURI_DEV__
+  printf("\033[31mWarning: you are using dev build.\033[0m\n");
+  printf("\n");
+#endif
   // Set process name.
   prctl(PR_SET_NAME, "ruri");
   // Check if arguments are given.
