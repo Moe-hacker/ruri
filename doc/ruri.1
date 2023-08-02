@@ -1,94 +1,119 @@
 .\" I hope it works...
+\fB\,\m[white]
 .TH "RURI" "1" "August 2023" "RURI v2\&.0" "RURI MANUAL"
 .SH "NAME"
-ruri \- Lightweight, User\-friendly Linux-container Implementation\&.
+\fB\,\m[white]ruri \- Lightweight, User\-friendly Linux-container Implementation\&.
 .SH "SYNOPSIS"
 .sp
 .nf
-.B ruri \fB\,OPTIONS\fR
-.B ruri [\fB\,ARGS\fR] \fB\,CONTAINER_DIRECTORY\fR [\fB\,INIT_COMMAND\fR]
+.B ruri OPTIONS
+.B ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]
 .fi
 .sp
 .SH "DESCRIPTION"
 .sp
-ruri is the romaji acronym of Lightweight, User-friendly Linux\-container Implementation\&.
+\fB\,ruri is the romaji acronym of Lightweight, User-friendly Linux\-container Implementation\&.
 .TP
-It is designed to provide better security for Linux containers on devices that do not support docker\&.    
+\fB\,It is designed to provide better security of Linux containers on devices that do not support docker\&.    
 .TP
-PS: ruri is pronounced as \fB\,\m[cyan]/luli/\m[]\fR , or you can just call it \fB\,\m[cyan]瑠璃\m[]\fR in Chinese or Japanese as well.
+\fB\,PS: ruri is pronounced as \m[cyan]/luli/\m[white], or you can just call it \m[cyan]\`瑠璃\`\m[white] in Chinese or Japanese as well.
 .TP
-See \m[blue]\fB\,https://github.com/Moe-hacker/ruri\m[]\fR for source code.
+\fB\,See \m[blue]https://github.com/Moe-hacker/ruri\m[white] for source code.
 .sp
 .SH "OPTIONS"
 .PP
-\-v, \-\-version
-.RS 4
-Print the version info\&.
+  \fB\,-v                    :Show version info
+  -h                    :Show helps
+  -hh                   :Show helps and commandline examples
+  -D                    :Run rurid
+  -K                    :Kill rurid
+  -t                    :Check if rurid is running
+  -l                    :List all running unshare containers
+  -U [container_dir]    :Umount&kill a container
+.SH "ARGUMENTS(FOR RUNNING A CONTAINER)"
+.PP
+  \fB\,-u                    :Enable unshare feature
+  -d                    :Drop more capabilities for better security
+  -p                    :Run privileged container
+ --keep [cap]           :Keep the specified cap
+ --drop [cap]           :Drop the specified cap
+  -e [env] [value]      :Set env to its value
+  -m [dir] [mountpoint] :Mount dir to mountpoint
+  -w                    :Disable warnings
+.SH "NOTES"
+.TP
+\fB\,Unshare container will not enable net and user namespace, I haven't learned how to configure these namespaces\&.
+.TP
+\fB\,For capabilities and namespaces, see Capabilities(7) and unshare(2)\&.
+.TP
+\fB\,Environment variables will not work with init command like \`su \-\`, because \`su -\` will reset them.
+.TP
+\fB\,Init command in unshare container with pid ns support will be the real init for first time running the container, or it will have the same effect with [COMMAND [ARG]...] of chroot(8)\&.
 .SH "EXAMPLES"
 .sp
-Quickly setup a container(with rootfstool):
+\fB\,Quickly setup a container(with rootfstool):
 .PP
-  git clone https://github.com/Moe-hacker/rootfstool
-  cd rootfstool
-  ./rootfstool download -d alpine -v edge
-  mkdir /tmp/alpine
-  sudo tar -xvf rootfs.tar.xz -C /tmp/alpine
+  \fB\,\m[blue]git \m[yellow]clone \m[white]https://github.com/Moe-hacker/rootfstool
+  \m[blue]cd \m[white]rootfstool
+  \m[blue]\&./rootfstool \m[yellow]download \m[white]\-d alpine \-v edge
+  \m[blue]mkdir \m[white]/tmp/alpine
+  \m[blue]sudo \m[white]tar \-xvf rootfs.tar.xz \-C /tmp/alpine
 .sp
-\fB\,Run chroot container:\fR
+\fB\,Run chroot container:
 .PP
-  sudo ruri /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri /tmp/alpine
 .sp
-\fB\,Very simple as you can see.\fR
+\fB\,Very simple as you can see.
 .sp
-Run privileged chroot container:
+\fB\,Run privileged chroot container:
 .PP
-  sudo ruri -p /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri -p /tmp/alpine
 .sp
-But if you want to make the container more secure:
+\fB\,But if you want to make the container more secure:
 .PP
-  sudo ruri -d /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri -d /tmp/alpine
 .sp
-If you want to run privileged chroot container,
-but you don't want to give the container cap_sys_chroot privileges:
+\fB\,If you want to run privileged chroot container,
+\fB\,but you don't want to give the container cap_sys_chroot privileges:
 .PP
-  sudo ruri -p --drop cap_sys_chroot /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri -p --drop cap_sys_chroot /tmp/alpine
 .sp
-If you want to run chroot container with common privileges,
-but you want cap_sys_admin to be kept:
+\fB\,If you want to run chroot container with common privileges,
+\fB\,but you want cap_sys_admin to be kept:
 .PP
-  sudo ruri --keep cap_sys_admin /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri --keep cap_sys_admin /tmp/alpine
 .sp
-\fB\,About unshare:\fR
+\fB\,About unshare:
 .sp
-Unshare container's capability options are same with chroot.
+\fB\,Unshare container's capability options are same with chroot.
 .sp
-But it's recommended to start rurid before running unshare containers:
+\fB\,But it's recommended to start rurid before running unshare containers:
 .PP
-  sudo ruri -D
+  \fB\,\m[blue]sudo \m[white]ruri \-D
 .sp
-Run unshare container:
+\fB\,Run unshare container:
 .PP
-  sudo ruri -u /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri \-u /tmp/alpine
 .sp
-List running containers:
+\fB\,List running containers:
 .PP
-  sudo ruri -l
+  \fB\,\m[blue]sudo \m[white]ruri \-l
 .sp
-Umount the container:
+\fB\,Umount the container:
 .PP
-  sudo ruri -U /tmp/alpine
+  \fB\,\m[blue]sudo \m[white]ruri \-U /tmp/alpine
 .sp
-Finally, kill the daemon:
+\fB\,Finally, kill the daemon:
 .PP
-  sudo ruri -K
+  \fB\,\m[blue]sudo \m[white]ruri -K
 .SH "COPYRIGHT"
-Copyright \(co 2022-2023 Moe-hacker.
+\fB\,Copyright \(co 2022-2023 Moe-hacker.
 .sp
-License: MIT <https://mit-license.org>.
+\fB\,License: MIT <https://mit-license.org>.
 .SH "CONTACT"
 .sp
-Author: \fB\,\m[cyan]Moe Hacker\m[]\fR
+\fB\,Author: \m[cyan]Moe Hacker\m[white]
 .sp
-Github: \fB\,\m[cyan]@Moe-hacker\m[]\fR
+\fB\,Github: \m[cyan]@Moe-hacker\m[white]
 .sp
-For any bugs, please report at \m[blue]\fB\,https://github.com/Moe-hacker/ruri/issues\m[]\fR
+\fB\,For any bugs, please report at \m[blue]https://github.com/Moe-hacker/ruri/issues\m[white]
