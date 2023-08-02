@@ -19,13 +19,13 @@ SRC = ruri.c
 HEADER = ruri.h
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
-mandoc :
-	@gzip -kf doc/ruri.1
 all :mandoc
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
+mandoc :
+	@gzip -kf doc/ruri.1
 dev :
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
