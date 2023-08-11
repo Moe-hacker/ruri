@@ -118,6 +118,12 @@ void show_version_info()
   printf("\n");
   printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", RURI_VERSION, "\n");
   printf("\n");
+  printf("●●●●  ●   ● ●●●●   ●●●\n");
+  printf("●   ● ●   ● ●   ●   ●\n");
+  printf("●●●●  ●   ● ●●●●    ●\n");
+  printf("●  ●  ●   ● ●  ●    ●\n");
+  printf("●   ●  ●●●  ●   ●  ●●●\n");
+  printf("\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("\n");
   printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
