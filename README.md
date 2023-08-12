@@ -101,6 +101,13 @@ ARGS for running a container:
 ### Full User Guide:
 See `ruri(1)` in manpage after installation.   
 
+```
+●●●●  ●   ● ●●●●   ●●●        ●   ●  ●●●         ●●●
+●   ● ●   ● ●   ●   ●         ●   ● ●   ●       ●   ●
+●●●●  ●   ● ●●●●    ●   ●●●●● ●   ●   ●●        ●   ●
+●  ●  ●   ● ●  ●    ●          ● ●   ●     ●●●  ●   ●
+●   ●  ●●●  ●   ●  ●●●          ●   ●●●●●  ●●●   ●●●
+```
 --------
 <p align="center">「 咲誇る花 美しく、</p>    
 <p align="center">散り行く運命 知りながら、</p>    
