@@ -157,8 +157,9 @@ void show_helps(bool greetings)
     show_greetings();
   }
   printf("\033[1;38;2;254;228;208mUsage:\n");
-  printf("  ruri [Other options] [<Args> <container directory> <init command>]\n");
-  printf("Other options:\n");
+  printf("  ruri OPTIONS\n");
+  printf("  ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]\n");
+  printf("OPTIONS:\n");
   printf("  -v                    :Show version info\n");
   printf("  -h                    :Show helps\n");
   printf("  -hh                   :Show helps and commandline examples\n");
@@ -167,7 +168,7 @@ void show_helps(bool greetings)
   printf("  -t                    :Check if rurid is running\n");
   printf("  -l                    :List all running unshare containers\n");
   printf("  -U [container_dir]    :Umount&kill a container\n");
-  printf("Args for running a container:\n");
+  printf("ARGS for running a container:\n");
   printf("  -u                    :Enable unshare feature\n");
   printf("  -d                    :Drop more capabilities for better security\n");
   printf("  -p                    :Run privileged container\n");
@@ -2028,7 +2029,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
-    fprintf(stderr, "\033[31mFailed to execute init `%s`\n", container_info->init_command[0]);
+    fprintf(stderr, "\033[31mFailed to execute `%s`\n", container_info->init_command[0]);
     fprintf(stderr, "execv() returned: %d\n", errno);
     fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
     error("QwQ");
@@ -2183,7 +2184,7 @@ int main(int argc, char **argv)
   // Parse command-line arguments.
   for (int index = 1; index < argc; index++)
   {
-    //============== [Other options] ==============
+    //==============For OPTIONS==============
     if (strcmp(argv[index], "-v") == 0)
     {
       show_version_info();
@@ -2237,7 +2238,7 @@ int main(int argc, char **argv)
       }
       return 0;
     }
-    //=========End of [Other options]===========
+    //=========For [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]===========
     if (strcmp(argv[index], "-u") == 0)
     {
       use_unshare = true;
