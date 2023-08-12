@@ -9,10 +9,6 @@
 ![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
 
 -----------------     
-You can read this doc in :
-
-**[<kbd> <br> 简体中文 <br> </kbd>](https://github.com/Moe-hacker/ruri/blob/main/doc/README-zh.md)**&emsp;**[<kbd> <br> English <br> </kbd>](https://github.com/Moe-hacker/ruri/blob/main/README.md)**
-
 ### WARNING:      
 ```
 * Your warranty is now void.
