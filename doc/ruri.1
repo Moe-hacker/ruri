@@ -49,6 +49,8 @@
 \fB\,Environment variables will not work with init command like \`su \-\`, because \`su -\` will reset them.
 .TP
 \fB\,Init command in unshare container with pid ns support will be the real init for first time running the container, or it will have the same effect with [COMMAND [ARG]...] of chroot(8)\&.
+.TP
+\fB\,rurid is the daemon of ruri\&. It can store the info of unshare containers and ensure that the same containers run in the same namespaces\&. It's not a necessary process, and pure chroot containers will not communicate with the daemon\&.
 .SH "EXAMPLES"
 .sp
 \fB\,Quickly setup a container(with rootfstool):
