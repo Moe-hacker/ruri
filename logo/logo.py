@@ -27,25 +27,12 @@ import matplotlib.pyplot as pyplot
 import matplotlib.patches as patches
 import math
 import sys
-if len(sys.argv)>1:
-    if sys.argv[1]=="-n":
-        no_text=True
-    else:
-        print("Usage: logo.py (-n)")
-        exit(1)
-else:
-    no_text=False
 # Set image parameters.
-if no_text==False:
-    figure, axes = pyplot.subplots(dpi=200, figsize=(8, 4))
-    pyplot.box(False)
-    pyplot.xticks([])
-    pyplot.yticks([])
-    pyplot.subplots_adjust(bottom=0.2,top=1)
-else:
-    figure, axes = pyplot.subplots(dpi=128, figsize=(4, 4))
-    axes.set_axis_off()
-    pyplot.subplots_adjust(left=0,bottom=0,right=1,top=1)
+figure, axes = pyplot.subplots(dpi=200, figsize=(8, 4))
+pyplot.box(False)
+pyplot.xticks([])
+pyplot.yticks([])
+pyplot.subplots_adjust(bottom=0.2,top=1)
 axes.set_aspect(1)
 # Draw the sectors.
 draw_circle = patches.Wedge((0, 6), 6, 210, 330, fill=False, linewidth=1.5, color='#fee4d0')
@@ -61,24 +48,13 @@ axes.add_artist(draw_circle)
 draw_circle = patches.Wedge((math.sqrt(3) * 3 * (-1), -3), 6, 330, 450, fill=False, linewidth=1.5, color='#fee4d0')
 axes.add_artist(draw_circle)
 # Draw the diagonals.
-if no_text==False:
-    pyplot.plot([-0.003, -0.003], [-6, 6], linewidth=1.5, color='#fee4d0')
-else:
-    pyplot.plot([0, 0], [-6, 6], linewidth=1.5, color='#fee4d0')
+pyplot.plot([-0.003, -0.003], [-6, 6], linewidth=1.5, color='#fee4d0')
 pyplot.plot([math.sqrt(3) * 3 * (-1), math.sqrt(3) * 3], [-3, 3], linewidth=1.5, color='#fee4d0')
 pyplot.plot([math.sqrt(3) * 3, math.sqrt(3) * 3 * (-1)], [-3, 3], linewidth=1.5, color='#fee4d0')
-if no_text==False:
-    pyplot.xlim(-8, 8)
-    pyplot.ylim(-8, 8)
-else:
-    pyplot.xlim(-6.3, 6.3)
-    pyplot.ylim(-6.3, 6.3)
+pyplot.xlim(-8, 8)
+pyplot.ylim(-8, 8)
 # Draw the title.
-if no_text==False:
-    pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.478, fontsize=39, fontweight="normal")
-    pyplot.text(-0.45, -0.12, "Lightweight, User-friendly Linux-container Implementation", fontsize=13,fontweight="black", transform=axes.transAxes, color='#fee4d0')
-    # Save as logo.png.
-    pyplot.savefig('logo.png', transparent=True)
-else:
-    # Save as logo.svg.
-    pyplot.savefig('logo.svg', transparent=True)
+pyplot.title("r u r i", color='#fee4d0', y=-0.05, x=0.478, fontsize=39, fontweight="normal")
+pyplot.text(-0.45, -0.12, "Lightweight, User-friendly Linux-container Implementation", fontsize=13,fontweight="black", transform=axes.transAxes, color='#fee4d0')
+# Save as logo.png.
+pyplot.savefig('logo.png', transparent=True)
