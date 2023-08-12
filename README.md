@@ -8,6 +8,8 @@
 ![](https://img.shields.io/github/last-commit/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
 ![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
 
+<p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
+
 -----------------     
 ### WARNING:      
 ```
@@ -95,8 +97,8 @@ Args for running a container:
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
-### About rurid:         
-&emsp;Rurid is the daemon of ruri. It can store the info of unshare containers and ensure that the same containers run in the same namespaces. It's not a necessary process, and pure chroot containers will not communicate with the daemon.     
+### Full User Guide:
+See `ruri(1)` in manpage after installation.   
 
 --------
 <p align="center">「 咲誇る花 美しく、</p>    
