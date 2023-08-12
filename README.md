@@ -74,8 +74,10 @@ For static compilation:
 - libc-static         
 ### Usage:    
 ```text
-ruri [Other options] [<Args> <container directory> <init command>]
-Other options:
+Usage:
+  ruri OPTIONS
+  ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]
+OPTIONS:
   -v                    :Show version info
   -h                    :Show helps
   -hh                   :Show helps and commandline examples
@@ -84,13 +86,13 @@ Other options:
   -t                    :Check if rurid is running
   -l                    :List all running unshare containers
   -U [container_dir]    :Umount&kill a container
-Args for running a container:
+ARGS for running a container:
   -u                    :Enable unshare feature
   -d                    :Drop more capabilities for better security
   -p                    :Run privileged container
  --keep [cap]           :Keep the specified cap
  --drop [cap]           :Drop the specified cap
-  -e [env] [value]      :Set env to its value
+  -e [env] [value]      :Set env to its value *Not work if init command is like `su -`
   -m [dir] [mountpoint] :Mount dir to mountpoint
   -w                    :Disable warnings
 ```
