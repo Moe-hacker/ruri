@@ -1,12 +1,12 @@
 
 ![](https://github.com/Moe-hacker/ruri/raw/main/logo/logo.png)
 
-![](https://img.shields.io/github/stars/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=instatus&logoColor=fee4d0)
+![](https://img.shields.io/github/stars/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=starship&logoColor=fee4d0)
 ![](https://img.shields.io/github/forks/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
-![](https://img.shields.io/github/license/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
+![](https://img.shields.io/github/license/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=cloudera&logoColor=fee4d0)
 ![](https://img.shields.io/github/repo-size/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)
 ![](https://img.shields.io/github/last-commit/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
-![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=sharp&logoColor=fee4d0)
+![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=C&logoColor=fee4d0)
 
 <p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
 
