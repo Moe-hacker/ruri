@@ -693,7 +693,7 @@ void umount_all_containers(struct CONTAINERS *container)
       i += 2;
       for (int j = 0; j < 10; j++)
       {
-        umount2(buf, MNT_DETACH | MNT_FORCE);
+        umount2(buf, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
         umount(buf);
       }
     }
@@ -715,10 +715,10 @@ void umount_all_containers(struct CONTAINERS *container)
   // Force umount all directories for 10 times.
   for (int i = 1; i < 10; i++)
   {
-    umount2(sys_dir, MNT_DETACH | MNT_FORCE);
-    umount2(dev_dir, MNT_DETACH | MNT_FORCE);
-    umount2(proc_dir, MNT_DETACH | MNT_FORCE);
-    umount2(container->container_dir, MNT_DETACH | MNT_FORCE);
+    umount2(sys_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount2(dev_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount2(proc_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount2(container->container_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
   }
   umount_all_containers(container->container);
 }
@@ -2108,7 +2108,7 @@ void umount_container(char *container_dir)
       strcat(to_umountpoint, mountpoint[i]);
       for (int j = 0; j < 10; j++)
       {
-        umount2(to_umountpoint, MNT_DETACH | MNT_FORCE | MNT_EXPIRE);
+        umount2(to_umountpoint, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
         umount(to_umountpoint);
         usleep(20000);
       }
@@ -2122,13 +2122,13 @@ void umount_container(char *container_dir)
   // Force umount system runtime directories for 10 times.
   for (int i = 1; i < 10; i++)
   {
-    umount2(sys_dir, MNT_DETACH | MNT_FORCE);
+    umount2(sys_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
     usleep(2000);
-    umount2(dev_dir, MNT_DETACH | MNT_FORCE);
+    umount2(dev_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
     usleep(2000);
-    umount2(proc_dir, MNT_DETACH | MNT_FORCE);
+    umount2(proc_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
     usleep(2000);
-    umount2(container_dir, MNT_DETACH | MNT_FORCE);
+    umount2(container_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
     usleep(2000);
   }
 }
