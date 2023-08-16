@@ -1,5 +1,5 @@
+# SPDX-License-Identifier: MIT
 '''
-  SPDX-License-Identifier: MIT
   This file is part of ruri.
   MIT License
  
