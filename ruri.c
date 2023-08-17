@@ -2026,6 +2026,13 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Login to container.
   // Use exec() family function because system() may be unavailable now.
   usleep(200000);
+  /*
+  // XXX
+  // Set NO_NEW_PRIVS Flag to protect container.
+  // It requires Linux3.5 or later.
+  // It will make sudo unavailable in container.
+  prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+  */
   if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
