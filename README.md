@@ -110,6 +110,8 @@ ARGS:
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
+### About Seccomp:
+The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit ruri.c and replace setup_seccomp() with your own config.      
 ### Full User Guide:
 See `ruri(1)` in manpage after installation.   
 ### License:
