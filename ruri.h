@@ -46,6 +46,8 @@
 // This program need to be linked with `-lpthread` on some devices.
 #include <pthread.h>
 #include <sched.h>
+// This program need to be linked with `-lseccomp`
+#include <seccomp.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

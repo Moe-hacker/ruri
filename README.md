@@ -67,11 +67,13 @@ Only for testing:
 #### Dependent libraries:
 For dynamic compilation:         
 - libcap       
-- libpthread 
+- libpthread
+- libseccomp
      
 For static compilation:         
 - libcap-static
-- libc-static         
+- libc-static
+- libseccomp-static       
 ### Usage:    
 ```text
 Usage:
