@@ -137,6 +137,7 @@ struct CONTAINERS
   char *env[MAX_ENVS];
   char *mountpoint[MAX_MOUNTPOINTS];
   bool no_new_privs;
+  bool enable_seccomp;
   struct CONTAINERS *container;
 };
 // Info of a container to create.
@@ -150,6 +151,7 @@ struct CONTAINER_INFO
   char *mountpoint[MAX_MOUNTPOINTS];
   char *env[MAX_ENVS];
   bool no_new_privs;
+  bool enable_seccomp;
   // Only be used in container_daemon()
   // For setns(), we define it as char*.
   char *unshare_pid;
