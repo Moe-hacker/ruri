@@ -177,6 +177,7 @@ bool connect_to_daemon(struct sockaddr_un *addr);
 void umount_all_containers(struct CONTAINERS *container);
 void *daemon_init_unshare_container(void *arg);
 void init_container();
+void setup_seccomp(struct CONTAINER_INFO *container_info);
 void container_daemon();
 bool check_container(char *container_dir);
 pid_t init_unshare_container(bool no_warnings);
