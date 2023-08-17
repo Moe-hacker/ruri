@@ -88,6 +88,7 @@ OPTIONS:
   -U [container_dir]    :Umount&kill a container
 ARGS for running a container:
   -u                    :Enable unshare feature
+  -n                    :Set NO_NEW_PRIVS Flag
   -d                    :Drop more capabilities for better security
   -p                    :Run privileged container
  --keep [cap]           :Keep the specified cap

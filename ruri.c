@@ -170,6 +170,7 @@ void show_helps(bool greetings)
   printf("  -U [container_dir]    :Umount&kill a container\n");
   printf("ARGS for running a container:\n");
   printf("  -u                    :Enable unshare feature\n");
+  printf("  -n                    :Set NO_NEW_PRIVS Flag\n");
   printf("  -d                    :Drop more capabilities for better security\n");
   printf("  -p                    :Run privileged container\n");
   printf(" --keep [cap]           :Keep the specified cap\n");
@@ -303,7 +304,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
   }
 }
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], struct CONTAINERS *container)
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and then add container info to node.
@@ -318,6 +319,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_ca
     // Add info of container.
     container->container_dir = strdup(container_dir);
     container->unshare_pid = strdup(unshare_pid);
+    container->no_new_privs = no_new_privs;
     for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
     {
       if (drop_caplist[i][0] != '\0')
@@ -362,7 +364,7 @@ struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_ca
     return container;
   }
   // If current node is not NULL, try the next.
-  container->container = add_node(container_dir, unshare_pid, drop_caplist, env, mountpoint, container->container);
+  container->container = add_node(container_dir, unshare_pid, drop_caplist, env, mountpoint, no_new_privs, container->container);
   return container;
 }
 // Return info of a container.
@@ -805,6 +807,14 @@ void *daemon_init_unshare_container(void *arg)
       }
     }
     send_msg_client(FROM_PTHREAD__END_OF_ENV, addr);
+    if (container_info->no_new_privs != false)
+    {
+      send_msg_client(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, addr);
+    }
+    else
+    {
+      send_msg_client(FROM_PTHREAD__NO_NEW_PRIVS_FALSE, addr);
+    }
     // Fix the bug that the terminal was stuck.
     usleep(200000);
     // Fix `can't access tty` issue.
@@ -947,6 +957,7 @@ void container_daemon()
   char *env[MAX_ENVS] = {NULL};
   char mountpoint[MAX_MOUNTPOINTS][PATH_MAX];
   mountpoint[0][0] = '\0';
+  bool no_new_privs = false;
   // Create socket.
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
@@ -1107,15 +1118,26 @@ void container_daemon()
           }
         }
         send_msg_daemon(FROM_DAEMON__END_OF_CAP_TO_DROP, addr, sockfd);
+        if (read_node(container_dir, container)->no_new_privs != false)
+        {
+          send_msg_daemon(FROM_DAEMON__NO_NEW_PRIVS_TRUE, addr, sockfd);
+        }
+        else
+        {
+          send_msg_daemon(FROM_DAEMON__NO_NEW_PRIVS_FALSE, addr, sockfd);
+        }
         send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
         send_msg_daemon(read_node(container_dir, container)->unshare_pid, addr, sockfd);
+        free(container_dir);
+        container_dir = NULL;
         goto _continue;
       }
       // If container is not active, init and register it.
       else
       {
+        container_info.container_dir = strdup(container_dir);
+        free(container_dir);
         send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
-        container_info.container_dir = NULL;
         container_info.init_command[0] = NULL;
         container_info.unshare_pid = NULL;
         for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
@@ -1235,8 +1257,21 @@ void container_daemon()
           msg = NULL;
           i++;
         }
-        container_info.container_dir = strdup(container_dir);
-        free(container_dir);
+        msg = read_msg_daemon(addr, sockfd);
+        if (msg == NULL)
+        {
+          goto _continue;
+        }
+        if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) == 0)
+        {
+          container_info.no_new_privs = true;
+        }
+        else
+        {
+          container_info.no_new_privs = false;
+        }
+        free(msg);
+        msg = NULL;
         // Init container in new pthread.
         // It will send all the info of the container back to register it.
         pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
@@ -1350,8 +1385,23 @@ void container_daemon()
         msg = NULL;
         i++;
       }
+      msg = read_msg_daemon(addr, sockfd);
+      if (msg == NULL)
+      {
+        goto _continue;
+      }
+      if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) == 0)
+      {
+        no_new_privs = true;
+      }
+      else
+      {
+        no_new_privs = false;
+      }
+      free(msg);
+      msg = NULL;
       // Register the container.
-      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, container);
+      container = add_node(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, no_new_privs, container);
       // Send unshare_pid to ruri.
       usleep(200000);
       send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
@@ -1617,6 +1667,14 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
     }
     send_msg_client(FROM_CLIENT__END_OF_ENV, addr);
+    if (container_info->no_new_privs != false)
+    {
+      send_msg_client(FROM_CLIENT__NO_NEW_PRIVS_TRUE, addr);
+    }
+    else
+    {
+      send_msg_client(FROM_CLIENT__NO_NEW_PRIVS_FALSE, addr);
+    }
   }
   else
   {
@@ -1654,6 +1712,17 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       free(msg);
       msg = NULL;
     }
+    msg = read_msg_client(addr);
+    if (strcmp(msg, FROM_DAEMON__NO_NEW_PRIVS_TRUE) == 0)
+    {
+      container_info->no_new_privs = true;
+    }
+    else
+    {
+      container_info->no_new_privs = false;
+    }
+    free(msg);
+    msg = NULL;
   }
   // Fix a bug that read_msg_client() returns NULL because container has not been registered properly.
   usleep(400000);
@@ -1866,6 +1935,14 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 #ifdef __RURI_DEV__
   printf("Run chroot container:\n");
   printf("%s%s\n", "container_dir: ", container_info->container_dir);
+  if (container_info->no_new_privs != false)
+  {
+    printf("%s\n", "no_new_privs: true");
+  }
+  else
+  {
+    printf("%s\n", "no_new_privs: false");
+  }
   printf("init command : ");
   for (int i = 0;;)
   {
@@ -2026,13 +2103,13 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Login to container.
   // Use exec() family function because system() may be unavailable now.
   usleep(200000);
-  /*
-  // XXX
   // Set NO_NEW_PRIVS Flag to protect container.
   // It requires Linux3.5 or later.
   // It will make sudo unavailable in container.
-  prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
-  */
+  if (container_info->no_new_privs != false)
+  {
+    prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+  }
   if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
@@ -2168,6 +2245,7 @@ int main(int argc, char **argv)
   char *env[MAX_ENVS] = {NULL};
   char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
+  bool no_new_privs = false;
   // These caps are kept by default:
   // CAP_SETGID,CAP_CHOWN,CAP_NET_RAW,CAP_DAC_OVERRIDE,CAP_FOWNER,CAP_FSETID,CAP_SETUID.
   cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
@@ -2245,12 +2323,7 @@ int main(int argc, char **argv)
       }
       return 0;
     }
-    //=========For [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]===========
-    if (strcmp(argv[index], "-u") == 0)
-    {
-      use_unshare = true;
-    }
-    else if (strcmp(argv[index], "-U") == 0)
+    if (strcmp(argv[index], "-U") == 0)
     {
       index += 1;
       if (argv[index] != NULL)
@@ -2266,6 +2339,15 @@ int main(int argc, char **argv)
       {
         error("Error: container directory is not set QwQ");
       }
+    }
+    //=========For [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]===========
+    if (strcmp(argv[index], "-n") == 0)
+    {
+      no_new_privs = true;
+    }
+    else if (strcmp(argv[index], "-u") == 0)
+    {
+      use_unshare = true;
     }
     else if (strcmp(argv[index], "-d") == 0)
     {
@@ -2487,6 +2569,7 @@ int main(int argc, char **argv)
   // Build container_info struct.
   container_info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
   container_info->container_dir = container_dir;
+  container_info->no_new_privs = no_new_privs;
   for (int i = 0; i <= CAP_LAST_CAP; i++)
   {
     container_info->drop_caplist[i] = drop_caplist[i];
