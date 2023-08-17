@@ -2390,12 +2390,16 @@ void umount_container(char *container_dir)
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(sys_dir);
     usleep(2000);
     umount2(dev_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(dev_dir);
     usleep(2000);
     umount2(proc_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(proc_dir);
     usleep(2000);
     umount2(container_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(container_dir);
     usleep(2000);
   }
 }
