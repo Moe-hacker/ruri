@@ -22,8 +22,13 @@
 ### About ruri:         
 &emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
 &emsp;ruri is the romaji acronym of Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
-&emsp;It's like `chroot` and `unshare`, but it is more secure.       
-&emsp;It is designed to be a simple and lightweight container implementation, but you are still free to define all the configurations of the container.          
+- Simple:      
+Although it has many args in the help page, the basic usage is very very simple, you can use it just like the command chroot.
+- Secure:      
+It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers.
+- Static:      
+Compile ruri with `make static`, it will be compiled as a small binary file(less than 1M), but it can be run everywhere without dependent libraries.      
+
 &emsp;The default capability set is the same as the docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
 ### Install:      
 ```
