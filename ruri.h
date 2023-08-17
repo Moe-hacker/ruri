@@ -163,6 +163,7 @@ void show_helps(bool greetings);
 void show_examples();
 int mkdirs(char *dir, mode_t mode);
 void add_to_list(cap_value_t *list, int length, cap_value_t cap);
+bool is_in_list(cap_value_t *list, int length, cap_value_t cap);
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
 struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, struct CONTAINERS *container);
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
