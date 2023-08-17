@@ -157,7 +157,7 @@ void show_helps(bool greetings)
   printf("  -u                    :Enable unshare feature\n");
   printf("  -n                    :Set NO_NEW_PRIVS Flag\n");
   printf("  -s                    :Enable Seccomp\n");
-  printf("  -d                    :Drop more capabilities for better security\n");
+  printf("  -d                    :Drop more capabilities for lower privilege\n");
   printf("  -p                    :Run privileged container\n");
   printf(" --keep [cap]           :Keep the specified cap\n");
   printf(" --drop [cap]           :Drop the specified cap\n");

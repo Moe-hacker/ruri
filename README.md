@@ -98,7 +98,7 @@ ARGS for running a container:
   -u                    :Enable unshare feature
   -n                    :Set NO_NEW_PRIVS Flag
   -s                    :Enable Seccomp
-  -d                    :Drop more capabilities for better security
+  -d                    :Drop more capabilities for lower privilege
   -p                    :Run privileged container
  --keep [cap]           :Keep the specified cap
  --drop [cap]           :Drop the specified cap
