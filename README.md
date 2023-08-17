@@ -13,7 +13,7 @@
 -----------------     
 ### WARNING:      
 ```
-* Your warranty is now void.
+* Your warranty is void.
 * I am not responsible for anything that may happen to your device by using this program.
 * You do it at your own risk and take the responsibility upon yourself.
 * And you are not to blame the author or Github and its developers.
@@ -56,7 +56,7 @@ Very simple as you can see.
   make all            :compile
   make install        :install ruri to $PREFIX
   make static         :static compile,with musl or glibc
-   make static-bionic :static compile,with bionic
+  make static-bionic :static compile,with bionic
   make clean          :clean
 Only for testing:
   make dev            :compile without optimizations, enable gdb debug information and extra logs.
@@ -101,6 +101,9 @@ ARGS for running a container:
 &emsp;Please unset $LD_PRELOAD before running this program.              
 ### Full User Guide:
 See `ruri(1)` in manpage after installation.   
+### License:
+Licensed under the MIT License      
+Copyright (c) 2022-2023 Moe-hacker      
 
 ```
 ●●●●  ●   ● ●●●●   ●●●        ●   ●  ●●●         ●●●
