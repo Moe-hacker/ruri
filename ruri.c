@@ -112,33 +112,21 @@ void show_version_info()
    * Version info is defined in macro RURI_VERSION.
    */
   printf("\n");
-  printf("\033[1;38;2;254;228;208m%s%s%s", "ruri ", RURI_VERSION, "\n");
-  printf("\n");
-  printf("●●●●  ●   ● ●●●●   ●●●\n");
-  printf("●   ● ●   ● ●   ●   ●\n");
-  printf("●●●●  ●   ● ●●●●    ●\n");
-  printf("●  ●  ●   ● ●  ●    ●\n");
-  printf("●   ●  ●●●  ●   ●  ●●●\n");
-  printf("\n");
+  printf("\033[1;38;2;254;228;208m      ●●●●  ●   ● ●●●●   ●●●\n");
+  printf("      ●   ● ●   ● ●   ●   ●\n");
+  printf("      ●●●●  ●   ● ●●●●    ●\n");
+  printf("      ●  ●  ●   ● ●  ●    ●\n");
+  printf("      ●   ●  ●●●  ●   ●  ●●●\n");
+  printf("  Licensed under the MIT License\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
-  printf("\n");
-  printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
-  printf("of this software and associated documentation files (the \"Software\"), to deal\n");
-  printf("in the Software without restriction, including without limitation the rights\n");
-  printf("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n");
-  printf("copies of the Software, and to permit persons to whom the Software is\n");
-  printf("furnished to do so, subject to the following conditions:\n");
-  printf("\n");
-  printf("The above copyright notice and this permission notice shall be included in all\n");
-  printf("copies or substantial portions of the Software.\n");
-  printf("\n");
-  printf("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n");
-  printf("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n");
-  printf("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n");
-  printf("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n");
-  printf("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n");
-  printf("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n");
-  printf("SOFTWARE.\033[0m\n");
+  printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
+  // RURI_COMMIT_ID is defined in Makefile.
+  printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
+}
+// For `ruri -V`.
+void show_version_code()
+{
+  printf("%s\n", RURI_VERSION);
 }
 // For `ruri -h`.
 void show_helps(bool greetings)
@@ -157,6 +145,7 @@ void show_helps(bool greetings)
   printf("  ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]\n");
   printf("OPTIONS:\n");
   printf("  -v                    :Show version info\n");
+  printf("  -V                    :Show version code\n");
   printf("  -h                    :Show helps\n");
   printf("  -hh                   :Show helps and commandline examples\n");
   printf("  -D                    :Run rurid\n");
@@ -2536,6 +2525,11 @@ int main(int argc, char **argv)
     if (strcmp(argv[index], "-v") == 0)
     {
       show_version_info();
+      return 0;
+    }
+    if (strcmp(argv[index], "-V") == 0)
+    {
+      show_version_code();
       return 0;
     }
     if (strcmp(argv[index], "-D") == 0)

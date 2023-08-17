@@ -165,6 +165,7 @@ struct CONTAINER_INFO
 void error(char *msg);
 void show_greetings();
 void show_version_info();
+void show_version_code();
 void show_helps(bool greetings);
 void show_examples();
 int mkdirs(char *dir, mode_t mode);
