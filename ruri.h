@@ -95,36 +95,42 @@
 #define FROM_CLIENT__END_OF_ENV              "0x0d"
 #define FROM_CLIENT__NO_NEW_PRIVS_TRUE       "0x0e"
 #define FROM_CLIENT__NO_NEW_PRIVS_FALSE      "0x0f"
+#define FROM_CLIENT__ENABLE_SECCOMP_TRUE     "0x10"
+#define FROM_CLIENT__ENABLE_SECCOMP_FALSE    "0x11"
 // From subprocess of rurid.
-#define FROM_PTHREAD__INIT_PROCESS_DIED      "0x10"
-#define FROM_PTHREAD__REGISTER_CONTAINER     "0x11"
-#define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x12"
-#define FROM_PTHREAD__CAP_TO_DROP            "0x13"
-#define FROM_PTHREAD__END_OF_CAP_TO_DROP     "0x14"
-#define FROM_PTHREAD__MOUNTPOINT             "0x15"
-#define FROM_PTHREAD__END_OF_MOUNTPOINT      "0x16"
-#define FROM_PTHREAD__ENV                    "0x17"
-#define FROM_PTHREAD__END_OF_ENV             "0x18"
-#define FROM_PTHREAD__NO_NEW_PRIVS_TRUE      "0x19"
-#define FROM_PTHREAD__NO_NEW_PRIVS_FALSE     "0x1a"
+#define FROM_PTHREAD__INIT_PROCESS_DIED      "0x12"
+#define FROM_PTHREAD__REGISTER_CONTAINER     "0x13"
+#define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x14"
+#define FROM_PTHREAD__CAP_TO_DROP            "0x15"
+#define FROM_PTHREAD__END_OF_CAP_TO_DROP     "0x16"
+#define FROM_PTHREAD__MOUNTPOINT             "0x17"
+#define FROM_PTHREAD__END_OF_MOUNTPOINT      "0x18"
+#define FROM_PTHREAD__ENV                    "0x19"
+#define FROM_PTHREAD__END_OF_ENV             "0x1a"
+#define FROM_PTHREAD__NO_NEW_PRIVS_TRUE      "0x1b"
+#define FROM_PTHREAD__NO_NEW_PRIVS_FALSE     "0x1c"
+#define FROM_PTHREAD__ENABLE_SECCOMP_TRUE    "0x1d"
+#define FROM_PTHREAD__ENABLE_SECCOMP_FALSE   "0x1e"
 // From rurid.
 #define FROM_DAEMON__TEST_MESSAGE            "Nya!"
-#define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x1b"
-#define FROM_DAEMON__CAP_TO_DROP             "0x1c"
-#define FROM_DAEMON__END_OF_CAP_TO_DROP      "0x1d"
-#define FROM_DAEMON__ENV                     "0x1e"
-#define FROM_DAEMON__END_OF_ENV              "0x1f"
-#define FROM_DAEMON__MOUNTPOINT              "0x20"
-#define FROM_DAEMON__END_OF_MOUNTPOINT       "0x21"
-#define FROM_DAEMON__CONTAINER_KILLED        "0x22"
-#define FROM_DAEMON__CONTAINER_NOT_RUNNING   "0x23"
-#define FROM_DAEMON__CONTAINER_IS_ACTIVE     "0x24"
-#define FROM_DAEMON__CONTAINER_IS_NOT_ACTIVE "0x25"
-#define FROM_DAEMON__INIT_IS_ACTIVE          "0x26"
-#define FROM_DAEMON__INIT_IS_NOT_ACTIVE      "0x27"
-#define FROM_DAEMON__END_OF_PS_INFO          "0x28"
-#define FROM_DAEMON__NO_NEW_PRIVS_TRUE       "0x29"
-#define FROM_DAEMON__NO_NEW_PRIVS_FALSE      "0x2a"
+#define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x1f"
+#define FROM_DAEMON__CAP_TO_DROP             "0x20"
+#define FROM_DAEMON__END_OF_CAP_TO_DROP      "0x21"
+#define FROM_DAEMON__ENV                     "0x22"
+#define FROM_DAEMON__END_OF_ENV              "0x23"
+#define FROM_DAEMON__MOUNTPOINT              "0x24"
+#define FROM_DAEMON__END_OF_MOUNTPOINT       "0x25"
+#define FROM_DAEMON__CONTAINER_KILLED        "0x26"
+#define FROM_DAEMON__CONTAINER_NOT_RUNNING   "0x27"
+#define FROM_DAEMON__CONTAINER_IS_ACTIVE     "0x28"
+#define FROM_DAEMON__CONTAINER_IS_NOT_ACTIVE "0x29"
+#define FROM_DAEMON__INIT_IS_ACTIVE          "0x2a"
+#define FROM_DAEMON__INIT_IS_NOT_ACTIVE      "0x2b"
+#define FROM_DAEMON__END_OF_PS_INFO          "0x2c"
+#define FROM_DAEMON__NO_NEW_PRIVS_TRUE       "0x2d"
+#define FROM_DAEMON__NO_NEW_PRIVS_FALSE      "0x2e"
+#define FROM_DAEMON__ENABLE_SECCOMP_TRUE     "0x2f"
+#define FROM_DAEMON__ENABLE_SECCOMP_FALSE    "0x30"
 // clang-format on
 // Info of containers.
 struct CONTAINERS
@@ -163,9 +169,9 @@ void show_helps(bool greetings);
 void show_examples();
 int mkdirs(char *dir, mode_t mode);
 void add_to_list(cap_value_t *list, int length, cap_value_t cap);
-bool is_in_list(cap_value_t *list, int length, cap_value_t cap);
+bool is_in_list(const cap_value_t *list, int length, cap_value_t cap);
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, struct CONTAINERS *container);
+struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container);
 struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
 struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container);
 bool container_active(char *container_dir, struct CONTAINERS *container);
