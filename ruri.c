@@ -143,6 +143,7 @@ void show_helps(bool greetings)
   printf("\033[1;38;2;254;228;208mUsage:\n");
   printf("  ruri OPTIONS\n");
   printf("  ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]\n");
+  printf("\n");
   printf("OPTIONS:\n");
   printf("  -v                    :Show version info\n");
   printf("  -V                    :Show version code\n");
@@ -153,7 +154,8 @@ void show_helps(bool greetings)
   printf("  -t                    :Check if rurid is running\n");
   printf("  -l                    :List all running unshare containers\n");
   printf("  -U [container_dir]    :Umount&kill a container\n");
-  printf("ARGS for running a container:\n");
+  printf("\n");
+  printf("ARGS:\n");
   printf("  -u                    :Enable unshare feature\n");
   printf("  -n                    :Set NO_NEW_PRIVS Flag\n");
   printf("  -s                    :Enable Seccomp\n");
@@ -164,6 +166,7 @@ void show_helps(bool greetings)
   printf("  -e [env] [value]      :Set env to its value *Not work if init command is like `su -`\n");
   printf("  -m [dir] [mountpoint] :Mount dir to mountpoint\n");
   printf("  -w                    :Disable warnings\n");
+  printf("\n");
   printf("Default init command is `/bin/su` if it's not set\n");
   printf("This program should be run with root privileges\n");
   printf("Please unset $LD_PRELOAD before running this program\033[0m\n");

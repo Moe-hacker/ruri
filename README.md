@@ -84,6 +84,7 @@ For static compilation:
 Usage:
   ruri OPTIONS
   ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]
+
 OPTIONS:
   -v                    :Show version info
   -V                    :Show version code
@@ -94,7 +95,8 @@ OPTIONS:
   -t                    :Check if rurid is running
   -l                    :List all running unshare containers
   -U [container_dir]    :Umount&kill a container
-ARGS for running a container:
+
+ARGS:
   -u                    :Enable unshare feature
   -n                    :Set NO_NEW_PRIVS Flag
   -s                    :Enable Seccomp
