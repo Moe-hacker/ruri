@@ -86,6 +86,7 @@ Usage:
   ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]
 OPTIONS:
   -v                    :Show version info
+  -V                    :Show version code
   -h                    :Show helps
   -hh                   :Show helps and commandline examples
   -D                    :Run rurid
