@@ -737,9 +737,13 @@ void umount_all_containers(struct CONTAINERS *container)
   for (int i = 1; i < 10; i++)
   {
     umount2(sys_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(sys_dir);
     umount2(dev_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(dev_dir);
     umount2(proc_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(proc_dir);
     umount2(container->container_dir, MNT_DETACH | MNT_FORCE | MNT_EXPIRE | UMOUNT_NOFOLLOW);
+    umount(container->container_dir);
   }
   umount_all_containers(container->container);
 }
