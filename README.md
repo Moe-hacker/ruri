@@ -58,16 +58,16 @@ Very simple as you can see.
 #### For command line examples, please see `ruri -hh`
 #### make options:
 ```text
-  make all            :compile
-  make install        :install ruri to $PREFIX
-  make static         :static compile,with musl or glibc
-  make static-bionic :static compile,with bionic
-  make clean          :clean
-Only for testing:
-  make dev            :compile without optimizations, enable gdb debug information and extra logs.
-  make asan           :enable ASAN
-  make check          :run clang-tidy
-  make format         :format code
+  make all            compile
+  make install        install ruri to $PREFIX
+  make static         static compile,with musl or glibc
+  make static-bionic  static compile,with bionic
+  make clean          clean
+Only for developers:
+  make dev            compile without optimizations, enable gdb debug information and extra logs.
+  make asan           enable ASAN
+  make check          run clang-tidy
+  make format         format code
 ```
 #### Dependent libraries:
 For dynamic compilation:         
@@ -83,30 +83,30 @@ For static compilation:
 ```text
 Usage:
   ruri OPTIONS
-  ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]
+  ruri [ARGS] CONTAINER_DIRECTORY [COMMAND [ARG]...]
 
 OPTIONS:
-  -v                    :Show version info
-  -V                    :Show version code
-  -h                    :Show helps
-  -hh                   :Show helps and commandline examples
-  -D                    :Run rurid
-  -K                    :Kill rurid
-  -t                    :Check if rurid is running
-  -l                    :List all running unshare containers
-  -U [container_dir]    :Umount&kill a container
+  -v                     Show version info
+  -V                     Show version code
+  -h                     Show helps
+  -hh                    Show helps and commandline examples
+  -D                     Run daemon
+  -K                     Kill daemon
+  -t                     Check if daemon is running
+  -l                     List all running unshare containers
+  -U [container_dir]     Umount&kill a container
 
 ARGS:
-  -u                    :Enable unshare feature
-  -n                    :Set NO_NEW_PRIVS Flag
-  -s                    :Enable Seccomp
-  -d                    :Drop more capabilities for lower privilege
-  -p                    :Run privileged container
- --keep [cap]           :Keep the specified cap
- --drop [cap]           :Drop the specified cap
-  -e [env] [value]      :Set env to its value *Not work if init command is like `su -`
-  -m [dir] [mountpoint] :Mount dir to mountpoint
-  -w                    :Disable warnings
+  -u                     Enable unshare feature
+  -n                     Set NO_NEW_PRIVS Flag
+  -s                     Enable Seccomp
+  -d                     Drop more capabilities for lower privilege
+  -p                     Run privileged container
+ --keep [cap]            Keep the specified cap
+ --drop [cap]            Drop the specified cap
+  -e [env] [value]       Set env to its value *Not work if init command is like `su -`
+  -m [dir] [mountpoint]  Mount dir to mountpoint
+  -w                     Disable warnings
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              

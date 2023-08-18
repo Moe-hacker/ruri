@@ -75,9 +75,9 @@ install :all
 check :
 	@printf "\033[1;38;2;254;228;208mCheck list:\n"
 	@sleep 1.5s
-	@$(CHECKER) $(CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	@$(CHECKER) $(CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
-	@$(CHECKER) $(CHECK_ARG) $(SRC) -- $(LD_FLAGS)
+	@$(CHECKER) $(CHECK_ARG) $(SRC) -- $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
 	$(FORMATER) $(SRC)
@@ -86,16 +86,16 @@ clean :
 	rm ruri||true
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
-	@echo "  make all           :compile"
-	@echo "  make install       :install ruri to \$$PREFIX"
-	@echo "  make static        :static compile,with musl or glibc"
-	@echo "  make static-bionic :static compile,with bionic"
-	@echo "  make clean         :clean"
+	@echo "  make all            compile"
+	@echo "  make install        install ruri to \$$PREFIX"
+	@echo "  make static         static compile,with musl or glibc"
+	@echo "  make static-bionic  static compile,with bionic"
+	@echo "  make clean          clean"
 	@echo "Only for developers:"
-	@echo "  make dev           :compile without optimizations, enable gdb debug information and extra logs."
-	@echo "  make asan          :enable ASAN"
-	@echo "  make check         :run clang-tidy"
-	@echo "  make format        :format code"
+	@echo "  make dev            compile without optimizations, enable gdb debug information and extra logs."
+	@echo "  make asan           enable ASAN"
+	@echo "  make check          run clang-tidy"
+	@echo "  make format         format code"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
-	@echo "  libpthread,libcap"
+	@echo "  libpthread,libcap,libseccomp"

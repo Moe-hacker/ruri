@@ -7,7 +7,7 @@
 .sp
 .nf
 .B ruri OPTIONS
-.B ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]
+.B ruri [ARGS] CONTAINER_DIRECTORY [COMMAND [ARG]...]
 .fi
 .sp
 .SH "DESCRIPTION"
@@ -22,27 +22,27 @@
 .sp
 .SH "OPTIONS"
 .PP
-  \fB\,-v                    :Show version info
-  -V                    :Show version code
-  -h                    :Show helps
-  -hh                   :Show helps and commandline examples
-  -D                    :Run rurid
-  -K                    :Kill rurid
-  -t                    :Check if rurid is running
-  -l                    :List all running unshare containers
-  -U [container_dir]    :Umount&kill a container
+  \fB\,-v                     Show version info
+  -V                     Show version code
+  -h                     Show helps
+  -hh                    Show helps and commandline examples
+  -D                     Run daemon
+  -K                     Kill daemon
+  -t                     Check if daemon is running
+  -l                     List all running unshare containers
+  -U [container_dir]     Umount&kill a container
 .SH "ARGS"
 .PP
-  \fB\,-u                    :Enable unshare feature
-  -n                    :Set NO_NEW_PRIVS Flag
-  -s                    :Enable Seccomp
-  -d                    :Drop more capabilities for lower privilege
-  -p                    :Run privileged container
- --keep [cap]           :Keep the specified cap
- --drop [cap]           :Drop the specified cap
-  -e [env] [value]      :Set env to its value
-  -m [dir] [mountpoint] :Mount dir to mountpoint
-  -w                    :Disable warnings
+  \fB\,-u                     Enable unshare feature
+  -n                     Set NO_NEW_PRIVS Flag
+  -s                     Enable Seccomp
+  -d                     Drop more capabilities for lower privilege
+  -p                     Run privileged container
+ --keep [cap]            Keep the specified cap
+ --drop [cap]            Drop the specified cap
+  -e [env] [value]       Set env to its value *Not work if init command is like `su -`
+  -m [dir] [mountpoint]  Mount dir to mountpoint
+  -w                     Disable warnings
 .SH "NOTES"
 .TP
 \fB\,Unshare container will not enable net and user namespace, I haven't learned how to configure these namespaces\&.
@@ -51,13 +51,13 @@
 .TP
 \fB\,Environment variables will not work with init command like \`su \-\`, because \`su -\` will reset them.
 .TP
-\fB\,Init command in unshare container with pid ns support will be the real init for first time running the container, or it will have the same effect with [COMMAND [ARG]...] of chroot(8)\&.
+\fB\,Command in unshare container with pid ns support will be the init command for first time running the container\&.
 .TP
-\fB\,NO_NEW_PRIVS Flag will make commands like sudo unavailable in containers\&.
+\fB\,NO_NEW_PRIVS Flag might make commands like sudo unavailable in containers\&.
 .TP
 \fB\,Seccomp rule is based on docker default seccomp profile\&.
 .TP
-\fB\,rurid is the daemon of ruri\&. It can store the info of unshare containers and ensure that the same containers run in the same namespaces\&. It's not a necessary process, and pure chroot containers will not communicate with the daemon\&.
+\fB\,The daemon can store the info of unshare containers and ensure that the same containers run in the same namespaces\&. It's not a necessary process, and pure chroot containers will not communicate with the daemon\&.
 .SH "EXAMPLES"
 .sp
 \fB\,Quickly setup a container(with rootfstool):
@@ -96,7 +96,7 @@
 .sp
 \fB\,Unshare container's capability options are same with chroot.
 .sp
-\fB\,But it's recommended to start rurid before running unshare containers:
+\fB\,But it's recommended to start daemon before running unshare containers:
 .PP
   \fB\,\m[blue]sudo \m[white]ruri \-D
 .sp
