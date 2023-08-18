@@ -97,7 +97,7 @@
 #define FROM_CLIENT__NO_NEW_PRIVS_FALSE      "0x0f"
 #define FROM_CLIENT__ENABLE_SECCOMP_TRUE     "0x10"
 #define FROM_CLIENT__ENABLE_SECCOMP_FALSE    "0x11"
-// From subprocess of rurid.
+// From subprocess of daemon.
 #define FROM_PTHREAD__INIT_PROCESS_DIED      "0x12"
 #define FROM_PTHREAD__REGISTER_CONTAINER     "0x13"
 #define FROM_PTHREAD__UNSHARE_CONTAINER_PID  "0x14"
@@ -111,7 +111,7 @@
 #define FROM_PTHREAD__NO_NEW_PRIVS_FALSE     "0x1c"
 #define FROM_PTHREAD__ENABLE_SECCOMP_TRUE    "0x1d"
 #define FROM_PTHREAD__ENABLE_SECCOMP_FALSE   "0x1e"
-// From rurid.
+// From daemon.
 #define FROM_DAEMON__TEST_MESSAGE            "Nya!"
 #define FROM_DAEMON__UNSHARE_CONTAINER_PID   "0x1f"
 #define FROM_DAEMON__CAP_TO_DROP             "0x20"

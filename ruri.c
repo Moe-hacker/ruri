@@ -118,10 +118,12 @@ void show_version_info()
   printf("      ●  ●  ●   ● ●  ●    ●\n");
   printf("      ●   ●  ●●●  ●   ●  ●●●\n");
   printf("  Licensed under the MIT License\n");
+  printf("    <https://mit-license.org>\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
   // RURI_COMMIT_ID is defined in Makefile.
   printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
+  printf("\n");
 }
 // For `ruri -V`.
 void show_version_code()
@@ -140,36 +142,40 @@ void show_helps(bool greetings)
   {
     show_greetings();
   }
-  printf("\033[1;38;2;254;228;208mUsage:\n");
+  printf("\033[1;38;2;254;228;208mLightweight, User-friendly Linux-container Implementation\n");
+  printf("\n");
+  printf("Usage:\n");
   printf("  ruri OPTIONS\n");
-  printf("  ruri [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]\n");
+  printf("  ruri [ARGS] CONTAINER_DIRECTORY [COMMAND [ARG]...]\n");
   printf("\n");
   printf("OPTIONS:\n");
-  printf("  -v                    :Show version info\n");
-  printf("  -V                    :Show version code\n");
-  printf("  -h                    :Show helps\n");
-  printf("  -hh                   :Show helps and commandline examples\n");
-  printf("  -D                    :Run rurid\n");
-  printf("  -K                    :Kill rurid\n");
-  printf("  -t                    :Check if rurid is running\n");
-  printf("  -l                    :List all running unshare containers\n");
-  printf("  -U [container_dir]    :Umount&kill a container\n");
+  printf("  -v                     Show version info\n");
+  printf("  -V                     Show version code\n");
+  printf("  -h                     Show helps\n");
+  printf("  -hh                    Show helps and commandline examples\n");
+  printf("  -D                     Run daemon\n");
+  printf("  -K                     Kill daemon\n");
+  printf("  -t                     Check if daemon is running\n");
+  printf("  -l                     List all running unshare containers\n");
+  printf("  -U [container_dir]     Umount&kill a container\n");
   printf("\n");
   printf("ARGS:\n");
-  printf("  -u                    :Enable unshare feature\n");
-  printf("  -n                    :Set NO_NEW_PRIVS Flag\n");
-  printf("  -s                    :Enable Seccomp\n");
-  printf("  -d                    :Drop more capabilities for lower privilege\n");
-  printf("  -p                    :Run privileged container\n");
-  printf(" --keep [cap]           :Keep the specified cap\n");
-  printf(" --drop [cap]           :Drop the specified cap\n");
-  printf("  -e [env] [value]      :Set env to its value *Not work if init command is like `su -`\n");
-  printf("  -m [dir] [mountpoint] :Mount dir to mountpoint\n");
-  printf("  -w                    :Disable warnings\n");
+  printf("  -u                     Enable unshare feature\n");
+  printf("  -n                     Set NO_NEW_PRIVS Flag\n");
+  printf("  -s                     Enable Seccomp\n");
+  printf("  -d                     Drop more capabilities for lower privilege\n");
+  printf("  -p                     Run privileged container\n");
+  printf(" --keep [cap]            Keep the specified cap\n");
+  printf(" --drop [cap]            Drop the specified cap\n");
+  printf("  -e [env] [value]       Set env to its value *Not work if init command is like `su -`\n");
+  printf("  -m [dir] [mountpoint]  Mount dir to mountpoint\n");
+  printf("  -w                     Disable warnings\n");
   printf("\n");
-  printf("Default init command is `/bin/su` if it's not set\n");
+  printf("Default command to run is `/bin/su` if it's not given\n");
   printf("This program should be run with root privileges\n");
-  printf("Please unset $LD_PRELOAD before running this program\033[0m\n");
+  printf("Please unset $LD_PRELOAD before running this program\n");
+  printf("For a full user guide, see `man ruri`\033[0m\n");
+  printf("\n");
 }
 // For `ruri -hh`.
 void show_examples()
@@ -201,7 +207,7 @@ void show_examples()
   printf("  \033[32msudo ruri \033[34m--keep \033[36mcap_sys_admin \033[35m/tmp/alpine\n");
   printf("\033[1;38;2;254;228;208m#About unshare:\n");
   printf("#Unshare container's capability options are same with chroot.\n");
-  printf("#But it's recommended to start rurid before running unshare containers:\n");
+  printf("#But it's recommended to start daemon before running unshare containers:\n");
   printf("  \033[32msudo ruri \033[34m-D\n");
   printf("\033[1;38;2;254;228;208m#Run unshare container:\n");
   printf("  \033[32msudo ruri \033[34m-u \033[35m/tmp/alpine\n");
@@ -211,6 +217,7 @@ void show_examples()
   printf("  \033[32msudo ruri \033[34m-U \033[35m/tmp/alpine\n");
   printf("\033[1;38;2;254;228;208m#Finally, kill the daemon:\n");
   printf("  \033[32msudo ruri \033[34m-K\n");
+  printf("\n");
 }
 // Return the same value as mkdir()
 int mkdirs(char *dir, mode_t mode)
@@ -603,8 +610,8 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
 void container_ps()
 {
   /*
-   * It will connect to rurid and list running containers.
-   * If rurid is not running, just show error and exit.
+   * It will connect to daemon and list running containers.
+   * If daemon is not running, just show error and exit.
    */
   // Set socket address.
   struct sockaddr_un addr;
@@ -614,7 +621,7 @@ void container_ps()
   }
   // Message to read.
   char *msg = NULL;
-  // rurid will return the info of running containers.
+  // Daemon will return the info of running containers.
   send_msg_client(FROM_CLIENT__GET_PS_INFO, addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
   printf("\033[1;38;2;152;245;225m=========================\n");
@@ -642,7 +649,7 @@ void container_ps()
 bool connect_to_daemon(struct sockaddr_un *addr)
 {
   /*
-   * Set socket address and check if rurid is running.
+   * Set socket address and check if daemon is running.
    */
   // Set socket address.
   addr->sun_family = AF_UNIX;
@@ -672,8 +679,8 @@ bool connect_to_daemon(struct sockaddr_un *addr)
 void kill_daemon()
 {
   /*
-   * It will just send `kill` to rurid.
-   * If rurid is not running, show error and exit.
+   * It will just send `kill` to daemon.
+   * If daemon is not running, show error and exit.
    */
   // Set socket address.
   struct sockaddr_un addr;
@@ -681,7 +688,7 @@ void kill_daemon()
   {
     error("Daemon not running");
   }
-  // Rurid will kill itself after received this message.
+  // daemon will kill itself after received this message.
   send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
 }
 // For container_daemon(), kill & umount all containers.
@@ -1439,7 +1446,7 @@ void container_daemon()
    */
   // Set process name.
   prctl(PR_SET_NAME, "rurid");
-  // Ignore SIGTTIN, since rurid is running in the background, SIGTTIN may kill it.
+  // Ignore SIGTTIN, since daemon is running in the background, SIGTTIN may kill it.
   sigset_t sigs;
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
@@ -2316,7 +2323,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
 #ifdef __RURI_DEV__
   printf("%s%s\n", "Container pid from daemon:", container_pid);
 #endif
-  // Use setns() to enter namespaces created by rurid.
+  // Use setns() to enter namespaces created by daemon.
   char cgroup_ns_file[PATH_MAX] = {'\000'};
   char ipc_ns_file[PATH_MAX] = {'\000'};
   char mount_ns_file[PATH_MAX] = {'\000'};
@@ -2415,8 +2422,8 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
 int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
   /*
-   * If rurid is not running, it will create namespaces itself.
-   * Or it will connect to rurid and use setns() to join namespaces created by rurid.
+   * If daemon is not running, it will create namespaces itself.
+   * Or it will connect to daemon and use setns() to join namespaces created by daemon.
    * After fork() to send itself to new namespaces, it will call to run_chroot_container().
    */
   // Set default init.
@@ -2715,7 +2722,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 void umount_container(char *container_dir)
 {
   /*
-   * It will try to connect to rurid, and rurid will kill daemon_init_unshare_container() process of container if the container is running.
+   * It will try to connect to daemon, and daemon will kill daemon_init_unshare_container() process of container if the container is running.
    * Then it will umount() container_dir and other directories in it.
    */
   // Set socket address.
