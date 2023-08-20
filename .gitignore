@@ -1,17 +1,11 @@
-container
-libcap.a
-container-amd64.zip
-container-arm64.zip
-tmpfile
+# For testing.
 a.out
-tmp.c
+t.c
+# Binary
 ruri
 ruri-amd64.zip
 ruri-arm64.zip
+# Editor configuration.
 .vscode/
-massif*
-TODO
-.license_accepted
-CHANGELOG
-daemon.o
+# Compressed doc.
 ruri.1.gz
