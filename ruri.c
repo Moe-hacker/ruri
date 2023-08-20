@@ -2010,6 +2010,7 @@ void container_daemon()
       msg = NULL;
       umount_all_containers(container);
       // Exit daemon.
+      remove(addr.sun_path);
       exit(EXIT_SUCCESS);
     }
     // Get ps info of all registered containers.
