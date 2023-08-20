@@ -16,7 +16,6 @@
 * Your warranty is void.
 * I am not responsible for anything that may happen to your device by using this program.
 * You do it at your own risk and take the responsibility upon yourself.
-* And you are not to blame the author or Github and its developers.
 * This program has no Super Cow Powers.
 ```
 ### About ruri:         
@@ -29,7 +28,7 @@ It uses libcap and libseccomp for security, and most devices in /dev will never 
 - Static:      
 Compile ruri with `make static`, it will be compiled as a small binary file(less than 1M), but it can be run everywhere without dependent libraries.      
 
-&emsp;The default capability set is the same as the docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
+&emsp;The default capability set is based on docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
 ### Install:      
 ```
 git clone https://github.com/Moe-hacker/ruri
