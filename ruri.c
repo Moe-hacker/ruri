@@ -40,6 +40,7 @@ void error(char *msg)
    * It's a `moe` program, but also should be standardized and rigorous.
    */
   fprintf(stderr, "\033[31m%s\033[0m\n", msg);
+  // A very cute catgirl nya~~
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  .^.   .^.");
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  /⋀\\_ﾉ_/⋀\\");
   fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
@@ -81,6 +82,7 @@ void show_greetings()
   {
     strcat(space, "");
   }
+  // Yes, it's Hoppou!
   printf("%s%s\n", space, "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
   printf("%s%s\n", space, "          ▅▅▀▀▀               ▀▀▅▅");
   printf("%s%s\n", space, "     ▅▅▅▀▀            ▅           ▀▅");
@@ -110,6 +112,7 @@ void show_version_info()
   /*
    * Just show version info and license.
    * Version info is defined in macro RURI_VERSION.
+   * macro RURI_COMMIT_ID is defined in Makefile.
    */
   printf("\n");
   printf("\033[1;38;2;254;228;208m      ●●●●  ●   ● ●●●●   ●●●\n");
@@ -121,7 +124,6 @@ void show_version_info()
   printf("    <https://mit-license.org>\n");
   printf("Copyright (C) 2022-2023 Moe-hacker\n");
   printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
-  // RURI_COMMIT_ID is defined in Makefile.
   printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
   printf("\n");
 }
@@ -182,7 +184,7 @@ void show_examples()
 {
   /*
    * Command line examples.
-   * I hope you can understand...
+   * I think you can understand...
    */
   printf("\n");
   printf("\033[1;38;2;254;228;208m#Quickly setup a container(with rootfstool):\n");
@@ -751,8 +753,8 @@ void umount_all_containers(struct CONTAINERS *container)
 void *daemon_init_unshare_container(void *arg)
 {
   /*
-   * It is called as a child process of container_daemon()
-   * It will call to unshare(), send unshare_pid after fork() and other information to container_daemon()
+   * It is called as a child process of container_daemon().
+   * It will call to unshare() and send unshare_pid after fork() and other information to daemon.
    * and call to run_chroot_container() to exec init command.
    * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
    */
@@ -779,6 +781,7 @@ void *daemon_init_unshare_container(void *arg)
     connect_to_daemon(&addr);
     char container_pid[1024];
     sprintf(container_pid, "%d", unshare_pid);
+    // Register the container into daemon's CONTAINERS struct.
     send_msg_client(FROM_PTHREAD__REGISTER_CONTAINER, addr);
     send_msg_client(FROM_PTHREAD__UNSHARE_CONTAINER_PID, addr);
     send_msg_client(container_pid, addr);
@@ -788,7 +791,7 @@ void *daemon_init_unshare_container(void *arg)
     {
       for (int i = 0; i < CAP_LAST_CAP; i++)
       {
-        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN
+        // 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
         if (!container_info->drop_caplist[i])
         {
           send_msg_client(cap_to_name(0), addr);
@@ -862,7 +865,7 @@ void *daemon_init_unshare_container(void *arg)
   }
   return 0;
 }
-// Run after chroot(), called by run_chroot_container()
+// Run after chroot(), called by run_chroot_container().
 void init_container()
 {
   /*
@@ -1448,6 +1451,15 @@ void container_daemon()
    * If the code is hard to write,
    * it should be hard to read nya~
    */
+  /*
+   * How ruri creates a container:
+   * ruri checks if the daemon is running.
+   * ruri connects to the daemon and send the info of container to daemon.
+   * daemon gets info and create daemon_init_unshare() thread.
+   * daemon_init_unshare() sends the info back.
+   * daemon registers the container into CONTAINERS struct.
+   * It works, so do not change it.
+   */
   // Set process name.
   prctl(PR_SET_NAME, "rurid");
   // Ignore SIGTTIN, since daemon is running in the background, SIGTTIN may kill it.
@@ -1455,7 +1467,7 @@ void container_daemon()
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
   sigprocmask(SIG_BLOCK, &sigs, 0);
-  // For pthread_create()
+  // For pthread_create().
   pthread_t pthread_id = 0;
   // Check if we are running with root privileges.
   if (getuid() != 0)
@@ -1523,7 +1535,8 @@ void container_daemon()
   }
   free(msg);
   msg = NULL;
-  // Fork itself into the background.
+  // Fork() itself into the background.
+  // It's really a daemon now, because its parent process will be init.
   pid_t pid = fork();
   if (pid > 0)
   {
@@ -2154,7 +2167,7 @@ pid_t init_unshare_container(bool no_warnings)
 pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
 {
   /*
-   * Request container_pid from daemon, use setns() to join namespaces and then fork() itself into them.
+   * Request container_pid and other info of container from daemon, use setns() to join namespaces and then fork() itself into them.
    * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
    */
   pid_t unshare_pid = INIT_VALUE;
@@ -2656,7 +2669,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     closedir(direxist);
   }
-  // Set up Seccomp BPF
+  // Set up Seccomp BPF.
   // It will also set NO_NEW_PRIV Flag.
   if (container_info->enable_seccomp != false)
   {
@@ -2704,7 +2717,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     }
   }
   // Login to container.
-  // Use exec() family function because system() may be unavailable now.
+  // Use execv() function because system() may be unavailable now.
   usleep(200000);
   // Set NO_NEW_PRIVS Flag to protect container.
   // It requires Linux3.5 or later.
