@@ -43,16 +43,16 @@
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 #warning "This program has not been tested on Linux 3.x or earlier."
 #endif
-// This program need to be linked with `-lpthread` on some devices.
+// This program need to be linked with `-lpthread` if the system uses glibc or musl.
 #include <pthread.h>
 #include <sched.h>
-// This program need to be linked with `-lseccomp`
+// This program need to be linked with `-lseccomp`.
 #include <seccomp.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// This program need to be linked with `-lcap`
+// This program need to be linked with `-lcap`.
 #include <sys/capability.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
@@ -69,7 +69,7 @@
 #define INIT_VALUE (-114)
 // Version info.
 #define RURI_VERSION "2.0-beta3"
-// Limitations
+// Limitations.
 #define MAX_INIT_COMMANDS 1024
 #define MAX_ENVS (128 * 2)
 #define MAX_MOUNTPOINTS (128 * 2)
@@ -135,7 +135,7 @@
 // Info of containers.
 struct CONTAINERS
 {
-  // For container_daemon()
+  // For container_daemon().
   char *container_dir;
   // For send_msg_daemon(), we define it as char*.
   char *unshare_pid;
@@ -149,16 +149,16 @@ struct CONTAINERS
 // Info of a container to create.
 struct CONTAINER_INFO
 {
-  // For daemon_init_unshare_container() and container_daemon()
+  // For daemon_init_unshare_container() and container_daemon().
   char *container_dir;
   cap_value_t drop_caplist[CAP_LAST_CAP + 1];
   char *init_command[MAX_INIT_COMMANDS];
-  // Mount before chroot()
+  // Mount before chroot().
   char *mountpoint[MAX_MOUNTPOINTS];
   char *env[MAX_ENVS];
   bool no_new_privs;
   bool enable_seccomp;
-  // Only be used in container_daemon()
+  // Only be used in container_daemon().
   // For setns(), we define it as char*.
   char *unshare_pid;
 };
