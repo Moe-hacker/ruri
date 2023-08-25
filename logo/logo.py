@@ -26,7 +26,6 @@
 import matplotlib.pyplot as pyplot
 import matplotlib.patches as patches
 import math
-import sys
 # Set image parameters.
 figure, axes = pyplot.subplots(dpi=200, figsize=(8, 4))
 pyplot.box(False)
