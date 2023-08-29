@@ -162,6 +162,7 @@ struct CONTAINER_INFO
   // For setns(), we define it as char*.
   char *unshare_pid;
 };
+// For comments of the following functions, see ruri.c.
 void error(char *msg);
 void show_greetings();
 void show_version_info();

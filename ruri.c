@@ -51,7 +51,6 @@ void error(char *msg)
   fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");
   exit(1);
 }
-// Greeting information.
 // As an easter agg.
 void show_greetings()
 {
@@ -3247,9 +3246,9 @@ int main(int argc, char **argv)
       break;
     }
   }
-  // Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in containers.
+  // Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in GNU/Linux containers.
   setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
-  // Pure-chroot and unshare container are two functions now.
+  // Pure-chroot and unshare container are two functions.
   if (use_unshare)
   {
     run_unshare_container(container_info, no_warnings);
