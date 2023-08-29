@@ -1,6 +1,7 @@
+# This file is part of ruri, but without any license.
+# Just feel free to copy or modify this file if you'd like to.
 ---
 Language:        Cpp
-# BasedOnStyle:  Microsoft
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: None
