@@ -1308,12 +1308,12 @@ void setup_seccomp(struct CONTAINER_INFO *container_info)
 #if !defined(__s390__) && !defined(__s390x__)
   if (is_in_list(container_info->drop_caplist, CAP_LAST_CAP + 1, CAP_SYS_ADMIN))
   {
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0, 0, 2114060288, SCMP_CMP_MASKED_EQ);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0, SCMP_A0(SCMP_CMP_MASKED_EQ, 2114060288));
   }
 #else
   if (is_in_list(container_info->drop_caplist, CAP_LAST_CAP + 1, CAP_SYS_ADMIN))
   {
-    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0, 1, 2114060288, SCMP_CMP_MASKED_EQ);
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0, SCMP_A1(SCMP_CMP_MASKED_EQ, 2114060288));
   }
 #endif
 #if defined(__ppc64le__)
@@ -1435,11 +1435,11 @@ void setup_seccomp(struct CONTAINER_INFO *container_info)
     seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(unshare), 0);
   }
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket), 0, 0, 40, SCMP_CMP_NE);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, 0, 0, SCMP_CMP_EQ);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, 0, 8, SCMP_CMP_EQ);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, 0, 131072, SCMP_CMP_EQ);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, 0, 131080, SCMP_CMP_EQ);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, 0, 4294967295, SCMP_CMP_EQ);
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 0));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 8));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 131072));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 131080));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 4294967295));
   seccomp_load(ctx);
 }
 // Daemon process used to store unshare container information and init unshare container.
