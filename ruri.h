@@ -162,6 +162,8 @@ struct CONTAINER_INFO
   // For setns(), we define it as char*.
   char *unshare_pid;
 };
+// This function is in pstree.c.
+void pstree(int parent);
 // For comments of the following functions, see ruri.c.
 void error(char *msg);
 void show_greetings();
