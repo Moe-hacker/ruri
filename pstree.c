@@ -172,7 +172,7 @@ void print_tree(struct PSTREE *pstree, int depth)
      * How this function works:
      * Print info of current pid.
      * Print info of the child tree of current pid.
-     * Print info of ->next pid.
+     * Print info of ->next node.
      */
     if (pstree == NULL)
     {
@@ -196,7 +196,7 @@ void print_tree(struct PSTREE *pstree, int depth)
     print_tree(pstree->child, depth + 1);
     print_tree(pstree->next, depth);
 }
-void pstree(int parent)
+void pstree(pid_t parent)
 {
     /*
      * This function gets the pid that is bigger than parent,
