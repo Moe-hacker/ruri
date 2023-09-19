@@ -42,7 +42,7 @@ OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -fstack-protector-all -fPIE -DRURI_C
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
 DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 ASAN_CFLAGS = -no-pie -O0 -fsanitize=address,leak -fsanitize-recover=address,all
-SRC = src/ruri.c src/pstree.c src/seccomp.c
+SRC = src/main.c src/pstree.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
 HEADER = src/ruri.h
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)

@@ -28,6 +28,9 @@
  *
  *
  */
+// The macro __RURI_DEV__ will enable extra logs.
+// Do not uncomment it, use `-D__RURI_DEV__` to compile instead.
+// #define __RURI_DEV__
 #ifndef __linux__
 #error "This program is only for linux."
 #endif
@@ -177,9 +180,9 @@ int mkdirs(char *dir, mode_t mode);
 void add_to_list(cap_value_t *list, int length, cap_value_t cap);
 bool is_in_list(const cap_value_t *list, int length, cap_value_t cap);
 void del_from_list(cap_value_t *list, int length, cap_value_t cap);
-struct CONTAINERS *add_node(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container);
-struct CONTAINERS *read_node(char *container_dir, struct CONTAINERS *container);
-struct CONTAINERS *del_container(char *container_dir, struct CONTAINERS *container);
+struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container);
+struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *container);
+struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *container);
 bool container_active(char *container_dir, struct CONTAINERS *container);
 ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
