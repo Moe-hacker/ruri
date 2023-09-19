@@ -162,8 +162,10 @@ struct CONTAINER_INFO
   // For setns(), we define it as char*.
   char *unshare_pid;
 };
-// This function is in pstree.c.
+// This function is in pstree.c
 void pstree(int parent);
+// This function is in seccomp.c
+void setup_seccomp(struct CONTAINER_INFO *container_info);
 // For comments of the following functions, see ruri.c.
 void error(char *msg);
 void show_greetings();
@@ -190,7 +192,6 @@ bool connect_to_daemon(struct sockaddr_un *addr);
 void umount_all_containers(struct CONTAINERS *container);
 void *daemon_init_unshare_container(void *arg);
 void init_container();
-void setup_seccomp(struct CONTAINER_INFO *container_info);
 void container_daemon();
 bool check_container(char *container_dir);
 pid_t init_unshare_container(bool no_warnings);
