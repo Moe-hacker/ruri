@@ -27,7 +27,7 @@
  *
  *
  */
-#include "ruri.h"
+#include "../src/ruri.h"
 struct PSTREE
 {
   pid_t pid;

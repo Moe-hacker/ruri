@@ -42,10 +42,13 @@ OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
 DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 ASAN_CFLAGS = -no-pie -O0 -fsanitize=address,leak -fsanitize-recover=address,all
-SRC = src/main.c src/pstree.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c src/cgroup.c
+SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
+DEV_SRC = dev/pstree.c dev/cgroup.c
 HEADER = src/ruri.h
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
+RURI_DEV = $(DEV_SRC) $(SRC) -o $(BIN_TARGET)
+.PHONY: dev
 all :mandoc
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
@@ -55,10 +58,10 @@ mandoc :
 	@gzip -kf doc/ruri.1
 dev :
 	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
+	@$(CC) $(DEV_CFLAGS) $(RURI_DEV) $(LD_FLAGS)
 asan :
 	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI) $(LD_FLAGS)
+	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI_DEV) $(LD_FLAGS)
 static :mandoc
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
@@ -77,11 +80,10 @@ check :
 	@sleep 1.5s
 	@$(CHECKER) $(CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
-	@$(CHECKER) $(CHECK_ARG) $(SRC) -- $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+	@$(CHECKER) $(CHECK_ARG) $(SRC) $(DEV_SRC) -- $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
-	$(FORMATER) $(SRC)
-	$(FORMATER) $(HEADER)
+	$(FORMATER) $(SRC) $(DEV_SRC) $(HEADER)
 clean :
 	rm ruri||true
 help :
