@@ -56,6 +56,7 @@ struct PSTREE *add_pid(struct PSTREE *pstree, pid_t pid)
 struct PSTREE *add_child(struct PSTREE *pstree, pid_t ppid, pid_t pid)
 {
   /*
+   * Walk all nodes in pstree.
    * If we find ppid in pstree nodes, add pid to the child struct of its ppid.
    * Or this function will do nothing.
    * So we can always run add_child(pstree,ppid,pid) to check && add a pid.
@@ -170,9 +171,12 @@ void print_tree(struct PSTREE *pstree, int depth)
 {
   /*
    * How this function works:
+   * If current node is NULL, stop.
+   * Or:
    * Print info of current pid.
    * Print info of the child tree of current pid.
    * Print info of ->next node.
+   * So that it will walk every nodes.
    */
   if (pstree == NULL)
   {
@@ -204,7 +208,7 @@ void pstree(pid_t parent)
 {
   /*
    * This function gets the pid that is bigger than parent,
-   * Try to add them to pstree struct if they are child of parent that is given.
+   * Try to add them to pstree struct if they are child processes of parent pid that is given.
    * then call print_tree to print pid tree info.
    */
   DIR *proc_dir = opendir("/proc");
