@@ -26,7 +26,7 @@ Although it has many args in the help page, the basic usage is very very simple,
 - Secure:      
 It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers.
 - Static:      
-Compile ruri with `make static`, it will be compiled as a small binary file(less than 1M), but it can be run everywhere without dependent libraries.      
+Compile ruri with `make static`, it will be compiled as a small binary file(less than 1M), but it can be run anywhere without dependent libraries.      
 
 &emsp;The default capability set is based on docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
 ### Install:      
@@ -98,7 +98,7 @@ OPTIONS:
 ARGS:
   -u                     Enable unshare feature
   -n                     Set NO_NEW_PRIVS Flag
-  -s                     Enable Seccomp
+  -s                     Enable built-in Seccomp profile
   -d                     Drop more capabilities for lower privilege
   -p                     Run privileged container
  --keep [cap]            Keep the specified cap
