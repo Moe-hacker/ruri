@@ -44,7 +44,7 @@ DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D
 ASAN_CFLAGS = -no-pie -O0 -fsanitize=address,leak -fsanitize-recover=address,all
 SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
 DEV_SRC = dev/pstree.c dev/cgroup.c
-HEADER = src/ruri.h
+HEADER = src/ruri.h src/msg.h
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
 RURI_DEV = $(DEV_SRC) $(SRC) -o $(BIN_TARGET)
