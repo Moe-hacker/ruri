@@ -528,5 +528,8 @@ void setup_seccomp(struct CONTAINER_INFO *container_info)
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 131072, 0));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 131080, 0));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(personality), 0, SCMP_A0(SCMP_CMP_EQ, 4294967295, 0));
+  // Disable no_new_privs bit by default.
+  seccomp_attr_set(ctx, SCMP_FLTATR_CTL_NNP, 0);
+  // Load seccomp rules.
   seccomp_load(ctx);
 }
