@@ -251,7 +251,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     closedir(direxist);
   }
   // Set up Seccomp BPF.
-  // It will also set NO_NEW_PRIV Flag.
   if (container_info->enable_seccomp != false)
   {
     setup_seccomp(container_info);
@@ -300,7 +299,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Login to container.
   // Use execv() function because system() may be unavailable now.
   usleep(200000);
-  // Set NO_NEW_PRIVS Flag to protect container.
+  // Set NO_NEW_PRIVS Flag.
   // It requires Linux3.5 or later.
   // It will make sudo unavailable in container.
   if (container_info->no_new_privs != false)
