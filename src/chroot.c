@@ -306,6 +306,8 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
   }
+  // Disallow raising ambient capabilities via the prctl(2) PR_CAP_AMBIENT_RAISE operation.
+  prctl(PR_SET_SECUREBITS, SECBIT_NO_CAP_AMBIENT_RAISE);
   if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
