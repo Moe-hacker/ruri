@@ -38,9 +38,9 @@ pid_t init_unshare_container(bool no_warnings)
    */
   pid_t unshare_pid = INIT_VALUE;
   // Create namespaces.
-  if (unshare(CLONE_NEWNS) == -1)
+  if (unshare(CLONE_NEWNS) == -1 && !no_warnings)
   {
-    error("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
+    printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
   }
   if (unshare(CLONE_NEWUTS) == -1 && !no_warnings)
   {

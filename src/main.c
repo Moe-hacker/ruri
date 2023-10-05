@@ -485,20 +485,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    // Enable mount ns for chroot containers.
-    if (unshare(CLONE_NEWNS) == -1)
-    {
-      error("mount ns does not supported on this device!");
-    }
-    pid_t nspid = fork();
-    if (nspid != 0)
-    {
-      waitpid(nspid, NULL, 0);
-    }
-    else
-    {
-      run_chroot_container(container_info, no_warnings);
-    }
+    run_chroot_container(container_info, no_warnings);
   }
   return 0;
 }
