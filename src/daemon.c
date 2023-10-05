@@ -246,7 +246,10 @@ void *daemon_init_unshare_container(void *arg)
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
   // Try to create namespaces with unshare(), no warnings to show because daemon will be run in the background.
-  unshare(CLONE_NEWNS);
+  if (unshare(CLONE_NEWNS) == -1)
+  {
+    error("mount ns does not supported on this device!");
+  }
   unshare(CLONE_NEWUTS);
   unshare(CLONE_NEWIPC);
   unshare(CLONE_NEWPID);
