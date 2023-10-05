@@ -62,6 +62,7 @@ void init_container()
   mount("/proc/asound", "/proc/asound", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
+  mount("tmpfs", "/sys/block", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
   // For getting dev nodes.
   dev_t dev = 0;
   // Create system runtime files in /dev and then fix permissions.
