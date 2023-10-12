@@ -36,7 +36,7 @@ void add_to_list(cap_value_t *list, int length, cap_value_t cap)
    * Caps are initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
    */
 #ifdef __RURI_DEV__
-  printf("Add %s to drop_caplist.\n", cap_to_name(cap));
+  printf("\033[1;38;2;254;228;208mAdd \033[1;38;2;152;245;225m%s \033[1;38;2;254;228;208mto drop_caplist.\033[0m\n", cap_to_name(cap));
 #endif
   bool in = false;
   // Check if the cap to add is already in caplist.
@@ -91,7 +91,7 @@ void del_from_list(cap_value_t *list, int length, cap_value_t cap)
    * Or we will overwrite it and caps after it with theirs next cap to keep the list continuous.
    */
 #ifdef __RURI_DEV__
-  printf("Del %s from drop_caplist.\n", cap_to_name(cap));
+  printf("\033[1;38;2;254;228;208mDel \033[1;38;2;152;245;225m%s \033[1;38;2;254;228;208mfrom drop_caplist.\033[0m\n", cap_to_name(cap));
 #endif
   for (int i = 0; i < length; i++)
   {
