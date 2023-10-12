@@ -72,7 +72,7 @@
 // For initializing some variables.
 #define INIT_VALUE (-114)
 // Version info.
-#define RURI_VERSION "2.1"
+#define RURI_VERSION "2.2"
 // Limitations.
 #define MAX_INIT_COMMANDS 1024
 #define MAX_ENVS (128 * 2)
