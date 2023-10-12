@@ -36,7 +36,7 @@ ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd)
    * Although the returned value has never been used, it will return the number written.
    */
 #ifdef __RURI_DEV__
-  printf("%s%s\n", "Daemon send msg: ", msg);
+  printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mDaemon send msg: \033[1;38;2;152;245;225m", msg);
 #endif
   unsigned int size = sizeof(addr);
   // Accept a connection.
@@ -56,7 +56,7 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
    * Although the returned value has never been used, it will return the number written.
    */
 #ifdef __RURI_DEV__
-  printf("%s%s\n", "Client send msg: ", msg);
+  printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mClient send msg: \033[1;38;2;152;245;225m", msg);
 #endif
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
@@ -105,11 +105,11 @@ char *read_msg_daemon(struct sockaddr_un addr, int sockfd)
 #ifdef __RURI_DEV__
   if (ret != NULL)
   {
-    printf("%s%s\n", "Daemon read msg: ", ret);
+    printf("%s%s\n\033[0m", "\033[1;38;2;254;228;208mDaemon read msg: \033[1;38;2;152;245;225m", ret);
   }
   else
   {
-    printf("%s\n", "Daemon read msg: NULL");
+    printf("%s\n\033[0m", "\033[1;38;2;254;228;208mDaemon read msg: \033[1;38;2;152;245;225mNULL");
   }
 #endif
   return (char *)ret;
@@ -150,11 +150,11 @@ char *read_msg_client(struct sockaddr_un addr)
 #ifdef __RURI_DEV__
   if (ret != NULL)
   {
-    printf("%s%s\n", "Client read msg: ", ret);
+    printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mClient read msg: \033[1;38;2;152;245;225m", ret);
   }
   else
   {
-    printf("%s\n", "Client read msg: NULL");
+    printf("%s\033[0m\n", "\033[1;38;2;254;228;208mClient read msg: \033[1;38;2;152;245;225mNULL");
   }
 #endif
   return (char *)ret;
