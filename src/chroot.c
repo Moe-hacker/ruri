@@ -297,8 +297,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       break;
     }
   }
-  // Login to container.
-  // Use execv() function because system() may be unavailable now.
   usleep(200000);
   // Set NO_NEW_PRIVS Flag.
   // It requires Linux3.5 or later.
@@ -315,6 +313,8 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     close(i);
   }
+  // Login to container.
+  // Use execv() function because system() may be unavailable now.
   if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
