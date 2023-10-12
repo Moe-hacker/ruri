@@ -309,6 +309,12 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   }
   // Disallow raising ambient capabilities via the prctl(2) PR_CAP_AMBIENT_RAISE operation.
   prctl(PR_SET_SECUREBITS, SECBIT_NO_CAP_AMBIENT_RAISE);
+  // We only need 0(stdin), 1(stdout), 2(stderr),
+  // So we close the other fds to avoid security issues.
+  for (int i = 3; i <= 10; i++)
+  {
+    close(i);
+  }
   if (execv(container_info->init_command[0], container_info->init_command) == -1)
   {
     // Catch exceptions.
