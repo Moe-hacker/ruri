@@ -40,7 +40,7 @@ CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unrol
 LD_FLAGS = -lcap -lpthread -lseccomp
 OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
-DEV_CFLAGS = -ggdb -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+DEV_CFLAGS = -ggdb -O0 -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 ASAN_CFLAGS = -no-pie -O0 -fsanitize=address,leak -fsanitize-recover=address,all
 SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
 DEV_SRC = dev/pstree.c dev/cgroup.c
