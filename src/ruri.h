@@ -31,11 +31,13 @@
 // The macro __RURI_DEV__ will enable extra logs.
 // Do not uncomment it, use `-D__RURI_DEV__` to compile instead.
 // #define __RURI_DEV__
+//
+// Enable Linux features.
 #ifndef __linux__
 #error "This program is only for linux."
-#endif
-// Enable Linux features.
+#else
 #define _GNU_SOURCE
+#endif
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>

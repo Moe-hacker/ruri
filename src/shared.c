@@ -223,6 +223,7 @@ int mkdirs(char *dir, mode_t mode)
   /*
    * A very simple implementation of mkdir -p
    * I don't know why it seems that there isn't an existing function to do this...
+   * This function is only for absolute paths.
    */
   char buf[PATH_MAX];
   for (unsigned long i = 1; i < strlen(dir); i++)
