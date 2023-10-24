@@ -132,6 +132,7 @@ ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
 char *read_msg_daemon(struct sockaddr_un addr, int sockfd);
 char *read_msg_client(struct sockaddr_un addr);
+bool msgcmp(int model, const char *msg, struct sockaddr_un addr, int sockfd);
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
 void container_ps();
 void kill_daemon();

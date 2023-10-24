@@ -119,7 +119,7 @@ char *read_msg_client(struct sockaddr_un addr)
 {
   /*
    * It will return the messages have been read.
-   * free() the memory of msg after used it to avoid leak of memory.
+   * free() the memory of msg after using it to avoid leak of memory.
    */
   char buf[PATH_MAX] = {0};
   static const char *ret = NULL;
@@ -188,4 +188,26 @@ bool connect_to_daemon(struct sockaddr_un *addr)
   }
   free(msg);
   return true;
+}
+// Receive a message and compare if it's same as msg.
+// It will automatically free() msg.
+// model: 1 for server and 2 for client.
+bool msgcmp(int model, const char *msg, struct sockaddr_un addr, int sockfd)
+{
+  char *buf = NULL;
+  if (model == 1)
+  {
+    buf = read_msg_daemon(addr, sockfd);
+  }
+  else
+  {
+    buf = read_msg_client(addr);
+  }
+  bool ret = false;
+  if (strcmp(buf, msg) == 0)
+  {
+    ret = true;
+  }
+  free(buf);
+  return ret;
 }
