@@ -108,23 +108,23 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
     msg = NULL;
     // Send init command to daemon.
     send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
-    if (strcmp(container_info->init_command[0], "/bin/su") != 0)
+    if (strcmp(container_info->command[0], "/bin/su") != 0)
     {
       for (int i = 0; i < 1023; i++)
       {
-        if (container_info->init_command[i] != NULL)
+        if (container_info->command[i] != NULL)
         {
-          send_msg_client(container_info->init_command[i], addr);
-          free(container_info->init_command[i]);
-          container_info->init_command[i] = NULL;
+          send_msg_client(container_info->command[i], addr);
+          free(container_info->command[i]);
+          container_info->command[i] = NULL;
         }
         else
         {
           break;
         }
       }
-      container_info->init_command[0] = strdup("/bin/su");
-      container_info->init_command[1] = NULL;
+      container_info->command[0] = strdup("/bin/su");
+      container_info->command[1] = NULL;
     }
     send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
     // Send the cap to drop to daemon.
@@ -370,10 +370,10 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
    * After fork() to send itself to new namespaces, it will call to run_chroot_container().
    */
   // Set default init.
-  if (container_info->init_command[0] == NULL)
+  if (container_info->command[0] == NULL)
   {
-    container_info->init_command[0] = strdup("/bin/su");
-    container_info->init_command[1] = NULL;
+    container_info->command[0] = strdup("/bin/su");
+    container_info->command[1] = NULL;
   }
 #ifdef __RURI_DEV__
   printf("\033[1;38;2;254;228;208mRun unshare container:\n");
@@ -381,9 +381,9 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
   for (int i = 0;;)
   {
-    if (container_info->init_command[i] != NULL)
+    if (container_info->command[i] != NULL)
     {
-      printf("%s%s", container_info->init_command[i], " ");
+      printf("%s%s", container_info->command[i], " ");
       i++;
     }
     else

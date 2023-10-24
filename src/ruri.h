@@ -76,7 +76,7 @@
 // Version info.
 #define RURI_VERSION "2.2"
 // Limitations.
-#define MAX_INIT_COMMANDS 1024
+#define MAX_COMMANDS 1024
 #define MAX_ENVS (128 * 2)
 #define MAX_MOUNTPOINTS (128 * 2)
 // For interprocess communication.
@@ -94,7 +94,7 @@ struct CONTAINERS
   char *mountpoint[MAX_MOUNTPOINTS];
   bool no_new_privs;
   bool enable_seccomp;
-  struct CONTAINERS *container;
+  struct CONTAINERS *next;
 };
 // Info of a container to create.
 struct CONTAINER_INFO
@@ -102,7 +102,7 @@ struct CONTAINER_INFO
   // For daemon_init_unshare_container() and container_daemon().
   char *container_dir;
   cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-  char *init_command[MAX_INIT_COMMANDS];
+  char *command[MAX_COMMANDS];
   // Mount before chroot().
   char *mountpoint[MAX_MOUNTPOINTS];
   char *env[MAX_ENVS];

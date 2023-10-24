@@ -22,7 +22,7 @@
 &emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
 &emsp;ruri is the romaji acronym of Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
 - Simple:      
-Although it has many args in the help page, the basic usage is very very simple, you can use it just like the command chroot.
+Although it has many args in the help page, the basic usage is very very simple, you can use it just like the command `chroot`.
 - Secure:      
 It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers.
 - Static:      

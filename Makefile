@@ -32,19 +32,26 @@ BINCOLOR    = \033[34;1m
 ENDCOLOR    = \033[0m
 CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
+# For `make fromat`.
 FORMATER = clang-format -i
+# Compiler
 CC = clang
 STRIP = strip
+# For `make check`.
 CHECKER = clang-tidy --use-color
 CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-misc-no-recursion,-bugprone-easily-swappable-parameters,-readability-identifier-length,-cert-err34-c,-bugprone-assignment-in-if-condition,-altera*
+# Link with libcap, libpthread and libseccomp.
 LD_FLAGS = -lcap -lpthread -lseccomp
+# For production.
 OPTIMIZE_CFLAGS = -O2 -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
+# For testing.
 DEV_CFLAGS = -ggdb -O0 -Wall -Wextra -pedantic -Wconversion -std=c2x -Wno-newline-eof -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 ASAN_CFLAGS = -no-pie -fsanitize=address,leak -fsanitize-recover=address,all
+# We just compile all files at the same time.
 SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
 DEV_SRC = dev/pstree.c dev/cgroup.c
-HEADER = src/ruri.h src/msg.h
+HEADER_SRC = src/ruri.h src/msg.h
 BIN_TARGET = ruri
 RURI = $(SRC) -o $(BIN_TARGET)
 RURI_DEV = $(DEV_SRC) $(SRC) -o $(BIN_TARGET)
@@ -83,7 +90,7 @@ check :
 	@$(CHECKER) $(CHECK_ARG) $(SRC) $(DEV_SRC) -- $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
-	$(FORMATER) $(SRC) $(DEV_SRC) $(HEADER)
+	$(FORMATER) $(SRC) $(DEV_SRC) $(HEADER_SRC)
 clean :
 	rm ruri||true
 help :

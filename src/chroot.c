@@ -54,7 +54,7 @@ void init_container()
   mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
   mkdir("/dev/mqune", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
   mount("mqune", "/dev/mqune", "mqune", 0, NULL);
-  // Protect some system runtime directories as read-only.
+  // Protect some system runtime directories by mounting themselves as read-only.
   mount("/proc/bus", "/proc/bus", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/proc/fs", "/proc/fs", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/proc/irq", "/proc/irq", "proc", MS_BIND | MS_RDONLY, NULL);
@@ -63,36 +63,26 @@ void init_container()
   mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
   mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
   mount("tmpfs", "/sys/block", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
-  // For getting dev nodes.
-  dev_t dev = 0;
   // Create system runtime files in /dev and then fix permissions.
-  dev = makedev(1, 3);
-  mknod("/dev/null", S_IFCHR, dev);
+  mknod("/dev/null", S_IFCHR, makedev(1, 3));
   chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  dev = makedev(5, 1);
-  mknod("/dev/console", S_IFCHR, dev);
+  mknod("/dev/console", S_IFCHR, makedev(5, 1));
   chown("/dev/console", 0, 5);
   chmod("/dev/console", S_IRUSR | S_IWUSR | S_IWGRP | S_IWOTH);
-  dev = makedev(1, 5);
-  mknod("/dev/zero", S_IFCHR, dev);
+  mknod("/dev/zero", S_IFCHR, makedev(1, 5));
   chmod("/dev/zero", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  dev = makedev(5, 2);
-  mknod("/dev/ptmx", S_IFCHR, dev);
+  mknod("/dev/ptmx", S_IFCHR, makedev(5, 2));
   chown("/dev/ptmx", 0, 5);
   chmod("/dev/ptmx", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  dev = makedev(5, 0);
-  mknod("/dev/tty", S_IFCHR, dev);
+  mknod("/dev/tty", S_IFCHR, makedev(5, 0));
   chown("/dev/tty", 0, 5);
   chmod("/dev/tty", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  dev = makedev(1, 8);
-  mknod("/dev/random", S_IFCHR, dev);
+  mknod("/dev/random", S_IFCHR, makedev(1, 8));
   chmod("/dev/random", S_IRUSR | S_IRGRP | S_IROTH);
-  dev = makedev(1, 9);
-  mknod("/dev/urandom", S_IFCHR, dev);
+  mknod("/dev/urandom", S_IFCHR, makedev(1, 9));
   chmod("/dev/urandom", S_IRUSR | S_IRGRP | S_IROTH);
   mkdir("/dev/net", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-  dev = makedev(10, 200);
-  mknod("/dev/net/tun", S_IFCHR, dev);
+  mknod("/dev/net/tun", S_IFCHR, makedev(10, 200));
   // Create some system runtime link files in /dev.
   symlink("/proc/self/fd", "/dev/fd");
   symlink("/proc/self/fd/0", "/dev/stdin");
@@ -108,10 +98,10 @@ void init_container()
 void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
 {
   /*
-   * It's called to by main(), run_unshare_container() and daemon_init_unshare_container()(container_daemon()).
+   * It's called by main(), run_unshare_container() and daemon_init_unshare_container().
    * It will chroot() to container_dir, call to init_container(), drop capabilities and exec() init command in container.
    */
-  // Ignore SIGTTIN, if running in the background, SIGTTIN may kill it.
+  // Ignore SIGTTIN, if it's running in the background, SIGTTIN may kill this process.
   sigset_t sigs;
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
@@ -138,9 +128,9 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
   for (int i = 0;;)
   {
-    if (container_info->init_command[i] != NULL)
+    if (container_info->command[i] != NULL)
     {
-      printf("%s%s", container_info->init_command[i], " ");
+      printf("%s%s", container_info->command[i], " ");
       i++;
     }
     else
@@ -204,7 +194,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     if (container_info->mountpoint[i] != NULL)
     {
-      // Set mountpoint.
+      // Set the mountpoint to mount.
       char *mountpoint_dir = (char *)malloc(strlen(container_info->mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
       strcpy(mountpoint_dir, container_info->container_dir);
       strcat(mountpoint_dir, container_info->mountpoint[i + 1]);
@@ -231,13 +221,13 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
       break;
     }
   }
-  // Set default init.
-  if (container_info->init_command[0] == NULL)
+  // Set default command for exec().
+  if (container_info->command[0] == NULL)
   {
-    container_info->init_command[0] = "/bin/su";
-    container_info->init_command[1] = NULL;
+    container_info->command[0] = "/bin/su";
+    container_info->command[1] = NULL;
   }
-  // chroot into container.
+  // chroot() into container.
   chroot(container_info->container_dir);
   chdir("/");
   // Check if system runtime files are already created.
@@ -313,12 +303,12 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     close(i);
   }
-  // Login to container.
+  // Execute command in container.
   // Use execv() function because system() may be unavailable now.
-  if (execv(container_info->init_command[0], container_info->init_command) == -1)
+  if (execv(container_info->command[0], container_info->command) == -1)
   {
     // Catch exceptions.
-    fprintf(stderr, "\033[31mFailed to execute `%s`\n", container_info->init_command[0]);
+    fprintf(stderr, "\033[31mFailed to execute `%s`\n", container_info->command[0]);
     fprintf(stderr, "execv() returned: %d\n", errno);
     fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
     error("QwQ");

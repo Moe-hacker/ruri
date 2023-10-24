@@ -32,7 +32,7 @@
 bool check_container(char *container_dir)
 {
   /*
-   * It's called to by main() to check if we can run a container in container_dir.
+   * It's called by main() to check if we can run a container in container_dir.
    * Note that it can only do basic checks. We can't know if container_dir is really right.
    */
   // Check if container directory is given.
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   bool no_warnings = false;
   char container_dir[PATH_MAX] = {'\0'};
   bool privileged = false;
-  char *init[MAX_INIT_COMMANDS] = {NULL};
+  char *command[MAX_COMMANDS] = {NULL};
   char *env[MAX_ENVS] = {NULL};
   char *mountpoint[MAX_MOUNTPOINTS] = {NULL};
   struct CONTAINER_INFO *container_info = NULL;
@@ -340,8 +340,8 @@ int main(int argc, char **argv)
         {
           if (argv[index])
           {
-            init[i] = argv[index];
-            init[i + 1] = NULL;
+            command[i] = argv[index];
+            command[i + 1] = NULL;
             index++;
           }
           else
@@ -352,7 +352,7 @@ int main(int argc, char **argv)
       }
       else
       {
-        init[0] = NULL;
+        command[0] = NULL;
       }
     }
     else
@@ -377,12 +377,12 @@ int main(int argc, char **argv)
       fprintf(stderr, "\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
     }
   }
-  // Check if init binary exists and is not a directory.
+  // Check if command binary exists and is not a directory.
   char init_binary[PATH_MAX];
   strcpy(init_binary, container_dir);
-  if (init[0] != NULL)
+  if (command[0] != NULL)
   {
-    strcat(init_binary, init[0]);
+    strcat(init_binary, command[0]);
   }
   else
   {
@@ -392,11 +392,11 @@ int main(int argc, char **argv)
   // lstat() will return -1 while the init_binary does not exist.
   if (lstat(init_binary, &init_binary_stat) != 0)
   {
-    error("Init binary does not exist, please check if container_dir and init command are correct QwQ");
+    error("Please check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ");
   }
   if (S_ISDIR(init_binary_stat.st_mode))
   {
-    error("Init binary is a directory, RUOK? Die job death car?");
+    error("COMMAND can not be a directory QwQ");
   }
   // Set default caplist to drop.
   if (!privileged && drop_caplist[0] == INIT_VALUE)
@@ -438,15 +438,15 @@ int main(int argc, char **argv)
   }
   for (int i = 0;;)
   {
-    if (init[i] != NULL)
+    if (command[i] != NULL)
     {
-      container_info->init_command[i] = strdup(init[i]);
-      container_info->init_command[i + 1] = NULL;
+      container_info->command[i] = strdup(command[i]);
+      container_info->command[i + 1] = NULL;
       i++;
     }
     else
     {
-      container_info->init_command[i] = NULL;
+      container_info->command[i] = NULL;
       break;
     }
   }

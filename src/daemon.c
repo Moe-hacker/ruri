@@ -34,7 +34,7 @@ struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, ch
   /*
    * Use malloc() to request the memory of the node and then add container info to node.
    * If current node is already used, try the next one.
-   * The next node of the node added will be NULL.
+   * The last ->next will always be NULL.
    */
   // If current node is NULL, add container info here.
   if (container == NULL)
@@ -85,12 +85,12 @@ struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, ch
         break;
       }
     }
-    container->container = NULL;
+    container->next = NULL;
     // Return node added.
     return container;
   }
   // If current node is not NULL, try the next.
-  container->container = register_container(container_dir, unshare_pid, drop_caplist, env, mountpoint, no_new_privs, enable_seccomp, container->container);
+  container->next = register_container(container_dir, unshare_pid, drop_caplist, env, mountpoint, no_new_privs, enable_seccomp, container->next);
   return container;
 }
 // Return info of a container.
@@ -109,7 +109,7 @@ struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *co
       return container;
     }
     // If not, try the next node.
-    return get_container_info(container_dir, container->container);
+    return get_container_info(container_dir, container->next);
   }
   // Will never be run.
   return NULL;
@@ -131,14 +131,14 @@ struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *
   // If container is the struct to delete.
   if (strcmp(container->container_dir, container_dir) == 0)
   {
-    struct CONTAINERS *next_node = container->container;
+    struct CONTAINERS *next_node = container->next;
     free(container);
     container = next_node;
   }
   // If not, try the next struct.
   else
   {
-    container->container = deregister_container(container_dir, container->container);
+    container->next = deregister_container(container_dir, container->next);
   }
   return container;
 }
@@ -161,7 +161,7 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
     return true;
   }
   // If not, try the next struct.
-  return container_active(container_dir, container->container);
+  return container_active(container_dir, container->next);
 }
 // For container_ps().
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd)
@@ -180,7 +180,7 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
   send_msg_daemon(container->container_dir, addr, sockfd);
   send_msg_daemon(container->unshare_pid, addr, sockfd);
   // Read the next node.
-  read_all_nodes(container->container, addr, sockfd);
+  read_all_nodes(container->next, addr, sockfd);
 }
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
@@ -232,7 +232,7 @@ void umount_all_containers(struct CONTAINERS *container)
     umount2(proc_dir, MNT_DETACH | MNT_FORCE);
     umount2(container->container_dir, MNT_DETACH | MNT_FORCE);
   }
-  umount_all_containers(container->container);
+  umount_all_containers(container->next);
 }
 // For daemon, init an unshare container in the background.
 void *daemon_init_unshare_container(void *arg)
@@ -396,7 +396,7 @@ void container_daemon()
   // Info of a new container.
   struct CONTAINER_INFO container_info;
   container_info.container_dir = NULL;
-  container_info.init_command[0] = NULL;
+  container_info.command[0] = NULL;
   container_info.unshare_pid = NULL;
   container_info.mountpoint[0] = NULL;
   container_info.env[0] = NULL;
@@ -601,7 +601,7 @@ void container_daemon()
         container_info.container_dir = strdup(container_dir);
         free(container_dir);
         send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
-        container_info.init_command[0] = NULL;
+        container_info.command[0] = NULL;
         container_info.unshare_pid = NULL;
         for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
         {
@@ -628,18 +628,18 @@ void container_daemon()
             msg = NULL;
             break;
           }
-          container_info.init_command[i] = strdup(msg);
-          container_info.init_command[i + 1] = NULL;
+          container_info.command[i] = strdup(msg);
+          container_info.command[i + 1] = NULL;
           free(msg);
           msg = NULL;
           i++;
         }
-        if (container_info.init_command[0] == NULL)
+        if (container_info.command[0] == NULL)
         {
-          container_info.init_command[0] = "/bin/sh";
-          container_info.init_command[1] = "-c";
-          container_info.init_command[2] = "while :;do sleep 100s;done";
-          container_info.init_command[3] = NULL;
+          container_info.command[0] = "/bin/sh";
+          container_info.command[1] = "-c";
+          container_info.command[2] = "while :;do sleep 100s;done";
+          container_info.command[3] = NULL;
         }
         msg = read_msg_daemon(addr, sockfd);
         if (msg == NULL)
@@ -898,7 +898,7 @@ void container_daemon()
       send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
       send_msg_daemon(container_info.unshare_pid, addr, sockfd);
       container_info.container_dir = NULL;
-      container_info.init_command[0] = NULL;
+      container_info.command[0] = NULL;
       container_info.unshare_pid = NULL;
       for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
       {

@@ -57,7 +57,7 @@ struct PSTREE *add_child(struct PSTREE *pstree, pid_t ppid, pid_t pid)
 {
   /*
    * Walk all nodes in pstree.
-   * If we find ppid in pstree nodes, add pid to the child struct of its ppid.
+   * If we find ppid in pstree nodes, add pid to the child tree of its ppid.
    * Or this function will do nothing.
    * So we can always run add_child(pstree,ppid,pid) to check && add a pid.
    */
@@ -213,6 +213,7 @@ void pstree(pid_t parent)
    */
   DIR *proc_dir = opendir("/proc");
   struct dirent *file = NULL;
+  // Get the lenth of pid[].
   int len = 0;
   while ((file = readdir(proc_dir)) != NULL)
   {
@@ -224,11 +225,13 @@ void pstree(pid_t parent)
       }
     }
   }
+  // Re-open proc_dir.
   seekdir(proc_dir, 0);
   int pids[len + 1];
   // For passing clang-tidy.
   memset(pids, 0, sizeof(pids));
   int i = 0;
+  // Add pids we found in /proc to pids[].
   while ((file = readdir(proc_dir)) != NULL)
   {
     if (file->d_type == DT_DIR)
@@ -243,10 +246,13 @@ void pstree(pid_t parent)
   closedir(proc_dir);
   struct PSTREE *pstree = NULL;
   pstree = add_pid(pstree, parent);
+  // Walk pids[], add pid info to pstree.
   for (int j = 0; j < len; j++)
   {
     pstree = add_child(pstree, get_ppid(pids[j]), pids[j]);
   }
+  // Print the pstree.
   print_tree(pstree, 0);
+  // Maybe useless, because the kernel will automatically free() the memory of the process when It ends.
   free(pstree);
 }
