@@ -99,7 +99,7 @@ int main(int argc, char **argv)
   struct CONTAINER_INFO *container_info = NULL;
   bool no_new_privs = false;
   bool enable_seccomp = false;
-  cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {};
+  cap_value_t drop_caplist[CAP_LAST_CAP + 1] = {INIT_VALUE};
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     drop_caplist[i] = INIT_VALUE;
@@ -107,12 +107,12 @@ int main(int argc, char **argv)
   // Based on docker's default capability set.
   cap_value_t drop_caplist_common[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD, CAP_SYS_CHROOT};
   cap_value_t drop_caplist_unprivileged[] = {CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE};
-  cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {};
+  cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = {INIT_VALUE};
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     keep_caplist_extra[i] = INIT_VALUE;
   }
-  cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {};
+  cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = {INIT_VALUE};
   for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
   {
     drop_caplist_extra[i] = INIT_VALUE;

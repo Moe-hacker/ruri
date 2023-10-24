@@ -91,7 +91,7 @@ pid_t get_ppid(pid_t pid)
   {
     if (j == 3)
     {
-      for (int k = 0; buf[k + i] != ' '; k++)
+      for (unsigned long k = 0; buf[k + i] != ' '; k++)
       {
         ppid_buf[k] = buf[k + i];
       }
@@ -121,7 +121,7 @@ char *getpid_name(pid_t pid)
   {
     if (j == 1)
     {
-      for (int k = 0; buf[k + i + 1] != ')'; k++)
+      for (unsigned long k = 0; buf[k + i + 1] != ')'; k++)
       {
         name_buf[k] = buf[k + i + 1];
         name_buf[k + 1] = '\0';
@@ -152,7 +152,7 @@ char *getpid_stat(pid_t pid)
   {
     if (j == 2)
     {
-      for (int k = 0; buf[k + i] != ' '; k++)
+      for (unsigned long k = 0; buf[k + i] != ' '; k++)
       {
         stat_buf[k] = buf[k + i];
         stat_buf[k + 1] = '\0';

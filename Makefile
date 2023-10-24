@@ -38,10 +38,10 @@ STRIP = strip
 CHECKER = clang-tidy --use-color
 CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-misc-no-recursion,-bugprone-easily-swappable-parameters,-readability-identifier-length,-cert-err34-c,-bugprone-assignment-in-if-condition,-altera*
 LD_FLAGS = -lcap -lpthread -lseccomp
-OPTIMIZE_CFLAGS = -O3 -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+OPTIMIZE_CFLAGS = -O2 -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
-DEV_CFLAGS = -ggdb -O0 -Wall -Wextra -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
-ASAN_CFLAGS = -no-pie -O0 -fsanitize=address,leak -fsanitize-recover=address,all
+DEV_CFLAGS = -ggdb -O0 -Wall -Wextra -pedantic -Wconversion -std=c2x -Wno-newline-eof -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+ASAN_CFLAGS = -no-pie -fsanitize=address,leak -fsanitize-recover=address,all
 SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
 DEV_SRC = dev/pstree.c dev/cgroup.c
 HEADER = src/ruri.h src/msg.h
