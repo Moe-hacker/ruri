@@ -31,6 +31,11 @@
 // Do not format this.
 // clang-format off
 // The real value of them is not important here.
+/*
+ * Client: Nya?
+ * Server: Nya!
+ * Very cute, very moe...
+ */
 // From client.
 #define FROM_CLIENT__TEST_MESSAGE            "Nya?"
 #define FROM_CLIENT__KILL_A_CONTAINER        "0x01"

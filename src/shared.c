@@ -34,7 +34,7 @@ void error(char *msg)
   /*
    * Show error message and exit here.
    * You can never know if a customer will order a rice at the bar.
-   * It's a `moe` program, but also should be standardized and rigorous.
+   * It's a `moe` program, but also should be standard and rigorous.
    */
   fprintf(stderr, "\033[31m%s\033[0m\n", msg);
   // A very cute catgirl nya~~
@@ -52,7 +52,7 @@ void error(char *msg)
 void show_greetings()
 {
   /*
-   * Nothing's useful at this function, just for fun.
+   * Nothing is useful at this function, just for fun.
    */
   // Get the size of terminal.
   struct winsize size;
@@ -108,7 +108,7 @@ void show_version_info()
   /*
    * Just show version info and license.
    * Version info is defined in macro RURI_VERSION.
-   * macro RURI_COMMIT_ID is defined in Makefile.
+   * RURI_COMMIT_ID is defined in Makefile.
    */
   printf("\n");
   printf("\033[1;38;2;254;228;208m      ●●●●  ●   ● ●●●●   ●●●\n");
@@ -126,6 +126,11 @@ void show_version_info()
 // For `ruri -V`.
 void show_version_code()
 {
+  /*
+   * The version code is not standard now,
+   * so in fact it's very useless.
+   * Maybe it can be useful one day...
+   */
   printf("%s\n", RURI_VERSION);
 }
 // For `ruri -h`.
@@ -217,27 +222,38 @@ void show_examples()
   printf("  \033[32msudo ruri \033[34m-K\n");
   printf("\n");
 }
-// Return the same value as mkdir()
+// Return the same value as mkdir().
 int mkdirs(char *dir, mode_t mode)
 {
   /*
    * A very simple implementation of mkdir -p
    * I don't know why it seems that there isn't an existing function to do this...
-   * This function is only for absolute paths.
    */
   char buf[PATH_MAX];
+  int ret = 0;
+  /* If dir is path/to/mkdir
+   * We do:
+   * ret = mkdir("path",mode);
+   * ret = mkdir("path/to",mode);
+   * ret = mkdir("path/to/mkdir",mode);
+   * return ret;
+   */
   for (unsigned long i = 1; i < strlen(dir); i++)
   {
     if (dir[i] == '/')
     {
-      buf[0] = '/';
-      for (unsigned long j = 1; j < i; j++)
+      for (unsigned long j = 0; j < i; j++)
       {
         buf[j] = dir[j];
         buf[j + 1] = '\0';
       }
-      mkdir(buf, mode);
+      ret = mkdir(buf, mode);
     }
   }
-  return mkdir(dir, mode);
+  // If the end of `dir` is not '/', create the last level of the directory.
+  if (dir[strlen(dir) - 1] != '/')
+  {
+    ret = mkdir(dir, mode);
+  }
+  return ret;
 }

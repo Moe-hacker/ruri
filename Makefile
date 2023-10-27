@@ -43,10 +43,10 @@ CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unrol
 # Link with libcap, libpthread and libseccomp.
 LD_FLAGS = -lcap -lpthread -lseccomp
 # For production.
-OPTIMIZE_CFLAGS = -O2 -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+OPTIMIZE_CFLAGS = -flto -O2 -D_FORTIFY_SOURCE=3 -Wno-unused-result -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -mshstk -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
 # For testing.
-DEV_CFLAGS = -ggdb -O0 -Wall -Wextra -pedantic -Wconversion -std=c2x -Wno-newline-eof -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+DEV_CFLAGS = -ggdb -O0 -z norelro -z execstack -no-pie -D_FORTIFY_SOURCE=3 -Wall -Wextra -pedantic -Wconversion -std=c2x -Wno-newline-eof -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 ASAN_CFLAGS = -no-pie -fsanitize=address,leak -fsanitize-recover=address,all
 # We just compile all files at the same time.
 SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
