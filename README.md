@@ -112,7 +112,7 @@ ARGS:
 ### About Seccomp:
 The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and replace setup_seccomp() with your own config.      
 ### About daemon:
-The daemon will create a socket file in $TMPDIR/ruri.sock (to be /tmp/ruri.sock on GNU/Linux) for interprocess communication. This file will be automatically removed after running `ruri -K`.         
+The daemon will create a socket file in $TMPDIR/ruri.sock (to be /tmp/ruri.sock on common GNU/Linux) for interprocess communication. This file will be automatically removed after running `ruri -K`.         
 ### Full User Guide:
 See `ruri(1)` in manpage after installation.   
 ### License:
