@@ -26,35 +26,82 @@
 # SOFTWARE.
 #
 #
+# Premature optimization is the root of evil.
+#
 CCCOLOR     = \033[1;38;2;254;228;208m
 STRIPCOLOR  = \033[1;38;2;254;228;208m
 BINCOLOR    = \033[34;1m
 ENDCOLOR    = \033[0m
 CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
+# Compiler.
+CC = clang
+# Strip.
+STRIP = strip
+# Link-Time Optimization.
+LTO = -flto
+# Position-Independent Executables.
+PIE = -fPIE
+# No-eXecute.
+NX = -z noexecstack
+# Relocation Read-Only.
+RELRO = -z now
+# Stack Canary.
+CANARY = -fstack-protector-all
+# Stack Clash Protection.
+CLASH_PROTECT = -fstack-clash-protection
+# Shadow Stack.
+SHADOW_STACK = -mshstk
+# Auto initialize automatic variables.
+AUTO_VAR_INIT = -ftrivial-auto-var-init=zero
+# Fortified Source.
+FORTIFY = -D_FORTIFY_SOURCE=3 -Wno-unused-result
+# Other "one-key" optimization.
+OPTIMIZE = -O2
+# For production.
+OPTIMIZE_CFLAGS = $(LTO) $(PIE) $(NX) $(RELRO) $(CANARY) $(CLASH_PROTECT) $(SHADOW_STACK) $(AUTO_VAR_INIT) $(FORTIFY) $(OPTIMIZE)
+# Static link.
+STATIC_CFLAGS = -static
+# Dev marco for extra logs.
+DEV_MARCO = -D__RURI_DEV__
+# GNU Symbolic Debugger.
+DEBUGGER = -ggdb
+# Disable other optimizations.
+NO_OPTIMIZE = -O0 -fno-omit-frame-pointer
+# Disable Relocation Read-Only.
+NO_RELRO = -z norelro
+# Disable No-eXecute.
+NO_NX = -z execstack
+# Position Independent Executables.
+NO_PIE = -no-pie
+# Disable Stack Canary.
+NO_CANARY = -fno-stack-protector
+# Warning Options.
+STD_CHECK = -Wall -Wextra -pedantic -Wconversion -std=gnu2x -Wno-newline-eof
+# For Testing.
+DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_RELRO) $(NO_NX) $(NO_PIE) $(NO_CANARY) $(STD_CHECK)
+# AddressSanitizer.
+ASAN = -fsanitize=address,leak -fsanitize-recover=address,all
+# We just compile all files at the same time.
+SRC = src/*.c
+HEADER = src/*.h
+BIN_TARGET = ruri
+# For ruri -v.
+COMMIT_ID = -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 # For `make fromat`.
 FORMATER = clang-format -i
-# Compiler
-CC = clang
-STRIP = strip
 # For `make check`.
 CHECKER = clang-tidy --use-color
-CHECK_ARG = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-misc-no-recursion,-bugprone-easily-swappable-parameters,-readability-identifier-length,-cert-err34-c,-bugprone-assignment-in-if-condition,-altera*
+# Unused checks are disabled.
+CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-misc-no-recursion,-bugprone-easily-swappable-parameters,-readability-identifier-length,-cert-err34-c,-bugprone-assignment-in-if-condition,-altera*
 # Link with libcap, libpthread and libseccomp.
 LD_FLAGS = -lcap -lpthread -lseccomp
-# For production.
-OPTIMIZE_CFLAGS = -flto -O2 -D_FORTIFY_SOURCE=3 -Wno-unused-result -z noexecstack -z now -ftrivial-auto-var-init=pattern -Wl,-z,relro,-z,now -fstack-clash-protection -fstack-protector-all -mshstk -fomit-frame-pointer -fPIE -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
-STATIC_CFLAGS = -static -ffunction-sections -fdata-sections -Wl,--gc-sections
-# For testing.
-DEV_CFLAGS = -ggdb -O0 -z norelro -z execstack -no-pie -D_FORTIFY_SOURCE=3 -Wall -Wextra -pedantic -Wconversion -std=c2x -Wno-newline-eof -fno-stack-protector -fno-omit-frame-pointer -D__RURI_DEV__ -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
-ASAN_CFLAGS = -no-pie -fsanitize=address,leak -fsanitize-recover=address,all
-# We just compile all files at the same time.
-SRC = src/main.c src/seccomp.c src/shared.c src/caplist.c src/socket.c src/daemon.c src/chroot.c src/unshare.c src/tool.c
-DEV_SRC = dev/pstree.c dev/cgroup.c
-HEADER_SRC = src/ruri.h src/msg.h
-BIN_TARGET = ruri
-RURI = $(SRC) -o $(BIN_TARGET)
-RURI_DEV = $(DEV_SRC) $(SRC) -o $(BIN_TARGET)
+# Fix issues in termux (with bionic).
+BIONIC_FIX = -ffunction-sections -fdata-sections -Wl,--gc-sections
+# Bionic has built-in libpthread.
+LD_FLAGS_BIONIC = -lcap -lseccomp
+# Target.
+RURI = $(COMMIT_ID) $(SRC) -o $(BIN_TARGET)
 .PHONY: dev
 all :mandoc
 	$(CC_LOG) $(BIN_TARGET)
@@ -65,10 +112,10 @@ mandoc :
 	@gzip -kf doc/ruri.1
 dev :
 	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(DEV_CFLAGS) $(RURI_DEV) $(LD_FLAGS)
+	@$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
 asan :
 	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(DEV_CFLAGS) $(ASAN_CFLAGS) $(RURI_DEV) $(LD_FLAGS)
+	@$(CC) $(DEV_CFLAGS) $(ASAN) $(RURI) $(LD_FLAGS)
 static :mandoc
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
@@ -76,7 +123,7 @@ static :mandoc
 	@$(STRIP) $(BIN_TARGET)
 static-bionic :mandoc
 	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) -lcap -lseccomp
+	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) $(RURI) $(LD_FLAGS_BIONIC)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 install :all
@@ -85,12 +132,12 @@ install :all
 check :
 	@printf "\033[1;38;2;254;228;208mCheck list:\n"
 	@sleep 1.5s
-	@$(CHECKER) $(CHECK_ARG) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+	@$(CHECKER) $(CHECKER_FLAGS) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI)
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
-	@$(CHECKER) $(CHECK_ARG) $(SRC) $(DEV_SRC) -- $(LD_FLAGS)  -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
+	@$(CHECKER) $(CHECKER_FLAGS) $(SRC) -- $(COMMIT_ID)
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
-	$(FORMATER) $(SRC) $(DEV_SRC) $(HEADER_SRC)
+	$(FORMATER) $(SRC) $(HEADER)
 clean :
 	rm ruri||true
 help :
