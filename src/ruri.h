@@ -54,7 +54,6 @@
 #include <sched.h>
 // This program need to be linked with `-lseccomp`.
 #include <seccomp.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

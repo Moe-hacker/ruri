@@ -318,7 +318,7 @@ void *daemon_init_unshare_container(void *arg)
       }
     }
     send_msg_client(FROM_PTHREAD__END_OF_ENV, addr);
-    if (container_info->no_new_privs != false)
+    if (container_info->no_new_privs)
     {
       send_msg_client(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, addr);
     }
@@ -326,7 +326,7 @@ void *daemon_init_unshare_container(void *arg)
     {
       send_msg_client(FROM_PTHREAD__NO_NEW_PRIVS_FALSE, addr);
     }
-    if (container_info->enable_seccomp != false)
+    if (container_info->enable_seccomp)
     {
       send_msg_client(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, addr);
     }
@@ -396,24 +396,24 @@ void container_daemon()
   // Container info.
   char *container_dir = NULL;
   // Info of a new container.
-  struct CONTAINER_INFO container_info;
-  container_info.container_dir = NULL;
-  container_info.command[0] = NULL;
-  container_info.unshare_pid = NULL;
-  container_info.mountpoint[0] = NULL;
-  container_info.env[0] = NULL;
-  for (int i = 0; i < (CAP_LAST_CAP); i++)
-  {
-    container_info.drop_caplist[i] = INIT_VALUE;
-  }
+  struct CONTAINER_INFO container_info={
+    .command[0] = NULL,
+    .container_dir = NULL,
+    .unshare_pid = NULL,
+    .mountpoint[0] = NULL,
+    .env[0] = NULL,
+    .enable_seccomp=true,
+    .no_new_privs=true,
+    .drop_caplist[0]= INIT_VALUE,
+  };
   pid_t unshare_pid = 0;
   char drop_caplist[CAP_LAST_CAP + 1][128];
   drop_caplist[0][0] = '\0';
   char *env[MAX_ENVS] = {NULL};
   char mountpoint[MAX_MOUNTPOINTS][PATH_MAX];
   mountpoint[0][0] = '\0';
-  bool no_new_privs = false;
-  bool enable_seccomp = false;
+  bool no_new_privs = true;
+  bool enable_seccomp = true;
   // Create socket.
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
@@ -549,7 +549,7 @@ void container_daemon()
           }
         }
         send_msg_daemon(FROM_DAEMON__END_OF_CAP_TO_DROP, addr, sockfd);
-        if (get_container_info(container_dir, container)->no_new_privs != false)
+        if (get_container_info(container_dir, container)->no_new_privs)
         {
           send_msg_daemon(FROM_DAEMON__NO_NEW_PRIVS_TRUE, addr, sockfd);
         }
@@ -557,7 +557,7 @@ void container_daemon()
         {
           send_msg_daemon(FROM_DAEMON__NO_NEW_PRIVS_FALSE, addr, sockfd);
         }
-        if (get_container_info(container_dir, container)->enable_seccomp != false)
+        if (get_container_info(container_dir, container)->enable_seccomp)
         {
           send_msg_daemon(FROM_DAEMON__ENABLE_SECCOMP_TRUE, addr, sockfd);
         }
@@ -645,20 +645,12 @@ void container_daemon()
           i++;
         }
         read_msg_daemon(msg, addr, sockfd);
-        if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) == 0)
-        {
-          container_info.no_new_privs = true;
-        }
-        else
+        if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) != 0)
         {
           container_info.no_new_privs = false;
         }
         read_msg_daemon(msg, addr, sockfd);
-        if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_TRUE, msg) == 0)
-        {
-          container_info.enable_seccomp = true;
-        }
-        else
+        if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_TRUE, msg) != 0)
         {
           container_info.enable_seccomp = false;
         }
@@ -720,20 +712,12 @@ void container_daemon()
         i++;
       }
       read_msg_daemon(msg, addr, sockfd);
-      if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) == 0)
-      {
-        no_new_privs = true;
-      }
-      else
+      if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) != 0)
       {
         no_new_privs = false;
       }
       read_msg_daemon(msg, addr, sockfd);
-      if (strcmp(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, msg) == 0)
-      {
-        enable_seccomp = true;
-      }
-      else
+      if (strcmp(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, msg) != 0)
       {
         enable_seccomp = false;
       }

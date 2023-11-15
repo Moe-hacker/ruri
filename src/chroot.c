@@ -109,7 +109,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 #ifdef __RURI_DEV__
   printf("\033[1;38;2;254;228;208mRun chroot container:\n");
   printf("%s%s\n", "container_dir: \033[1;38;2;152;245;225m", container_info->container_dir);
-  if (container_info->no_new_privs != false)
+  if (container_info->no_new_privs)
   {
     printf("%s\n", "\033[1;38;2;254;228;208mno_new_privs: \033[1;38;2;152;245;225mtrue");
   }
@@ -117,7 +117,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   {
     printf("%s\n", "\033[1;38;2;254;228;208mno_new_privs: \033[1;38;2;152;245;225mfalse");
   }
-  if (container_info->enable_seccomp != false)
+  if (container_info->enable_seccomp)
   {
     printf("%s\n", "\033[1;38;2;254;228;208menable_seccomp: \033[1;38;2;152;245;225mtrue");
   }
@@ -242,7 +242,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
     closedir(direxist);
   }
   // Set up Seccomp BPF.
-  if (container_info->enable_seccomp != false)
+  if (container_info->enable_seccomp)
   {
     setup_seccomp(container_info);
   }
@@ -291,7 +291,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
   // Set NO_NEW_PRIVS Flag.
   // It requires Linux3.5 or later.
   // It will make sudo unavailable in container.
-  if (container_info->no_new_privs != false)
+  if (container_info->no_new_privs)
   {
     prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
   }

@@ -177,7 +177,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       }
     }
     send_msg_client(FROM_CLIENT__END_OF_ENV, addr);
-    if (container_info->no_new_privs != false)
+    if (container_info->no_new_privs)
     {
       send_msg_client(FROM_CLIENT__NO_NEW_PRIVS_TRUE, addr);
     }
@@ -185,7 +185,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
     {
       send_msg_client(FROM_CLIENT__NO_NEW_PRIVS_FALSE, addr);
     }
-    if (container_info->enable_seccomp != false)
+    if (container_info->enable_seccomp)
     {
       send_msg_client(FROM_CLIENT__ENABLE_SECCOMP_TRUE, addr);
     }
@@ -219,20 +219,12 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
       i++;
     }
     read_msg_client(msg, addr);
-    if (strcmp(msg, FROM_DAEMON__NO_NEW_PRIVS_TRUE) == 0)
-    {
-      container_info->no_new_privs = true;
-    }
-    else
+    if (strcmp(msg, FROM_DAEMON__NO_NEW_PRIVS_TRUE) != 0)
     {
       container_info->no_new_privs = false;
     }
     read_msg_client(msg, addr);
-    if (strcmp(msg, FROM_DAEMON__ENABLE_SECCOMP_TRUE) == 0)
-    {
-      container_info->enable_seccomp = true;
-    }
-    else
+    if (strcmp(msg, FROM_DAEMON__ENABLE_SECCOMP_TRUE) != 0)
     {
       container_info->enable_seccomp = false;
     }
