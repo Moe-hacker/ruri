@@ -34,64 +34,67 @@ struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, ch
   /*
    * Use malloc() to request the memory of the node and then add container info to node.
    * If current node is already used, try the next one.
-   * The last ->next will always be NULL.
+   * The last ->next node will always be NULL.
    */
-  // If current node is NULL, add container info here.
-  if (container == NULL)
+  struct CONTAINERS **node = &container;
+  while (true)
   {
-    // Request memory of container struct.
-    container = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
-    // Add info of container.
-    container->container_dir = strdup(container_dir);
-    container->unshare_pid = strdup(unshare_pid);
-    container->no_new_privs = no_new_privs;
-    container->enable_seccomp = enable_seccomp;
-    for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
+    // If current node is NULL, add container info here.
+    if (*node == NULL)
     {
-      if (drop_caplist[i][0] != '\0')
+      // Request memory of container struct.
+      *node = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
+      // Add info of container.
+      (*node)->container_dir = strdup(container_dir);
+      (*node)->unshare_pid = strdup(unshare_pid);
+      (*node)->no_new_privs = no_new_privs;
+      (*node)->enable_seccomp = enable_seccomp;
+      for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
       {
-        container->drop_caplist[i] = malloc(sizeof(char) * (strlen(drop_caplist[i]) + 1));
-        strcpy(container->drop_caplist[i], drop_caplist[i]);
+        if (drop_caplist[i][0] != '\0')
+        {
+          (*node)->drop_caplist[i] = malloc(sizeof(char) * (strlen(drop_caplist[i]) + 1));
+          strcpy((*node)->drop_caplist[i], drop_caplist[i]);
+        }
+        else
+        {
+          (*node)->drop_caplist[i] = NULL;
+          break;
+        }
       }
-      else
+      for (int i = 0; i < MAX_ENVS; i++)
       {
-        container->drop_caplist[i] = NULL;
-        break;
+        if (env[i] != NULL)
+        {
+          (*node)->env[i] = malloc(sizeof(char) * (strlen(env[i]) + 1));
+          strcpy((*node)->env[i], env[i]);
+        }
+        else
+        {
+          (*node)->env[i] = NULL;
+          break;
+        }
       }
+      for (int i = 0; i < MAX_MOUNTPOINTS; i++)
+      {
+        if (mountpoint[i][0] != '\0')
+        {
+          (*node)->mountpoint[i] = malloc(sizeof(char) * (strlen(mountpoint[i]) + 1));
+          strcpy((*node)->mountpoint[i], mountpoint[i]);
+        }
+        else
+        {
+          (*node)->mountpoint[i] = NULL;
+          break;
+        }
+      }
+      (*node)->next = NULL;
+      // Function ends here.
+      return container;
     }
-    for (int i = 0; i < MAX_ENVS; i++)
-    {
-      if (env[i] != NULL)
-      {
-        container->env[i] = malloc(sizeof(char) * (strlen(env[i]) + 1));
-        strcpy(container->env[i], env[i]);
-      }
-      else
-      {
-        container->env[i] = NULL;
-        break;
-      }
-    }
-    for (int i = 0; i < MAX_MOUNTPOINTS; i++)
-    {
-      if (mountpoint[i][0] != '\0')
-      {
-        container->mountpoint[i] = malloc(sizeof(char) * (strlen(mountpoint[i]) + 1));
-        strcpy(container->mountpoint[i], mountpoint[i]);
-      }
-      else
-      {
-        container->mountpoint[i] = NULL;
-        break;
-      }
-    }
-    container->next = NULL;
-    // Return node added.
-    return container;
+    // Goto -> next.
+    node = &((*node)->next);
   }
-  // If current node is not NULL, try the next.
-  container->next = register_container(container_dir, unshare_pid, drop_caplist, env, mountpoint, no_new_privs, enable_seccomp, container->next);
-  return container;
 }
 // Return info of a container.
 struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *container)
@@ -101,18 +104,26 @@ struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *co
    * NULL pointer will be returned if reaching the end of all nodes.
    * However, as container_active() will be run before it to check if container's running, NULL pointer will never be returned.
    */
-  if (container != NULL)
+  struct CONTAINERS **node = &container;
+  while (true)
   {
-    // If container matches container_dir.
-    if (strcmp(container->container_dir, container_dir) == 0)
+    if (*node != NULL)
     {
-      return container;
+      // If container matches container_dir.
+      if (strcmp((*node)->container_dir, container_dir) == 0)
+      {
+        // Function ends here.
+        return *node;
+      }
+      // If not, try the next node.
+      node = &((*node)->next);
     }
-    // If not, try the next node.
-    return get_container_info(container_dir, container->next);
+    else
+    {
+      // Will never be run.
+      return NULL;
+    }
   }
-  // Will never be run.
-  return NULL;
 }
 // Delete a container from CONTAINERS struct.
 struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *container)
@@ -123,24 +134,26 @@ struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *
    * NULL pointer will be returned if reached the end of all nodes.
    * However, as container_active() will be run before it to check if container's running, NULL pointer will never be returned.
    */
-  // It will never be true.
-  if (container == NULL)
+  struct CONTAINERS **node = &container;
+  while (true)
   {
-    return container;
+    // It will never be true.
+    if (*node == NULL)
+    {
+      return NULL;
+    }
+    // If container is the struct to delete.
+    if (strcmp((*node)->container_dir, container_dir) == 0)
+    {
+      struct CONTAINERS *next_node = (*node)->next;
+      free((*node));
+      *node = next_node;
+      // Function ends here.
+      return container;
+    }
+    // Try the next struct.
+    node = &((*node)->next);
   }
-  // If container is the struct to delete.
-  if (strcmp(container->container_dir, container_dir) == 0)
-  {
-    struct CONTAINERS *next_node = container->next;
-    free(container);
-    container = next_node;
-  }
-  // If not, try the next struct.
-  else
-  {
-    container->next = deregister_container(container_dir, container->next);
-  }
-  return container;
 }
 // Check if a container is running.
 bool container_active(char *container_dir, struct CONTAINERS *container)
@@ -150,18 +163,22 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
    * Or it will return false.
    * It's used to determine whether a container is running.
    */
-  // Reached the end of container struct.
-  if (container == NULL)
+  struct CONTAINERS **node = &container;
+  while (true)
   {
-    return false;
+    // Reached the end of container struct.
+    if (*node == NULL)
+    {
+      return false;
+    }
+    // If container matches container_dir.
+    if (strcmp((*node)->container_dir, container_dir) == 0)
+    {
+      return true;
+    }
+    // If not, try the next struct.
+    node = &((*node)->next);
   }
-  // If container matches container_dir.
-  if (strcmp(container->container_dir, container_dir) == 0)
-  {
-    return true;
-  }
-  // If not, try the next struct.
-  return container_active(container_dir, container->next);
 }
 // For container_ps().
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd)
@@ -170,17 +187,21 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
    * It will read all nodes in container struct and send them to ruri.
    * If it reaches the end of container struct, send `endps`.
    */
-  // Reached the end of container struct.
-  if (container == NULL)
+  struct CONTAINERS **node = &container;
+  while (true)
   {
-    send_msg_daemon(FROM_DAEMON__END_OF_PS_INFO, addr, sockfd);
-    return;
+    // Reached the end of container struct.
+    if (*node == NULL)
+    {
+      send_msg_daemon(FROM_DAEMON__END_OF_PS_INFO, addr, sockfd);
+      return;
+    }
+    // Send info to ruri.
+    send_msg_daemon((*node)->container_dir, addr, sockfd);
+    send_msg_daemon((*node)->unshare_pid, addr, sockfd);
+    // Read the next node.
+    node = &((*node)->next);
   }
-  // Send info to ruri.
-  send_msg_daemon(container->container_dir, addr, sockfd);
-  send_msg_daemon(container->unshare_pid, addr, sockfd);
-  // Read the next node.
-  read_all_nodes(container->next, addr, sockfd);
 }
 // For container_daemon(), kill & umount all containers.
 void umount_all_containers(struct CONTAINERS *container)
@@ -189,50 +210,55 @@ void umount_all_containers(struct CONTAINERS *container)
    * Kill and umount all containers.
    * container_daemon() will exit after calling to this function, so free() is needless here.
    */
-  if (container == NULL)
+  struct CONTAINERS **node = &container;
+  while (true)
   {
-    return;
-  }
-  kill(atoi(container->unshare_pid), SIGKILL);
-  // Umount other mountpoints.
-  char buf[PATH_MAX];
-  for (int i = 0;;)
-  {
-    if (container->mountpoint[i] != NULL)
+    // Reached the end of container struct.
+    if ((*node) == NULL)
     {
-      strcpy(buf, container->container_dir);
-      strcat(buf, container->mountpoint[i + 1]);
-      i += 2;
-      for (int j = 0; j < 10; j++)
+      return;
+    }
+    kill(atoi((*node)->unshare_pid), SIGKILL);
+    // Umount other mountpoints.
+    char buf[PATH_MAX];
+    for (int i = 0;;)
+    {
+      if ((*node)->mountpoint[i] != NULL)
       {
-        umount2(buf, MNT_DETACH | MNT_FORCE);
-        umount(buf);
+        strcpy(buf, (*node)->container_dir);
+        strcat(buf, (*node)->mountpoint[i + 1]);
+        i += 2;
+        for (int j = 0; j < 10; j++)
+        {
+          umount2(buf, MNT_DETACH | MNT_FORCE);
+          umount(buf);
+        }
+      }
+      else
+      {
+        break;
       }
     }
-    else
+    // Get path to umount.
+    char sys_dir[PATH_MAX];
+    char proc_dir[PATH_MAX];
+    char dev_dir[PATH_MAX];
+    strcpy(sys_dir, (*node)->container_dir);
+    strcpy(proc_dir, (*node)->container_dir);
+    strcpy(dev_dir, (*node)->container_dir);
+    strcat(sys_dir, "/sys");
+    strcat(proc_dir, "/proc");
+    strcat(dev_dir, "/dev");
+    // Force umount all directories for 10 times.
+    for (int i = 1; i < 10; i++)
     {
-      break;
+      umount2(sys_dir, MNT_DETACH | MNT_FORCE);
+      umount2(dev_dir, MNT_DETACH | MNT_FORCE);
+      umount2(proc_dir, MNT_DETACH | MNT_FORCE);
+      umount2((*node)->container_dir, MNT_DETACH | MNT_FORCE);
     }
+    node = &((*node)->next);
   }
-  // Get path to umount.
-  char sys_dir[PATH_MAX];
-  char proc_dir[PATH_MAX];
-  char dev_dir[PATH_MAX];
-  strcpy(sys_dir, container->container_dir);
-  strcpy(proc_dir, container->container_dir);
-  strcpy(dev_dir, container->container_dir);
-  strcat(sys_dir, "/sys");
-  strcat(proc_dir, "/proc");
-  strcat(dev_dir, "/dev");
-  // Force umount all directories for 10 times.
-  for (int i = 1; i < 10; i++)
-  {
-    umount2(sys_dir, MNT_DETACH | MNT_FORCE);
-    umount2(dev_dir, MNT_DETACH | MNT_FORCE);
-    umount2(proc_dir, MNT_DETACH | MNT_FORCE);
-    umount2(container->container_dir, MNT_DETACH | MNT_FORCE);
-  }
-  umount_all_containers(container->next);
 }
 // For daemon, init an unshare container in the background.
 void *daemon_init_unshare_container(void *arg)
@@ -396,15 +422,15 @@ void container_daemon()
   // Container info.
   char *container_dir = NULL;
   // Info of a new container.
-  struct CONTAINER_INFO container_info={
+  struct CONTAINER_INFO container_info = {
     .command[0] = NULL,
     .container_dir = NULL,
     .unshare_pid = NULL,
     .mountpoint[0] = NULL,
     .env[0] = NULL,
-    .enable_seccomp=true,
-    .no_new_privs=true,
-    .drop_caplist[0]= INIT_VALUE,
+    .enable_seccomp = true,
+    .no_new_privs = true,
+    .drop_caplist[0] = INIT_VALUE,
   };
   pid_t unshare_pid = 0;
   char drop_caplist[CAP_LAST_CAP + 1][128];
