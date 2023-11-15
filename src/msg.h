@@ -90,3 +90,4 @@
 #define FROM_DAEMON__ENABLE_SECCOMP_TRUE     "0x2f"
 #define FROM_DAEMON__ENABLE_SECCOMP_FALSE    "0x30"
 // clang-format on
+#define BUF_SIZE (4096)

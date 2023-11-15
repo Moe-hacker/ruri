@@ -77,14 +77,16 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
   return send(sockfd, msg, strlen(msg), 0);
 }
 // For daemon, return the messages have been read.
-char *read_msg_daemon(struct sockaddr_un addr, int sockfd)
+ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
 {
   /*
-   * It will return the messages have been read.
-   * free() the memory of msg after used it to avoid leak of memory.
+   * It will read a message from socket,
+   * and write the messages have been read to buf.
+   * Return the same value as read().
    */
-  char buf[PATH_MAX] = {0};
-  static const char *ret = NULL;
+  // Clear buf.
+  memset(buf, '\000', strlen(buf));
+  ssize_t ret = 0;
   unsigned int size = sizeof(addr);
   // Accept a connection.
   int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
@@ -93,36 +95,35 @@ char *read_msg_daemon(struct sockaddr_un addr, int sockfd)
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Read messages.
-  if (read(sock_new, buf, PATH_MAX) == -1)
+  ret = read(sock_new, buf, PATH_MAX);
+  if (ret == -1)
   {
-    ret = NULL;
-  }
-  else
-  {
-    ret = strdup(buf);
+    buf[0] = '\000';
   }
   close(sock_new);
 #ifdef __RURI_DEV__
-  if (ret != NULL)
+  if (ret != -1)
   {
-    printf("%s%s\n\033[0m", "\033[1;38;2;254;228;208mDaemon read msg: \033[1;38;2;152;245;225m", ret);
+    printf("%s%s\n\033[0m", "\033[1;38;2;254;228;208mDaemon read msg: \033[1;38;2;152;245;225m", buf);
   }
   else
   {
     printf("%s\n\033[0m", "\033[1;38;2;254;228;208mDaemon read msg: \033[1;38;2;152;245;225mNULL");
   }
 #endif
-  return (char *)ret;
+  return ret;
 }
 // For client, return the messages have been read.
-char *read_msg_client(struct sockaddr_un addr)
+ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
 {
   /*
-   * It will return the messages have been read.
-   * free() the memory of msg after using it to avoid leak of memory.
+   * It will read a message from socket,
+   * and write the messages have been read to buf.
+   * Return the same value as read().
    */
-  char buf[PATH_MAX] = {0};
-  static const char *ret = NULL;
+  // Clear buf.
+  memset(buf, '\000', strlen(buf));
+  ssize_t ret = 0;
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
@@ -135,35 +136,33 @@ char *read_msg_client(struct sockaddr_un addr)
   // Connect to daemon.
   if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == -1)
   {
-    return NULL;
+    return -1;
   }
   // Read messages.
-  if (read(sockfd, buf, PATH_MAX) == -1)
+  ret = read(sockfd, buf, PATH_MAX);
+  if (ret == -1)
   {
-    ret = NULL;
-  }
-  else
-  {
-    ret = strdup(buf);
+    buf[0] = '\000';
   }
   close(sockfd);
 #ifdef __RURI_DEV__
-  if (ret != NULL)
+  if (ret != -1)
   {
-    printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mClient read msg: \033[1;38;2;152;245;225m", ret);
+    printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mClient read msg: \033[1;38;2;152;245;225m", buf);
   }
   else
   {
     printf("%s\033[0m\n", "\033[1;38;2;254;228;208mClient read msg: \033[1;38;2;152;245;225mNULL");
   }
 #endif
-  return (char *)ret;
+  return ret;
 }
 // Connect to daemon.
-bool connect_to_daemon(struct sockaddr_un *addr)
+int connect_to_daemon(struct sockaddr_un *addr)
 {
   /*
    * Set socket address and check if daemon is running.
+   * Return -1 if error.
    */
   // Set socket address.
   addr->sun_family = AF_UNIX;
@@ -180,34 +179,13 @@ bool connect_to_daemon(struct sockaddr_un *addr)
   strcpy(addr->sun_path, socket_path);
   // Try to connect to socket file and check if it's created by ruri daemon.
   send_msg_client(FROM_CLIENT__TEST_MESSAGE, *addr);
-  char *msg = NULL;
-  msg = read_msg_client(*addr);
-  if ((msg == NULL) || (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0))
+  char msg[BUF_SIZE] = {'\000'};
+  // Clear buf.
+  memset(msg, '\000', BUF_SIZE);
+  read_msg_client(msg, *addr);
+  if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0)
   {
-    return false;
+    return -1;
   }
-  free(msg);
-  return true;
-}
-// Receive a message and compare if it's same as msg.
-// It will automatically free() msg.
-// model: 1 for server and 2 for client.
-bool msgcmp(int model, const char *msg, struct sockaddr_un addr, int sockfd)
-{
-  char *buf = NULL;
-  if (model == 1)
-  {
-    buf = read_msg_daemon(addr, sockfd);
-  }
-  else
-  {
-    buf = read_msg_client(addr);
-  }
-  bool ret = false;
-  if (strcmp(buf, msg) == 0)
-  {
-    ret = true;
-  }
-  free(buf);
-  return ret;
+  return 0;
 }

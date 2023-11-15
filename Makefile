@@ -77,15 +77,16 @@ NO_PIE = -no-pie
 # Disable Stack Canary.
 NO_CANARY = -fno-stack-protector
 # Warning Options.
-STD_CHECK = -Wall -Wextra -pedantic -Wconversion -std=gnu2x -Wno-newline-eof
+WALL = -Wall -Wextra -pedantic -Wconversion -Wno-newline-eof
 # For Testing.
-DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_RELRO) $(NO_NX) $(NO_PIE) $(NO_CANARY) $(STD_CHECK)
+DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_RELRO) $(NO_NX) $(NO_PIE) $(NO_CANARY) $(WALL)
 # AddressSanitizer.
 ASAN = -fsanitize=address,leak -fsanitize-recover=address,all
 # We just compile all files at the same time.
 SRC = src/*.c
 HEADER = src/*.h
 BIN_TARGET = ruri
+STANDARD = -std=gnu2x
 # For ruri -v.
 COMMIT_ID = -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 # For `make fromat`.
@@ -101,7 +102,7 @@ BIONIC_FIX = -ffunction-sections -fdata-sections -Wl,--gc-sections
 # Bionic has built-in libpthread.
 LD_FLAGS_BIONIC = -lcap -lseccomp
 # Target.
-RURI = $(COMMIT_ID) $(SRC) -o $(BIN_TARGET)
+RURI = $(COMMIT_ID) $(STANDARD) $(SRC) -o $(BIN_TARGET)
 .PHONY: dev
 all :mandoc
 	$(CC_LOG) $(BIN_TARGET)
@@ -134,7 +135,7 @@ check :
 	@sleep 1.5s
 	@$(CHECKER) $(CHECKER_FLAGS) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI)
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
-	@$(CHECKER) $(CHECKER_FLAGS) $(SRC) -- $(COMMIT_ID)
+	@$(CHECKER) $(CHECKER_FLAGS) $(SRC) -- $(COMMIT_ID) $(RURI)
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
 	$(FORMATER) $(SRC) $(HEADER)

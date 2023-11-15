@@ -37,34 +37,30 @@ void container_ps()
    */
   // Set socket address.
   struct sockaddr_un addr;
-  if (!connect_to_daemon(&addr))
+  if (connect_to_daemon(&addr) != 0)
   {
     error("Daemon not running.");
   }
   // Message to read.
-  char *msg = NULL;
+  char msg[BUF_SIZE] = {'\000'};
+  // Clear buf.
+  memset(msg, '\000', BUF_SIZE);
   // Daemon will return the info of running containers.
   send_msg_client(FROM_CLIENT__GET_PS_INFO, addr);
   printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
   printf("\033[1;38;2;152;245;225m=========================\n");
   while (true)
   {
-    msg = read_msg_client(addr);
+    read_msg_client(msg, addr);
     // End of container info.
     if (strcmp(msg, FROM_DAEMON__END_OF_PS_INFO) == 0)
     {
-      free(msg);
-      msg = NULL;
       break;
     }
     // Print the received container info.
     printf("\033[1;38;2;254;228;208m%s", msg);
-    free(msg);
-    msg = NULL;
-    msg = read_msg_client(addr);
+    read_msg_client(msg, addr);
     printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
-    free(msg);
-    msg = NULL;
   }
 }
 // For `ruri -K`
@@ -76,7 +72,7 @@ void kill_daemon()
    */
   // Set socket address.
   struct sockaddr_un addr;
-  if (!connect_to_daemon(&addr))
+  if (connect_to_daemon(&addr) != 0)
   {
     error("Daemon not running");
   }
@@ -92,10 +88,12 @@ void umount_container(char *container_dir)
    */
   // Set socket address.
   struct sockaddr_un addr;
-  char *msg = NULL;
+  char msg[BUF_SIZE] = {'\000'};
+  // Clear buf.
+  memset(msg, '\000', BUF_SIZE);
   char mountpoint[MAX_MOUNTPOINTS / 2][PATH_MAX];
   mountpoint[0][0] = '\0';
-  if (!connect_to_daemon(&addr))
+  if (connect_to_daemon(&addr) != 0)
   {
     printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
   }
@@ -104,34 +102,24 @@ void umount_container(char *container_dir)
     // Kill the container from daemon.
     send_msg_client(FROM_CLIENT__KILL_A_CONTAINER, addr);
     send_msg_client(container_dir, addr);
-    msg = read_msg_client(addr);
+    read_msg_client(msg, addr);
     if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
     {
       fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
-      free(msg);
-      msg = NULL;
     }
     else
     {
-      free(msg);
-      msg = NULL;
-      msg = read_msg_client(addr);
-      free(msg);
-      msg = NULL;
+      read_msg_client(msg, addr);
       // Get other mountpoints.
       for (int i = 0;;)
       {
-        msg = read_msg_client(addr);
+        read_msg_client(msg, addr);
         if (strcmp(msg, FROM_DAEMON__END_OF_MOUNTPOINT) == 0)
         {
-          free(msg);
-          msg = NULL;
           break;
         }
         strcpy(mountpoint[i], msg);
         mountpoint[i + 1][0] = '\0';
-        free(msg);
-        msg = NULL;
       }
     }
   }

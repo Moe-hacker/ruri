@@ -390,7 +390,9 @@ void container_daemon()
   // Create container struct.
   struct CONTAINERS *container = NULL;
   // Message to read.
-  char *msg = NULL;
+  char msg[BUF_SIZE] = {'\000'};
+  // Clear buf.
+  memset(msg, '\000', BUF_SIZE);
   // Container info.
   char *container_dir = NULL;
   // Info of a new container.
@@ -434,14 +436,12 @@ void container_daemon()
   strcpy(addr.sun_path, socket_path);
   // Check if container daemon is already running.
   send_msg_client(FROM_CLIENT__TEST_MESSAGE, addr);
-  msg = read_msg_client(addr);
-  if ((msg != NULL) && (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0))
+  read_msg_client(msg, addr);
+  if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0)
   {
     close(sockfd);
     error("Daemon already running QwQ");
   }
-  free(msg);
-  msg = NULL;
   // Fork() itself into the background.
   // It's really a daemon now, because its parent process will be init.
   pid_t pid = fork();
@@ -467,34 +467,18 @@ void container_daemon()
   while (true)
   {
     // Get message.
-    msg = NULL;
-    msg = read_msg_daemon(addr, sockfd);
-    // Avoid crashes by null pointer.
-    if (msg == NULL)
-    {
-      goto _continue;
-    }
+    read_msg_daemon(msg, addr, sockfd);
     // Test message, to check if daemon is active.
-    else if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0)
+    if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0)
     {
-      free(msg);
-      msg = NULL;
       send_msg_daemon(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
       goto _continue;
     }
     // Kill a container.
     else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0)
     {
-      free(msg);
-      msg = NULL;
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       container_dir = strdup(msg);
-      free(msg);
-      msg = NULL;
       // Check if container is active.
       if (container_active(container_dir, container))
       {
@@ -532,17 +516,9 @@ void container_daemon()
     // Register a new container or send the info of an existing container to ruri.
     else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0)
     {
-      free(msg);
-      msg = NULL;
       // Get container_dir.
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       container_dir = strdup(msg);
-      free(msg);
-      msg = NULL;
       // If container is active, send unshare_pid and other info to client.
       if (container_active(container_dir, container))
       {
@@ -608,123 +584,67 @@ void container_daemon()
           container_info.drop_caplist[i] = INIT_VALUE;
         }
         // Read init command.
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
-        free(msg);
+        read_msg_daemon(msg, addr, sockfd);
         // Get init command.
         for (int i = 0;;)
         {
-          msg = read_msg_daemon(addr, sockfd);
-          if (msg == NULL)
-          {
-            goto _continue;
-          }
+          read_msg_daemon(msg, addr, sockfd);
           if (strcmp(FROM_CLIENT__END_OF_INIT_COMMAND, msg) == 0)
           {
-            free(msg);
-            msg = NULL;
             break;
           }
           container_info.command[i] = strdup(msg);
           container_info.command[i + 1] = NULL;
-          free(msg);
-          msg = NULL;
           i++;
         }
         if (container_info.command[0] == NULL)
         {
           container_info.command[0] = "/bin/sh";
           container_info.command[1] = "-c";
-          container_info.command[2] = "while :;do sleep 100s;done";
+          container_info.command[2] = "while :;do /bin/sleep 100s;done";
           container_info.command[3] = NULL;
         }
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
-        free(msg);
+        read_msg_daemon(msg, addr, sockfd);
         // Get caps to drop.
         for (int i = 0;;)
         {
-          msg = read_msg_daemon(addr, sockfd);
-          if (msg == NULL)
-          {
-            goto _continue;
-          }
+          read_msg_daemon(msg, addr, sockfd);
           if (strcmp(FROM_CLIENT__END_OF_CAP_TO_DROP, msg) == 0)
           {
             container_info.drop_caplist[i] = INIT_VALUE;
-            free(msg);
-            msg = NULL;
             break;
           }
           cap_from_name(msg, &container_info.drop_caplist[i]);
           container_info.drop_caplist[i + 1] = INIT_VALUE;
-          free(msg);
-          msg = NULL;
           i++;
         }
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
-        free(msg);
+        read_msg_daemon(msg, addr, sockfd);
         // Get mountpoints.
         for (int i = 0;;)
         {
-          msg = read_msg_daemon(addr, sockfd);
-          if (msg == NULL)
-          {
-            goto _continue;
-          }
+          read_msg_daemon(msg, addr, sockfd);
           if (strcmp(FROM_CLIENT__END_OF_MOUNTPOINT, msg) == 0)
           {
-            free(msg);
-            msg = NULL;
             break;
           }
           container_info.mountpoint[i] = strdup(msg);
           container_info.mountpoint[i + 1] = NULL;
-          free(msg);
-          msg = NULL;
           i++;
         }
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
-        free(msg);
+        read_msg_daemon(msg, addr, sockfd);
         // Get envs.
         for (int i = 0;;)
         {
-          msg = read_msg_daemon(addr, sockfd);
-          if (msg == NULL)
-          {
-            goto _continue;
-          }
+          read_msg_daemon(msg, addr, sockfd);
           if (strcmp(FROM_CLIENT__END_OF_ENV, msg) == 0)
           {
-            free(msg);
-            msg = NULL;
             break;
           }
           container_info.env[i] = strdup(msg);
           container_info.env[i + 1] = NULL;
-          free(msg);
-          msg = NULL;
           i++;
         }
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
+        read_msg_daemon(msg, addr, sockfd);
         if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) == 0)
         {
           container_info.no_new_privs = true;
@@ -733,12 +653,7 @@ void container_daemon()
         {
           container_info.no_new_privs = false;
         }
-        free(msg);
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
+        read_msg_daemon(msg, addr, sockfd);
         if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_TRUE, msg) == 0)
         {
           container_info.enable_seccomp = true;
@@ -747,8 +662,6 @@ void container_daemon()
         {
           container_info.enable_seccomp = false;
         }
-        free(msg);
-        msg = NULL;
         // Init container in new pthread.
         // It will send all the info of the container back to register it.
         pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
@@ -759,114 +672,54 @@ void container_daemon()
     // Get container info from subprocess and add them to container struct.
     else if (strcmp(FROM_PTHREAD__REGISTER_CONTAINER, msg) == 0)
     {
-      free(msg);
       // Ignore FROM_PTHREAD__UNSHARE_CONTAINER_PID.
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
-      free(msg);
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
+      read_msg_daemon(msg, addr, sockfd);
       container_info.unshare_pid = strdup(msg);
-      free(msg);
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       container_info.container_dir = strdup(msg);
-      free(msg);
       // Ignore FROM_PTHREAD__CAP_TO_DROP
-      msg = read_msg_daemon(addr, sockfd);
-      free(msg);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       // Get caps to drop.
       for (int i = 0;;)
       {
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
+        read_msg_daemon(msg, addr, sockfd);
         if (strcmp(FROM_PTHREAD__END_OF_CAP_TO_DROP, msg) == 0)
         {
           drop_caplist[i][0] = '\0';
-          free(msg);
-          msg = NULL;
           break;
         }
         strcpy(drop_caplist[i], msg);
         drop_caplist[i + 1][0] = '\0';
-        free(msg);
-        msg = NULL;
         i++;
       }
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
-      free(msg);
-      msg = NULL;
+      read_msg_daemon(msg, addr, sockfd);
       // Get mountpoints.
       for (int i = 0;;)
       {
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
+        read_msg_daemon(msg, addr, sockfd);
         if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0)
         {
           mountpoint[i][0] = '\0';
-          free(msg);
-          msg = NULL;
           break;
         }
         strcpy(mountpoint[i], msg);
-        free(msg);
-        msg = NULL;
         i++;
       }
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
-      free(msg);
+      read_msg_daemon(msg, addr, sockfd);
       // Get envs.
       for (int i = 0;;)
       {
-        msg = read_msg_daemon(addr, sockfd);
-        if (msg == NULL)
-        {
-          goto _continue;
-        }
+        read_msg_daemon(msg, addr, sockfd);
         if (strcmp(FROM_PTHREAD__END_OF_ENV, msg) == 0)
         {
-          free(msg);
-          msg = NULL;
           break;
         }
         env[i] = strdup(msg);
         env[i + 1] = NULL;
-        free(msg);
-        msg = NULL;
         i++;
       }
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) == 0)
       {
         no_new_privs = true;
@@ -875,12 +728,7 @@ void container_daemon()
       {
         no_new_privs = false;
       }
-      free(msg);
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       if (strcmp(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, msg) == 0)
       {
         enable_seccomp = true;
@@ -889,8 +737,6 @@ void container_daemon()
       {
         enable_seccomp = false;
       }
-      free(msg);
-      msg = NULL;
       // Register the container.
       container = register_container(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, no_new_privs, enable_seccomp, container);
       // Send unshare_pid to ruri.
@@ -913,8 +759,6 @@ void container_daemon()
     // Kill daemon itself.
     else if (strcmp(FROM_CLIENT__KILL_DAEMON, msg) == 0)
     {
-      free(msg);
-      msg = NULL;
       umount_all_containers(container);
       // Exit daemon.
       remove(addr.sun_path);
@@ -923,39 +767,22 @@ void container_daemon()
     // Get ps info of all registered containers.
     else if (strcmp(FROM_CLIENT__GET_PS_INFO, msg) == 0)
     {
-      free(msg);
-      msg = NULL;
       read_all_nodes(container, addr, sockfd);
       goto _continue;
     }
     // If init process died, deregister the container.
     else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0)
     {
-      free(msg);
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       container_dir = strdup(msg);
-      free(msg);
-      msg = NULL;
       container = deregister_container(container_dir, container);
       goto _continue;
     }
     // Check if init process is active.
     else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0)
     {
-      free(msg);
-      msg = NULL;
-      msg = read_msg_daemon(addr, sockfd);
-      if (msg == NULL)
-      {
-        goto _continue;
-      }
+      read_msg_daemon(msg, addr, sockfd);
       container_dir = strdup(msg);
-      free(msg);
-      msg = NULL;
       if (container_active(container_dir, container))
       {
         send_msg_daemon(FROM_DAEMON__INIT_IS_ACTIVE, addr, sockfd);
@@ -968,7 +795,5 @@ void container_daemon()
     }
     // Continue the loop.
   _continue:
-    free(msg);
-    msg = NULL;
   }
 }

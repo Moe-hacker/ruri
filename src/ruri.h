@@ -130,13 +130,12 @@ struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *
 bool container_active(char *container_dir, struct CONTAINERS *container);
 ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
-char *read_msg_daemon(struct sockaddr_un addr, int sockfd);
-char *read_msg_client(struct sockaddr_un addr);
-bool msgcmp(int model, const char *msg, struct sockaddr_un addr, int sockfd);
+ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd);
+ssize_t read_msg_client(char *buf, struct sockaddr_un addr);
 void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd);
 void container_ps();
 void kill_daemon();
-bool connect_to_daemon(struct sockaddr_un *addr);
+int connect_to_daemon(struct sockaddr_un *addr);
 void umount_all_containers(struct CONTAINERS *container);
 void *daemon_init_unshare_container(void *arg);
 void init_container();

@@ -97,15 +97,15 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
    * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
    */
   pid_t unshare_pid = INIT_VALUE;
-  char *msg = NULL;
+  char msg[BUF_SIZE] = {'\000'};
+  // Clear buf.
+  memset(msg, '\000', BUF_SIZE);
   char *container_pid = NULL;
   send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
   send_msg_client(container_info->container_dir, addr);
-  msg = read_msg_client(addr);
+  read_msg_client(msg, addr);
   if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0)
   {
-    free(msg);
-    msg = NULL;
     // Send init command to daemon.
     send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
     if (strcmp(container_info->command[0], "/bin/su") != 0)
@@ -196,41 +196,29 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
   }
   else
   {
-    free(msg);
-    msg = NULL;
     for (int i = 0; i < MAX_ENVS; i++)
     {
-      msg = read_msg_client(addr);
+      read_msg_client(msg, addr);
       if (strcmp(msg, FROM_DAEMON__END_OF_ENV) == 0)
       {
-        free(msg);
-        msg = NULL;
         break;
       }
       container_info->env[i] = strdup(msg);
       container_info->env[i + 1] = NULL;
-      free(msg);
-      msg = NULL;
     }
-    free(msg);
-    msg = read_msg_client(addr);
-    free(msg);
+    read_msg_client(msg, addr);
     for (int i = 0;;)
     {
-      msg = read_msg_client(addr);
+      read_msg_client(msg, addr);
       if (strcmp(msg, FROM_DAEMON__END_OF_CAP_TO_DROP) == 0)
       {
-        free(msg);
-        msg = NULL;
         break;
       }
       cap_from_name(msg, &container_info->drop_caplist[i]);
       container_info->drop_caplist[i + 1] = INIT_VALUE;
       i++;
-      free(msg);
-      msg = NULL;
     }
-    msg = read_msg_client(addr);
+    read_msg_client(msg, addr);
     if (strcmp(msg, FROM_DAEMON__NO_NEW_PRIVS_TRUE) == 0)
     {
       container_info->no_new_privs = true;
@@ -239,8 +227,7 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
     {
       container_info->no_new_privs = false;
     }
-    free(msg);
-    msg = read_msg_client(addr);
+    read_msg_client(msg, addr);
     if (strcmp(msg, FROM_DAEMON__ENABLE_SECCOMP_TRUE) == 0)
     {
       container_info->enable_seccomp = true;
@@ -249,20 +236,14 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
     {
       container_info->enable_seccomp = false;
     }
-    free(msg);
-    msg = NULL;
   }
   // Fix a bug that read_msg_client() returns NULL because container has not been registered properly.
   usleep(400000);
   // Ignore FROM_DAEMON__UNSHARE_CONTAINER_PID.
-  msg = read_msg_client(addr);
-  free(msg);
-  msg = NULL;
+  read_msg_client(msg, addr);
   // Pid for setns().
-  msg = read_msg_client(addr);
+  read_msg_client(msg, addr);
   container_pid = strdup(msg);
-  free(msg);
-  msg = NULL;
 #ifdef __RURI_DEV__
   printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mContainer pid from daemon:\033[1;38;2;152;245;225m", container_pid);
 #endif
@@ -349,7 +330,8 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
     usleep(200000);
     send_msg_client(FROM_CLIENT__IS_INIT_ACTIVE, addr);
     send_msg_client(container_info->container_dir, addr);
-    if (strcmp(read_msg_client(addr), FROM_DAEMON__INIT_IS_ACTIVE) != 0)
+    read_msg_client(msg, addr);
+    if (strcmp(msg, FROM_DAEMON__INIT_IS_ACTIVE) != 0)
     {
       error("Error: Init process died QwQ");
     }
@@ -415,10 +397,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
   pid_t unshare_pid = INIT_VALUE;
   // Set socket address.
   struct sockaddr_un addr;
-  // Message to read.
-  char *msg = NULL;
   bool daemon_running = false;
-  if (connect_to_daemon(&addr))
+  if (connect_to_daemon(&addr) == 0)
   {
     daemon_running = true;
   }
@@ -429,8 +409,6 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       printf("\033[33mWarning: seems that container daemon is not running QwQ\033[0m\n");
     }
   }
-  free(msg);
-  msg = NULL;
   // Unshare() itself into new namespaces.
   if (!daemon_running)
   {

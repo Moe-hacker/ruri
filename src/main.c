@@ -86,7 +86,7 @@ int main(int argc, char **argv)
   if (argc <= 1)
   {
     fprintf(stderr, "\033[31mError: too few arguments QwQ\033[0m\n");
-    show_helps(0);
+    show_helps(false);
     return 1;
   }
   bool use_unshare = false;
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
         return 1;
       }
       struct sockaddr_un addr;
-      if (!connect_to_daemon(&addr))
+      if (connect_to_daemon(&addr) != 0)
       {
         if (!no_warnings)
         {
