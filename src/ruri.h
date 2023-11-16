@@ -130,7 +130,6 @@ void show_version_info();
 void show_version_code();
 void show_helps(bool greetings);
 void show_examples();
-int mkdirs(char *dir, mode_t mode);
 void add_to_list(cap_value_t *list, cap_value_t cap);
 bool is_in_list(const cap_value_t *list, cap_value_t cap);
 void del_from_list(cap_value_t *list, cap_value_t cap);

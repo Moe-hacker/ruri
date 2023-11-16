@@ -152,6 +152,37 @@ static void init_container()
 	unlink("/etc/mtab");
 	symlink("/proc/mounts", "/etc/mtab");
 }
+// Return the same value as mkdir().
+static int mkdirs(char *dir, mode_t mode)
+{
+	/*
+	 * A very simple implementation of mkdir -p.
+	 * I don't know why it seems that there isn't an existing function to do this...
+	 */
+	char buf[PATH_MAX];
+	int ret = 0;
+	/* If dir is path/to/mkdir
+	 * We do:
+	 * ret = mkdir("path",mode);
+	 * ret = mkdir("path/to",mode);
+	 * ret = mkdir("path/to/mkdir",mode);
+	 * return ret;
+	 */
+	for (u_long i = 1; i < strlen(dir); i++) {
+		if (dir[i] == '/') {
+			for (u_long j = 0; j < i; j++) {
+				buf[j] = dir[j];
+				buf[j + 1] = '\0';
+			}
+			ret = mkdir(buf, mode);
+		}
+	}
+	// If the end of `dir` is not '/', create the last level of the directory.
+	if (dir[strlen(dir) - 1] != '/') {
+		ret = mkdir(dir, mode);
+	}
+	return ret;
+}
 // Mount other mountpoints.
 // Run before chroot(2).
 static void mount_mountpoints(struct CONTAINER_INFO *container_info)
