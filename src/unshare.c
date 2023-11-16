@@ -97,9 +97,9 @@ pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr
    * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
    */
   pid_t unshare_pid = INIT_VALUE;
-  char msg[BUF_SIZE] = {'\000'};
+  char msg[MSG_BUF_SIZE] = {'\000'};
   // Clear buf.
-  memset(msg, '\000', BUF_SIZE);
+  memset(msg, '\000', MSG_BUF_SIZE);
   char *container_pid = NULL;
   send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
   send_msg_client(container_info->container_dir, addr);

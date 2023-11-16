@@ -179,9 +179,9 @@ int connect_to_daemon(struct sockaddr_un *addr)
   strcpy(addr->sun_path, socket_path);
   // Try to connect to socket file and check if it's created by ruri daemon.
   send_msg_client(FROM_CLIENT__TEST_MESSAGE, *addr);
-  char msg[BUF_SIZE] = {'\000'};
+  char msg[MSG_BUF_SIZE] = {'\000'};
   // Clear buf.
-  memset(msg, '\000', BUF_SIZE);
+  memset(msg, '\000', MSG_BUF_SIZE);
   read_msg_client(msg, *addr);
   if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0)
   {
