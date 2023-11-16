@@ -54,8 +54,8 @@ static void check_container(char *container_dir)
 		error("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ\n");
 	}
 	// Check if container directory exists.
-	DIR *direxist = NULL;
-	if ((direxist = opendir(container_dir)) == NULL) {
+	DIR *direxist = opendir(container_dir);
+	if (direxist == NULL) {
 		error("\033[31mError: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
-					add_to_list(keep_caplist_extra, CAP_LAST_CAP + 1, cap);
+					add_to_list(keep_caplist_extra, cap);
 				} else {
 					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
-					add_to_list(drop_caplist_extra, CAP_LAST_CAP + 1, cap);
+					add_to_list(drop_caplist_extra, cap);
 				} else {
 					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
 	if (!no_warnings) {
 		struct utsname uts;
 		uname(&uts);
-		if (atoi(&uts.release[0]) < 4) {
+		if (strtol(&uts.release[0], NULL, 10) < 4) {
 			warning("\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
 		}
 	}
@@ -303,14 +303,14 @@ int main(int argc, char **argv)
 	if (drop_caplist_extra[0] != INIT_VALUE) {
 		for (u_long i = 0; i < (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++) {
 			if (drop_caplist_extra[i] != INIT_VALUE) {
-				add_to_list(drop_caplist, CAP_LAST_CAP + 1, drop_caplist_extra[i]);
+				add_to_list(drop_caplist, drop_caplist_extra[i]);
 			}
 		}
 	}
 	if (keep_caplist_extra[0] != INIT_VALUE) {
 		for (u_long i = 0; i < (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++) {
 			if (keep_caplist_extra[i] != INIT_VALUE) {
-				del_from_list(drop_caplist, CAP_LAST_CAP + 1, keep_caplist_extra[i]);
+				del_from_list(drop_caplist, keep_caplist_extra[i]);
 			}
 		}
 	}

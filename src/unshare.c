@@ -96,7 +96,7 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 		// Send init command to daemon.
 		send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
 		if (strcmp(container_info->command[0], "/bin/su") != 0) {
-			for (int i = 0; i < 1023; i++) {
+			for (int i = 0; i < MAX_COMMANDS; i++) {
 				if (container_info->command[i] != NULL) {
 					send_msg_client(container_info->command[i], addr);
 					free(container_info->command[i]);
@@ -206,42 +206,42 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	sprintf(uts_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/uts");
 	free(container_pid);
 	container_pid = NULL;
-	int fd = INIT_VALUE;
-	fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
-	if (fd < 0 && !no_warnings) {
+	int ns_fd = INIT_VALUE;
+	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !no_warnings) {
 		warning("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
 	} else {
-		setns(fd, 0);
+		setns(ns_fd, 0);
 	}
-	fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
-	if (fd < 0 && !no_warnings) {
+	ns_fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !no_warnings) {
 		warning("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
 	} else {
-		setns(fd, 0);
+		setns(ns_fd, 0);
 	}
-	fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
-	if (fd < 0 && !no_warnings) {
+	ns_fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !no_warnings) {
 		warning("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
 	} else {
-		setns(fd, 0);
+		setns(ns_fd, 0);
 	}
-	fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
-	if (fd < 0 && !no_warnings) {
+	ns_fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !no_warnings) {
 		warning("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
 	} else {
-		setns(fd, 0);
+		setns(ns_fd, 0);
 	}
-	fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
-	if (fd < 0 && !no_warnings) {
+	ns_fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !no_warnings) {
 		warning("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
 	} else {
-		setns(fd, 0);
+		setns(ns_fd, 0);
 	}
-	fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
-	if (fd < 0 && !no_warnings) {
+	ns_fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !no_warnings) {
 		warning("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
 	} else {
-		setns(fd, 0);
+		setns(ns_fd, 0);
 	}
 	// Close fds after fork().
 	unshare(CLONE_FILES);

@@ -163,8 +163,8 @@ static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 			strcpy(mountpoint_dir, container_info->container_dir);
 			strcat(mountpoint_dir, container_info->mountpoint[i + 1]);
 			// Check if mountpoint exists.
-			DIR *test = NULL;
-			if ((test = opendir(mountpoint_dir)) == NULL) {
+			DIR *test = opendir(mountpoint_dir);
+			if (test == NULL) {
 				if (mkdirs(mountpoint_dir, 0755) != 0) {
 					error("\033[31mCould not create mountpoint directory\n");
 				}
@@ -239,8 +239,8 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 	chroot(container_info->container_dir);
 	chdir("/");
 	// Check if system runtime files are already created.
-	DIR *direxist = NULL;
-	if ((direxist = opendir("/sys/kernel")) == NULL) {
+	DIR *direxist = opendir("/sys/kernel");
+	if (direxist == NULL) {
 		// Mount && create system runtime files.
 		init_container();
 	}

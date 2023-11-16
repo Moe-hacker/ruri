@@ -82,7 +82,7 @@
 #define SOCKET_FILE "ruri.sock"
 #include "msg.h"
 // Info of containers.
-struct CONTAINERS {
+struct __attribute__((aligned(128))) CONTAINERS {
 	// For container_daemon().
 	char *container_dir;
 	// For send_msg_daemon(), we define it as char*.
@@ -95,7 +95,7 @@ struct CONTAINERS {
 	struct CONTAINERS *next;
 };
 // Info of a container to create.
-struct CONTAINER_INFO {
+struct __attribute__((aligned(128))) CONTAINER_INFO {
 	// For daemon_init_unshare_container() and container_daemon().
 	char *container_dir;
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
@@ -131,9 +131,9 @@ void show_version_code();
 void show_helps(bool greetings);
 void show_examples();
 int mkdirs(char *dir, mode_t mode);
-void add_to_list(cap_value_t *list, int length, cap_value_t cap);
-bool is_in_list(const cap_value_t *list, int length, cap_value_t cap);
-void del_from_list(cap_value_t *list, int length, cap_value_t cap);
+void add_to_list(cap_value_t *list, cap_value_t cap);
+bool is_in_list(const cap_value_t *list, cap_value_t cap);
+void del_from_list(cap_value_t *list, cap_value_t cap);
 ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
 ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd);
