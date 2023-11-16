@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 // Add a node to CONTAINERS struct.
-struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container)
+static struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container)
 {
   /*
    * Use malloc() to request the memory of the node and then add container info to node.
@@ -97,7 +97,7 @@ struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, ch
   }
 }
 // Return info of a container.
-struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *container)
+static struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *container)
 {
   /*
    * It will return the node that matches the container_dir.
@@ -126,7 +126,7 @@ struct CONTAINERS *get_container_info(char *container_dir, struct CONTAINERS *co
   }
 }
 // Delete a container from CONTAINERS struct.
-struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *container)
+static struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *container)
 {
   /*
    * If container is a NULL pointer, just quit, but this will never happen.
@@ -156,7 +156,7 @@ struct CONTAINERS *deregister_container(char *container_dir, struct CONTAINERS *
   }
 }
 // Check if a container is running.
-bool container_active(char *container_dir, struct CONTAINERS *container)
+static bool container_active(char *container_dir, struct CONTAINERS *container)
 {
   /*
    * If there's a node that matches container_dir, it will return true.
@@ -181,7 +181,7 @@ bool container_active(char *container_dir, struct CONTAINERS *container)
   }
 }
 // For container_ps().
-void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd)
+static void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int sockfd)
 {
   /*
    * It will read all nodes in container struct and send them to ruri.
@@ -204,7 +204,7 @@ void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr, int s
   }
 }
 // For container_daemon(), kill & umount all containers.
-void umount_all_containers(struct CONTAINERS *container)
+static void umount_all_containers(struct CONTAINERS *container)
 {
   /*
    * Kill and umount all containers.
@@ -261,7 +261,7 @@ void umount_all_containers(struct CONTAINERS *container)
   }
 }
 // For daemon, init an unshare container in the background.
-void *daemon_init_unshare_container(void *arg)
+static void *daemon_init_unshare_container(void *arg)
 {
   /*
    * It is called as a child process of container_daemon().

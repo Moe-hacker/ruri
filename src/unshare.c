@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 // For run_unshare_container().
-pid_t init_unshare_container(bool no_warnings)
+static pid_t init_unshare_container(bool no_warnings)
 {
   /*
    * Use unshare() to create new namespaces and fork() to join them.
@@ -90,7 +90,7 @@ pid_t init_unshare_container(bool no_warnings)
   return unshare_pid;
 }
 // For run_unshare_container().
-pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
+static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
 {
   /*
    * Request container_pid and other info of container from daemon, use setns() to join namespaces and then fork() itself into them.

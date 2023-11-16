@@ -49,7 +49,7 @@ void error(char *msg)
   exit(1);
 }
 // As an easter agg.
-void show_greetings()
+static void show_greetings()
 {
   /*
    * Nothing is useful at this function, just for fun.

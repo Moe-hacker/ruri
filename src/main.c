@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 // Do some checks before chroot(),called by main()
-bool check_container(char *container_dir)
+static void check_container(char *container_dir)
 {
   /*
    * It's called by main() to check if we can run a container in container_dir.
@@ -64,7 +64,6 @@ bool check_container(char *container_dir)
     error("Error: container directory does not exist QwQ");
   }
   closedir(direxist);
-  return true;
 }
 // It works on my machine!!!
 int main(int argc, char **argv)
@@ -185,16 +184,10 @@ int main(int argc, char **argv)
       index += 1;
       if (argv[index] != NULL)
       {
-        if (check_container(argv[index]))
-        {
-          realpath(argv[index], container_dir);
-          umount_container(container_dir);
-          return 0;
-        }
-      }
-      else
-      {
-        error("Error: container directory is not set QwQ");
+        check_container(argv[index]);
+        realpath(argv[index], container_dir);
+        umount_container(container_dir);
+        return 0;
       }
     }
     //=========For [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]===========
@@ -324,14 +317,8 @@ int main(int argc, char **argv)
     else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0))
     {
       // Get the absolute path of container.
-      if (check_container(argv[index]))
-      {
-        realpath(argv[index], container_dir);
-      }
-      else
-      {
-        exit(1);
-      }
+      check_container(argv[index]);
+      realpath(argv[index], container_dir);
       index++;
       // Arguments after container_dir will be read as init command.
       if (argv[index])

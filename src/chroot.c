@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 // Run after chroot(), called by run_chroot_container().
-void init_container()
+static void init_container()
 {
   /*
    * It'll be run after chroot(), so `/` is the root dir of container now.
