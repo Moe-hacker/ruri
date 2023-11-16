@@ -109,8 +109,23 @@ struct CONTAINER_INFO {
 	// For setns(2), we define it as char*.
 	char *unshare_pid;
 };
+// Warnings.
+#define warning(...) fprintf(stderr, ##__VA_ARGS__)
+// Show error msg and exit.
+#define error(...)                                                                                                            \
+	{                                                                                                                     \
+		fprintf(stderr, ##__VA_ARGS__);                                                                               \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  .^.   .^.");                                        \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                      \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " ﾙﾘﾘ >  x )ﾘ");                                       \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");                                       \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");                                           \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:"); \
+		fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");        \
+		exit(1);                                                                                                      \
+	}
 void setup_seccomp(struct CONTAINER_INFO *container_info);
-void error(char *msg);
 void show_version_info();
 void show_version_code();
 void show_helps(bool greetings);

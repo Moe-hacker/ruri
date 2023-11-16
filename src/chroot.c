@@ -166,7 +166,7 @@ static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 			DIR *test = NULL;
 			if ((test = opendir(mountpoint_dir)) == NULL) {
 				if (mkdirs(mountpoint_dir, 0755) != 0) {
-					error("Could not create mountpoint directory");
+					error("\033[31mCould not create mountpoint directory\n");
 				}
 			} else {
 				closedir(test);
@@ -187,8 +187,8 @@ static void drop_caps(struct CONTAINER_INFO *container_info, bool no_warnings)
 		// 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
 		if (!container_info->drop_caplist[i]) {
 			if (cap_drop_bound(0) != 0 && !no_warnings) {
-				fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
-				fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
+				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
+				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
 			}
 		}
 		// INIT_VALUE is the end of drop_caplist[].
@@ -196,8 +196,8 @@ static void drop_caps(struct CONTAINER_INFO *container_info, bool no_warnings)
 			break;
 		} else {
 			if (cap_drop_bound(container_info->drop_caplist[i]) != 0 && !no_warnings) {
-				fprintf(stderr, "\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container_info->drop_caplist[i]));
-				fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
+				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container_info->drop_caplist[i]));
+				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
 			}
 		}
 	}
@@ -275,9 +275,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 	// Use exec(3) function because system(3) may be unavailable now.
 	if (execv(container_info->command[0], container_info->command) == -1) {
 		// Catch exceptions.
-		fprintf(stderr, "\033[31mFailed to execute `%s`\n", container_info->command[0]);
-		fprintf(stderr, "execv() returned: %d\n", errno);
-		fprintf(stderr, "error reason: %s\033[0m\n", strerror(errno));
-		error("QwQ");
+		error("\033[31mFailed to execute `%s`\nexecv() returned: %d\nerror reason: %s\033[0m\n", container_info->command[0], errno, strerror(errno));
 	}
 }

@@ -37,26 +37,26 @@ static void check_container(char *container_dir)
 	 */
 	// Check if container directory is given.
 	if (container_dir == NULL) {
-		error("Error: container directory is not set QwQ");
+		error("\033[31mError: container directory is not set QwQ\n");
 	}
 	// Refuse to use `/` for container directory.
 	if (strcmp(container_dir, "/") == 0) {
-		error("Error: `/` is not allowed to use as a container directory QwQ");
+		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if we are running with root privileges.
 	if (getuid() != 0) {
-		error("Error: this program should be run with root privileges QwQ");
+		error("\033[31mError: this program should be run with root privileges QwQ\n");
 	}
 	// Check if $LD_PRELOAD is unset.
 	// If LD_PRELOAD is set, container might will not run properly.
 	char *ld_preload = getenv("LD_PRELOAD");
 	if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0)) {
-		error("Error: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ");
+		error("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ\n");
 	}
 	// Check if container directory exists.
 	DIR *direxist = NULL;
 	if ((direxist = opendir(container_dir)) == NULL) {
-		error("Error: container directory does not exist QwQ");
+		error("\033[31mError: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
 }
@@ -71,8 +71,7 @@ int main(int argc, char **argv)
  */
 // Dev version warning.
 #ifdef __RURI_DEV__
-	printf("\033[31mWarning: you are using dev build.\033[0m\n");
-	printf("\n");
+	warning("\033[31mWarning: you are using dev build.\033[0m\n\n");
 #endif
 	// Set process name.
 	prctl(PR_SET_NAME, "ruri");
@@ -142,7 +141,7 @@ int main(int argc, char **argv)
 		}
 		if (strcmp(argv[index], "-t") == 0) {
 			if (geteuid() != 0) {
-				fprintf(stderr, "\033[31mError: this program should be run with root.\033[0m\n");
+				error("\033[31mError: this program should be run with root.\033[0m\n");
 				return 1;
 			}
 			struct sockaddr_un addr;
@@ -194,11 +193,11 @@ int main(int argc, char **argv)
 					}
 					// Max 128 envs.
 					if (i == (MAX_ENVS - 1)) {
-						error("Too many envs QwQ");
+						error("\033[31mToo many envs QwQ\n");
 					}
 				}
 			} else {
-				error("Error: unknow env QwQ");
+				error("\033[31mError: unknow env QwQ\n");
 			}
 		} else if (strcmp(argv[index], "-m") == 0) {
 			index++;
@@ -213,11 +212,11 @@ int main(int argc, char **argv)
 					}
 					// Max 128 mountpoints.
 					if (i == (MAX_MOUNTPOINTS - 1)) {
-						error("Too many mountpoints QwQ");
+						error("\033[31mToo many mountpoints QwQ\n");
 					}
 				}
 			} else {
-				error("Error: unknow mountpoint QwQ");
+				error("\033[31mError: unknow mountpoint QwQ\n");
 			}
 		} else if (strcmp(argv[index], "--keep") == 0) {
 			index++;
@@ -225,12 +224,10 @@ int main(int argc, char **argv)
 				if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_list(keep_caplist_extra, CAP_LAST_CAP + 1, cap);
 				} else {
-					fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[index], "`");
-					error("QwQ");
+					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
 			} else {
-				fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
-				error("QwQ");
+				error("\033[31mMissing argument\n");
 			}
 		} else if (strcmp(argv[index], "--drop") == 0) {
 			index++;
@@ -238,12 +235,10 @@ int main(int argc, char **argv)
 				if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_list(drop_caplist_extra, CAP_LAST_CAP + 1, cap);
 				} else {
-					fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", argv[index], "`");
-					error("QwQ");
+					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
 			} else {
-				fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow capability `", "(null)", "`");
-				error("QwQ");
+				error("\033[31mMissing argument\n");
 			}
 		} else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0)) {
 			// Get the absolute path of container.
@@ -272,14 +267,14 @@ int main(int argc, char **argv)
 	}
 	// Check if container_dir is given.
 	if (container_dir[0] == '\0') {
-		error("Error: container directory is not set QwQ");
+		error("\033[31mError: container directory is not set QwQ\n");
 	}
 	// Check Linux version.
 	if (!no_warnings) {
 		struct utsname uts;
 		uname(&uts);
 		if (atoi(&uts.release[0]) < 4) {
-			fprintf(stderr, "\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
+			warning("\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
 		}
 	}
 	// Check if command binary exists and is not a directory.
@@ -293,10 +288,10 @@ int main(int argc, char **argv)
 	struct stat init_binary_stat;
 	// lstat(3) will return -1 while the init_binary does not exist.
 	if (lstat(init_binary, &init_binary_stat) != 0) {
-		error("Please check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ");
+		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
 	}
 	if (S_ISDIR(init_binary_stat.st_mode)) {
-		error("COMMAND can not be a directory QwQ");
+		error("\033[31mCOMMAND can not be a directory QwQ\n");
 	}
 	// Set default caplist to drop.
 	if (!privileged && drop_caplist[0] == INIT_VALUE) {

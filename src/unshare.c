@@ -39,31 +39,31 @@ static pid_t init_unshare_container(bool no_warnings)
 	pid_t unshare_pid = INIT_VALUE;
 	// Create namespaces.
 	if (unshare(CLONE_NEWNS) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_NEWUTS) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_NEWIPC) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_NEWPID) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_NEWCGROUP) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_NEWTIME) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_SYSVSEM) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that semaphore namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that semaphore namespace is not supported on this device QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_FILES) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that we could not unshare file descriptors with child process QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that we could not unshare file descriptors with child process QwQ\033[0m\n");
 	}
 	if (unshare(CLONE_FS) == -1 && !no_warnings) {
-		printf("\033[33mWarning: seems that we could not unshare filesystem information with child process QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that we could not unshare filesystem information with child process QwQ\033[0m\n");
 	}
 	// Fork itself into namespace.
 	// This can fix `can't fork: out of memory` issue.
@@ -73,7 +73,7 @@ static pid_t init_unshare_container(bool no_warnings)
 		usleep(200000);
 		waitpid(unshare_pid, NULL, 0);
 	} else if (unshare_pid < 0) {
-		error("Fork error QwQ?");
+		error("\033[31mFork error, QwQ?\n");
 	}
 	return unshare_pid;
 }
@@ -209,37 +209,37 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	int fd = INIT_VALUE;
 	fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0 && !no_warnings) {
-		printf("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(fd, 0);
 	}
 	fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0 && !no_warnings) {
-		printf("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(fd, 0);
 	}
 	fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0 && !no_warnings) {
-		printf("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(fd, 0);
 	}
 	fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0 && !no_warnings) {
-		printf("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(fd, 0);
 	}
 	fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0 && !no_warnings) {
-		printf("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(fd, 0);
 	}
 	fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0 && !no_warnings) {
-		printf("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
+		warning("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(fd, 0);
 	}
@@ -257,10 +257,10 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 		send_msg_client(container_info->container_dir, addr);
 		read_msg_client(msg, addr);
 		if (strcmp(msg, FROM_DAEMON__INIT_IS_ACTIVE) != 0) {
-			error("Error: Init process died QwQ");
+			error("\033[31mError: Init process died QwQ\n");
 		}
 	} else if (unshare_pid < 0) {
-		error("Fork error QwQ?");
+		error("\033[31mFork error, QwQ?\n");
 		return 1;
 	}
 	return unshare_pid;
@@ -310,7 +310,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
 		daemon_running = true;
 	} else {
 		if (!no_warnings) {
-			printf("\033[33mWarning: seems that container daemon is not running QwQ\033[0m\n");
+			warning("\033[33mWarning: seems that container daemon is not running QwQ\033[0m\n");
 		}
 	}
 	// unshare(2) itself into new namespaces.

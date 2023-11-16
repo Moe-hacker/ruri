@@ -38,7 +38,7 @@ void container_ps()
 	// Set socket address.
 	struct sockaddr_un addr;
 	if (connect_to_daemon(&addr) != 0) {
-		error("Daemon not running.");
+		error("\033[31mDaemon not running.\n");
 	}
 	// Message to read.
 	char msg[MSG_BUF_SIZE] = { '\000' };
@@ -70,7 +70,7 @@ void kill_daemon()
 	// Set socket address.
 	struct sockaddr_un addr;
 	if (connect_to_daemon(&addr) != 0) {
-		error("Daemon not running");
+		error("\033[31mDaemon not running\n");
 	}
 	// daemon will kill itself after received this message.
 	send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
@@ -90,14 +90,14 @@ void umount_container(char *container_dir)
 	char mountpoint[MAX_MOUNTPOINTS / 2][PATH_MAX];
 	mountpoint[0][0] = '\0';
 	if (connect_to_daemon(&addr) != 0) {
-		printf("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
+		warning("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
 	} else {
 		// Kill the container from daemon.
 		send_msg_client(FROM_CLIENT__KILL_A_CONTAINER, addr);
 		send_msg_client(container_dir, addr);
 		read_msg_client(msg, addr);
 		if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0) {
-			fprintf(stderr, "\033[33mWarning: seems that container is not running nya~\033[0m\n");
+			warning("\033[33mWarning: seems that container is not running nya~\033[0m\n");
 		} else {
 			read_msg_client(msg, addr);
 			// Get other mountpoints.

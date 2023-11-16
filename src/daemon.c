@@ -344,12 +344,12 @@ void container_daemon()
 	pthread_t pthread_id = 0;
 	// Check if we are running with root privileges.
 	if (getuid() != 0) {
-		error("Error: this program should be run with root privileges QwQ");
+		error("\033[31mError: this program should be run with root privileges QwQ\n");
 	}
 	// Check if $LD_PRELOAD is unset.
 	char *ld_preload = getenv("LD_PRELOAD");
 	if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0)) {
-		error("Error: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ");
+		error("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ\n");
 	}
 	// Create container struct.
 	struct CONTAINERS *container = NULL;
@@ -381,7 +381,7 @@ void container_daemon()
 	// Create socket.
 	int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
-		error("Error: cannot create socket QwQ");
+		error("\033[31mError: cannot create socket QwQ\n");
 	}
 	struct sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
@@ -401,7 +401,7 @@ void container_daemon()
 	read_msg_client(msg, addr);
 	if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) == 0) {
 		close(sockfd);
-		error("Daemon already running QwQ");
+		error("\033[31mDaemon already running QwQ\n");
 	}
 	// fork(2) itself into the background.
 	// It's really a daemon now, because its parent process will be init.
