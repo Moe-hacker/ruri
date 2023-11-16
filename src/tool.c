@@ -101,7 +101,7 @@ void umount_container(char *container_dir)
 		} else {
 			read_msg_client(msg, addr);
 			// Get other mountpoints.
-			for (int i = 0;;) {
+			for (int i = 0; true; i++) {
 				read_msg_client(msg, addr);
 				if (strcmp(msg, FROM_DAEMON__END_OF_MOUNTPOINT) == 0) {
 					break;
@@ -124,7 +124,7 @@ void umount_container(char *container_dir)
 	strcat(dev_dir, "/dev");
 	printf("\033[1;38;2;254;228;208mUmount container.\n");
 	// Umount other mountpoints.
-	for (int i = 0;;) {
+	for (int i = 0; true; i++) {
 		if (mountpoint[i][0] != 0) {
 			strcpy(to_umountpoint, container_dir);
 			strcat(to_umountpoint, mountpoint[i]);
@@ -133,7 +133,6 @@ void umount_container(char *container_dir)
 				umount(to_umountpoint);
 				usleep(20000);
 			}
-			i++;
 		} else {
 			break;
 		}

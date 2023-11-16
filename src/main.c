@@ -327,11 +327,10 @@ int main(int argc, char **argv)
 	for (int i = 0; i <= CAP_LAST_CAP; i++) {
 		container_info->drop_caplist[i] = drop_caplist[i];
 	}
-	for (int i = 0;;) {
+	for (int i = 0; true; i++) {
 		if (command[i] != NULL) {
 			container_info->command[i] = strdup(command[i]);
 			container_info->command[i + 1] = NULL;
-			i++;
 		} else {
 			container_info->command[i] = NULL;
 			break;

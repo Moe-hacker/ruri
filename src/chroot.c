@@ -45,45 +45,40 @@ static void devlog(struct CONTAINER_INFO *container_info)
 		printf("%s\n", "\033[1;38;2;254;228;208menable_seccomp: \033[1;38;2;152;245;225mfalse");
 	}
 	printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
-	for (int i = 0;;) {
+	for (int i = 0; true; i++) {
 		if (container_info->command[i] != NULL) {
 			printf("%s%s", container_info->command[i], " ");
-			i++;
 		} else {
 			printf("\n");
 			break;
 		}
 	}
 	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
-	for (int i = 0;;) {
+	for (int i = 0; true; i++) {
 		if (!container_info->drop_caplist[i]) {
 			printf("%s%s", cap_to_name(0), " ");
-			i++;
 		} else if (container_info->drop_caplist[i] != INIT_VALUE) {
 			printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-			i++;
 		} else {
 			printf("\n");
 			break;
 		}
 	}
 	printf("\033[1;38;2;254;228;208mMountpoints: \033[1;38;2;152;245;225m\n");
-	for (int i = 0;;) {
+	for (int i = 0; true; i += 2) {
 		if (container_info->mountpoint[i] != NULL) {
 			printf("%s%s", container_info->mountpoint[i], " \033[1;38;2;123;104;238mto \033[1;38;2;152;245;225m");
 			printf("%s%s", container_info->mountpoint[i + 1], "\n");
-			i += 2;
 		} else {
 			printf("\n");
 			break;
 		}
 	}
 	printf("\033[1;38;2;254;228;208mEnvs: \033[1;38;2;152;245;225m\n");
-	for (int i = 0;;) {
+	for (int i = 0; true; i += 2) {
 		if (container_info->env[i] != NULL) {
 			printf("%s%s", container_info->env[i], " \033[1;38;2;123;104;238m=\033[1;38;2;152;245;225m ");
 			printf("%s%s", container_info->env[i + 1], "\n");
-			i += 2;
 		} else {
 			printf("\033[0m\n");
 			break;
@@ -161,7 +156,7 @@ static void init_container()
 // Run before chroot(2).
 static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 {
-	for (int i = 0;;) {
+	for (int i = 0; true; i += 2) {
 		if (container_info->mountpoint[i] != NULL) {
 			// Set the mountpoint to mount.
 			char *mountpoint_dir = (char *)malloc(strlen(container_info->mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
@@ -178,7 +173,6 @@ static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 			}
 			// Mount mountpoints.
 			mount(container_info->mountpoint[i], mountpoint_dir, NULL, MS_BIND, NULL);
-			i += 2;
 			free(mountpoint_dir);
 		} else {
 			break;
@@ -211,10 +205,9 @@ static void drop_caps(struct CONTAINER_INFO *container_info, bool no_warnings)
 // Set envs.
 static void set_envs(struct CONTAINER_INFO *container_info)
 {
-	for (int i = 0;;) {
+	for (int i = 0; true; i += 2) {
 		if (container_info->env[i] != NULL) {
 			setenv(container_info->env[i], container_info->env[i + 1], 1);
-			i = i + 2;
 		} else {
 			break;
 		}

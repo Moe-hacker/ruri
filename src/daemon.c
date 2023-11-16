@@ -192,11 +192,10 @@ static void umount_all_containers(struct CONTAINERS *container)
 		kill(atoi((*node)->unshare_pid), SIGKILL);
 		// Umount other mountpoints.
 		char buf[PATH_MAX];
-		for (int i = 0;;) {
+		for (int i = 0; true; i += 2) {
 			if ((*node)->mountpoint[i] != NULL) {
 				strcpy(buf, (*node)->container_dir);
 				strcat(buf, (*node)->mountpoint[i + 1]);
-				i += 2;
 				for (int j = 0; j < 10; j++) {
 					umount2(buf, MNT_DETACH | MNT_FORCE);
 					umount(buf);
@@ -444,10 +443,9 @@ void container_daemon()
 				send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
 				// Extra mountpoints will also be umounted in ruri client.
 				send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
-				for (int i = 0;;) {
+				for (int i = 0; true; i += 2) {
 					if (get_container_info(container_dir, container)->mountpoint[i] != NULL) {
 						send_msg_daemon(get_container_info(container_dir, container)->mountpoint[i + 1], addr, sockfd);
-						i += 2;
 					} else {
 						break;
 					}
@@ -479,10 +477,9 @@ void container_daemon()
 				}
 				send_msg_daemon(FROM_DAEMON__END_OF_ENV, addr, sockfd);
 				send_msg_daemon(FROM_DAEMON__CAP_TO_DROP, addr, sockfd);
-				for (int i = 0;;) {
+				for (int i = 0; true; i++) {
 					if (get_container_info(container_dir, container)->drop_caplist[i] != NULL) {
 						send_msg_daemon(get_container_info(container_dir, container)->drop_caplist[i], addr, sockfd);
-						i++;
 					} else {
 						break;
 					}
@@ -517,14 +514,13 @@ void container_daemon()
 				// Read init command.
 				read_msg_daemon(msg, addr, sockfd);
 				// Get init command.
-				for (int i = 0;;) {
+				for (int i = 0; true; i++) {
 					read_msg_daemon(msg, addr, sockfd);
 					if (strcmp(FROM_CLIENT__END_OF_INIT_COMMAND, msg) == 0) {
 						break;
 					}
 					container_info.command[i] = strdup(msg);
 					container_info.command[i + 1] = NULL;
-					i++;
 				}
 				if (container_info.command[0] == NULL) {
 					container_info.command[0] = "/bin/sh";
@@ -534,7 +530,7 @@ void container_daemon()
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				// Get caps to drop.
-				for (int i = 0;;) {
+				for (int i = 0; true; i++) {
 					read_msg_daemon(msg, addr, sockfd);
 					if (strcmp(FROM_CLIENT__END_OF_CAP_TO_DROP, msg) == 0) {
 						container_info.drop_caplist[i] = INIT_VALUE;
@@ -542,29 +538,26 @@ void container_daemon()
 					}
 					cap_from_name(msg, &container_info.drop_caplist[i]);
 					container_info.drop_caplist[i + 1] = INIT_VALUE;
-					i++;
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				// Get mountpoints.
-				for (int i = 0;;) {
+				for (int i = 0; true; i++) {
 					read_msg_daemon(msg, addr, sockfd);
 					if (strcmp(FROM_CLIENT__END_OF_MOUNTPOINT, msg) == 0) {
 						break;
 					}
 					container_info.mountpoint[i] = strdup(msg);
 					container_info.mountpoint[i + 1] = NULL;
-					i++;
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				// Get envs.
-				for (int i = 0;;) {
+				for (int i = 0; true; i++) {
 					read_msg_daemon(msg, addr, sockfd);
 					if (strcmp(FROM_CLIENT__END_OF_ENV, msg) == 0) {
 						break;
 					}
 					container_info.env[i] = strdup(msg);
 					container_info.env[i + 1] = NULL;
-					i++;
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) != 0) {
@@ -592,7 +585,7 @@ void container_daemon()
 			// Ignore FROM_PTHREAD__CAP_TO_DROP
 			read_msg_daemon(msg, addr, sockfd);
 			// Get caps to drop.
-			for (int i = 0;;) {
+			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_CAP_TO_DROP, msg) == 0) {
 					drop_caplist[i][0] = '\0';
@@ -600,29 +593,26 @@ void container_daemon()
 				}
 				strcpy(drop_caplist[i], msg);
 				drop_caplist[i + 1][0] = '\0';
-				i++;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			// Get mountpoints.
-			for (int i = 0;;) {
+			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0) {
 					mountpoint[i][0] = '\0';
 					break;
 				}
 				strcpy(mountpoint[i], msg);
-				i++;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			// Get envs.
-			for (int i = 0;;) {
+			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_ENV, msg) == 0) {
 					break;
 				}
 				env[i] = strdup(msg);
 				env[i + 1] = NULL;
-				i++;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) != 0) {

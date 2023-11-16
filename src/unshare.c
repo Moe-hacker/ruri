@@ -164,14 +164,13 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 			container_info->env[i + 1] = NULL;
 		}
 		read_msg_client(msg, addr);
-		for (int i = 0;;) {
+		for (int i = 0; true; i++) {
 			read_msg_client(msg, addr);
 			if (strcmp(msg, FROM_DAEMON__END_OF_CAP_TO_DROP) == 0) {
 				break;
 			}
 			cap_from_name(msg, &container_info->drop_caplist[i]);
 			container_info->drop_caplist[i + 1] = INIT_VALUE;
-			i++;
 		}
 		read_msg_client(msg, addr);
 		if (strcmp(msg, FROM_DAEMON__NO_NEW_PRIVS_TRUE) != 0) {
@@ -283,23 +282,20 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
 	printf("\033[1;38;2;254;228;208mRun unshare container:\n");
 	printf("%s%s\n", "\033[1;38;2;254;228;208mcontainer_dir: \033[1;38;2;152;245;225m", container_info->container_dir);
 	printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
-	for (int i = 0;;) {
+	for (int i = 0; true; i++) {
 		if (container_info->command[i] != NULL) {
 			printf("%s%s", container_info->command[i], " ");
-			i++;
 		} else {
 			printf("\n");
 			break;
 		}
 	}
 	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
-	for (int i = 0;;) {
+	for (int i = 0; true; i++) {
 		if (!container_info->drop_caplist[i]) {
 			printf("%s%s", cap_to_name(0), " ");
-			i++;
 		} else if (container_info->drop_caplist[i] != INIT_VALUE) {
 			printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-			i++;
 		} else {
 			printf("\n");
 			break;
