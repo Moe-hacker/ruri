@@ -57,7 +57,7 @@ static void show_greetings()
   // Get the size of terminal.
   struct winsize size;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-  unsigned short col = size.ws_col;
+  u_short col = size.ws_col;
   if (col % 2 == 1)
   {
     col -= 1;
@@ -69,7 +69,7 @@ static void show_greetings()
   {
     col /= 2;
     col -= 22;
-    for (unsigned short i = 1; i <= col; i++)
+    for (u_short i = 1; i <= col; i++)
     {
       strcat(space, " ");
     }
@@ -238,11 +238,11 @@ int mkdirs(char *dir, mode_t mode)
    * ret = mkdir("path/to/mkdir",mode);
    * return ret;
    */
-  for (unsigned long i = 1; i < strlen(dir); i++)
+  for (u_long i = 1; i < strlen(dir); i++)
   {
     if (dir[i] == '/')
     {
-      for (unsigned long j = 0; j < i; j++)
+      for (u_long j = 0; j < i; j++)
       {
         buf[j] = dir[j];
         buf[j + 1] = '\0';

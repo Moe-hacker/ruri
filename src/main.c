@@ -205,7 +205,7 @@ int main(int argc, char **argv)
     }
     else if (strcmp(argv[index], "-d") == 0)
     {
-      for (unsigned long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++)
+      for (u_long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++)
       {
         drop_caplist[i] = drop_caplist_unprivileged[i];
       }
@@ -388,7 +388,7 @@ int main(int argc, char **argv)
   // Set default caplist to drop.
   if (!privileged && drop_caplist[0] == INIT_VALUE)
   {
-    for (unsigned long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++)
+    for (u_long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++)
     {
       drop_caplist[i] = drop_caplist_common[i];
     }
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
   // Comply with capability-set policy specified.
   if (drop_caplist_extra[0] != INIT_VALUE)
   {
-    for (unsigned long i = 0; i < (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
+    for (u_long i = 0; i < (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++)
     {
       if (drop_caplist_extra[i] != INIT_VALUE)
       {
@@ -406,7 +406,7 @@ int main(int argc, char **argv)
   }
   if (keep_caplist_extra[0] != INIT_VALUE)
   {
-    for (unsigned long i = 0; i < (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
+    for (u_long i = 0; i < (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++)
     {
       if (keep_caplist_extra[i] != INIT_VALUE)
       {
