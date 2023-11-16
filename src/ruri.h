@@ -75,7 +75,7 @@
 // Version info.
 #define RURI_VERSION "2.2"
 // Limitations.
-#define MAX_COMMANDS 1024
+#define MAX_COMMANDS (1024)
 #define MAX_ENVS (128 * 2)
 #define MAX_MOUNTPOINTS (128 * 2)
 // For interprocess communication.

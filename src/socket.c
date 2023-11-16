@@ -84,7 +84,7 @@ ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
 	 * Return the same value as read(2).
 	 */
 	// Clear buf.
-	memset(buf, '\000', strlen(buf));
+	memset(buf, '\000', strlen(buf) * sizeof(char));
 	// Accept a connection.
 	u_int size = sizeof(addr);
 	int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
@@ -118,7 +118,7 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
 	 * Return the same value as read(2).
 	 */
 	// Clear buf.
-	memset(buf, '\000', strlen(buf));
+	memset(buf, '\000', strlen(buf) * sizeof(char));
 	// Connect to daemon.
 	int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
@@ -174,7 +174,7 @@ int connect_to_daemon(struct sockaddr_un *addr)
 	// Message to read.
 	char msg[MSG_BUF_SIZE] = { '\000' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE);
+	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
 	read_msg_client(msg, *addr);
 	// Nya!
 	if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0) {

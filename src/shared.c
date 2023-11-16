@@ -47,7 +47,7 @@ static void show_greetings()
 	if (col > 46) {
 		col /= 2;
 		col -= 22;
-		memset(space, ' ', col);
+		memset(space, ' ', col * sizeof(char));
 		space[col] = '\000';
 	} else {
 		strcat(space, "");

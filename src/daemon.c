@@ -356,7 +356,7 @@ void container_daemon()
 	// Message to read.
 	char msg[MSG_BUF_SIZE] = { '\000' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE);
+	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
 	// Container info.
 	char *container_dir = NULL;
 	// Info of a new container.

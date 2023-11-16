@@ -87,7 +87,7 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	pid_t unshare_pid = INIT_VALUE;
 	char msg[MSG_BUF_SIZE] = { '\000' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE);
+	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
 	char *container_pid = NULL;
 	send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
 	send_msg_client(container_info->container_dir, addr);
