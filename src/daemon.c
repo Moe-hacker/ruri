@@ -32,7 +32,7 @@
 static struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container)
 {
   /*
-   * Use malloc() to request the memory of the node and then add container info to node.
+   * Use malloc(3) to request the memory of the node and then add container info to node.
    * If current node is already used, try the next one.
    * The last ->next node will always be NULL.
    */
@@ -130,7 +130,7 @@ static struct CONTAINERS *deregister_container(char *container_dir, struct CONTA
 {
   /*
    * If container is a NULL pointer, just quit, but this will never happen.
-   * Or it will find the node that matching container_dir , free() its memory and use the next node to overwrite it.
+   * Or it will find the node that matching container_dir , free(3) its memory and use the next node to overwrite it.
    * NULL pointer will be returned if reached the end of all nodes.
    * However, as container_active() will be run before it to check if container's running, NULL pointer will never be returned.
    */
@@ -208,7 +208,7 @@ static void umount_all_containers(struct CONTAINERS *container)
 {
   /*
    * Kill and umount all containers.
-   * container_daemon() will exit after calling to this function, so free() is needless here.
+   * container_daemon() will exit after calling to this function, so free(3) is needless here.
    */
   struct CONTAINERS **node = &container;
   while (true)
@@ -265,13 +265,13 @@ static void *daemon_init_unshare_container(void *arg)
 {
   /*
    * It is called as a child process of container_daemon().
-   * It will call to unshare() and send unshare_pid after fork() and other information to daemon.
+   * It will call to unshare() and send unshare_pid after fork(2) and other information to daemon.
    * and call to run_chroot_container() to exec init command.
    * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
    */
   // pthread_create() only allows one argument.
   struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
-  // Try to create namespaces with unshare(), no warnings to show because daemon will be run in the background.
+  // Try to create namespaces with unshare(2), no warnings to show because daemon will be run in the background.
   unshare(CLONE_NEWNS);
   unshare(CLONE_NEWUTS);
   unshare(CLONE_NEWIPC);
@@ -400,7 +400,7 @@ void container_daemon()
   sigemptyset(&sigs);
   sigaddset(&sigs, SIGTTIN);
   sigprocmask(SIG_BLOCK, &sigs, 0);
-  // For pthread_create().
+  // For pthread_create(3).
   pthread_t pthread_id = 0;
   // Check if we are running with root privileges.
   if (getuid() != 0)
@@ -468,7 +468,7 @@ void container_daemon()
     close(sockfd);
     error("Daemon already running QwQ");
   }
-  // Fork() itself into the background.
+  // fork(2) itself into the background.
   // It's really a daemon now, because its parent process will be init.
   pid_t pid = fork();
   if (pid > 0)

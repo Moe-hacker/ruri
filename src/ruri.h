@@ -102,13 +102,13 @@ struct CONTAINER_INFO
   char *container_dir;
   cap_value_t drop_caplist[CAP_LAST_CAP + 1];
   char *command[MAX_COMMANDS];
-  // Mount before chroot().
+  // Mount before chroot(2).
   char *mountpoint[MAX_MOUNTPOINTS];
   char *env[MAX_ENVS];
   bool no_new_privs;
   bool enable_seccomp;
   // Only be used in container_daemon().
-  // For setns(), we define it as char*.
+  // For setns(2), we define it as char*.
   char *unshare_pid;
 };
 void setup_seccomp(struct CONTAINER_INFO *container_info);

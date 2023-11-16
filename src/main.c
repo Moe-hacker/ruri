@@ -28,7 +28,7 @@
  *
  */
 #include "ruri.h"
-// Do some checks before chroot(),called by main()
+// Do some checks before chroot(2),called by main()
 static void check_container(char *container_dir)
 {
   /*
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
     strcat(init_binary, "/bin/su");
   }
   struct stat init_binary_stat;
-  // lstat() will return -1 while the init_binary does not exist.
+  // lstat(3) will return -1 while the init_binary does not exist.
   if (lstat(init_binary, &init_binary_stat) != 0)
   {
     error("Please check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ");

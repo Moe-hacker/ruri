@@ -84,7 +84,7 @@ void umount_container(char *container_dir)
 {
   /*
    * It will try to connect to daemon, and daemon will kill daemon_init_unshare_container() process of container if the container is running.
-   * Then it will umount() container_dir and other directories in it.
+   * Then it will umount(2) container_dir and other directories in it.
    */
   // Set socket address.
   struct sockaddr_un addr;

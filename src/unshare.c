@@ -32,7 +32,7 @@
 static pid_t init_unshare_container(bool no_warnings)
 {
   /*
-   * Use unshare() to create new namespaces and fork() to join them.
+   * Use unshare(2) to create new namespaces and fork(2) to join them.
    * Return pid of forked process.
    * unshare_pid in forked process is 0.
    */
@@ -93,7 +93,7 @@ static pid_t init_unshare_container(bool no_warnings)
 static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
 {
   /*
-   * Request container_pid and other info of container from daemon, use setns() to join namespaces and then fork() itself into them.
+   * Request container_pid and other info of container from daemon, use setns(2) to join namespaces and then fork(2) itself into them.
    * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
    */
   pid_t unshare_pid = INIT_VALUE;
@@ -233,13 +233,13 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
   usleep(400000);
   // Ignore FROM_DAEMON__UNSHARE_CONTAINER_PID.
   read_msg_client(msg, addr);
-  // Pid for setns().
+  // Pid for setns(2).
   read_msg_client(msg, addr);
   container_pid = strdup(msg);
 #ifdef __RURI_DEV__
   printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mContainer pid from daemon:\033[1;38;2;152;245;225m", container_pid);
 #endif
-  // Use setns() to enter namespaces created by daemon.
+  // Use setns(2) to enter namespaces created by daemon.
   char cgroup_ns_file[PATH_MAX] = {'\000'};
   char ipc_ns_file[PATH_MAX] = {'\000'};
   char mount_ns_file[PATH_MAX] = {'\000'};
@@ -340,8 +340,8 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
 {
   /*
    * If daemon is not running, it will create namespaces itself.
-   * Or it will connect to daemon and use setns() to join namespaces created by daemon.
-   * After fork() to send itself to new namespaces, it will call to run_chroot_container().
+   * Or it will connect to daemon and use setns(2) to join namespaces created by daemon.
+   * After fork(2) to send itself to new namespaces, it will call to run_chroot_container().
    */
   // Set default init.
   if (container_info->command[0] == NULL)
@@ -401,7 +401,7 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
       printf("\033[33mWarning: seems that container daemon is not running QwQ\033[0m\n");
     }
   }
-  // Unshare() itself into new namespaces.
+  // unshare(2) itself into new namespaces.
   if (!daemon_running)
   {
     unshare_pid = init_unshare_container(no_warnings);

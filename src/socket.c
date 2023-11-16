@@ -38,8 +38,8 @@ ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd)
 #ifdef __RURI_DEV__
   printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mDaemon send msg: \033[1;38;2;152;245;225m", msg);
 #endif
-  unsigned int size = sizeof(addr);
   // Accept a connection.
+  unsigned int size = sizeof(addr);
   int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
   // Set timeout duration.
   struct timeval timeout = {3, 0};
@@ -58,6 +58,7 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
 #ifdef __RURI_DEV__
   printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mClient send msg: \033[1;38;2;152;245;225m", msg);
 #endif
+  // Connect to daemon.
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
@@ -68,7 +69,7 @@ ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
   struct timeval timeout = {0, 100};
   setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-  // Connect to daemon.
+  // Try to connect to daemon.
   if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) == -1)
   {
     return -1;
@@ -82,25 +83,19 @@ ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
   /*
    * It will read a message from socket,
    * and write the messages have been read to buf.
-   * Return the same value as read().
+   * Return the same value as read(2).
    */
   // Clear buf.
   memset(buf, '\000', strlen(buf));
-  ssize_t ret = 0;
-  unsigned int size = sizeof(addr);
   // Accept a connection.
+  unsigned int size = sizeof(addr);
   int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
   // Set timeout duration.
   struct timeval timeout = {3, 0};
   setsockopt(sock_new, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   setsockopt(sock_new, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   // Read messages.
-  ret = read(sock_new, buf, PATH_MAX);
-  if (ret == -1)
-  {
-    buf[0] = '\000';
-  }
-  close(sock_new);
+  ssize_t ret = read(sock_new, buf, PATH_MAX);
 #ifdef __RURI_DEV__
   if (ret != -1)
   {
@@ -111,6 +106,13 @@ ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
     printf("%s\n\033[0m", "\033[1;38;2;254;228;208mDaemon read msg: \033[1;38;2;152;245;225mNULL");
   }
 #endif
+  // Maybe useless...
+  if (ret == -1)
+  {
+    buf[0] = '\000';
+  }
+  // Close socket.
+  close(sock_new);
   return ret;
 }
 // For client, return the messages have been read.
@@ -119,11 +121,11 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
   /*
    * It will read a message from socket,
    * and write the messages have been read to buf.
-   * Return the same value as read().
+   * Return the same value as read(2).
    */
   // Clear buf.
   memset(buf, '\000', strlen(buf));
-  ssize_t ret = 0;
+  // Connect to daemon.
   int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (sockfd < 0)
   {
@@ -139,12 +141,7 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
     return -1;
   }
   // Read messages.
-  ret = read(sockfd, buf, PATH_MAX);
-  if (ret == -1)
-  {
-    buf[0] = '\000';
-  }
-  close(sockfd);
+  ssize_t ret = read(sockfd, buf, PATH_MAX);
 #ifdef __RURI_DEV__
   if (ret != -1)
   {
@@ -155,6 +152,13 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
     printf("%s\033[0m\n", "\033[1;38;2;254;228;208mClient read msg: \033[1;38;2;152;245;225mNULL");
   }
 #endif
+  // Maybe useless...
+  if (ret == -1)
+  {
+    buf[0] = '\000';
+  }
+  // Close socket.
+  close(sockfd);
   return ret;
 }
 // Connect to daemon.
@@ -172,6 +176,7 @@ int connect_to_daemon(struct sockaddr_un *addr)
   {
     tmpdir = "/tmp";
   }
+  // Get socket file path.
   char socket_path[PATH_MAX] = {0};
   strcat(socket_path, tmpdir);
   strcat(socket_path, "/");
@@ -179,10 +184,12 @@ int connect_to_daemon(struct sockaddr_un *addr)
   strcpy(addr->sun_path, socket_path);
   // Try to connect to socket file and check if it's created by ruri daemon.
   send_msg_client(FROM_CLIENT__TEST_MESSAGE, *addr);
+  // Message to read.
   char msg[MSG_BUF_SIZE] = {'\000'};
   // Clear buf.
   memset(msg, '\000', MSG_BUF_SIZE);
   read_msg_client(msg, *addr);
+  // Nya!
   if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0)
   {
     return -1;
