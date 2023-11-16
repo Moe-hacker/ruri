@@ -43,12 +43,12 @@ static void show_greetings()
 	}
 	// For centering output.
 	char space[col / 2 + 1];
-	space[0] = '\000';
+	space[0] = '\0';
 	if (col > 46) {
 		col /= 2;
 		col -= 22;
 		memset(space, ' ', col * sizeof(char));
-		space[col] = '\000';
+		space[col] = '\0';
 	} else {
 		strcat(space, "");
 	}

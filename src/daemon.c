@@ -354,9 +354,9 @@ void container_daemon()
 	// Create container struct.
 	struct CONTAINERS *container = NULL;
 	// Message to read.
-	char msg[MSG_BUF_SIZE] = { '\000' };
+	char msg[MSG_BUF_SIZE] = { '\0' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
+	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	// Container info.
 	char *container_dir = NULL;
 	// Info of a new container.

@@ -41,9 +41,9 @@ void container_ps()
 		error("\033[31mDaemon not running.\n");
 	}
 	// Message to read.
-	char msg[MSG_BUF_SIZE] = { '\000' };
+	char msg[MSG_BUF_SIZE] = { '\0' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
+	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	// Daemon will return the info of running containers.
 	send_msg_client(FROM_CLIENT__GET_PS_INFO, addr);
 	printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
@@ -84,9 +84,9 @@ void umount_container(char *container_dir)
 	 */
 	// Set socket address.
 	struct sockaddr_un addr;
-	char msg[MSG_BUF_SIZE] = { '\000' };
+	char msg[MSG_BUF_SIZE] = { '\0' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
+	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	char mountpoint[MAX_MOUNTPOINTS / 2][PATH_MAX];
 	mountpoint[0][0] = '\0';
 	if (connect_to_daemon(&addr) != 0) {

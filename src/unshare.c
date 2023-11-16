@@ -85,9 +85,9 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	 * If container is not running, it will send the info to daemon, and daemon will register it and send its container_pid back.
 	 */
 	pid_t unshare_pid = INIT_VALUE;
-	char msg[MSG_BUF_SIZE] = { '\000' };
+	char msg[MSG_BUF_SIZE] = { '\0' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
+	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	char *container_pid = NULL;
 	send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
 	send_msg_client(container_info->container_dir, addr);
@@ -192,12 +192,12 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mContainer pid from daemon:\033[1;38;2;152;245;225m", container_pid);
 #endif
 	// Use setns(2) to enter namespaces created by daemon.
-	char cgroup_ns_file[PATH_MAX] = { '\000' };
-	char ipc_ns_file[PATH_MAX] = { '\000' };
-	char mount_ns_file[PATH_MAX] = { '\000' };
-	char pid_ns_file[PATH_MAX] = { '\000' };
-	char time_ns_file[PATH_MAX] = { '\000' };
-	char uts_ns_file[PATH_MAX] = { '\000' };
+	char cgroup_ns_file[PATH_MAX] = { '\0' };
+	char ipc_ns_file[PATH_MAX] = { '\0' };
+	char mount_ns_file[PATH_MAX] = { '\0' };
+	char pid_ns_file[PATH_MAX] = { '\0' };
+	char time_ns_file[PATH_MAX] = { '\0' };
+	char uts_ns_file[PATH_MAX] = { '\0' };
 	sprintf(cgroup_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/cgroup");
 	sprintf(ipc_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/ipc");
 	sprintf(mount_ns_file, "%s%s%s", "/proc/", container_pid, "/ns/mnt");

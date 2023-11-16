@@ -84,7 +84,7 @@ ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
 	 * Return the same value as read(2).
 	 */
 	// Clear buf.
-	memset(buf, '\000', strlen(buf) * sizeof(char));
+	memset(buf, '\0', strlen(buf) * sizeof(char));
 	// Accept a connection.
 	u_int size = sizeof(addr);
 	int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
@@ -103,7 +103,7 @@ ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
 #endif
 	// Maybe useless...
 	if (ret == -1) {
-		buf[0] = '\000';
+		buf[0] = '\0';
 	}
 	// Close socket.
 	close(sock_new);
@@ -118,7 +118,7 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
 	 * Return the same value as read(2).
 	 */
 	// Clear buf.
-	memset(buf, '\000', strlen(buf) * sizeof(char));
+	memset(buf, '\0', strlen(buf) * sizeof(char));
 	// Connect to daemon.
 	int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
@@ -143,7 +143,7 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr)
 #endif
 	// Maybe useless...
 	if (ret == -1) {
-		buf[0] = '\000';
+		buf[0] = '\0';
 	}
 	// Close socket.
 	close(sockfd);
@@ -172,9 +172,9 @@ int connect_to_daemon(struct sockaddr_un *addr)
 	// Try to connect to socket file and check if it's created by ruri daemon.
 	send_msg_client(FROM_CLIENT__TEST_MESSAGE, *addr);
 	// Message to read.
-	char msg[MSG_BUF_SIZE] = { '\000' };
+	char msg[MSG_BUF_SIZE] = { '\0' };
 	// Clear buf.
-	memset(msg, '\000', MSG_BUF_SIZE * sizeof(char));
+	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	read_msg_client(msg, *addr);
 	// Nya!
 	if (strcmp(FROM_DAEMON__TEST_MESSAGE, msg) != 0) {
