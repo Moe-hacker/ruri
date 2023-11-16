@@ -52,8 +52,9 @@ CANARY = -fstack-protector-all
 CLASH_PROTECT = -fstack-clash-protection
 # Shadow Stack.
 SHADOW_STACK = -mshstk
+# XXX: Old compilers cannot enable this.
 # Auto initialize automatic variables.
-AUTO_VAR_INIT = -ftrivial-auto-var-init=zero
+# AUTO_VAR_INIT = -ftrivial-auto-var-init=zero
 # Fortified Source.
 FORTIFY = -D_FORTIFY_SOURCE=3 -Wno-unused-result
 # Other "one-key" optimization.

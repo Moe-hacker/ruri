@@ -70,6 +70,12 @@
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
+// Bool!!!
+#if __STDC_VERSION__ < 202000L || __clang_major__ <= 14
+#define bool _Bool
+#define true ((_Bool) + 1u)
+#define false ((_Bool) + 0u)
+#endif
 // For initializing some variables.
 #define INIT_VALUE (-114)
 // Version info.
