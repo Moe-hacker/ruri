@@ -116,8 +116,12 @@ The daemon will create a socket file in $TMPDIR/ruri.sock (to be /tmp/ruri.sock 
 ### Full User Guide:
 See `ruri(1)` in manpage after installation.   
 ### License:
-Licensed under the MIT License      
-Copyright (c) 2022-2023 Moe-hacker      
+License of code:      
+- Licensed under the MIT License      
+- Copyright (c) 2022-2023 Moe-hacker      
+
+License of clang-format config file:      
+- GPL-2.0      
 
 ```
 ●●●●  ●   ● ●●●●   ●●●

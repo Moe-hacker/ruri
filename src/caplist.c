@@ -31,79 +31,68 @@
 // Add a cap to caplist.
 void add_to_list(cap_value_t *list, int length, cap_value_t cap)
 {
-  /*
-   * If cap is already in list, just do nothing and quit.
-   * list[] is initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
-   */
+	/*
+	 * If cap is already in list, just do nothing and quit.
+	 * list[] is initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
+	 */
 #ifdef __RURI_DEV__
-  printf("\033[1;38;2;254;228;208mAdd \033[1;38;2;152;245;225m%s \033[1;38;2;254;228;208mto drop_caplist.\033[0m\n", cap_to_name(cap));
+	printf("\033[1;38;2;254;228;208mAdd \033[1;38;2;152;245;225m%s \033[1;38;2;254;228;208mto drop_caplist.\033[0m\n", cap_to_name(cap));
 #endif
-  bool in = false;
-  // Check if the cap to add is already in caplist.
-  for (int i = 0; i < length; i++)
-  {
-    if (list[i] == cap)
-    {
-      in = true;
-      break;
-    }
-  }
-  // Add cap to caplist.
-  if (!in)
-  {
-    for (int k = 0; k < length; k++)
-    {
-      if (list[k] == INIT_VALUE)
-      {
-        list[k] = cap;
-        break;
-      }
-    }
-  }
+	bool in = false;
+	// Check if the cap to add is already in caplist.
+	for (int i = 0; i < length; i++) {
+		if (list[i] == cap) {
+			in = true;
+			break;
+		}
+	}
+	// Add cap to caplist.
+	if (!in) {
+		for (int k = 0; k < length; k++) {
+			if (list[k] == INIT_VALUE) {
+				list[k] = cap;
+				break;
+			}
+		}
+	}
 }
 // Check if the cap includes in the list.
 bool is_in_list(const cap_value_t *list, int length, cap_value_t cap)
 {
-  /*
-   * For setup_seccomp().
-   */
-  bool ret = false;
-  // Check if the cap to add is already in caplist.
-  for (int i = 0; i < length; i++)
-  {
-    if (list[i] == cap)
-    {
-      ret = true;
-      break;
-    }
-    if (list[i] == INIT_VALUE)
-    {
-      break;
-    }
-  }
-  return ret;
+	/*
+	 * For setup_seccomp().
+	 */
+	bool ret = false;
+	// Check if the cap to add is already in caplist.
+	for (int i = 0; i < length; i++) {
+		if (list[i] == cap) {
+			ret = true;
+			break;
+		}
+		if (list[i] == INIT_VALUE) {
+			break;
+		}
+	}
+	return ret;
 }
 // Del a cap from caplist.
 void del_from_list(cap_value_t *list, int length, cap_value_t cap)
 {
-  /*
-   * If the cap is not in list, just do nothing and quit.
-   * Or we will delete it from the list.
-   */
+	/*
+	 * If the cap is not in list, just do nothing and quit.
+	 * Or we will delete it from the list.
+	 */
 #ifdef __RURI_DEV__
-  printf("\033[1;38;2;254;228;208mDel \033[1;38;2;152;245;225m%s \033[1;38;2;254;228;208mfrom drop_caplist.\033[0m\n", cap_to_name(cap));
+	printf("\033[1;38;2;254;228;208mDel \033[1;38;2;152;245;225m%s \033[1;38;2;254;228;208mfrom drop_caplist.\033[0m\n", cap_to_name(cap));
 #endif
-  for (int i = 0; i < length; i++)
-  {
-    if (list[i] == cap)
-    {
-      while (i < length - 1)
-      {
-        list[i] = list[i + 1];
-        i++;
-      }
-      list[i] = INIT_VALUE;
-      break;
-    }
-  }
+	for (int i = 0; i < length; i++) {
+		if (list[i] == cap) {
+			while (i < length - 1) {
+				list[i] = list[i + 1];
+				i++;
+			}
+			list[i] = INIT_VALUE;
+			break;
+		}
+	}
 }

@@ -31,229 +31,219 @@
 // Show error msg and exit.
 void error(char *msg)
 {
-  /*
-   * Show error message and exit here.
-   * You can never know if a customer will order a rice at the bar.
-   * It's a `moe` program, but also should be standard and rigorous.
-   */
-  fprintf(stderr, "\033[31m%s\033[0m\n", msg);
-  // A very cute catgirl nya~~
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  .^.   .^.");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  /⋀\\_ﾉ_/⋀\\");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " ﾙﾘﾘ >  x )ﾘ");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");
-  fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:");
-  fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");
-  exit(1);
+	/*
+	 * Show error message and exit here.
+	 * You can never know if a customer will order a rice at the bar.
+	 * It's a `moe` program, but also should be standard and rigorous.
+	 */
+	fprintf(stderr, "\033[31m%s\033[0m\n", msg);
+	// A very cute catgirl nya~~
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  .^.   .^.");
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  /⋀\\_ﾉ_/⋀\\");
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " ﾙﾘﾘ >  x )ﾘ");
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");
+	fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:");
+	fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");
+	exit(1);
 }
 // As an easter agg.
 static void show_greetings()
 {
-  /*
-   * Nothing is useful at this function, just for fun.
-   */
-  // Get the size of terminal.
-  struct winsize size;
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-  u_short col = size.ws_col;
-  if (col % 2 == 1)
-  {
-    col -= 1;
-  }
-  // For centering output.
-  char space[col / 2 + 1];
-  space[0] = '\000';
-  if (col > 46)
-  {
-    col /= 2;
-    col -= 22;
-    for (u_short i = 1; i <= col; i++)
-    {
-      strcat(space, " ");
-    }
-  }
-  else
-  {
-    strcat(space, "");
-  }
-  // Yes, it's Hoppou!
-  printf("%s%s\n", space, "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
-  printf("%s%s\n", space, "          ▅▅▀▀▀               ▀▀▅▅");
-  printf("%s%s\n", space, "     ▅▅▅▀▀            ▅           ▀▅");
-  printf("%s%s\n", space, "      ▅▀      ▅▀█▅▅▀▀▅▀▅        ▅▅  ▀▅");
-  printf("%s%s\n", space, "     ▅▀   █▅▀▀  ▀     ▀ ▀▀▅▅    █ ▀▀▅ █");
-  printf("%s%s\n", space, "    ▅▀   ▅▀  ▅▀      ▀▅    ▀▅   █▅███▀█");
-  printf("%s%s\n", space, "  ▅▅█▀▅ █ ▅▅▀          ▀▀   █   ████   █");
-  printf("%s%s\n", space, "      █ █ ▅▅▅▅▅        ▅▅▅▅▅ █  ▀█▀    █");
-  printf("%s%s\n", space, "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
-  printf("%s%s\n", space, "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
-  printf("%s%s\n", space, "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
-  printf("%s%s\n", space, "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
-  printf("%s%s\n", space, "  ▅▀▅▀ █                     █   █      █");
-  printf("%s%s\n", space, " █   █ ▀▅ ▅▀▅   ▅▀▅   ▅▅     █   █      ▀▅");
-  printf("%s%s\n", space, "▅█▅▅██▅ ▅██  ▀███ ▅████ ▀▅█▀▅▀   █       ▀▅");
-  printf("%s%s\n", space, "███████ ▀██████████████████▀▀             █");
-  printf("%s%s\n", space, " █    ▀▅  ██▀ ▀██▀▀██▀▀██▀█     █▀         █");
-  printf("%s%s\n", space, " ▀▅     ▀▀█              ▅▀     █          █");
-  printf("%s%s\n", space, "   ▀▅    █               █     ██        ▅▀");
-  printf("%s%s\n", space, "     ▀▅▅▅▀                ▀▀▀▀▀ █        █");
-  printf("%s%s\n", space, "        ▀                       ▀        ▀");
-  printf("%s\n", "");
+	/*
+	 * Nothing is useful at this function, just for fun.
+	 */
+	// Get the size of terminal.
+	struct winsize size;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	u_short col = size.ws_col;
+	if (col % 2 == 1) {
+		col -= 1;
+	}
+	// For centering output.
+	char space[col / 2 + 1];
+	space[0] = '\000';
+	if (col > 46) {
+		col /= 2;
+		col -= 22;
+		for (u_short i = 1; i <= col; i++) {
+			strcat(space, " ");
+		}
+	} else {
+		strcat(space, "");
+	}
+	// Yes, it's Hoppou!
+	printf("%s%s\n", space, "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
+	printf("%s%s\n", space, "          ▅▅▀▀▀               ▀▀▅▅");
+	printf("%s%s\n", space, "     ▅▅▅▀▀            ▅           ▀▅");
+	printf("%s%s\n", space, "      ▅▀      ▅▀█▅▅▀▀▅▀▅        ▅▅  ▀▅");
+	printf("%s%s\n", space, "     ▅▀   █▅▀▀  ▀     ▀ ▀▀▅▅    █ ▀▀▅ █");
+	printf("%s%s\n", space, "    ▅▀   ▅▀  ▅▀      ▀▅    ▀▅   █▅███▀█");
+	printf("%s%s\n", space, "  ▅▅█▀▅ █ ▅▅▀          ▀▀   █   ████   █");
+	printf("%s%s\n", space, "      █ █ ▅▅▅▅▅        ▅▅▅▅▅ █  ▀█▀    █");
+	printf("%s%s\n", space, "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
+	printf("%s%s\n", space, "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
+	printf("%s%s\n", space, "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
+	printf("%s%s\n", space, "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
+	printf("%s%s\n", space, "  ▅▀▅▀ █                     █   █      █");
+	printf("%s%s\n", space, " █   █ ▀▅ ▅▀▅   ▅▀▅   ▅▅     █   █      ▀▅");
+	printf("%s%s\n", space, "▅█▅▅██▅ ▅██  ▀███ ▅████ ▀▅█▀▅▀   █       ▀▅");
+	printf("%s%s\n", space, "███████ ▀██████████████████▀▀             █");
+	printf("%s%s\n", space, " █    ▀▅  ██▀ ▀██▀▀██▀▀██▀█     █▀         █");
+	printf("%s%s\n", space, " ▀▅     ▀▀█              ▅▀     █          █");
+	printf("%s%s\n", space, "   ▀▅    █               █     ██        ▅▀");
+	printf("%s%s\n", space, "     ▀▅▅▅▀                ▀▀▀▀▀ █        █");
+	printf("%s%s\n", space, "        ▀                       ▀        ▀");
+	printf("%s\n", "");
 }
 // For `ruri -v`.
 void show_version_info()
 {
-  /*
-   * Just show version info and license.
-   * Version info is defined in macro RURI_VERSION.
-   * RURI_COMMIT_ID is defined in Makefile.
-   */
-  printf("\n");
-  printf("\033[1;38;2;254;228;208m      ●●●●  ●   ● ●●●●   ●●●\n");
-  printf("      ●   ● ●   ● ●   ●   ●\n");
-  printf("      ●●●●  ●   ● ●●●●    ●\n");
-  printf("      ●  ●  ●   ● ●  ●    ●\n");
-  printf("      ●   ●  ●●●  ●   ●  ●●●\n");
-  printf("  Licensed under the MIT License\n");
-  printf("    <https://mit-license.org>\n");
-  printf("Copyright (C) 2022-2023 Moe-hacker\n");
-  printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
-  printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
-  printf("\n");
+	/*
+	 * Just show version info and license.
+	 * Version info is defined in macro RURI_VERSION.
+	 * RURI_COMMIT_ID is defined in Makefile.
+	 */
+	printf("\n");
+	printf("\033[1;38;2;254;228;208m      ●●●●  ●   ● ●●●●   ●●●\n");
+	printf("      ●   ● ●   ● ●   ●   ●\n");
+	printf("      ●●●●  ●   ● ●●●●    ●\n");
+	printf("      ●  ●  ●   ● ●  ●    ●\n");
+	printf("      ●   ●  ●●●  ●   ●  ●●●\n");
+	printf("  Licensed under the MIT License\n");
+	printf("    <https://mit-license.org>\n");
+	printf("Copyright (C) 2022-2023 Moe-hacker\n");
+	printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
+	printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
+	printf("\n");
 }
 // For `ruri -V`.
 void show_version_code()
 {
-  /*
-   * The version code is not standard now,
-   * so in fact it's very useless.
-   * Maybe it can be useful one day...
-   */
-  printf("%s\n", RURI_VERSION);
+	/*
+	 * The version code is not standard now,
+	 * so in fact it's very useless.
+	 * Maybe it can be useful one day...
+	 */
+	printf("%s\n", RURI_VERSION);
 }
 // For `ruri -h`.
 void show_helps(bool greetings)
 {
-  /*
-   * Help page of ruri.
-   * I think you can understand...
-   */
-  // Do not show greeting if command-line args are wrong.
-  if (greetings)
-  {
-    show_greetings();
-  }
-  printf("\033[1;38;2;254;228;208mLightweight, User-friendly Linux-container Implementation\n");
-  printf("\n");
-  printf("Usage:\n");
-  printf("  ruri OPTIONS\n");
-  printf("  ruri [ARGS] CONTAINER_DIRECTORY [COMMAND [ARG]...]\n");
-  printf("\n");
-  printf("OPTIONS:\n");
-  printf("  -v                     Show version info\n");
-  printf("  -V                     Show version code\n");
-  printf("  -h                     Show helps\n");
-  printf("  -hh                    Show helps and commandline examples\n");
-  printf("  -D                     Run daemon\n");
-  printf("  -K                     Kill daemon\n");
-  printf("  -t                     Check if daemon is running\n");
-  printf("  -l                     List all running unshare containers\n");
-  printf("  -U [container_dir]     Umount&kill a container\n");
-  printf("\n");
-  printf("ARGS:\n");
-  printf("  -u                     Enable unshare feature\n");
-  printf("  -n                     Set NO_NEW_PRIVS Flag\n");
-  printf("  -s                     Enable built-in Seccomp profile\n");
-  printf("  -d                     Drop more capabilities for lower privilege\n");
-  printf("  -p                     Run privileged container\n");
-  printf(" --keep [cap]            Keep the specified cap\n");
-  printf(" --drop [cap]            Drop the specified cap\n");
-  printf("  -e [env] [value]       Set env to its value *Not work if init command is like `su -`\n");
-  printf("  -m [dir] [mountpoint]  Mount dir to mountpoint\n");
-  printf("  -w                     Disable warnings\n");
-  printf("\n");
-  printf("Default command to run is `/bin/su` if it's not given\n");
-  printf("This program should be run with root privileges\n");
-  printf("Please unset $LD_PRELOAD before running this program\n");
-  printf("For a full user guide, see `man ruri`\033[0m\n");
-  printf("\n");
+	/*
+	 * Help page of ruri.
+	 * I think you can understand...
+	 */
+	// Do not show greeting if command-line args are wrong.
+	if (greetings) {
+		show_greetings();
+	}
+	printf("\033[1;38;2;254;228;208mLightweight, User-friendly Linux-container Implementation\n");
+	printf("\n");
+	printf("Usage:\n");
+	printf("  ruri OPTIONS\n");
+	printf("  ruri [ARGS] CONTAINER_DIRECTORY [COMMAND [ARG]...]\n");
+	printf("\n");
+	printf("OPTIONS:\n");
+	printf("  -v                     Show version info\n");
+	printf("  -V                     Show version code\n");
+	printf("  -h                     Show helps\n");
+	printf("  -hh                    Show helps and commandline examples\n");
+	printf("  -D                     Run daemon\n");
+	printf("  -K                     Kill daemon\n");
+	printf("  -t                     Check if daemon is running\n");
+	printf("  -l                     List all running unshare containers\n");
+	printf("  -U [container_dir]     Umount&kill a container\n");
+	printf("\n");
+	printf("ARGS:\n");
+	printf("  -u                     Enable unshare feature\n");
+	printf("  -n                     Set NO_NEW_PRIVS Flag\n");
+	printf("  -s                     Enable built-in Seccomp profile\n");
+	printf("  -d                     Drop more capabilities for lower privilege\n");
+	printf("  -p                     Run privileged container\n");
+	printf(" --keep [cap]            Keep the specified cap\n");
+	printf(" --drop [cap]            Drop the specified cap\n");
+	printf("  -e [env] [value]       Set env to its value *Not work if init command is like `su -`\n");
+	printf("  -m [dir] [mountpoint]  Mount dir to mountpoint\n");
+	printf("  -w                     Disable warnings\n");
+	printf("\n");
+	printf("Default command to run is `/bin/su` if it's not given\n");
+	printf("This program should be run with root privileges\n");
+	printf("Please unset $LD_PRELOAD before running this program\n");
+	printf("For a full user guide, see `man ruri`\033[0m\n");
+	printf("\n");
 }
 // For `ruri -hh`.
 void show_examples()
 {
-  /*
-   * Command line examples.
-   * I think you can understand...
-   */
-  printf("\n");
-  printf("\033[1;38;2;254;228;208m#Quickly setup a container(with rootfstool):\n");
-  printf("  \033[32mgit \033[33mclone \033[35mhttps://github.com/Moe-hacker/rootfstool\n");
-  printf("  \033[32mcd \033[35mrootfstool\n");
-  printf("  \033[32m./rootfstool \033[33mdownload \033[34m-d \033[35malpine \033[34m-v \033[35medge\n");
-  printf("  \033[32mmkdir \033[35m/tmp/alpine\n");
-  printf("  \033[32msudo tar \033[34m-xvf \033[35mrootfs.tar.xz \033[34m-C \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#Run chroot container:\n");
-  printf("  \033[32msudo ruri \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#Very simple as you can see.\n");
-  printf("#About the capabilities:\n");
-  printf("#Run privileged chroot container:\n");
-  printf("  \033[32msudo ruri \033[34m-p \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#But if you want to make the container more secure:\n");
-  printf("  \033[32msudo ruri \033[34m-d \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#If you want to run privileged chroot container,\n");
-  printf("#but you don't want to give the container cap_sys_chroot privileges:\n");
-  printf("  \033[32msudo ruri \033[34m-p --drop \033[36mcap_sys_chroot \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#If you want to run chroot container with common privileges,\n");
-  printf("#but you want cap_sys_admin to be kept:\n");
-  printf("  \033[32msudo ruri \033[34m--keep \033[36mcap_sys_admin \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#About unshare:\n");
-  printf("#Unshare container's capability options are same with chroot.\n");
-  printf("#But it's recommended to start daemon before running unshare containers:\n");
-  printf("  \033[32msudo ruri \033[34m-D\n");
-  printf("\033[1;38;2;254;228;208m#Run unshare container:\n");
-  printf("  \033[32msudo ruri \033[34m-u \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#List running containers:\n");
-  printf("  \033[32msudo ruri \033[34m-l\n");
-  printf("\033[1;38;2;254;228;208m#Umount the container:\n");
-  printf("  \033[32msudo ruri \033[34m-U \033[35m/tmp/alpine\n");
-  printf("\033[1;38;2;254;228;208m#Finally, kill the daemon:\n");
-  printf("  \033[32msudo ruri \033[34m-K\n");
-  printf("\n");
+	/*
+	 * Command line examples.
+	 * I think you can understand...
+	 */
+	printf("\n");
+	printf("\033[1;38;2;254;228;208m#Quickly setup a container(with rootfstool):\n");
+	printf("  \033[32mgit \033[33mclone \033[35mhttps://github.com/Moe-hacker/rootfstool\n");
+	printf("  \033[32mcd \033[35mrootfstool\n");
+	printf("  \033[32m./rootfstool \033[33mdownload \033[34m-d \033[35malpine \033[34m-v \033[35medge\n");
+	printf("  \033[32mmkdir \033[35m/tmp/alpine\n");
+	printf("  \033[32msudo tar \033[34m-xvf \033[35mrootfs.tar.xz \033[34m-C \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#Run chroot container:\n");
+	printf("  \033[32msudo ruri \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#Very simple as you can see.\n");
+	printf("#About the capabilities:\n");
+	printf("#Run privileged chroot container:\n");
+	printf("  \033[32msudo ruri \033[34m-p \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#But if you want to make the container more secure:\n");
+	printf("  \033[32msudo ruri \033[34m-d \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#If you want to run privileged chroot container,\n");
+	printf("#but you don't want to give the container cap_sys_chroot privileges:\n");
+	printf("  \033[32msudo ruri \033[34m-p --drop \033[36mcap_sys_chroot \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#If you want to run chroot container with common privileges,\n");
+	printf("#but you want cap_sys_admin to be kept:\n");
+	printf("  \033[32msudo ruri \033[34m--keep \033[36mcap_sys_admin \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#About unshare:\n");
+	printf("#Unshare container's capability options are same with chroot.\n");
+	printf("#But it's recommended to start daemon before running unshare containers:\n");
+	printf("  \033[32msudo ruri \033[34m-D\n");
+	printf("\033[1;38;2;254;228;208m#Run unshare container:\n");
+	printf("  \033[32msudo ruri \033[34m-u \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#List running containers:\n");
+	printf("  \033[32msudo ruri \033[34m-l\n");
+	printf("\033[1;38;2;254;228;208m#Umount the container:\n");
+	printf("  \033[32msudo ruri \033[34m-U \033[35m/tmp/alpine\n");
+	printf("\033[1;38;2;254;228;208m#Finally, kill the daemon:\n");
+	printf("  \033[32msudo ruri \033[34m-K\n");
+	printf("\n");
 }
 // Return the same value as mkdir().
 int mkdirs(char *dir, mode_t mode)
 {
-  /*
-   * A very simple implementation of mkdir -p.
-   * I don't know why it seems that there isn't an existing function to do this...
-   */
-  char buf[PATH_MAX];
-  int ret = 0;
-  /* If dir is path/to/mkdir
-   * We do:
-   * ret = mkdir("path",mode);
-   * ret = mkdir("path/to",mode);
-   * ret = mkdir("path/to/mkdir",mode);
-   * return ret;
-   */
-  for (u_long i = 1; i < strlen(dir); i++)
-  {
-    if (dir[i] == '/')
-    {
-      for (u_long j = 0; j < i; j++)
-      {
-        buf[j] = dir[j];
-        buf[j + 1] = '\0';
-      }
-      ret = mkdir(buf, mode);
-    }
-  }
-  // If the end of `dir` is not '/', create the last level of the directory.
-  if (dir[strlen(dir) - 1] != '/')
-  {
-    ret = mkdir(dir, mode);
-  }
-  return ret;
+	/*
+	 * A very simple implementation of mkdir -p.
+	 * I don't know why it seems that there isn't an existing function to do this...
+	 */
+	char buf[PATH_MAX];
+	int ret = 0;
+	/* If dir is path/to/mkdir
+	 * We do:
+	 * ret = mkdir("path",mode);
+	 * ret = mkdir("path/to",mode);
+	 * ret = mkdir("path/to/mkdir",mode);
+	 * return ret;
+	 */
+	for (u_long i = 1; i < strlen(dir); i++) {
+		if (dir[i] == '/') {
+			for (u_long j = 0; j < i; j++) {
+				buf[j] = dir[j];
+				buf[j + 1] = '\0';
+			}
+			ret = mkdir(buf, mode);
+		}
+	}
+	// If the end of `dir` is not '/', create the last level of the directory.
+	if (dir[strlen(dir) - 1] != '/') {
+		ret = mkdir(dir, mode);
+	}
+	return ret;
 }
