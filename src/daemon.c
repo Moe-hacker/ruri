@@ -51,48 +51,42 @@ static struct CONTAINERS *register_container(char *container_dir, char *unshare_
       (*node)->enable_seccomp = enable_seccomp;
       for (int i = 0; i < (CAP_LAST_CAP + 1); i++)
       {
-        if (drop_caplist[i][0] != '\0')
-        {
-          (*node)->drop_caplist[i] = malloc(sizeof(char) * (strlen(drop_caplist[i]) + 1));
-          strcpy((*node)->drop_caplist[i], drop_caplist[i]);
-        }
-        else
+        if (drop_caplist[i][0] == '\0')
         {
           (*node)->drop_caplist[i] = NULL;
+          // for() loop ends here.
           break;
         }
+        (*node)->drop_caplist[i] = malloc(sizeof(char) * (strlen(drop_caplist[i]) + 1));
+        strcpy((*node)->drop_caplist[i], drop_caplist[i]);
       }
       for (int i = 0; i < MAX_ENVS; i++)
       {
-        if (env[i] != NULL)
-        {
-          (*node)->env[i] = malloc(sizeof(char) * (strlen(env[i]) + 1));
-          strcpy((*node)->env[i], env[i]);
-        }
-        else
+        if (env[i] == NULL)
         {
           (*node)->env[i] = NULL;
+          // for() loop ends here.
           break;
         }
+        (*node)->env[i] = malloc(sizeof(char) * (strlen(env[i]) + 1));
+        strcpy((*node)->env[i], env[i]);
       }
       for (int i = 0; i < MAX_MOUNTPOINTS; i++)
       {
-        if (mountpoint[i][0] != '\0')
-        {
-          (*node)->mountpoint[i] = malloc(sizeof(char) * (strlen(mountpoint[i]) + 1));
-          strcpy((*node)->mountpoint[i], mountpoint[i]);
-        }
-        else
+        if (mountpoint[i][0] == '\0')
         {
           (*node)->mountpoint[i] = NULL;
+          // for() loop ends here.
           break;
         }
+        (*node)->mountpoint[i] = malloc(sizeof(char) * (strlen(mountpoint[i]) + 1));
+        strcpy((*node)->mountpoint[i], mountpoint[i]);
       }
       (*node)->next = NULL;
       // Function ends here.
       return container;
     }
-    // Goto -> next.
+    // Goto -> next node.
     node = &((*node)->next);
   }
 }
