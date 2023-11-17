@@ -317,7 +317,7 @@ static void *daemon_init_unshare_container(void *arg)
 	return 0;
 }
 // Daemon process used to store unshare container information and init unshare container.
-void container_daemon()
+void container_daemon(void)
 {
 	/*
 	 * 100% shit code at container_daemon.

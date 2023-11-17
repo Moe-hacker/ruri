@@ -87,7 +87,7 @@ static void devlog(struct CONTAINER_INFO *container_info)
 }
 #endif
 // Run after chroot(2), called by run_chroot_container().
-static void init_container()
+static void init_container(void)
 {
 	/*
 	 * It'll be run after chroot(2), so `/` is the root dir of container now.

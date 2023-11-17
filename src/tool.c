@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 // For `ruri -l`
-void container_ps()
+void container_ps(void)
 {
 	/*
 	 * It will connect to daemon and list running containers.
@@ -61,7 +61,7 @@ void container_ps()
 	}
 }
 // For `ruri -K`
-void kill_daemon()
+void kill_daemon(void)
 {
 	/*
 	 * It will just send `kill` to daemon.

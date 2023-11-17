@@ -71,7 +71,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 // Bool!!!
-#if __STDC_VERSION__ < 202000L || __clang_major__ <= 14
+#if __STDC_VERSION__ < 202000L
 #define bool _Bool
 #define true ((_Bool) + 1u)
 #define false ((_Bool) + 0u)
@@ -132,10 +132,10 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 		exit(1);                                                                                                      \
 	}
 void setup_seccomp(struct CONTAINER_INFO *container_info);
-void show_version_info();
-void show_version_code();
+void show_version_info(void);
+void show_version_code(void);
 void show_helps(bool greetings);
-void show_examples();
+void show_examples(void);
 void add_to_list(cap_value_t *list, cap_value_t cap);
 bool is_in_list(const cap_value_t *list, cap_value_t cap);
 void del_from_list(cap_value_t *list, cap_value_t cap);
@@ -143,10 +143,10 @@ ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
 ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
 ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd);
 ssize_t read_msg_client(char *buf, struct sockaddr_un addr);
-void container_ps();
-void kill_daemon();
+void container_ps(void);
+void kill_daemon(void);
 int connect_to_daemon(struct sockaddr_un *addr);
-void container_daemon();
+void container_daemon(void);
 int run_unshare_container(struct CONTAINER_INFO *container_info, bool no_warnings);
 void run_chroot_container(struct CONTAINER_INFO *container_info, bool no_warnings);
 void umount_container(char *container_dir);

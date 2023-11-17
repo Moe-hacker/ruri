@@ -29,7 +29,7 @@
  */
 #include "ruri.h"
 // As an easter agg.
-static void show_greetings()
+static void show_greetings(void)
 {
 	/*
 	 * Nothing is useful at this function, just for fun.
@@ -77,7 +77,7 @@ static void show_greetings()
 	printf("%s\n", "");
 }
 // For `ruri -v`.
-void show_version_info()
+void show_version_info(void)
 {
 	/*
 	 * Just show version info and license.
@@ -98,7 +98,7 @@ void show_version_info()
 	printf("\n");
 }
 // For `ruri -V`.
-void show_version_code()
+void show_version_code(void)
 {
 	/*
 	 * The version code is not standard now,
@@ -154,7 +154,7 @@ void show_helps(bool greetings)
 	printf("\n");
 }
 // For `ruri -hh`.
-void show_examples()
+void show_examples(void)
 {
 	/*
 	 * Command line examples.

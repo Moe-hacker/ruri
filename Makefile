@@ -87,7 +87,7 @@ ASAN = -fsanitize=address,leak -fsanitize-recover=address,all
 SRC = src/*.c
 HEADER = src/*.h
 BIN_TARGET = ruri
-STANDARD = -std=gnu2x -Wno-gnu-zero-variadic-macro-arguments
+STANDARD = -std=gnu99 -Wno-gnu-zero-variadic-macro-arguments
 # For ruri -v.
 COMMIT_ID = -DRURI_COMMIT_ID=\"`git log --oneline|head -1|cut -d " " -f 1`\"
 # For `make fromat`.
