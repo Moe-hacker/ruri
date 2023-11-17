@@ -670,11 +670,10 @@ void container_daemon(void)
 			goto _continue;
 		}
 		// Continue the loop.
-_continue :
-// XXX:This should be removed.
-#if __STDC_VERSION__ < 202000L || __clang_major__ <= 14
-{
-}
-#endif
+_continue:
+		// XXX:This should be removed.
+		// clang-format off
+		{}
+		// clang-format on
 	}
 }
