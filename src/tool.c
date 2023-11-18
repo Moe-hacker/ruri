@@ -82,6 +82,10 @@ void umount_container(char *container_dir)
 	 * It will try to connect to daemon, and daemon will kill daemon_init_unshare_container() process of container if the container is running.
 	 * Then it will umount(2) container_dir and other directories in it.
 	 */
+	// Do not use '/' for container_dir.
+	if (strcmp(container_dir, "/") == 0) {
+		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
+	}
 	// Set socket address.
 	struct sockaddr_un addr;
 	char msg[MSG_BUF_SIZE] = { '\0' };

@@ -54,7 +54,7 @@ sudo ruri -D
 sudo ruri -u /tmp/alpine
 ```
 Very simple as you can see.    
-#### For command line examples, please see `ruri -hh`
+#### For command line examples, please see `ruri -H`
 #### make options:
 ```text
   make all            compile
@@ -88,10 +88,11 @@ OPTIONS:
   -v                     Show version info
   -V                     Show version code
   -h                     Show helps
-  -hh                    Show helps and commandline examples
+  -H                     Show helps and commandline examples
   -D                     Run daemon
   -K                     Kill daemon
   -t                     Check if daemon is running
+  -T                     Check if daemon is running (No output)
   -l                     List all running unshare containers
   -U [container_dir]     Umount&kill a container
 

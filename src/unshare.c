@@ -78,7 +78,7 @@ static pid_t init_unshare_container(bool no_warnings)
 	return unshare_pid;
 }
 // For run_unshare_container().
-static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr, bool no_warnings)
+static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr)
 {
 	/*
 	 * Request container_pid and other info of container from daemon, use setns(2) to join namespaces and then fork(2) itself into them.
@@ -106,17 +106,15 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 				}
 			}
 			container_info->command[0] = strdup("/bin/su");
-			container_info->command[1] = NULL;
+			container_info->command[1] = strdup("-");
+			container_info->command[2] = NULL;
 		}
 		send_msg_client(FROM_CLIENT__END_OF_INIT_COMMAND, addr);
 		// Send the cap to drop to daemon.
 		send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
 		if (container_info->drop_caplist[0] != INIT_VALUE) {
 			for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
-				// 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
-				if (!container_info->drop_caplist[i]) {
-					send_msg_client(cap_to_name(0), addr);
-				} else if (container_info->drop_caplist[i] != INIT_VALUE) {
+				if (container_info->drop_caplist[i] != INIT_VALUE) {
 					send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
 				} else {
 					break;
@@ -208,37 +206,37 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	container_pid = NULL;
 	int ns_fd = INIT_VALUE;
 	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !no_warnings) {
+	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
 	}
 	ns_fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !no_warnings) {
+	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
 	}
 	ns_fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !no_warnings) {
+	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
 	}
 	ns_fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !no_warnings) {
+	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
 	}
 	ns_fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !no_warnings) {
+	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
 	}
 	ns_fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !no_warnings) {
+	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
@@ -266,7 +264,7 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	return unshare_pid;
 }
 // Run unshare container.
-int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
+int run_unshare_container(struct CONTAINER_INFO *container_info)
 {
 	/*
 	 * If daemon is not running, it will create namespaces itself.
@@ -309,20 +307,20 @@ int run_unshare_container(struct CONTAINER_INFO *container_info, const bool no_w
 	if (connect_to_daemon(&addr) == 0) {
 		daemon_running = true;
 	} else {
-		if (!no_warnings) {
+		if (!container_info->no_warnings) {
 			warning("\033[33mWarning: seems that container daemon is not running QwQ\033[0m\n");
 		}
 	}
 	// unshare(2) itself into new namespaces.
 	if (!daemon_running) {
-		unshare_pid = init_unshare_container(no_warnings);
+		unshare_pid = init_unshare_container(container_info->no_warnings);
 	} else {
-		unshare_pid = join_ns_from_daemon(container_info, addr, no_warnings);
+		unshare_pid = join_ns_from_daemon(container_info, addr);
 	}
 	// Check if unshare is enabled.
 	if (unshare_pid == 0) {
 		usleep(200000);
-		run_chroot_container(container_info, no_warnings);
+		run_chroot_container(container_info);
 	}
 	return 0;
 }

@@ -29,18 +29,19 @@
  */
 #include "ruri.h"
 // Do some checks before chroot(2),called by main()
-static void check_container(char *container_dir)
+static void check_container(const struct CONTAINER_INFO *container_info)
 {
 	/*
-	 * It's called by main() to check if we can run a container in container_dir.
-	 * Note that it can only do basic checks. We can't know if container_dir is really right.
+	 * It's called by main() to check if container_info is correct.
+	 * Note that it can only do basic checks,
+	 * and we can't know if container_info can run a container properly.
 	 */
 	// Check if container directory is given.
-	if (container_dir == NULL) {
+	if (container_info->container_dir == NULL) {
 		error("\033[31mError: container directory is not set QwQ\n");
 	}
 	// Refuse to use `/` for container directory.
-	if (strcmp(container_dir, "/") == 0) {
+	if (strcmp(container_info->container_dir, "/") == 0) {
 		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if we are running with root privileges.
@@ -54,141 +55,185 @@ static void check_container(char *container_dir)
 		error("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ\n");
 	}
 	// Check if container directory exists.
-	DIR *direxist = opendir(container_dir);
+	DIR *direxist = opendir(container_info->container_dir);
 	if (direxist == NULL) {
 		error("\033[31mError: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
+	// Check if command binary exists and is not a directory.
+	char init_binary[PATH_MAX];
+	strcpy(init_binary, container_info->container_dir);
+	strcat(init_binary, container_info->command[0]);
+	struct stat init_binary_stat;
+	// lstat(3) will return -1 while the init_binary does not exist.
+	if (lstat(init_binary, &init_binary_stat) != 0) {
+		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
+	}
+	if (S_ISDIR(init_binary_stat.st_mode)) {
+		error("\033[31mCOMMAND can not be a directory QwQ\n");
+	}
+	// Check Linux version.
+	if (!container_info->no_warnings) {
+		struct utsname uts;
+		uname(&uts);
+		if (strtol(&uts.release[0], NULL, 10) < 4) {
+			warning("\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
+		}
+	}
 }
-// It works on my machine!!!
-int main(int argc, char **argv)
+static void build_caplist(cap_value_t caplist[], int priv_level, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
-/*
- * 100% shit-code in main().
- * At least it works...
- * If the code is hard to write,
- * it should be hard to read nya~
- */
-// Dev version warning.
-#ifdef __RURI_DEV__
-	warning("\033[31mWarning: you are using dev build.\033[0m\n\n");
-#endif
-	// Set process name.
-	prctl(PR_SET_NAME, "ruri");
+	// Based on docker's default capability set.
+	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD, CAP_SYS_CHROOT };
+	cap_value_t drop_caplist_unprivileged[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE };
+	// Set default caplist to drop.
+	if (priv_level == 0) {
+		for (u_long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++) {
+			caplist[i] = drop_caplist_unprivileged[i];
+			caplist[i + 1] = INIT_VALUE;
+		}
+	} else if (priv_level == 1) {
+		for (u_long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
+			caplist[i] = drop_caplist_common[i];
+			caplist[i + 1] = INIT_VALUE;
+		}
+	} else {
+		caplist[0] = INIT_VALUE;
+	}
+	// Comply with capability-set policy specified.
+	if (drop_caplist_extra[0] != INIT_VALUE) {
+		for (int i = 0; true; i++) {
+			if (drop_caplist_extra[i] == INIT_VALUE) {
+				break;
+			}
+			add_to_list(caplist, drop_caplist_extra[i]);
+		}
+	}
+	if (keep_caplist_extra[0] != INIT_VALUE) {
+		for (int i = 0; true; i++) {
+			if (keep_caplist_extra[i] != INIT_VALUE) {
+				break;
+			}
+			del_from_list(caplist, keep_caplist_extra[i]);
+		}
+	}
+}
+static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER_INFO *info)
+{
+	/*
+	 * 100% shit-code here.
+	 * At least it works...
+	 * If the code is hard to write,
+	 * it should be hard to read nya~
+	 */
 	// Check if arguments are given.
 	if (argc <= 1) {
 		fprintf(stderr, "\033[31mError: too few arguments QwQ\033[0m\n");
 		show_helps(false);
-		return 1;
+		exit(1);
 	}
-	bool use_unshare = false;
-	bool no_warnings = false;
-	char container_dir[PATH_MAX] = { '\0' };
-	bool privileged = false;
-	char *command[MAX_COMMANDS] = { NULL };
-	char *env[MAX_ENVS] = { NULL };
-	char *mountpoint[MAX_MOUNTPOINTS] = { NULL };
-	struct CONTAINER_INFO *container_info = NULL;
-	bool no_new_privs = false;
-	bool enable_seccomp = false;
-	cap_value_t drop_caplist[CAP_LAST_CAP + 1] = { INIT_VALUE };
-	for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
-		drop_caplist[i] = INIT_VALUE;
-	}
-	// Based on docker's default capability set.
-	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD, CAP_SYS_CHROOT };
-	cap_value_t drop_caplist_unprivileged[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE };
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
-	for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
-		keep_caplist_extra[i] = INIT_VALUE;
-	}
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
-	for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
-		drop_caplist_extra[i] = INIT_VALUE;
-	}
 	cap_value_t cap = INIT_VALUE;
-	// Parse command-line arguments.
+	int priv_level = 1;
+	info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
+	info->enable_seccomp = false;
+	info->no_new_privs = false;
+	info->no_warnings = false;
+	info->use_unshare = false;
+	info->command[0] = NULL;
+	info->env[0] = NULL;
+	info->mountpoint[0] = NULL;
+	// A very large and shit-code for() loop.
 	for (int index = 1; index < argc; index++) {
 		//==============For OPTIONS==============
 		if (strcmp(argv[index], "-v") == 0) {
 			show_version_info();
-			return 0;
+			exit(0);
 		}
 		if (strcmp(argv[index], "-V") == 0) {
 			show_version_code();
-			return 0;
+			exit(0);
 		}
 		if (strcmp(argv[index], "-D") == 0) {
 			container_daemon();
-			return 0;
+			exit(0);
 		}
 		if (strcmp(argv[index], "-K") == 0) {
 			kill_daemon();
-			return 0;
+			exit(0);
 		}
 		if (strcmp(argv[index], "-h") == 0) {
 			show_helps(true);
-			return 0;
+			exit(0);
 		}
-		if (strcmp(argv[index], "-hh") == 0) {
+		if (strcmp(argv[index], "-H") == 0) {
 			show_helps(true);
 			show_examples();
-			return 0;
+			exit(0);
 		}
 		if (strcmp(argv[index], "-l") == 0) {
 			container_ps();
-			return 0;
+			exit(0);
 		}
 		if (strcmp(argv[index], "-t") == 0) {
 			if (geteuid() != 0) {
 				error("\033[31mError: this program should be run with root.\033[0m\n");
-				return 1;
+				exit(1);
 			}
 			struct sockaddr_un addr;
 			if (connect_to_daemon(&addr) != 0) {
-				if (!no_warnings) {
-					printf("\033[31mrurid is not running.\033[0m\n");
-				}
-				return 1;
+				printf("\033[31mrurid is not running.\033[0m\n");
+				exit(1);
 			}
-			if (!no_warnings) {
-				printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+			printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
+			exit(0);
+		}
+		if (strcmp(argv[index], "-T") == 0) {
+			if (geteuid() != 0) {
+				error("\033[31mError: this program should be run with root.\033[0m\n");
+				exit(1);
 			}
-			return 0;
+			struct sockaddr_un addr;
+			if (connect_to_daemon(&addr) != 0) {
+				exit(1);
+			}
+			exit(0);
 		}
 		if (strcmp(argv[index], "-U") == 0) {
+			char container_dir[PATH_MAX];
 			index += 1;
 			if (argv[index] != NULL) {
-				check_container(argv[index]);
 				realpath(argv[index], container_dir);
 				umount_container(container_dir);
-				return 0;
+				exit(0);
 			}
 		}
 		//=========For [ARGS] CONTAINER_DIRECTORY [INIT_COMMAND]===========
+		if (argv[index] == NULL) {
+			error("\033[31mFailed to parse arguments.\n");
+		}
 		if (strcmp(argv[index], "-n") == 0) {
-			no_new_privs = true;
+			info->no_new_privs = true;
 		} else if (strcmp(argv[index], "-s") == 0) {
-			enable_seccomp = true;
+			info->enable_seccomp = true;
 		} else if (strcmp(argv[index], "-u") == 0) {
-			use_unshare = true;
+			info->use_unshare = true;
 		} else if (strcmp(argv[index], "-d") == 0) {
-			for (u_long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++) {
-				drop_caplist[i] = drop_caplist_unprivileged[i];
-			}
+			priv_level = 0;
 		} else if (strcmp(argv[index], "-p") == 0) {
-			privileged = true;
+			priv_level = 2;
 		} else if (strcmp(argv[index], "-w") == 0) {
-			no_warnings = true;
+			info->no_warnings = true;
 		} else if (strcmp(argv[index], "-e") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_ENVS; i++) {
-					if (env[i] == NULL) {
-						env[i] = strdup(argv[index]);
+					if (info->env[i] == NULL) {
+						info->env[i] = strdup(argv[index]);
 						index++;
-						env[i + 1] = strdup(argv[index]);
-						env[i + 2] = NULL;
+						info->env[i + 1] = strdup(argv[index]);
+						info->env[i + 2] = NULL;
 						break;
 					}
 					// Max 128 envs.
@@ -203,11 +248,11 @@ int main(int argc, char **argv)
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-					if (mountpoint[i] == NULL) {
-						mountpoint[i] = strdup(argv[index]);
+					if (info->mountpoint[i] == NULL) {
+						info->mountpoint[i] = strdup(argv[index]);
 						index++;
-						mountpoint[i + 1] = strdup(argv[index]);
-						mountpoint[i + 2] = NULL;
+						info->mountpoint[i + 1] = strdup(argv[index]);
+						info->mountpoint[i + 2] = NULL;
 						break;
 					}
 					// Max 128 mountpoints.
@@ -242,120 +287,57 @@ int main(int argc, char **argv)
 			}
 		} else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0)) {
 			// Get the absolute path of container.
-			check_container(argv[index]);
-			realpath(argv[index], container_dir);
+			info->container_dir = realpath(argv[index], NULL);
 			index++;
 			// Arguments after container_dir will be read as init command.
 			if (argv[index]) {
 				for (int i = 0; i < argc; i++) {
 					if (argv[index]) {
-						command[i] = argv[index];
-						command[i + 1] = NULL;
+						info->command[i] = strdup(argv[index]);
+						info->command[i + 1] = NULL;
 						index++;
 					} else {
 						break;
 					}
 				}
 			} else {
-				command[0] = NULL;
+				info->command[0] = NULL;
 			}
 		} else {
-			fprintf(stderr, "%s%s%s\033[0m\n", "\033[31mError: unknow option `", argv[index], "`");
 			show_helps(false);
-			return 1;
+			error("\033[31mError: unknow option `%s`\033[0m\n", argv[index]);
 		}
 	}
-	// Check if container_dir is given.
-	if (container_dir[0] == '\0') {
-		error("\033[31mError: container directory is not set QwQ\n");
+	if (info->command[0] == NULL) {
+		info->command[0] = "/bin/su";
+		info->command[1] = "-";
+		info->command[2] = NULL;
 	}
-	// Check Linux version.
-	if (!no_warnings) {
-		struct utsname uts;
-		uname(&uts);
-		if (strtol(&uts.release[0], NULL, 10) < 4) {
-			warning("\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
-		}
-	}
-	// Check if command binary exists and is not a directory.
-	char init_binary[PATH_MAX];
-	strcpy(init_binary, container_dir);
-	if (command[0] != NULL) {
-		strcat(init_binary, command[0]);
-	} else {
-		strcat(init_binary, "/bin/su");
-	}
-	struct stat init_binary_stat;
-	// lstat(3) will return -1 while the init_binary does not exist.
-	if (lstat(init_binary, &init_binary_stat) != 0) {
-		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
-	}
-	if (S_ISDIR(init_binary_stat.st_mode)) {
-		error("\033[31mCOMMAND can not be a directory QwQ\n");
-	}
-	// Set default caplist to drop.
-	if (!privileged && drop_caplist[0] == INIT_VALUE) {
-		for (u_long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
-			drop_caplist[i] = drop_caplist_common[i];
-		}
-	}
-	// Comply with capability-set policy specified.
-	if (drop_caplist_extra[0] != INIT_VALUE) {
-		for (u_long i = 0; i < (sizeof(drop_caplist_extra) / sizeof(drop_caplist_extra[0])); i++) {
-			if (drop_caplist_extra[i] != INIT_VALUE) {
-				add_to_list(drop_caplist, drop_caplist_extra[i]);
-			}
-		}
-	}
-	if (keep_caplist_extra[0] != INIT_VALUE) {
-		for (u_long i = 0; i < (sizeof(keep_caplist_extra) / sizeof(keep_caplist_extra[0])); i++) {
-			if (keep_caplist_extra[i] != INIT_VALUE) {
-				del_from_list(drop_caplist, keep_caplist_extra[i]);
-			}
-		}
-	}
-	// Build container_info struct.
-	container_info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
-	container_info->container_dir = container_dir;
-	container_info->no_new_privs = no_new_privs;
-	container_info->enable_seccomp = enable_seccomp;
-	for (int i = 0; i <= CAP_LAST_CAP; i++) {
-		container_info->drop_caplist[i] = drop_caplist[i];
-	}
-	for (int i = 0; true; i++) {
-		if (command[i] != NULL) {
-			container_info->command[i] = strdup(command[i]);
-			container_info->command[i + 1] = NULL;
-		} else {
-			container_info->command[i] = NULL;
-			break;
-		}
-	}
-	for (int i = 0; i < MAX_ENVS; i++) {
-		if (env[i] != NULL) {
-			container_info->env[i] = strdup(env[i]);
-			container_info->env[i + 1] = NULL;
-		} else {
-			container_info->env[i] = NULL;
-			break;
-		}
-	}
-	for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-		if (mountpoint[i] != NULL) {
-			container_info->mountpoint[i] = strdup(mountpoint[i]);
-			container_info->mountpoint[i + 1] = NULL;
-		} else {
-			container_info->mountpoint[i] = NULL;
-			break;
-		}
-	}
-	// Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in GNU/Linux containers.
-	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
+	build_caplist(info->drop_caplist, priv_level, drop_caplist_extra, keep_caplist_extra);
+	return info;
+}
+// It works on my machine!!!
+int main(int argc, char **argv)
+{
+	/*
+	 * Pogram starts here.
+	 */
+// Dev version warning.
+#ifdef __RURI_DEV__
+	warning("\033[31mWarning: you are using dev build.\033[0m\n\n");
+#endif
+	// Set process name.
+	prctl(PR_SET_NAME, "ruri");
+	// Info of container to run.
+	struct CONTAINER_INFO *container_info = NULL;
+	// Parse arguments.
+	container_info = parse_args(argc, argv, container_info);
+	check_container(container_info);
 	// Pure-chroot and unshare container are two functions.
-	if (use_unshare) {
-		run_unshare_container(container_info, no_warnings);
+	if (container_info->use_unshare) {
+		run_unshare_container(container_info);
 	} else {
-		run_chroot_container(container_info, no_warnings);
+		run_chroot_container(container_info);
 	}
 	return 0;
 }

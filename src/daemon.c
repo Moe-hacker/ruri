@@ -263,10 +263,7 @@ static void *daemon_init_unshare_container(void *arg)
 		send_msg_client(FROM_PTHREAD__CAP_TO_DROP, addr);
 		if (container_info->drop_caplist[0] != INIT_VALUE) {
 			for (int i = 0; i < CAP_LAST_CAP; i++) {
-				// 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
-				if (!container_info->drop_caplist[i]) {
-					send_msg_client(cap_to_name(0), addr);
-				} else if (container_info->drop_caplist[i] != INIT_VALUE) {
+				if (container_info->drop_caplist[i] != INIT_VALUE) {
 					send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
 				} else {
 					break;
@@ -311,8 +308,9 @@ static void *daemon_init_unshare_container(void *arg)
 		send_msg_client(container_dir, addr);
 		free(container_dir);
 	} else if (unshare_pid == 0) {
-		// The things to do next is same as a chroot container.
-		run_chroot_container(container_info, true);
+		// Things to do next is same as a chroot container.
+		container_info->no_warnings = true;
+		run_chroot_container(container_info);
 	}
 	return 0;
 }

@@ -102,7 +102,6 @@ struct __attribute__((aligned(128))) CONTAINERS {
 };
 // Info of a container to create.
 struct __attribute__((aligned(128))) CONTAINER_INFO {
-	// For daemon_init_unshare_container() and container_daemon().
 	char *container_dir;
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
 	char *command[MAX_COMMANDS];
@@ -111,6 +110,8 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 	char *env[MAX_ENVS];
 	bool no_new_privs;
 	bool enable_seccomp;
+	bool no_warnings;
+	bool use_unshare;
 	// Only be used in container_daemon().
 	// For setns(2), we define it as char*.
 	char *unshare_pid;
@@ -147,8 +148,8 @@ void container_ps(void);
 void kill_daemon(void);
 int connect_to_daemon(struct sockaddr_un *addr);
 void container_daemon(void);
-int run_unshare_container(struct CONTAINER_INFO *container_info, bool no_warnings);
-void run_chroot_container(struct CONTAINER_INFO *container_info, bool no_warnings);
+int run_unshare_container(struct CONTAINER_INFO *container_info);
+void run_chroot_container(struct CONTAINER_INFO *container_info);
 void umount_container(char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝

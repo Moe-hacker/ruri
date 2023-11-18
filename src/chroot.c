@@ -55,14 +55,11 @@ static void devlog(struct CONTAINER_INFO *container_info)
 	}
 	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
 	for (int i = 0; true; i++) {
-		if (!container_info->drop_caplist[i]) {
-			printf("%s%s", cap_to_name(0), " ");
-		} else if (container_info->drop_caplist[i] != INIT_VALUE) {
-			printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-		} else {
+		if (container_info->drop_caplist[i] == INIT_VALUE) {
 			printf("\n");
 			break;
 		}
+		printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
 	}
 	printf("\033[1;38;2;254;228;208mMountpoints: \033[1;38;2;152;245;225m\n");
 	for (int i = 0; true; i += 2) {
@@ -212,30 +209,25 @@ static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 }
 // Drop capabilities.
 // Use libcap.
-static void drop_caps(struct CONTAINER_INFO *container_info, bool no_warnings)
+static void drop_caps(struct CONTAINER_INFO *container_info)
 {
 	for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
-		// 0 is a nullpoint on some device,so I have to use this way for CAP_CHOWN.
-		if (!container_info->drop_caplist[i]) {
-			if (cap_drop_bound(0) != 0 && !no_warnings) {
-				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(0));
-				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
-			}
-		}
 		// INIT_VALUE is the end of drop_caplist[].
-		else if (container_info->drop_caplist[i] == INIT_VALUE) {
+		if (container_info->drop_caplist[i] == INIT_VALUE) {
 			break;
-		} else {
-			if (cap_drop_bound(container_info->drop_caplist[i]) != 0 && !no_warnings) {
-				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container_info->drop_caplist[i]));
-				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
-			}
+		}
+		if (cap_drop_bound(container_info->drop_caplist[i]) != 0 && !container_info->no_warnings) {
+			warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container_info->drop_caplist[i]));
+			warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
 		}
 	}
 }
 // Set envs.
 static void set_envs(struct CONTAINER_INFO *container_info)
 {
+	// Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in GNU/Linux containers.
+	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
+	// Set other envs.
 	for (int i = 0; true; i += 2) {
 		if (container_info->env[i] != NULL) {
 			setenv(container_info->env[i], container_info->env[i + 1], 1);
@@ -245,7 +237,7 @@ static void set_envs(struct CONTAINER_INFO *container_info)
 	}
 }
 // Run chroot container.
-void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_warnings)
+void run_chroot_container(struct CONTAINER_INFO *container_info)
 {
 	/*
 	 * It's called by main(), run_unshare_container() and daemon_init_unshare_container().
@@ -264,7 +256,8 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 	// Set default command for exec().
 	if (container_info->command[0] == NULL) {
 		container_info->command[0] = "/bin/su";
-		container_info->command[1] = NULL;
+		container_info->command[1] = "-";
+		container_info->command[2] = NULL;
 	}
 	// chroot(2) into container.
 	chroot(container_info->container_dir);
@@ -284,7 +277,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info, const bool no_w
 		setup_seccomp(container_info);
 	}
 	// Drop caps.
-	drop_caps(container_info, no_warnings);
+	drop_caps(container_info);
 	// Set envs.
 	set_envs(container_info);
 	// Fix a bug that the terminal is frozen.

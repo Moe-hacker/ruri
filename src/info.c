@@ -128,10 +128,11 @@ void show_helps(bool greetings)
 	printf("  -v                     Show version info\n");
 	printf("  -V                     Show version code\n");
 	printf("  -h                     Show helps\n");
-	printf("  -hh                    Show helps and commandline examples\n");
+	printf("  -H                     Show helps and commandline examples\n");
 	printf("  -D                     Run daemon\n");
 	printf("  -K                     Kill daemon\n");
 	printf("  -t                     Check if daemon is running\n");
+	printf("  -T                     Check if daemon is running (No output)\n");
 	printf("  -l                     List all running unshare containers\n");
 	printf("  -U [container_dir]     Umount&kill a container\n");
 	printf("\n");
@@ -153,7 +154,7 @@ void show_helps(bool greetings)
 	printf("For a full user guide, see `man ruri`\033[0m\n");
 	printf("\n");
 }
-// For `ruri -hh`.
+// For `ruri -H`.
 void show_examples(void)
 {
 	/*

@@ -41,6 +41,9 @@ void add_to_list(cap_value_t *list, cap_value_t cap)
 	bool in_list = false;
 	// Check if the cap to add is already in caplist.
 	for (int i = 0; i < CAP_LAST_CAP; i++) {
+		if (list[i] == INIT_VALUE) {
+			break;
+		}
 		if (list[i] == cap) {
 			in_list = true;
 			break;
@@ -51,6 +54,7 @@ void add_to_list(cap_value_t *list, cap_value_t cap)
 		for (int k = 0; k < CAP_LAST_CAP; k++) {
 			if (list[k] == INIT_VALUE) {
 				list[k] = cap;
+				list[k + 1] = INIT_VALUE;
 				break;
 			}
 		}
