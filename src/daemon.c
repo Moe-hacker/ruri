@@ -176,12 +176,12 @@ static void read_all_nodes(struct CONTAINERS *container, struct sockaddr_un addr
 		node = &((*node)->next);
 	}
 }
-// For container_daemon(), kill & umount all containers.
+// For ruri_daemon(), kill & umount all containers.
 static void umount_all_containers(struct CONTAINERS *container)
 {
 	/*
 	 * Kill and umount all containers.
-	 * container_daemon() will exit after calling to this function, so free(3) is needless here.
+	 * ruri_daemon() will exit after calling to this function, so free(3) is needless here.
 	 */
 	struct CONTAINERS **node = &container;
 	while (true) {
@@ -228,7 +228,7 @@ static void umount_all_containers(struct CONTAINERS *container)
 static void *daemon_init_unshare_container(void *arg)
 {
 	/*
-	 * It is called as a child process of container_daemon().
+	 * It is called as a child process of ruri_daemon().
 	 * It will call to unshare() and send unshare_pid after fork(2) and other information to daemon.
 	 * and call to run_chroot_container() to exec init command.
 	 * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
@@ -261,32 +261,27 @@ static void *daemon_init_unshare_container(void *arg)
 		send_msg_client(container_pid, addr);
 		send_msg_client(container_info->container_dir, addr);
 		send_msg_client(FROM_PTHREAD__CAP_TO_DROP, addr);
-		if (container_info->drop_caplist[0] != INIT_VALUE) {
-			for (int i = 0; i < CAP_LAST_CAP; i++) {
-				if (container_info->drop_caplist[i] != INIT_VALUE) {
-					send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
-				} else {
-					break;
-				}
+		for (int i = 0; i < CAP_LAST_CAP; i++) {
+			if (container_info->drop_caplist[i] == INIT_VALUE) {
+				break;
 			}
+			send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
 		}
 		send_msg_client(FROM_PTHREAD__END_OF_CAP_TO_DROP, addr);
 		send_msg_client(FROM_PTHREAD__MOUNTPOINT, addr);
 		for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-			if (container_info->mountpoint[i] != NULL) {
-				send_msg_client(container_info->mountpoint[i], addr);
-			} else {
+			if (container_info->mountpoint[i] == NULL) {
 				break;
 			}
+			send_msg_client(container_info->mountpoint[i], addr);
 		}
 		send_msg_client(FROM_PTHREAD__END_OF_MOUNTPOINT, addr);
 		send_msg_client(FROM_PTHREAD__ENV, addr);
 		for (int i = 0; i < MAX_ENVS; i++) {
-			if (container_info->env[i] != NULL) {
-				send_msg_client(container_info->env[i], addr);
-			} else {
+			if (container_info->env[i] == NULL) {
 				break;
 			}
+			send_msg_client(container_info->env[i], addr);
 		}
 		send_msg_client(FROM_PTHREAD__END_OF_ENV, addr);
 		if (container_info->no_new_privs) {
@@ -315,10 +310,10 @@ static void *daemon_init_unshare_container(void *arg)
 	return 0;
 }
 // Daemon process used to store unshare container information and init unshare container.
-void container_daemon(void)
+void ruri_daemon(void)
 {
 	/*
-	 * 100% shit code at container_daemon.
+	 * 100% shit code at ruri_daemon.
 	 * If the code is hard to write,
 	 * it should be hard to read nya~
 	 */

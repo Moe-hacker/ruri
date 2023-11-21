@@ -89,7 +89,7 @@
 #include "msg.h"
 // Info of containers.
 struct __attribute__((aligned(128))) CONTAINERS {
-	// For container_daemon().
+	// For ruri_daemon().
 	char *container_dir;
 	// For send_msg_daemon(), we define it as char*.
 	char *unshare_pid;
@@ -112,7 +112,7 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 	bool enable_seccomp;
 	bool no_warnings;
 	bool use_unshare;
-	// Only be used in container_daemon().
+	// Only be used in ruri_daemon().
 	// For setns(2), we define it as char*.
 	char *unshare_pid;
 };
@@ -147,7 +147,7 @@ ssize_t read_msg_client(char *buf, struct sockaddr_un addr);
 void container_ps(void);
 void kill_daemon(void);
 int connect_to_daemon(struct sockaddr_un *addr);
-void container_daemon(void);
+void ruri_daemon(void);
 int run_unshare_container(struct CONTAINER_INFO *container_info);
 void run_chroot_container(struct CONTAINER_INFO *container_info);
 void umount_container(char *container_dir);
