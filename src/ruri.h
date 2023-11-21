@@ -79,7 +79,11 @@
 // For initializing some variables.
 #define INIT_VALUE (-114)
 // Version info.
+#ifndef __RURI_DEV__
 #define RURI_VERSION "2.2"
+#else
+#define RURI_VERSION "2.3-dev"
+#endif
 // Limitations.
 #define MAX_COMMANDS (1024)
 #define MAX_ENVS (128 * 2)
