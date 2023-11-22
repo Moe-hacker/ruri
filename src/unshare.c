@@ -281,23 +281,19 @@ int run_unshare_container(struct CONTAINER_INFO *container_info)
 	printf("%s%s\n", "\033[1;38;2;254;228;208mcontainer_dir: \033[1;38;2;152;245;225m", container_info->container_dir);
 	printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
 	for (int i = 0; true; i++) {
-		if (container_info->command[i] != NULL) {
-			printf("%s%s", container_info->command[i], " ");
-		} else {
+		if (container_info->command[i] == NULL) {
 			printf("\n");
 			break;
 		}
+		printf("%s%s", container_info->command[i], " ");
 	}
 	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
 	for (int i = 0; true; i++) {
-		if (!container_info->drop_caplist[i]) {
-			printf("%s%s", cap_to_name(0), " ");
-		} else if (container_info->drop_caplist[i] != INIT_VALUE) {
-			printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-		} else {
+		if (container_info->drop_caplist[i] == INIT_VALUE) {
 			printf("\n");
 			break;
 		}
+		printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
 	}
 #endif
 	pid_t unshare_pid = INIT_VALUE;

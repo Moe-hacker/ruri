@@ -46,12 +46,11 @@ static void devlog(struct CONTAINER_INFO *container_info)
 	}
 	printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
 	for (int i = 0; true; i++) {
-		if (container_info->command[i] != NULL) {
-			printf("%s%s", container_info->command[i], " ");
-		} else {
+		if (container_info->command[i] == NULL) {
 			printf("\n");
 			break;
 		}
+		printf("%s%s", container_info->command[i], " ");
 	}
 	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
 	for (int i = 0; true; i++) {
@@ -63,23 +62,21 @@ static void devlog(struct CONTAINER_INFO *container_info)
 	}
 	printf("\033[1;38;2;254;228;208mMountpoints: \033[1;38;2;152;245;225m\n");
 	for (int i = 0; true; i += 2) {
-		if (container_info->mountpoint[i] != NULL) {
-			printf("%s%s", container_info->mountpoint[i], " \033[1;38;2;123;104;238mto \033[1;38;2;152;245;225m");
-			printf("%s%s", container_info->mountpoint[i + 1], "\n");
-		} else {
+		if (container_info->mountpoint[i] == NULL) {
 			printf("\n");
 			break;
 		}
+		printf("%s%s", container_info->mountpoint[i], " \033[1;38;2;123;104;238mto \033[1;38;2;152;245;225m");
+		printf("%s%s", container_info->mountpoint[i + 1], "\n");
 	}
 	printf("\033[1;38;2;254;228;208mEnvs: \033[1;38;2;152;245;225m\n");
 	for (int i = 0; true; i += 2) {
-		if (container_info->env[i] != NULL) {
-			printf("%s%s", container_info->env[i], " \033[1;38;2;123;104;238m=\033[1;38;2;152;245;225m ");
-			printf("%s%s", container_info->env[i + 1], "\n");
-		} else {
+		if (container_info->env[i] == NULL) {
 			printf("\033[0m\n");
 			break;
 		}
+		printf("%s%s", container_info->env[i], " \033[1;38;2;123;104;238m=\033[1;38;2;152;245;225m ");
+		printf("%s%s", container_info->env[i + 1], "\n");
 	}
 }
 #endif
