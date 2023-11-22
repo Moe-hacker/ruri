@@ -1,5 +1,59 @@
-Dev:
+# Dev:
   * `-hh` => `-H`.
   * Add `-T` option.
   * Change src structure.
   * Rewrite most of the code.
+# v2.2:
+  * Add new security options of Clang/GCC.
+  * Disable no_new_privs bit by default for seccomp.
+  * Disallow raising ambient capabilities via the prctl(2) PR_CAP_AMBIENT_RAISE operation.
+  * Protect /sys/block by mounting a tmpfs on it.
+  * Close other fds before exec(), (maybe useless).
+  * Make dev log colorful.
+# v2.1:
+  * Fix seccomp rule.
+  * Change src structure.
+  * Add new security options of Clang/GCC.
+  * General bug fixes.
+# v2.0:
+  * Fix compile error (Thanks @dabao1955 for reporting).
+# v2.0 rc2:
+  * Fix umount() can't work.
+  * (I think) Fix seccomp rule.
+# v2.0 rc1:
+  * Remove ruri.sock after running `ruri -k`.
+  * Tidy all the code/files.
+  * General bug fixes.
+# v2.0 beta4:
+  * Drop CAP_SYS_CHROOT and CAP_MKNOD by default
+  * General bug fixes.
+# v2.0 beta3:
+  * Add `-V` option - Show version code.
+  * Make show_version() more beauty.
+  * Update help page.
+  * The code of ruri is over 3k lines now!
+  * General bug fixes.
+# v2.0 beta2:
+  * Add a manpage.
+  * Add `-n` `-s` option.
+  * * `-n` :Set NO_NEW_PRIVS Flag
+  * * `-s` :Enable Seccomp
+  * General bug fixes.
+# v2.0 beta:
+  * Add `-hh` option.
+  * General bug fixes.
+# v2.0 pre:
+  * Rewrite all the code.
+  * Add daemon support for unshare containers.
+  * Rewrite Makefile, add clang-tidy and clang-format support.
+  * Openrc init of alpine workd as expected on Kali-rollowing(amd64).
+  * Add `-D` `-K` `-t` `-l` `-e` `-m` option:
+  * * -D : Run daemon.
+  * * -K : Kill daemon.
+  * * -t : Check if daemon is running.
+  * * -l : list all running unshare containers.
+  * * -e [env] [value] : Set environment variable value.
+  * * -m [dir] [mountpoint] : Mount dir to mountpoint.
+  * General bug fixes.
+
+ruri only has v2.x
