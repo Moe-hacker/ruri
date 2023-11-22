@@ -27,7 +27,7 @@
  *
  *
  */
-#include "ruri.h"
+#include "include/ruri.h"
 // Do some checks before chroot(2),called by main().
 static void check_container(const struct CONTAINER_INFO *container_info)
 {

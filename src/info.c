@@ -27,7 +27,7 @@
  *
  *
  */
-#include "ruri.h"
+#include "include/ruri.h"
 // As an easter agg.
 static void show_greetings(void)
 {

@@ -85,7 +85,7 @@ DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_RELRO) $(NO_NX) $(NO_P
 ASAN = -fsanitize=address,leak -fsanitize-recover=address,all
 # We just compile all files at the same time.
 SRC = src/*.c
-HEADER = src/*.h
+HEADER = src/include/*.h
 BIN_TARGET = ruri
 STANDARD = -std=gnu99 -Wno-gnu-zero-variadic-macro-arguments
 # For ruri -v.
