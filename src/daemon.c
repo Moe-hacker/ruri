@@ -231,7 +231,7 @@ static void *daemon_init_unshare_container(void *arg)
 	 * It is called as a child process of ruri_daemon().
 	 * It will call to unshare() and send unshare_pid after fork(2) and other information to daemon.
 	 * and call to run_chroot_container() to exec init command.
-	 * Note that on the devices that has pid ns enabled, if init process died, all processes in the container will be die.
+	 * Note that on devices that has pid ns enabled, if init process died, all processes in the container will be die.
 	 */
 	// pthread_create() only allows one argument.
 	struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)arg;
