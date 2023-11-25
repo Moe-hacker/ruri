@@ -9,3 +9,5 @@ ruri-arm64.zip
 .vscode/
 # Compressed doc.
 ruri.1.gz
+# Gdb log
+peda-session-ruri.txt
