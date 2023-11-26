@@ -255,11 +255,16 @@ static void *daemon_init_unshare_container(void *arg)
 		connect_to_daemon(&addr);
 		char container_pid[1024];
 		sprintf(container_pid, "%d", unshare_pid);
-		// Register the container into daemon's CONTAINERS struct.
+		// Send info of container back.
 		send_msg_client(FROM_PTHREAD__REGISTER_CONTAINER, addr);
+		// Pid of unshare container.
+		// For setns(2).
 		send_msg_client(FROM_PTHREAD__UNSHARE_CONTAINER_PID, addr);
 		send_msg_client(container_pid, addr);
+		// Container directory.
+		send_msg_client(FROM_PTHREAD__CONTAINER_DIR, addr);
 		send_msg_client(container_info->container_dir, addr);
+		// Capabilities to drop.
 		send_msg_client(FROM_PTHREAD__CAP_TO_DROP, addr);
 		for (int i = 0; i < CAP_LAST_CAP; i++) {
 			if (container_info->drop_caplist[i] == INIT_VALUE) {
@@ -268,6 +273,7 @@ static void *daemon_init_unshare_container(void *arg)
 			send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
 		}
 		send_msg_client(FROM_PTHREAD__END_OF_CAP_TO_DROP, addr);
+		// Other mountpoints.
 		send_msg_client(FROM_PTHREAD__MOUNTPOINT, addr);
 		for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
 			if (container_info->mountpoint[i] == NULL) {
@@ -276,6 +282,7 @@ static void *daemon_init_unshare_container(void *arg)
 			send_msg_client(container_info->mountpoint[i], addr);
 		}
 		send_msg_client(FROM_PTHREAD__END_OF_MOUNTPOINT, addr);
+		// Envs.
 		send_msg_client(FROM_PTHREAD__ENV, addr);
 		for (int i = 0; i < MAX_ENVS; i++) {
 			if (container_info->env[i] == NULL) {
@@ -284,6 +291,7 @@ static void *daemon_init_unshare_container(void *arg)
 			send_msg_client(container_info->env[i], addr);
 		}
 		send_msg_client(FROM_PTHREAD__END_OF_ENV, addr);
+		// no_new_privs and seccomp stat.
 		if (container_info->no_new_privs) {
 			send_msg_client(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, addr);
 		} else {
@@ -453,6 +461,8 @@ void ruri_daemon(void)
 		}
 		// Register a new container or send the info of an existing container to ruri.
 		else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0) {
+			// Ignore FROM_CLIENT__CONTAINER_DIR
+			read_msg_daemon(msg, addr, sockfd);
 			// Get container_dir.
 			read_msg_daemon(msg, addr, sockfd);
 			container_dir = strdup(msg);
@@ -568,6 +578,8 @@ void ruri_daemon(void)
 			read_msg_daemon(msg, addr, sockfd);
 			read_msg_daemon(msg, addr, sockfd);
 			container_info.unshare_pid = strdup(msg);
+			// Ignore FROM_PTHREAD__CONTAINER_DIR
+			read_msg_daemon(msg, addr, sockfd);
 			read_msg_daemon(msg, addr, sockfd);
 			container_info.container_dir = strdup(msg);
 			// Ignore FROM_PTHREAD__CAP_TO_DROP

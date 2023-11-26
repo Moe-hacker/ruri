@@ -81,6 +81,7 @@ static pid_t init_unshare_container(bool no_warnings)
 static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct sockaddr_un addr)
 {
 	// Very shit code here...
+	// It has cognitive complexity of 70+, be happy reading~
 	/*
 	 * Request container_pid and other info of container from daemon,
 	 * use setns(2) to join namespaces and then fork(2) itself into them.
@@ -93,6 +94,8 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	char *container_pid = NULL;
 	send_msg_client(FROM_CLIENT__REGISTER_A_CONTAINER, addr);
+	// Send container_dir to daemon.
+	send_msg_client(FROM_CLIENT__CONTAINER_DIR, addr);
 	send_msg_client(container_info->container_dir, addr);
 	read_msg_client(msg, addr);
 	// If container is not running, register it.
