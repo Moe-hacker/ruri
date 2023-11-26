@@ -134,7 +134,7 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");                                           \
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:"); \
 		fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");        \
-		exit(1);                                                                                                      \
+		exit(EXIT_FAILURE);                                                                                                      \
 	}
 void setup_seccomp(struct CONTAINER_INFO *container_info);
 void show_version_info(void);

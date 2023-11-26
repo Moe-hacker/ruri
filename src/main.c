@@ -138,7 +138,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	if (argc <= 1) {
 		fprintf(stderr, "\033[31mError: too few arguments QwQ\033[0m\n");
 		show_helps(false);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
@@ -196,12 +196,12 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		if (strcmp(argv[index], "-t") == 0) {
 			if (geteuid() != 0) {
 				error("\033[31mError: this program should be run with root.\033[0m\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			struct sockaddr_un addr;
 			if (connect_to_daemon(&addr) != 0) {
 				printf("\033[31mrurid is not running.\033[0m\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
 			exit(EXIT_SUCCESS);
@@ -210,11 +210,11 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		if (strcmp(argv[index], "-T") == 0) {
 			if (geteuid() != 0) {
 				error("\033[31mError: this program should be run with root.\033[0m\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			struct sockaddr_un addr;
 			if (connect_to_daemon(&addr) != 0) {
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			exit(EXIT_SUCCESS);
 		}
