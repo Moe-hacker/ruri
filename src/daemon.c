@@ -421,7 +421,6 @@ void ruri_daemon(void)
 		// Test message, to check if daemon is active.
 		if (strcmp(FROM_CLIENT__TEST_MESSAGE, msg) == 0) {
 			send_msg_daemon(FROM_DAEMON__TEST_MESSAGE, addr, sockfd);
-			goto _continue;
 		}
 		// Kill a container.
 		else if (strcmp(FROM_CLIENT__KILL_A_CONTAINER, msg) == 0) {
@@ -451,7 +450,6 @@ void ruri_daemon(void)
 			}
 			free(container_dir);
 			container_dir = NULL;
-			goto _continue;
 		}
 		// Register a new container or send the info of an existing container to ruri.
 		else if (strcmp(FROM_CLIENT__REGISTER_A_CONTAINER, msg) == 0) {
@@ -492,7 +490,6 @@ void ruri_daemon(void)
 				send_msg_daemon(get_container_info(container_dir, container)->unshare_pid, addr, sockfd);
 				free(container_dir);
 				container_dir = NULL;
-				goto _continue;
 			}
 			// If container is not active, init and register it.
 			else {
@@ -563,9 +560,7 @@ void ruri_daemon(void)
 				// Init container in new pthread.
 				// It will send all the info of the container back to register it.
 				pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
-				goto _continue;
 			}
-			goto _continue;
 		}
 		// Get container info from subprocess and add them to container struct.
 		else if (strcmp(FROM_PTHREAD__REGISTER_CONTAINER, msg) == 0) {
@@ -630,7 +625,6 @@ void ruri_daemon(void)
 			for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
 				mountpoint[i][0] = '\0';
 			}
-			goto _continue;
 		}
 		// Kill daemon itself.
 		else if (strcmp(FROM_CLIENT__KILL_DAEMON, msg) == 0) {
@@ -642,14 +636,12 @@ void ruri_daemon(void)
 		// Get ps info of all registered containers.
 		else if (strcmp(FROM_CLIENT__GET_PS_INFO, msg) == 0) {
 			read_all_nodes(container, addr, sockfd);
-			goto _continue;
 		}
 		// If init process died, deregister the container.
 		else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0) {
 			read_msg_daemon(msg, addr, sockfd);
 			container_dir = strdup(msg);
 			container = deregister_container(container_dir, container);
-			goto _continue;
 		}
 		// Check if init process is active.
 		else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0) {
@@ -660,13 +652,6 @@ void ruri_daemon(void)
 			} else {
 				send_msg_daemon(FROM_DAEMON__INIT_IS_NOT_ACTIVE, addr, sockfd);
 			}
-			goto _continue;
 		}
-		// Continue the loop.
-_continue:
-		// XXX:This should be removed.
-		// clang-format off
-		{}
-		// clang-format on
 	}
 }
