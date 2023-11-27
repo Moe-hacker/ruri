@@ -105,7 +105,7 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 		send_msg_client(FROM_CLIENT__INIT_COMMAND, addr);
 		if (strcmp(container_info->command[0], "/bin/su") != 0) {
 			for (int i = 0; i < MAX_COMMANDS; i++) {
-				if (container_info->command[i] != NULL) {
+				if (container_info->command[i] == NULL) {
 					break;
 				}
 				send_msg_client(container_info->command[i], addr);
@@ -123,32 +123,29 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 		send_msg_client(FROM_CLIENT__CAP_TO_DROP, addr);
 		if (container_info->drop_caplist[0] != INIT_VALUE) {
 			for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
-				if (container_info->drop_caplist[i] != INIT_VALUE) {
-					send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
-				} else {
+				if (container_info->drop_caplist[i] == INIT_VALUE) {
 					break;
 				}
+				send_msg_client(cap_to_name(container_info->drop_caplist[i]), addr);
 			}
 		}
 		send_msg_client(FROM_CLIENT__END_OF_CAP_TO_DROP, addr);
 		// Send mountpoint to daemon.
 		send_msg_client(FROM_CLIENT__MOUNTPOINT, addr);
 		for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-			if (container_info->mountpoint[i] != NULL) {
-				send_msg_client(container_info->mountpoint[i], addr);
-			} else {
+			if (container_info->mountpoint[i] == NULL) {
 				break;
 			}
+			send_msg_client(container_info->mountpoint[i], addr);
 		}
 		send_msg_client(FROM_CLIENT__END_OF_MOUNTPOINT, addr);
 		// Send envs to daemon.
 		send_msg_client(FROM_CLIENT__ENV, addr);
 		for (int i = 0; i < MAX_ENVS; i++) {
-			if (container_info->env[i] != NULL) {
-				send_msg_client(container_info->env[i], addr);
-			} else {
+			if (container_info->env[i] == NULL) {
 				break;
 			}
+			send_msg_client(container_info->env[i], addr);
 		}
 		send_msg_client(FROM_CLIENT__END_OF_ENV, addr);
 		// Send no_new_priv and seccomp stat to daemon.
