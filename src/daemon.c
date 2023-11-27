@@ -437,18 +437,18 @@ void ruri_daemon(void)
 			// Check if container is active.
 			if (container_active(container_dir, container)) {
 				// Kill container.
-				// It will just kill init process, so on devices which has no pid ns enabled, some process in container will still be alive.
+				// It will just kill init process, so on devices which has no pid ns enabled,
+				// some process in container will still be alive.
 				unshare_pid = (pid_t)strtol(get_container_info(container_dir, container)->unshare_pid, NULL, 10);
 				kill(unshare_pid, SIGKILL);
 				send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
 				// Extra mountpoints will also be umounted in ruri client.
 				send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
 				for (int i = 0; true; i += 2) {
-					if (get_container_info(container_dir, container)->mountpoint[i] != NULL) {
-						send_msg_daemon(get_container_info(container_dir, container)->mountpoint[i + 1], addr, sockfd);
-					} else {
+					if (get_container_info(container_dir, container)->mountpoint[i] == NULL) {
 						break;
 					}
+					send_msg_daemon(get_container_info(container_dir, container)->mountpoint[i + 1], addr, sockfd);
 				}
 				send_msg_daemon(FROM_DAEMON__END_OF_MOUNTPOINT, addr, sockfd);
 				// Deregister the container.
@@ -470,20 +470,18 @@ void ruri_daemon(void)
 			if (container_active(container_dir, container)) {
 				send_msg_daemon(FROM_DAEMON__ENV, addr, sockfd);
 				for (int i = 0; i < MAX_ENVS; i++) {
-					if (get_container_info(container_dir, container)->env[i] != NULL) {
-						send_msg_daemon(get_container_info(container_dir, container)->env[i], addr, sockfd);
-					} else {
+					if (get_container_info(container_dir, container)->env[i] == NULL) {
 						break;
 					}
+					send_msg_daemon(get_container_info(container_dir, container)->env[i], addr, sockfd);
 				}
 				send_msg_daemon(FROM_DAEMON__END_OF_ENV, addr, sockfd);
 				send_msg_daemon(FROM_DAEMON__CAP_TO_DROP, addr, sockfd);
 				for (int i = 0; true; i++) {
-					if (get_container_info(container_dir, container)->drop_caplist[i] != NULL) {
-						send_msg_daemon(get_container_info(container_dir, container)->drop_caplist[i], addr, sockfd);
-					} else {
+					if (get_container_info(container_dir, container)->drop_caplist[i] == NULL) {
 						break;
 					}
+					send_msg_daemon(get_container_info(container_dir, container)->drop_caplist[i], addr, sockfd);
 				}
 				send_msg_daemon(FROM_DAEMON__END_OF_CAP_TO_DROP, addr, sockfd);
 				if (get_container_info(container_dir, container)->no_new_privs) {
