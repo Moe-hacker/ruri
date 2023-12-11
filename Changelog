@@ -1,4 +1,4 @@
-# Dev:
+# v2.3:
   * `-hh` => `-H`.
   * Add `-T` option.
   * Change src structure.
