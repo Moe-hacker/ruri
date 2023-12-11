@@ -73,14 +73,6 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 	if (S_ISDIR(init_binary_stat.st_mode)) {
 		error("\033[31mCOMMAND can not be a directory QwQ\n");
 	}
-	// Check Linux version.
-	if (!container_info->no_warnings) {
-		struct utsname uts;
-		uname(&uts);
-		if (atoi(&uts.release[0]) < 4) {
-			warning("\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
-		}
-	}
 }
 static void build_caplist(cap_value_t caplist[], int priv_level, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
