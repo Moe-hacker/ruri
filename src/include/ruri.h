@@ -80,7 +80,7 @@
 #define INIT_VALUE (-114)
 // Version info.
 #ifndef __RURI_DEV__
-#define RURI_VERSION "2.3-dev"
+#define RURI_VERSION "2.3"
 #else
 #define RURI_VERSION "2.4-dev"
 #endif
