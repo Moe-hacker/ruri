@@ -189,7 +189,7 @@ static void umount_all_containers(struct CONTAINERS *container)
 		if ((*node) == NULL) {
 			return;
 		}
-		kill((pid_t)strtol((*node)->unshare_pid, NULL, 10), SIGKILL);
+		kill(atoi((*node)->unshare_pid), SIGKILL);
 		// Umount other mountpoints.
 		char buf[PATH_MAX];
 		for (int i = 0; true; i += 2) {
@@ -439,7 +439,7 @@ void ruri_daemon(void)
 				// Kill container.
 				// It will just kill init process, so on devices which has no pid ns enabled,
 				// some process in container will still be alive.
-				unshare_pid = (pid_t)strtol(get_container_info(container_dir, container)->unshare_pid, NULL, 10);
+				unshare_pid = atoi(get_container_info(container_dir, container)->unshare_pid);
 				kill(unshare_pid, SIGKILL);
 				send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
 				// Extra mountpoints will also be umounted in ruri client.

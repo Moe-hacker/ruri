@@ -77,7 +77,7 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 	if (!container_info->no_warnings) {
 		struct utsname uts;
 		uname(&uts);
-		if (strtol(&uts.release[0], NULL, 10) < 4) {
+		if (atoi(&uts.release[0]) < 4) {
 			warning("\033[33mWarning: This program has not been tested on Linux 3.x or earlier.\n");
 		}
 	}
