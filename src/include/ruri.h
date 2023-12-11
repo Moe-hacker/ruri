@@ -93,11 +93,10 @@
 #include "msg.h"
 // Info of containers.
 struct __attribute__((aligned(128))) CONTAINERS {
-	// For ruri_daemon().
+	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
 	char *container_dir;
 	// For send_msg_daemon(), we define it as char*.
 	char *unshare_pid;
-	char *drop_caplist[CAP_LAST_CAP + 1];
 	char *env[MAX_ENVS];
 	char *mountpoint[MAX_MOUNTPOINTS];
 	bool no_new_privs;

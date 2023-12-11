@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Add a node to CONTAINERS struct.
-static struct CONTAINERS *register_container(char *container_dir, char *unshare_pid, char drop_caplist[CAP_LAST_CAP + 1][128], char *env[MAX_ENVS], char mountpoint[MAX_MOUNTPOINTS][PATH_MAX], bool no_new_privs, bool enable_seccomp, struct CONTAINERS *container)
+static struct CONTAINERS *register_container(struct CONTAINERS *container, struct CONTAINER_INFO *info)
 {
 	/*
 	 * Use malloc(3) to request the memory of the node and then add container info to node.
@@ -43,36 +43,35 @@ static struct CONTAINERS *register_container(char *container_dir, char *unshare_
 			// Request memory of container struct.
 			*node = (struct CONTAINERS *)malloc(sizeof(struct CONTAINERS));
 			// Add info of container.
-			(*node)->container_dir = strdup(container_dir);
-			(*node)->unshare_pid = strdup(unshare_pid);
-			(*node)->no_new_privs = no_new_privs;
-			(*node)->enable_seccomp = enable_seccomp;
+			(*node)->container_dir = strdup(info->container_dir);
+			(*node)->unshare_pid = strdup(info->unshare_pid);
+			(*node)->no_new_privs = info->no_new_privs;
+			(*node)->enable_seccomp = info->enable_seccomp;
 			for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
-				if (drop_caplist[i][0] == '\0') {
-					(*node)->drop_caplist[i] = NULL;
+				if (info->drop_caplist[i] == INIT_VALUE) {
+					(*node)->drop_caplist[i] = INIT_VALUE;
 					// for() loop ends here.
 					break;
 				}
-				(*node)->drop_caplist[i] = malloc(sizeof(char) * (strlen(drop_caplist[i]) + 1));
-				strcpy((*node)->drop_caplist[i], drop_caplist[i]);
+				(*node)->drop_caplist[i] = info->drop_caplist[i];
 			}
 			for (int i = 0; i < MAX_ENVS; i++) {
-				if (env[i] == NULL) {
+				if (info->env[i] == NULL) {
 					(*node)->env[i] = NULL;
 					// for() loop ends here.
 					break;
 				}
-				(*node)->env[i] = malloc(sizeof(char) * (strlen(env[i]) + 1));
-				strcpy((*node)->env[i], env[i]);
+				(*node)->env[i] = malloc(sizeof(char) * (strlen(info->env[i]) + 1));
+				strcpy((*node)->env[i], info->env[i]);
 			}
 			for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-				if (mountpoint[i][0] == '\0') {
+				if (info->mountpoint[i] == NULL) {
 					(*node)->mountpoint[i] = NULL;
 					// for() loop ends here.
 					break;
 				}
-				(*node)->mountpoint[i] = malloc(sizeof(char) * (strlen(mountpoint[i]) + 1));
-				strcpy((*node)->mountpoint[i], mountpoint[i]);
+				(*node)->mountpoint[i] = malloc(sizeof(char) * (strlen(info->mountpoint[i]) + 1));
+				strcpy((*node)->mountpoint[i], info->mountpoint[i]);
 			}
 			(*node)->next = NULL;
 			// Function ends here.
@@ -371,14 +370,6 @@ void ruri_daemon(void)
 		.no_new_privs = true,
 		.drop_caplist[0] = INIT_VALUE,
 	};
-	pid_t unshare_pid = 0;
-	char drop_caplist[CAP_LAST_CAP + 1][128];
-	drop_caplist[0][0] = '\0';
-	char *env[MAX_ENVS] = { NULL };
-	char mountpoint[MAX_MOUNTPOINTS][PATH_MAX];
-	mountpoint[0][0] = '\0';
-	bool no_new_privs = true;
-	bool enable_seccomp = true;
 	// Create socket.
 	int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
@@ -439,8 +430,7 @@ void ruri_daemon(void)
 				// Kill container.
 				// It will just kill init process, so on devices which has no pid ns enabled,
 				// some process in container will still be alive.
-				unshare_pid = atoi(get_container_info(container_dir, container)->unshare_pid);
-				kill(unshare_pid, SIGKILL);
+				kill(atoi(get_container_info(container_dir, container)->unshare_pid), SIGKILL);
 				send_msg_daemon(FROM_DAEMON__CONTAINER_KILLED, addr, sockfd);
 				// Extra mountpoints will also be umounted in ruri client.
 				send_msg_daemon(FROM_DAEMON__MOUNTPOINT, addr, sockfd);
@@ -478,10 +468,10 @@ void ruri_daemon(void)
 				send_msg_daemon(FROM_DAEMON__END_OF_ENV, addr, sockfd);
 				send_msg_daemon(FROM_DAEMON__CAP_TO_DROP, addr, sockfd);
 				for (int i = 0; true; i++) {
-					if (get_container_info(container_dir, container)->drop_caplist[i] == NULL) {
+					if (get_container_info(container_dir, container)->drop_caplist[i] == INIT_VALUE) {
 						break;
 					}
-					send_msg_daemon(get_container_info(container_dir, container)->drop_caplist[i], addr, sockfd);
+					send_msg_daemon(cap_to_name(get_container_info(container_dir, container)->drop_caplist[i]), addr, sockfd);
 				}
 				send_msg_daemon(FROM_DAEMON__END_OF_CAP_TO_DROP, addr, sockfd);
 				if (get_container_info(container_dir, container)->no_new_privs) {
@@ -586,21 +576,21 @@ void ruri_daemon(void)
 			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_CAP_TO_DROP, msg) == 0) {
-					drop_caplist[i][0] = '\0';
+					container_info.drop_caplist[i] = INIT_VALUE;
 					break;
 				}
-				strcpy(drop_caplist[i], msg);
-				drop_caplist[i + 1][0] = '\0';
+				cap_from_name(msg, &container_info.drop_caplist[i]);
+				container_info.drop_caplist[i + 1] = INIT_VALUE;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			// Get mountpoints.
 			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0) {
-					mountpoint[i][0] = '\0';
+					container_info.mountpoint[i] = NULL;
 					break;
 				}
-				strcpy(mountpoint[i], msg);
+				container_info.mountpoint[i] = strdup(msg);
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			// Get envs.
@@ -609,19 +599,19 @@ void ruri_daemon(void)
 				if (strcmp(FROM_PTHREAD__END_OF_ENV, msg) == 0) {
 					break;
 				}
-				env[i] = strdup(msg);
-				env[i + 1] = NULL;
+				container_info.env[i] = strdup(msg);
+				container_info.env[i + 1] = NULL;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) != 0) {
-				no_new_privs = false;
+				container_info.no_new_privs = false;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			if (strcmp(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, msg) != 0) {
-				enable_seccomp = false;
+				container_info.enable_seccomp = false;
 			}
 			// Register the container.
-			container = register_container(container_info.container_dir, container_info.unshare_pid, drop_caplist, env, mountpoint, no_new_privs, enable_seccomp, container);
+			container = register_container(container, &container_info);
 			// Send unshare_pid to ruri.
 			usleep(200000);
 			send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
@@ -631,9 +621,6 @@ void ruri_daemon(void)
 			container_info.unshare_pid = NULL;
 			for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
 				container_info.drop_caplist[i] = INIT_VALUE;
-			}
-			for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-				mountpoint[i][0] = '\0';
 			}
 		}
 		// Kill daemon itself.
@@ -651,7 +638,9 @@ void ruri_daemon(void)
 		else if (strcmp(FROM_PTHREAD__INIT_PROCESS_DIED, msg) == 0) {
 			read_msg_daemon(msg, addr, sockfd);
 			container_dir = strdup(msg);
-			container = deregister_container(container_dir, container);
+			if (container_active(container_dir, container)) {
+				container = deregister_container(container_dir, container);
+			}
 		}
 		// Check if init process is active.
 		else if (strcmp(FROM_CLIENT__IS_INIT_ACTIVE, msg) == 0) {
