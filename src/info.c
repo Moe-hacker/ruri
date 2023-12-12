@@ -44,9 +44,9 @@ void AwA(void)
 	// For centering output.
 	char space[col / 2 + 1];
 	space[0] = '\0';
-	if (col > 46) {
+	if (col > 60) {
 		col /= 2;
-		col -= 22;
+		col -= 28;
 		memset(space, ' ', col * sizeof(char));
 		space[col] = '\0';
 	} else {
