@@ -118,7 +118,7 @@ static struct CONTAINERS *deregister_container(char *container_dir, struct CONTA
 	while (true) {
 		// It will never be true.
 		if (*node == NULL) {
-			return NULL;
+			return container;
 		}
 		// If container is the struct to delete.
 		if (strcmp((*node)->container_dir, container_dir) == 0) {
