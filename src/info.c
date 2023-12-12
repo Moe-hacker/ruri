@@ -52,16 +52,16 @@ void AwA(void)
 	} else {
 		strcat(space, "");
 	}
-	printf("%s%s\n", space, "\033[1;38;2;255;255;255m            ██                        ██");
-    printf("%s%s\n", space, "          ██  ██          ██        ██  ██");
-    printf("%s%s\n", space, "          ██    ████        ██    ██      ██");
-    printf("%s%s\n", space, "        ██          ██    ██    ████      ██");
-    printf("%s%s\n", space, "        ██      ██████████████████          ██");
-    printf("%s%s\n", space, "      ██      ██                  ██        ██");
-    printf("%s%s\n", space, "      ██    ██                      ████    ██");
-    printf("%s%s\n", space, "      ████████        ██      ██        ████  ██");
-    printf("%s%s\n", space, "      ██    ██        ██    ██  ██    ██  ██  ██");
-    printf("%s%s\n", space, "    ████      ██    ██  ████  ██    ██  ██  ████████");
+	printf("%s%s\n", space, "\033[1;38;2;255;255;255m              ██                        ██");
+    printf("%s%s\n", space, "            ██  ██          ██        ██  ██");
+    printf("%s%s\n", space, "            ██    ████        ██    ██      ██");
+    printf("%s%s\n", space, "          ██          ██    ██    ████      ██");
+    printf("%s%s\n", space, "          ██      ██████████████████          ██");
+    printf("%s%s\n", space, "        ██      ██                  ██        ██");
+    printf("%s%s\n", space, "        ██    ██                      ████    ██");
+    printf("%s%s\n", space, "      ████████        ██      ██          ████  ██");
+    printf("%s%s\n", space, "      ██    ██        ██    ██  ██    ██    ██  ██");
+    printf("%s%s\n", space, "    ████      ██    ██  ████  ██    ██  ██    ██████");
     printf("%s%s\n", space, "    ██        ██  ██    ██      ████  ██  ██  ████████");
     printf("%s%s\n", space, "    ██      ██  ██                          ████");
     printf("%s%s\n", space, "    ██        ██                    ██████    ██");
