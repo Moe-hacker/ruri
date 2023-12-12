@@ -138,7 +138,8 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 void setup_seccomp(struct CONTAINER_INFO *container_info);
 void show_version_info(void);
 void show_version_code(void);
-void show_helps(bool greetings);
+void AwA(void);
+void show_helps(void);
 void show_examples(void);
 void add_to_list(cap_value_t *list, cap_value_t cap);
 bool is_in_list(const cap_value_t *list, cap_value_t cap);

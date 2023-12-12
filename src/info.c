@@ -28,8 +28,8 @@
  *
  */
 #include "include/ruri.h"
-// As an easter agg.
-static void show_greetings(void)
+// As an easter egg.
+void AwA(void)
 {
 	/*
 	 * Nothing is useful at this function, just for fun.
@@ -52,28 +52,28 @@ static void show_greetings(void)
 	} else {
 		strcat(space, "");
 	}
-	// Yes, it's Hoppou!
-	printf("%s%s\n", space, "\033[1;38;2;66;66;66m               ▅▅▀▀▀▀▀▀▀▀▀▀▀▀▅");
-	printf("%s%s\n", space, "          ▅▅▀▀▀               ▀▀▅▅");
-	printf("%s%s\n", space, "     ▅▅▅▀▀            ▅           ▀▅");
-	printf("%s%s\n", space, "      ▅▀      ▅▀█▅▅▀▀▅▀▅        ▅▅  ▀▅");
-	printf("%s%s\n", space, "     ▅▀   █▅▀▀  ▀     ▀ ▀▀▅▅    █ ▀▀▅ █");
-	printf("%s%s\n", space, "    ▅▀   ▅▀  ▅▀      ▀▅    ▀▅   █▅███▀█");
-	printf("%s%s\n", space, "  ▅▅█▀▅ █ ▅▅▀          ▀▀   █   ████   █");
-	printf("%s%s\n", space, "      █ █ ▅▅▅▅▅        ▅▅▅▅▅ █  ▀█▀    █");
-	printf("%s%s\n", space, "      █ █▀ ▅▅▅ ▀      ▀ ▅▅▅ ▀█   █     █");
-	printf("%s%s\n", space, "      █ █ █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█        █\033[40;31m█▀█\033[0m\033[1;38;2;66;66;66m█ █   █     █");
-	printf("%s%s\n", space, "     █  █ █\033[31m███\033[1;38;2;66;66;66m█        █\033[31m███\033[1;38;2;66;66;66m█ █   █     ▀▅");
-	printf("%s%s\n", space, "    ▅▀  █  ▀▀▀          ▀▀▀  █   █      █");
-	printf("%s%s\n", space, "  ▅▀▅▀ █                     █   █      █");
-	printf("%s%s\n", space, " █   █ ▀▅ ▅▀▅   ▅▀▅   ▅▅     █   █      ▀▅");
-	printf("%s%s\n", space, "▅█▅▅██▅ ▅██  ▀███ ▅████ ▀▅█▀▅▀   █       ▀▅");
-	printf("%s%s\n", space, "███████ ▀██████████████████▀▀             █");
-	printf("%s%s\n", space, " █    ▀▅  ██▀ ▀██▀▀██▀▀██▀█     █▀         █");
-	printf("%s%s\n", space, " ▀▅     ▀▀█              ▅▀     █          █");
-	printf("%s%s\n", space, "   ▀▅    █               █     ██        ▅▀");
-	printf("%s%s\n", space, "     ▀▅▅▅▀                ▀▀▀▀▀ █        █");
-	printf("%s%s\n", space, "        ▀                       ▀        ▀");
+	printf("%s%s\n", space, "\033[1;38;2;255;255;255m            ██                        ██");
+    printf("%s%s\n", space, "          ██  ██          ██        ██  ██");
+    printf("%s%s\n", space, "          ██    ████        ██    ██      ██");
+    printf("%s%s\n", space, "        ██          ██    ██    ████      ██");
+    printf("%s%s\n", space, "        ██      ██████████████████          ██");
+    printf("%s%s\n", space, "      ██      ██                  ██        ██");
+    printf("%s%s\n", space, "      ██    ██                      ████    ██");
+    printf("%s%s\n", space, "      ████████        ██      ██        ████  ██");
+    printf("%s%s\n", space, "      ██    ██        ██    ██  ██    ██  ██  ██");
+    printf("%s%s\n", space, "    ████      ██    ██  ████  ██    ██  ██  ████████");
+    printf("%s%s\n", space, "    ██        ██  ██    ██      ████  ██  ██  ████████");
+    printf("%s%s\n", space, "    ██      ██  ██                          ████");
+    printf("%s%s\n", space, "    ██        ██                    ██████    ██");
+    printf("%s%s\n", space, "  ████        ██    ████          ██      ██  ██");
+    printf("%s%s\n", space, "  ██          ██        ██          \033[1;38;2;255;0;0m██  ██\033[1;38;2;255;255;255m    ██");
+    printf("%s%s\n", space, "  ██          ██          ██          \033[1;38;2;255;0;0m██\033[1;38;2;255;255;255m      ██");
+    printf("%s%s\n", space, "  ██          ██    ██████          \033[1;38;2;255;0;0m██  ██\033[1;38;2;255;255;255m      ██");
+    printf("%s%s\n", space, "  ████    ██  ██                                ██");
+    printf("%s%s\n", space, "    ████  ██████          ██    ██            ██");
+    printf("%s%s\n", space, "      ██████  ████          ████          ████");
+    printf("%s%s\n", space, "                ████                    ████");
+    printf("%s%s\n", space, "                    ████████████████████");
 	printf("%s\n", "");
 }
 // For `ruri -v`.
@@ -108,16 +108,12 @@ void show_version_code(void)
 	printf("%s\n", RURI_VERSION);
 }
 // For `ruri -h`.
-void show_helps(bool greetings)
+void show_helps(void)
 {
 	/*
 	 * Help page of ruri.
 	 * I think you can understand...
 	 */
-	// Do not show greeting if command-line args are wrong.
-	if (greetings) {
-		show_greetings();
-	}
 	printf("\033[1;38;2;254;228;208mLightweight, User-friendly Linux-container Implementation\n");
 	printf("\n");
 	printf("Usage:\n");

@@ -129,7 +129,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	// Check if arguments are given.
 	if (argc <= 1) {
 		fprintf(stderr, "\033[31mError: too few arguments QwQ\033[0m\n");
-		show_helps(false);
+		show_helps();
 		exit(EXIT_FAILURE);
 	}
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
@@ -148,6 +148,11 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
 		/**** For other options ****/
+		// As an easter egg.
+		if (strcmp(argv[index], "AwA") == 0) {
+			AwA();
+			exit(EXIT_SUCCESS);
+		}
 		// Show version info.
 		if (strcmp(argv[index], "-v") == 0) {
 			show_version_info();
@@ -170,12 +175,12 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// Show help page.
 		if (strcmp(argv[index], "-h") == 0) {
-			show_helps(true);
+			show_helps();
 			exit(EXIT_SUCCESS);
 		}
 		// Show help page and example usage.
 		if (strcmp(argv[index], "-H") == 0) {
-			show_helps(true);
+			show_helps();
 			show_examples();
 			exit(EXIT_SUCCESS);
 		}
@@ -339,7 +344,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// For unknown arguments, yeah I didn't forgot it...
 		else {
-			show_helps(false);
+			show_helps();
 			error("\033[31mError: unknow option `%s`\033[0m\n", argv[index]);
 		}
 	}
