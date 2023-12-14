@@ -29,11 +29,14 @@
 # Premature optimization is the root of evil.
 #
 CCCOLOR     = \033[1;38;2;254;228;208m
+LDCOLOR     = \033[1;38;2;254;228;208m
 STRIPCOLOR  = \033[1;38;2;254;228;208m
 BINCOLOR    = \033[34;1m
 ENDCOLOR    = \033[0m
 CC_LOG = @printf '    $(CCCOLOR)CC$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
+LD_LOG = @printf '    $(LDCOLOR)LD$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
+CLEAN_LOG = @printf ' $(CCCOLOR)CLEAN$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 # Compiler.
 CC = clang
 # Strip.
@@ -56,10 +59,6 @@ SHADOW_STACK = -mshstk
 FORTIFY = -D_FORTIFY_SOURCE=3 -Wno-unused-result
 # Other "one-key" optimization.
 OPTIMIZE = -O2
-# For production.
-OPTIMIZE_CFLAGS = $(LTO) $(PIE) $(NX) $(RELRO) $(CANARY) $(CLASH_PROTECT) $(SHADOW_STACK) $(AUTO_VAR_INIT) $(FORTIFY) $(OPTIMIZE)
-# Static link.
-STATIC_CFLAGS = -static
 # Dev marco for extra logs.
 DEV_MARCO = -D__RURI_DEV__
 # GNU Symbolic Debugger.
@@ -76,10 +75,14 @@ NO_PIE = -no-pie
 NO_CANARY = -fno-stack-protector
 # Warning Options.
 WALL = -Wall -Wextra -pedantic -Wconversion -Wno-newline-eof
+# For production.
+OPTIMIZE_CFLAGS = $(LTO) $(PIE) $(CANARY) $(CLASH_PROTECT) $(SHADOW_STACK) $(AUTO_VAR_INIT) $(FORTIFY) $(OPTIMIZE) $(COMMIT_ID) $(STANDARD)
+# Static link.
+STATIC_CFLAGS = $(OPTIMIZE_CFLAGS) -static
 # For Testing.
-DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_RELRO) $(NO_NX) $(NO_PIE) $(NO_CANARY) $(WALL)
+DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
 # AddressSanitizer.
-ASAN = -fsanitize=address,leak -fsanitize-recover=address,all
+ASAN_CFLAGS = $(DEV_CFLAGS) -fsanitize=address,leak -fsanitize-recover=address,all
 # We just compile all files at the same time.
 SRC = src/*.c
 HEADER = src/include/*.h
@@ -94,38 +97,61 @@ CHECKER = clang-tidy --use-color
 # Unused checks are disabled.
 CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c
 # Link with libcap, libpthread and libseccomp.
-LD_FLAGS = -lcap -lpthread -lseccomp
+LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO)
+DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) $(NO_PIE)
 # Fix issues in termux (with bionic).
-BIONIC_FIX = -ffunction-sections -fdata-sections -Wl,--gc-sections
+BIONIC_FIX = -ffunction-sections -fdata-sections
+BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX)
 # Bionic has built-in libpthread.
-LD_FLAGS_BIONIC = -lcap -lseccomp
+LD_FLAGS_BIONIC = -lcap -lseccomp -Wl,--gc-sections
 # Target.
-RURI = $(COMMIT_ID) $(STANDARD) $(SRC) -o $(BIN_TARGET)
-.PHONY: dev
-ruri:
-	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
-	$(STRIP_LOG) $(BIN_TARGET)
+objects = caplist.o chroot.o daemon.o info.o main.o seccomp.o socket.o tool.o unshare.o
+O = out
+.ONESHELL:
+all :CFLAGS=$(OPTIMIZE_CFLAGS)
+all :build_dir mandoc $(objects)
+	@cd $(O)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
+	$(LD_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
-all :mandoc ruri
+	$(STRIP_LOG) $(BIN_TARGET)
+	@cp $(BIN_TARGET) ../
 mandoc :
 	@gzip -kf doc/ruri.1
-dev :
-	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(DEV_CFLAGS) $(RURI) $(LD_FLAGS)
-asan :
-	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(DEV_CFLAGS) $(ASAN) $(RURI) $(LD_FLAGS)
-static :mandoc
-	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
+dev :CFLAGS=$(DEV_CFLAGS)
+dev :build_dir $(objects)
+	@cd $(O)
+	$(LD_LOG) $(BIN_TARGET)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
+	@cp $(BIN_TARGET) ../
+asan :CFLAGS=$(ASAN_CFLAGS)
+asan :build_dir $(objects)
+	@cd $(O)
+	$(LD_LOG) $(BIN_TARGET)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
+	@cp $(BIN_TARGET) ../
+static :CFLAGS=$(STATIC_CFLAGS)
+static :build_dir mandoc $(objects)
+	@cd $(O)
+	$(LD_LOG) $(BIN_TARGET)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
-static-bionic :mandoc
-	$(CC_LOG) $(BIN_TARGET)
-	@$(CC) $(STATIC_CFLAGS) $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) $(RURI) $(LD_FLAGS_BIONIC)
+	@cp $(BIN_TARGET) ../
+static-bionic :CFLAGS=$(BIONIC_CFLAGS)
+static-bionic :build_dir mandoc $(objects)
+	@cd $(O)
+	$(LD_LOG) $(BIN_TARGET)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
+	@cp $(BIN_TARGET) ../
+build_dir:
+	@mkdir -p $(O)
+$(objects) :%.o:src/%.c $(build_dir)
+	@cd $(O)
+	@$(CC) $(CFLAGS) -c ../$< -o $@
+	$(CC_LOG) $@
 install :all
 	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
 	install -m 777 doc/ruri.1.gz `man -w ls|head -1|sed -e "s/ls.*//"`
@@ -139,7 +165,9 @@ check :
 format :
 	$(FORMATER) $(SRC) $(HEADER)
 clean :
-	rm ruri||true
+	$(CLEAN_LOG) $(O)
+	@rm -f ruri||true
+	@rm -rf $(O)||true
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all            compile"

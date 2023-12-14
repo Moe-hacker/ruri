@@ -12,3 +12,4 @@ ruri.1.gz
 # Gdb log
 peda-session-ruri.txt
 peda-session-busybox.txt
+out
