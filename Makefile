@@ -83,7 +83,6 @@ STATIC_CFLAGS = $(OPTIMIZE_CFLAGS) -static
 DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
 # AddressSanitizer.
 ASAN_CFLAGS = $(DEV_CFLAGS) -fsanitize=address,leak -fsanitize-recover=address,all
-# We just compile all files at the same time.
 SRC = src/*.c
 HEADER = src/include/*.h
 BIN_TARGET = ruri

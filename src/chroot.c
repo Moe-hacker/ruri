@@ -162,9 +162,9 @@ static int mkdirs(char *dir, mode_t mode)
 	 * ret = mkdir("path/to/mkdir",mode);
 	 * return ret;
 	 */
-	for (u_long i = 1; i < strlen(dir); i++) {
+	for (size_t i = 1; i < strlen(dir); i++) {
 		if (dir[i] == '/') {
-			for (u_long j = 0; j < i; j++) {
+			for (size_t j = 0; j < i; j++) {
 				buf[j] = dir[j];
 				buf[j + 1] = '\0';
 			}

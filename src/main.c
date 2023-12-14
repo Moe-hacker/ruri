@@ -87,12 +87,12 @@ static void build_caplist(cap_value_t caplist[], int priv_level, cap_value_t dro
 	cap_value_t drop_caplist_unprivileged[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE };
 	// Set default caplist to drop.
 	if (priv_level == 0) {
-		for (u_long i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++) {
+		for (size_t i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++) {
 			caplist[i] = drop_caplist_unprivileged[i];
 			caplist[i + 1] = INIT_VALUE;
 		}
 	} else if (priv_level == 1) {
-		for (u_long i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
+		for (size_t i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
 			caplist[i] = drop_caplist_common[i];
 			caplist[i + 1] = INIT_VALUE;
 		}
@@ -402,8 +402,8 @@ int main(int argc, char **argv)
 			// Set uid map.
 			char uid_map[32] = { "\0" };
 			sprintf(uid_map, "0 %d 1", getuid());
-			int fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
-			write(fd, uid_map, sizeof(uid_map));
+			int uidmap_fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
+			write(uidmap_fd, uid_map, sizeof(uid_map));
 			// Run chroot container.
 			// mount(2) will fail without CAP_SYS_ADMIN.
 			run_chroot_container(container_info);
