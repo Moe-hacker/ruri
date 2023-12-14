@@ -53,27 +53,27 @@ void AwA(void)
 		strcat(space, "");
 	}
 	printf("%s%s\n", space, "\033[1;38;2;255;255;255m              ██                        ██");
-    printf("%s%s\n", space, "            ██  ██          ██        ██  ██");
-    printf("%s%s\n", space, "            ██    ████        ██    ██      ██");
-    printf("%s%s\n", space, "          ██          ██    ██    ████      ██");
-    printf("%s%s\n", space, "          ██      ██████████████████          ██");
-    printf("%s%s\n", space, "        ██      ██                  ██        ██");
-    printf("%s%s\n", space, "        ██    ██                      ████    ██");
-    printf("%s%s\n", space, "      ████████        ██      ██          ████  ██");
-    printf("%s%s\n", space, "      ██    ██        ██    ██  ██    ██    ██  ██");
-    printf("%s%s\n", space, "    ████      ██    ██  ████  ██    ██  ██    ██████");
-    printf("%s%s\n", space, "    ██        ██  ██    ██      ████  ██  ██  ████████");
-    printf("%s%s\n", space, "    ██      ██  ██                          ████");
-    printf("%s%s\n", space, "    ██        ██                    ██████    ██");
-    printf("%s%s\n", space, "  ████        ██    ████          ██      ██  ██");
-    printf("%s%s\n", space, "  ██          ██        ██          \033[1;38;2;255;0;0m██  ██\033[1;38;2;255;255;255m    ██");
-    printf("%s%s\n", space, "  ██          ██          ██          \033[1;38;2;255;0;0m██\033[1;38;2;255;255;255m      ██");
-    printf("%s%s\n", space, "  ██          ██    ██████          \033[1;38;2;255;0;0m██  ██\033[1;38;2;255;255;255m      ██");
-    printf("%s%s\n", space, "  ████    ██  ██                                ██");
-    printf("%s%s\n", space, "    ████  ██████          ██    ██            ██");
-    printf("%s%s\n", space, "      ██████  ████          ████          ████");
-    printf("%s%s\n", space, "                ████                    ████");
-    printf("%s%s\n", space, "                    ████████████████████");
+	printf("%s%s\n", space, "            ██  ██          ██        ██  ██");
+	printf("%s%s\n", space, "            ██    ████        ██    ██      ██");
+	printf("%s%s\n", space, "          ██          ██    ██    ████      ██");
+	printf("%s%s\n", space, "          ██      ██████████████████          ██");
+	printf("%s%s\n", space, "        ██      ██                  ██        ██");
+	printf("%s%s\n", space, "        ██    ██                      ████    ██");
+	printf("%s%s\n", space, "      ████████        ██      ██          ████  ██");
+	printf("%s%s\n", space, "      ██    ██        ██    ██  ██    ██    ██  ██");
+	printf("%s%s\n", space, "    ████      ██    ██  ████  ██    ██  ██    ██████");
+	printf("%s%s\n", space, "    ██        ██  ██    ██      ████  ██  ██  ████████");
+	printf("%s%s\n", space, "    ██      ██  ██                          ████");
+	printf("%s%s\n", space, "    ██        ██                    ██████    ██");
+	printf("%s%s\n", space, "  ████        ██    ████          ██      ██  ██");
+	printf("%s%s\n", space, "  ██          ██        ██          \033[1;38;2;255;0;0m██  ██\033[1;38;2;255;255;255m    ██");
+	printf("%s%s\n", space, "  ██          ██          ██          \033[1;38;2;255;0;0m██\033[1;38;2;255;255;255m      ██");
+	printf("%s%s\n", space, "  ██          ██    ██████          \033[1;38;2;255;0;0m██  ██\033[1;38;2;255;255;255m      ██");
+	printf("%s%s\n", space, "  ████    ██  ██                                ██");
+	printf("%s%s\n", space, "    ████  ██████          ██    ██            ██");
+	printf("%s%s\n", space, "      ██████  ████          ████          ████");
+	printf("%s%s\n", space, "                ████                    ████");
+	printf("%s%s\n", space, "                    ████████████████████");
 	printf("%s\n", "");
 }
 // For `ruri -v`.
@@ -138,6 +138,7 @@ void show_helps(void)
 	printf("  -s                     Enable built-in Seccomp profile\n");
 	printf("  -d                     Drop more capabilities for lower privilege\n");
 	printf("  -p                     Run privileged container\n");
+	printf("  -r                     Run rootless container\n");
 	printf(" --keep [cap]            Keep the specified cap\n");
 	printf(" --drop [cap]            Drop the specified cap\n");
 	printf("  -e [env] [value]       Set env to its value *Not work if init command is like `su -`\n");

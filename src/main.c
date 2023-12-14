@@ -46,7 +46,7 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if we are running with root privileges.
-	if (getuid() != 0) {
+	if (getuid() != 0 && !(container_info->rootless)) {
 		error("\033[31mError: this program should be run with root privileges QwQ\n");
 	}
 	// Check if $LD_PRELOAD is unset.
@@ -141,6 +141,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	info->no_new_privs = false;
 	info->no_warnings = false;
 	info->use_unshare = false;
+	info->rootless = false;
 	info->command[0] = NULL;
 	info->env[0] = NULL;
 	info->mountpoint[0] = NULL;
@@ -250,6 +251,10 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		else if (strcmp(argv[index], "-p") == 0) {
 			priv_level = 2;
 		}
+		// Run rootless container.
+		else if (strcmp(argv[index], "-r") == 0) {
+			info->rootless = true;
+		}
 		// Do not show warnings.
 		else if (strcmp(argv[index], "-w") == 0) {
 			info->no_warnings = true;
@@ -350,9 +355,15 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	}
 	// Set default init command to run.
 	if (info->command[0] == NULL) {
-		info->command[0] = "/bin/su";
-		info->command[1] = "-";
-		info->command[2] = NULL;
+		// Rootless container can not run program like /bin/su.
+		if (!(info->rootless)) {
+			info->command[0] = "/bin/su";
+			info->command[1] = "-";
+			info->command[2] = NULL;
+		} else {
+			info->command[0] = "/bin/sh";
+			info->command[1] = NULL;
+		}
 	}
 	// Get the capabilities to drop.
 	build_caplist(info->drop_caplist, priv_level, drop_caplist_extra, keep_caplist_extra);
@@ -376,9 +387,27 @@ int main(int argc, char **argv)
 	container_info = parse_args(argc, argv, container_info);
 	// Check container_info and the running environment.
 	check_container(container_info);
-	// Pure-chroot and unshare container are two functions.
-	if (container_info->use_unshare) {
+	// Run container.
+	if ((container_info->use_unshare) && !(container_info->rootless)) {
 		run_unshare_container(container_info);
+	} else if ((container_info->rootless)) {
+		// Create a new user namespace.
+		unshare(CLONE_NEWUSER);
+		pid_t pid = fork();
+		if (pid > 0) {
+			waitpid(pid, NULL, 0);
+		} else if (pid < 0) {
+			error("\033[31mFork error");
+		} else {
+			// Set uid map.
+			char uid_map[32] = { "\0" };
+			sprintf(uid_map, "0 %d 1", getuid());
+			int fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
+			write(fd, uid_map, sizeof(uid_map));
+			// Run chroot container.
+			// mount(2) will fail without CAP_SYS_ADMIN.
+			run_chroot_container(container_info);
+		}
 	} else {
 		run_chroot_container(container_info);
 	}

@@ -102,6 +102,7 @@ ARGS:
   -s                     Enable built-in Seccomp profile
   -d                     Drop more capabilities for lower privilege
   -p                     Run privileged container
+  -r                     Run rootless container
  --keep [cap]            Keep the specified cap
  --drop [cap]            Drop the specified cap
   -e [env] [value]       Set env to its value *Not work if init command is like `su -`
@@ -110,6 +111,10 @@ ARGS:
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
+### About rootless container:
+It requires user namespace enabled in your kernel config.      
+It's a very useless function. Ruri creates a new user namespace and run chroot(2) in it, but without any real privileges, it can not even mount /proc /dev and /sys.       
+Adding CAP_SYS_ADMIN can not fix any problems, so just do not use this function.      
 ### About Seccomp:
 The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and replace setup_seccomp() with your own config.      
 ### About daemon:

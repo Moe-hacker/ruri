@@ -1,6 +1,6 @@
 .\" I hope it works...
 \fB\,\m[white]
-.TH "RURI" "1" "Nov 2023" "RURI v2\&.2" "RURI MANUAL"
+.TH "RURI" "1" "Nov 2023" "RURI v2\&.3" "RURI MANUAL"
 .SH "NAME"
 \fB\,\m[white]ruri \- Lightweight, User\-friendly Linux-container Implementation\&.
 .SH "SYNOPSIS"
@@ -39,6 +39,7 @@
   -s                     Enable built-in Seccomp profile
   -d                     Drop more capabilities for lower privilege
   -p                     Run privileged container
+  -r                     Run rootless container
  --keep [cap]            Keep the specified cap
  --drop [cap]            Drop the specified cap
   -e [env] [value]       Set env to its value *Not work if init command is like `su -`
@@ -57,6 +58,8 @@
 \fB\,NO_NEW_PRIVS Flag might make commands like sudo unavailable in containers\&.
 .TP
 \fB\,Seccomp rule is based on docker default seccomp profile\&.
+.TP
+\fB\,Rootless container requires user namespace enabled in your kernel config. It's a very useless function. Ruri creates a new user namespace and run chroot(2) in it, but without any real privileges, it can not even mount /proc /dev and /sys.
 .TP
 \fB\,The daemon can store the info of unshare containers and ensure that the same containers run in the same namespaces\&. It's not a necessary process, and pure chroot containers will not communicate with the daemon\&.
 .SH "EXAMPLES"

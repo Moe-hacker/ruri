@@ -102,11 +102,12 @@ LD_FLAGS_BIONIC = -lcap -lseccomp
 # Target.
 RURI = $(COMMIT_ID) $(STANDARD) $(SRC) -o $(BIN_TARGET)
 .PHONY: dev
-all :mandoc
+ruri:
 	$(CC_LOG) $(BIN_TARGET)
 	@$(CC) $(OPTIMIZE_CFLAGS) $(RURI) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
+all :mandoc ruri
 mandoc :
 	@gzip -kf doc/ruri.1
 dev :
