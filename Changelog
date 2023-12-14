@@ -1,8 +1,13 @@
+# dev:
+  * Add `-r` option: run rootless container.
+  * Add an easter egg: `ruri AwA`.
+  * General bug fixes.
 # v2.3:
   * `-hh` => `-H`.
   * Add `-T` option.
   * Change src structure.
   * Rewrite most of the code.
+  * General bug fixes.
 # v2.2:
   * Add new security options of Clang/GCC.
   * Disable no_new_privs bit by default for seccomp.
@@ -10,6 +15,7 @@
   * Protect /sys/block by mounting a tmpfs on it.
   * Close other fds before exec(), (maybe useless).
   * Make dev log colorful.
+  * General bug fixes.
 # v2.1:
   * Fix seccomp rule.
   * Change src structure.
