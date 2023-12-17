@@ -10,6 +10,5 @@ ruri-arm64.zip
 # Compressed doc.
 ruri.1.gz
 # Gdb log
-peda-session-ruri.txt
-peda-session-busybox.txt
+peda-*
 out

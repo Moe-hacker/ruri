@@ -164,9 +164,12 @@ check :
 format :
 	$(FORMATER) $(SRC) $(HEADER)
 clean :
+	$(CLEAN_LOG) $(BIN_TARGET)
+	@rm -f $(BIN_TARGET)||true
 	$(CLEAN_LOG) $(O)
-	@rm -f ruri||true
 	@rm -rf $(O)||true
+	$(CLEAN_LOG) peda*
+	@rm -f peda*
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all            compile"
