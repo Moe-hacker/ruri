@@ -157,9 +157,9 @@ install :all
 check :
 	@printf "\033[1;38;2;254;228;208mCheck list:\n"
 	@sleep 1.5s
-	@$(CHECKER) $(CHECKER_FLAGS) --list-checks $(SRC) -- $(DEV_CFLAGS) $(RURI)
+	@$(CHECKER) $(CHECKER_FLAGS) --list-checks $(SRC) -- $(DEV_CFLAGS)
 	@printf ' \033[1;38;2;254;228;208mCHECK\033[0m \033[34;1m%b\033[0m\n' $(SRC)
-	@$(CHECKER) $(CHECKER_FLAGS) $(SRC) -- $(COMMIT_ID) $(RURI)
+	@$(CHECKER) $(CHECKER_FLAGS) $(SRC) -- $(COMMIT_ID)
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
 	$(FORMATER) $(SRC) $(HEADER)
