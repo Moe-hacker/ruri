@@ -78,12 +78,6 @@
 #endif
 // For initializing some variables.
 #define INIT_VALUE (-114)
-// Version info.
-#ifndef __RURI_DEV__
-#define RURI_VERSION "2.3"
-#else
-#define RURI_VERSION "2.4-dev"
-#endif
 // Limitations.
 #define MAX_COMMANDS (1024)
 #define MAX_ENVS (128 * 2)
@@ -91,6 +85,7 @@
 // For interprocess communication.
 #define SOCKET_FILE "ruri.sock"
 #include "msg.h"
+#include "version.h"
 // Info of containers.
 struct __attribute__((aligned(128))) CONTAINERS {
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
