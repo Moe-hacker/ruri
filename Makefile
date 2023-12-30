@@ -102,7 +102,7 @@ DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) $(NO_PIE)
 BIONIC_FIX = -ffunction-sections -fdata-sections
 BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX)
 # Bionic has built-in libpthread.
-LD_FLAGS_BIONIC = -lcap -lseccomp -Wl,--gc-sections
+BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)
 # Target.
 objects = caplist.o chroot.o daemon.o info.o main.o seccomp.o socket.o tool.o unshare.o
 O = out
@@ -141,7 +141,7 @@ static-bionic :CFLAGS=$(BIONIC_CFLAGS)
 static-bionic :build_dir mandoc $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
-	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(BIONIC_LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 	@cp $(BIN_TARGET) ../
