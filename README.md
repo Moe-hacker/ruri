@@ -124,7 +124,7 @@ See `ruri(1)` in manpage after installation.
 ### License:
 License of code:      
 - Licensed under the MIT License      
-- Copyright (c) 2022-2023 Moe-hacker      
+- Copyright (c) 2022-2024 Moe-hacker      
 
 License of clang-format config file:      
 - GPL-2.0      

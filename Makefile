@@ -5,7 +5,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2022-2023 Moe-hacker
+# Copyright (c) 2022-2024 Moe-hacker
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -99,7 +99,7 @@ CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-u
 LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO)
 DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) $(NO_PIE)
 # Fix issues in termux (with bionic).
-BIONIC_FIX = -ffunction-sections -fdata-sections
+BIONIC_FIX = -ffunction-sections -fdata-sections -Wno-unused-command-line-argument
 BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX)
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)

@@ -5,7 +5,7 @@
  *
  * MIT License
  *
- * Copyright (c) 2022-2023 Moe-hacker
+ * Copyright (c) 2022-2024 Moe-hacker
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ void show_version_info(void)
 	printf("      ●   ●  ●●●  ●   ●  ●●●\n");
 	printf("  Licensed under the MIT License\n");
 	printf("    <https://mit-license.org>\n");
-	printf("Copyright (C) 2022-2023 Moe-hacker\n");
+	printf("Copyright (C) 2022-2024 Moe-hacker\n");
 	printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
 	printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
 	printf("\n");

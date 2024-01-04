@@ -3,7 +3,7 @@
   This file is part of ruri.
   MIT License
  
-  Copyright (c) 2022-2023 Moe-hacker
+  Copyright (c) 2022-2024 Moe-hacker
  
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
