@@ -548,12 +548,24 @@ void ruri_daemon(void)
 					container_info.env[i + 1] = NULL;
 				}
 				read_msg_daemon(msg, addr, sockfd);
-				if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) != 0) {
+				if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_FALSE, msg) == 0) {
 					container_info.no_new_privs = false;
 				}
 				read_msg_daemon(msg, addr, sockfd);
-				if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_TRUE, msg) != 0) {
+				if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_FALSE, msg) == 0) {
 					container_info.enable_seccomp = false;
+				}
+				// Get cross-arch info.
+				read_msg_daemon(msg, addr, sockfd);
+				if(strcmp(FROM_CLIENT__CROSS_ARCH_TRUE,msg)==0){
+					// Ignore FROM_CLIENT__CROSS_ARCH_INFO.
+					read_msg_daemon(msg, addr, sockfd);
+					// Get arch.
+					read_msg_daemon(msg, addr, sockfd);
+					container_info.cross_arch=strdup(msg);
+					// Get qemu path.
+					read_msg_daemon(msg, addr, sockfd);
+					container_info.qemu_path=strdup(msg);
 				}
 				// Init container in new pthread.
 				// It will send all the info of the container back to register it.

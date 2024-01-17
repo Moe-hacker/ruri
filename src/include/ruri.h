@@ -84,6 +84,8 @@
 #define MAX_MOUNTPOINTS (128 * 2)
 // For interprocess communication.
 #define SOCKET_FILE "ruri.sock"
+// Include other headers.
+#include "elf-magic.h"
 #include "msg.h"
 #include "version.h"
 // Info of containers.
@@ -114,6 +116,9 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 	// Only be used in ruri_daemon().
 	// For setns(2), we define it as char*.
 	char *unshare_pid;
+	// For cross-architecture containers.
+	char *cross_arch;
+	char *qemu_path;
 };
 // Warnings.
 #define warning(...) fprintf(stderr, ##__VA_ARGS__)
@@ -140,17 +145,18 @@ void show_examples(void);
 void add_to_list(cap_value_t *list, cap_value_t cap);
 bool is_in_list(const cap_value_t *list, cap_value_t cap);
 void del_from_list(cap_value_t *list, cap_value_t cap);
-ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd);
-ssize_t send_msg_client(char *msg, struct sockaddr_un addr);
+ssize_t send_msg_daemon(const char *msg, struct sockaddr_un addr, int sockfd);
+ssize_t send_msg_client(const char *msg, struct sockaddr_un addr);
 ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd);
 ssize_t read_msg_client(char *buf, struct sockaddr_un addr);
 void container_ps(void);
 void kill_daemon(void);
 int connect_to_daemon(struct sockaddr_un *addr);
 void ruri_daemon(void);
+struct MAGIC *get_magic(const char *cross_arch);
 int run_unshare_container(struct CONTAINER_INFO *container_info);
 void run_chroot_container(struct CONTAINER_INFO *container_info);
-void umount_container(char *container_dir);
+void umount_container(const char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

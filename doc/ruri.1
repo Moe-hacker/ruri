@@ -34,7 +34,9 @@
   -U [container_dir]     Umount&kill a container
 .SH "ARGS"
 .PP
-  \fB\,-u                     Enable unshare feature
+  \fB\,-a [arch]              Simulate architecture via binfmt_misc & QEMU, need `-q`
+  -q [path]              Specify the path of QEMU
+  -u                     Enable unshare feature
   -n                     Set NO_NEW_PRIVS Flag
   -s                     Enable built-in Seccomp profile
   -d                     Drop more capabilities for lower privilege
@@ -46,6 +48,9 @@
   -m [dir] [mountpoint]  Mount dir to mountpoint
   -w                     Disable warnings
 .SH "NOTES"
+.TP
+\fB\,You need to copy qemu-*-static to your container first to use the \`-q\` option.
+The path of qemu is the absolute path of qemu in the chroot container, for example, you have a qemu binary at \`/path/to/container/qemu-amd64-static\`\, use \`-a x86_64 -q /qemu-amd64-static\` arguments to start the container.
 .TP
 \fB\,Unshare container will not enable net and user namespace, I haven't learned how to configure these namespaces\&.
 .TP

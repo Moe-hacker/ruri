@@ -93,9 +93,11 @@ void show_version_info(void)
 	printf("  Licensed under the MIT License\n");
 	printf("    <https://mit-license.org>\n");
 	printf("Copyright (C) 2022-2024 Moe-hacker\n");
-	printf("%s%s%s", "     ruri version : ", RURI_VERSION, "\n");
-	printf("%s%s%s\033[0m", "     Commit id    : ", RURI_COMMIT_ID, "\n");
-	printf("\n");
+	printf("%s%s%s", "ruri version     :    ", RURI_VERSION, "\n");
+	printf("%s%s%s", "Commit id        :    ", RURI_COMMIT_ID, "\n");
+	printf("%s%s\n", "Compiler version :    ", __VERSION__);
+	printf("%s%s\n", "Build date       :    ", __TIMESTAMP__);
+	printf("\033[0m\n");
 }
 // For `ruri -V`.
 void show_version_code(void)
@@ -133,6 +135,8 @@ void show_helps(void)
 	printf("  -U [container_dir]     Umount&kill a container\n");
 	printf("\n");
 	printf("ARGS:\n");
+	printf("  -a [arch]              Simulate architecture via binfmt_misc & QEMU, need `-q`\n");
+	printf("  -q [path]              Specify the path of QEMU\n");
 	printf("  -u                     Enable unshare feature\n");
 	printf("  -n                     Set NO_NEW_PRIVS Flag\n");
 	printf("  -s                     Enable built-in Seccomp profile\n");

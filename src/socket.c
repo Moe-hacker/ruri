@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // For daemon.
-ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd)
+ssize_t send_msg_daemon(const char *msg, struct sockaddr_un addr, int sockfd)
 {
 	/*
 	 * It will accept a new connection and write msg to socket.
@@ -49,7 +49,7 @@ ssize_t send_msg_daemon(char *msg, struct sockaddr_un addr, int sockfd)
 	return write(sock_new, msg, strlen(msg));
 }
 // For client.
-ssize_t send_msg_client(char *msg, struct sockaddr_un addr)
+ssize_t send_msg_client(const char *msg, struct sockaddr_un addr)
 {
 	/*
 	 * It will send msg to socket and quit.

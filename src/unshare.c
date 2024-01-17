@@ -159,6 +159,15 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 		} else {
 			send_msg_client(FROM_CLIENT__ENABLE_SECCOMP_FALSE, addr);
 		}
+		// Send cross-arch info to daemon.
+		if(container_info->cross_arch!=NULL){
+			send_msg_client(FROM_CLIENT__CROSS_ARCH_TRUE,addr);
+			send_msg_client(FROM_CLIENT__CROSS_ARCH_INFO,addr);
+			send_msg_client(container_info->cross_arch,addr);
+			send_msg_client(container_info->qemu_path,addr);
+		}else{
+			send_msg_client(FROM_CLIENT__CROSS_ARCH_FALSE,addr);
+		}
 	}
 	// If the container is running, we discard the container_info we have,
 	// and re-get container_info from daemon.

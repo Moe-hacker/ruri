@@ -94,7 +94,7 @@ FORMATER = clang-format -i
 # For `make check`.
 CHECKER = clang-tidy --use-color
 # Unused checks are disabled.
-CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c
+CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner
 # Link with libcap, libpthread and libseccomp.
 LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO)
 DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) $(NO_PIE)
@@ -104,7 +104,7 @@ BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX)
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)
 # Target.
-objects = caplist.o chroot.o daemon.o info.o main.o seccomp.o socket.o tool.o unshare.o
+objects = caplist.o chroot.o daemon.o info.o seccomp.o socket.o tool.o unshare.o elf-magic.o main.o
 O = out
 .ONESHELL:
 all :CFLAGS=$(OPTIMIZE_CFLAGS)
@@ -114,7 +114,7 @@ all :build_dir mandoc $(objects)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 	$(STRIP_LOG) $(BIN_TARGET)
-	@cp $(BIN_TARGET) ../
+	@cp -f $(BIN_TARGET) ../
 mandoc :
 	@gzip -kf doc/ruri.1
 dev :CFLAGS=$(DEV_CFLAGS)

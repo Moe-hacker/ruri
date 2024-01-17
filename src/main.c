@@ -53,7 +53,7 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 	// If LD_PRELOAD is set, container might will not run properly.
 	char *ld_preload = getenv("LD_PRELOAD");
 	if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0)) {
-		error("\033[31mError: please unset $LD_PRELOAD before running this program or use su -c `COMMAND` to run QwQ\n");
+		error("\033[31mError: please unset $LD_PRELOAD before running this program QwQ\n");
 	}
 	// Check if container directory exists.
 	DIR *direxist = opendir(container_info->container_dir);
@@ -72,6 +72,181 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 	}
 	if (S_ISDIR(init_binary_stat.st_mode)) {
 		error("\033[31mCOMMAND can not be a directory QwQ\n");
+	}
+	// Check for binfmt_misc config.
+	if (container_info->cross_arch != NULL) {
+		// Check QEMU path.
+		if (container_info->qemu_path == NULL) {
+			error("\033[31mError: path of QEMU is not set QwQ\n");
+		}
+		// Check if QEMU binary exists and is not a directory.
+		char qemu_binary[PATH_MAX];
+		strcpy(qemu_binary, container_info->container_dir);
+		strcat(qemu_binary, container_info->qemu_path);
+		struct stat qemu_binary_stat;
+		// lstat(3) will return -1 while the init_binary does not exist.
+		if (lstat(qemu_binary, &qemu_binary_stat) != 0) {
+			error("\033[31mPlease check if path of QEMU is correct QwQ\n");
+		}
+		if (S_ISDIR(qemu_binary_stat.st_mode)) {
+			error("\033[31mQEMU path can not be a directory QwQ\n");
+		}
+// Avoid to simulate the same architecture as host.
+#if defined(__aarch64__)
+		if (strcmp(container_info->cross_arch, "aarch64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__alpha__)
+		if (strcmp(container_info->cross_arch, "alpha") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__arm__)
+		if (strcmp(container_info->cross_arch, "arm") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__armeb__)
+		if (strcmp(container_info->cross_arch, "armeb") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__cris__)
+		if (strcmp(container_info->cross_arch, "cris") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__hexagon__)
+		if (strcmp(container_info->cross_arch, "hexagon") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__hppa__)
+		if (strcmp(container_info->cross_arch, "hppa") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__i386__)
+		if (strcmp(container_info->cross_arch, "i386") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__loongarch64__)
+		if (strcmp(container_info->cross_arch, "loongarch64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__m68k__)
+		if (strcmp(container_info->cross_arch, "m68k") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__microblaze__)
+		if (strcmp(container_info->cross_arch, "microblaze") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__mips__)
+		if (strcmp(container_info->cross_arch, "mips") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__mips64__)
+		if (strcmp(container_info->cross_arch, "mips64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__mips64el__)
+		if (strcmp(container_info->cross_arch, "mips64el") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__mipsel__)
+		if (strcmp(container_info->cross_arch, "mipsel") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__mipsn32__)
+		if (strcmp(container_info->cross_arch, "mipsn32") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__mipsn32el__)
+		if (strcmp(container_info->cross_arch, "mipsn32el") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__ppc__)
+		if (strcmp(container_info->cross_arch, "ppc") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__ppc64__)
+		if (strcmp(container_info->cross_arch, "ppc64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__ppc64le__)
+		if (strcmp(container_info->cross_arch, "ppc64le") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__riscv32__)
+		if (strcmp(container_info->cross_arch, "riscv32") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__riscv64__)
+		if (strcmp(container_info->cross_arch, "riscv64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__s390x__)
+		if (strcmp(container_info->cross_arch, "s390x") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__sh4__)
+		if (strcmp(container_info->cross_arch, "sh4") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__sh4eb__)
+		if (strcmp(container_info->cross_arch, "sh4eb") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__sparc__)
+		if (strcmp(container_info->cross_arch, "sparc") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__sparc32plus__)
+		if (strcmp(container_info->cross_arch, "sparc32plus") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__sparc64__)
+		if (strcmp(container_info->cross_arch, "sparc64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__x86_64__)
+		if (strcmp(container_info->cross_arch, "x86_64") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__xtensa__)
+		if (strcmp(container_info->cross_arch, "xtensa") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
+#if defined(__xtensaeb__)
+		if (strcmp(container_info->cross_arch, "xtensaeb") == 0) {
+			error("\033[31mCannot simulate the same architecture QwQ\n");
+		}
+#endif
 	}
 }
 static void build_caplist(cap_value_t caplist[], int priv_level, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
@@ -145,6 +320,8 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	info->command[0] = NULL;
 	info->env[0] = NULL;
 	info->mountpoint[0] = NULL;
+	info->cross_arch = NULL;
+	info->qemu_path = NULL;
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
@@ -218,10 +395,9 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// Umount a container.
 		if (strcmp(argv[index], "-U") == 0) {
-			char container_dir[PATH_MAX];
 			index += 1;
 			if (argv[index] != NULL) {
-				realpath(argv[index], container_dir);
+				char *container_dir = realpath(argv[index], NULL);
 				umount_container(container_dir);
 				exit(EXIT_SUCCESS);
 			}
@@ -234,6 +410,16 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		// Set no_new_privs bit.
 		if (strcmp(argv[index], "-n") == 0) {
 			info->no_new_privs = true;
+		}
+		// Simulate architecture.
+		else if (strcmp(argv[index], "-a") == 0) {
+			index++;
+			info->cross_arch = strdup(argv[index]);
+		}
+		// Path of QEMU.
+		else if (strcmp(argv[index], "-q") == 0) {
+			index++;
+			info->qemu_path = strdup(argv[index]);
 		}
 		// Enable built-in seccomp profile.
 		else if (strcmp(argv[index], "-s") == 0) {
@@ -397,7 +583,7 @@ int main(int argc, char **argv)
 		if (pid > 0) {
 			waitpid(pid, NULL, 0);
 		} else if (pid < 0) {
-			error("\033[31mFork error");
+			error("\033[31mFork error QwQ?\n");
 		} else {
 			// Set uid map.
 			char uid_map[32] = { "\0" };

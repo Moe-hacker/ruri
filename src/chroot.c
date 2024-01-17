@@ -115,6 +115,8 @@ static void init_container(void)
 	mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
 	mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
 	mount("tmpfs", "/sys/block", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
+	// Mount binfmt_misc.
+	mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
 	// Create system runtime files in /dev and then fix permissions.
 	mknod("/dev/null", S_IFCHR, makedev(1, 3));
 	chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
@@ -224,6 +226,8 @@ static void set_envs(struct CONTAINER_INFO *container_info)
 {
 	// Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in GNU/Linux containers.
 	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
+	// Set $TMPDIR.
+	setenv("TMPDIR", "/tmp", 1);
 	// Set other envs.
 	for (int i = 0; true; i += 2) {
 		if (container_info->env[i] != NULL) {
@@ -232,6 +236,24 @@ static void set_envs(struct CONTAINER_INFO *container_info)
 			break;
 		}
 	}
+}
+// Run after init_container().
+static void setup_binfmt_misc(const char *cross_arch, const char *qemu_path)
+{
+	// Get elf magic header.
+	struct MAGIC *magic = get_magic(cross_arch);
+	char buf[1024] = { '\0' };
+	// Format: ":name:type:offset:magic:mask:interpreter:flags".
+	sprintf(buf, ":%s%s:M:0:%s:%s:%s:OC", "ruri-", cross_arch, magic->magic, magic->mask, qemu_path);
+	// Just to make clang-tidy happy.
+	free(magic);
+	// This needs CONFIG_BINFMT_MISC enabled in your kernel.
+	int register_fd = open("/proc/sys/fs/binfmt_misc/register", O_WRONLY | O_CLOEXEC);
+	if (register_fd < 0) {
+		error("\033[31mError: Failed to setup binfmt_misc, check your kernel config QwQ");
+	}
+	// Set binfmt_misc config.
+	write(register_fd, buf, strlen(buf));
 }
 // Run chroot container.
 void run_chroot_container(struct CONTAINER_INFO *container_info)
@@ -291,6 +313,10 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 	// So we close the other fds to avoid security issues.
 	for (int i = 3; i <= 10; i++) {
 		close(i);
+	}
+	// Setup binfmt_misc.
+	if (container_info->cross_arch != NULL) {
+		setup_binfmt_misc(container_info->cross_arch, container_info->qemu_path);
 	}
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.

@@ -26,7 +26,7 @@ Although it has many args in the help page, the basic usage is very very simple,
 - Secure:      
 It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers.
 - Static:      
-Compile ruri with `make static`, it will be compiled as a small binary file(less than 1M), but it can be run anywhere without dependent libraries.      
+Compile ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
 
 &emsp;The default capability set is based on docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
 ### Install:      
@@ -97,6 +97,8 @@ OPTIONS:
   -U [container_dir]     Umount&kill a container
 
 ARGS:
+  -a [arch]              Simulate architecture via binfmt_misc & QEMU, need `-q`
+  -q [path]              Specify the path of QEMU
   -u                     Enable unshare feature
   -n                     Set NO_NEW_PRIVS Flag
   -s                     Enable built-in Seccomp profile
@@ -111,6 +113,10 @@ ARGS:
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
+### About cross-arch container:
+It needs CONFIG_BINFMT_MISC enabled in your kernel config.      
+You need to copy qemu-*-static to your container first.      
+The path of qemu is the absolute path of qemu in the chroot container, for example, you have a qemu binary at `/path/to/container/qemu-amd64-static`, use `-a x86_64 -q /qemu-amd64-static` arguments to start the container.
 ### About rootless container:
 It requires user namespace enabled in your kernel config.      
 It's a very useless function. Ruri creates a new user namespace and run chroot(2) in it, but without any real privileges, it can not even mount /proc /dev and /sys.       
