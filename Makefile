@@ -99,7 +99,7 @@ CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-u
 LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO)
 DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) $(NO_PIE)
 # Fix issues in termux (with bionic).
-BIONIC_FIX = -ffunction-sections -fdata-sections -Wno-unused-command-line-argument
+BIONIC_FIX = -ffunction-sections -fdata-sections
 BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX)
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)
@@ -149,7 +149,7 @@ build_dir:
 	@mkdir -p $(O)
 $(objects) :%.o:src/%.c $(build_dir)
 	@cd $(O)
-	@$(CC) $(CFLAGS) -c ../$< -o $@
+	@$(CC) $(CFLAGS) -Wno-unused-command-line-argument -c ../$< -o $@
 	$(CC_LOG) $@
 install :all
 	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
