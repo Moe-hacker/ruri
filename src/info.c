@@ -149,7 +149,8 @@ void show_helps(void)
 	printf("  -m [dir] [mountpoint]  Mount dir to mountpoint\n");
 	printf("  -w                     Disable warnings\n");
 	printf("\n");
-	printf("Default command to run is `/bin/su` if it's not given\n");
+	printf("Default command to run is `/bin/su` if it's not set\n");
+	printf("The path of qemu is the absolute path of qemu binary in the chroot container\n");
 	printf("This program should be run with root privileges\n");
 	printf("Please unset $LD_PRELOAD before running this program\n");
 	printf("For a full user guide, see `man ruri`\033[0m\n");
