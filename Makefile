@@ -100,7 +100,7 @@ LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO)
 DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) $(NO_PIE)
 # Fix issues in termux (with bionic).
 BIONIC_FIX = -ffunction-sections -fdata-sections
-BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX)
+BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) -static
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)
 # Target.
