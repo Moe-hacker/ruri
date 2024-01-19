@@ -2,6 +2,7 @@
   * Add binfmt_misc support.
   * Add `-a` option: Simulate architecture via binfmt_misc & QEMU.
   * Add `-q` option: Specify the path of QEMU.
+  * Add `-S` option: Bind-mount /dev/, /sys/ and /proc/ from host.
   * General bug fixes.
 # v2.4:
   * Add `-r` option: run rootless container.

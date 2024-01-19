@@ -317,6 +317,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	info->no_warnings = false;
 	info->use_unshare = false;
 	info->rootless = false;
+	info->host_runtime_dir = false;
 	info->command[0] = NULL;
 	info->env[0] = NULL;
 	info->mountpoint[0] = NULL;
@@ -444,6 +445,10 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		// Do not show warnings.
 		else if (strcmp(argv[index], "-w") == 0) {
 			info->no_warnings = true;
+		}
+		// Force bind-mount host /dev/, /sys/ and /proc/.
+		else if (strcmp(argv[index], "-S") == 0) {
+			info->host_runtime_dir = true;
 		}
 		// Set extra env.
 		else if (strcmp(argv[index], "-e") == 0) {

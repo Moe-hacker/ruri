@@ -87,66 +87,105 @@ static void init_container(void)
 	 * It'll be run after chroot(2), so `/` is the root dir of container now.
 	 * The device list and permissions are based on common docker container.
 	 */
-	// umount /proc before we mount it.
-	umount2("/proc", MNT_DETACH | MNT_FORCE);
-	// Fix issues in archlinux containers.
-	mount("/", "/", NULL, MS_BIND, NULL);
-	// Mount proc,sys and dev.
-	mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mkdir("/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
-	// For /sys,we make it read-only.
-	mount("sysfs", "/sys", "sysfs", MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
-	mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
-	// Continue mounting some other directories in /dev.
-	mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("devpts", "/dev/pts", "devpts", 0, "gid=4,mode=620");
-	mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
-	mkdir("/dev/mqune", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("mqune", "/dev/mqune", "mqune", 0, NULL);
-	// Protect some system runtime directories by mounting themselves as read-only.
-	mount("/proc/bus", "/proc/bus", "proc", MS_BIND | MS_RDONLY, NULL);
-	mount("/proc/fs", "/proc/fs", "proc", MS_BIND | MS_RDONLY, NULL);
-	mount("/proc/irq", "/proc/irq", "proc", MS_BIND | MS_RDONLY, NULL);
-	mount("/proc/sys", "/proc/sys", "proc", MS_BIND | MS_RDONLY, NULL);
-	mount("/proc/asound", "/proc/asound", "proc", MS_BIND | MS_RDONLY, NULL);
-	mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
-	mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
-	mount("tmpfs", "/sys/block", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
-	// Mount binfmt_misc.
-	mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
-	// Create system runtime files in /dev and then fix permissions.
-	mknod("/dev/null", S_IFCHR, makedev(1, 3));
-	chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	mknod("/dev/console", S_IFCHR, makedev(5, 1));
-	chown("/dev/console", 0, 5);
-	chmod("/dev/console", S_IRUSR | S_IWUSR | S_IWGRP | S_IWOTH);
-	mknod("/dev/zero", S_IFCHR, makedev(1, 5));
-	chmod("/dev/zero", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	mknod("/dev/ptmx", S_IFCHR, makedev(5, 2));
-	chown("/dev/ptmx", 0, 5);
-	chmod("/dev/ptmx", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	mknod("/dev/tty", S_IFCHR, makedev(5, 0));
-	chown("/dev/tty", 0, 5);
-	chmod("/dev/tty", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	mknod("/dev/random", S_IFCHR, makedev(1, 8));
-	chmod("/dev/random", S_IRUSR | S_IRGRP | S_IROTH);
-	mknod("/dev/urandom", S_IFCHR, makedev(1, 9));
-	chmod("/dev/urandom", S_IRUSR | S_IRGRP | S_IROTH);
-	mkdir("/dev/net", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mknod("/dev/net/tun", S_IFCHR, makedev(10, 200));
-	// Create some system runtime link files in /dev.
-	symlink("/proc/self/fd", "/dev/fd");
-	symlink("/proc/self/fd/0", "/dev/stdin");
-	symlink("/proc/self/fd/1", "/dev/stdout");
-	symlink("/proc/self/fd/2", "/dev/stderr");
-	symlink("/dev/null", "/dev/tty0");
-	// Fix issues in archlinux containers.
-	remove("/etc/mtab");
-	unlink("/etc/mtab");
-	symlink("/proc/mounts", "/etc/mtab");
+	// Check if system runtime files are already created.
+	DIR *direxist = opendir("/sys/kernel");
+	if (direxist == NULL) {
+		// Mount && create system runtime files.
+		// umount /proc before we mount it.
+		umount2("/proc", MNT_DETACH | MNT_FORCE);
+		// Fix issues in archlinux containers.
+		mount("/", "/", NULL, MS_BIND, NULL);
+		// Mount proc,sys and dev.
+		mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mkdir("/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
+		// For /sys,we make it read-only.
+		mount("sysfs", "/sys", "sysfs", MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
+		mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
+		// Continue mounting some other directories in /dev.
+		mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mount("devpts", "/dev/pts", "devpts", 0, "gid=4,mode=620");
+		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
+		mkdir("/dev/mqune", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mount("mqune", "/dev/mqune", "mqune", 0, NULL);
+		// Protect some system runtime directories by mounting themselves as read-only.
+		mount("/proc/bus", "/proc/bus", "proc", MS_BIND | MS_RDONLY, NULL);
+		mount("/proc/fs", "/proc/fs", "proc", MS_BIND | MS_RDONLY, NULL);
+		mount("/proc/irq", "/proc/irq", "proc", MS_BIND | MS_RDONLY, NULL);
+		mount("/proc/sys", "/proc/sys", "proc", MS_BIND | MS_RDONLY, NULL);
+		mount("/proc/asound", "/proc/asound", "proc", MS_BIND | MS_RDONLY, NULL);
+		mount("/proc/scsi", "/proc/scsi", "proc", MS_BIND | MS_RDONLY, NULL);
+		mount("/sys/firmware", "/sys/firmware", "sysfs", MS_BIND | MS_RDONLY, NULL);
+		mount("tmpfs", "/sys/block", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
+		// Mount binfmt_misc.
+		mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
+		// Create system runtime files in /dev and then fix permissions.
+		mknod("/dev/null", S_IFCHR, makedev(1, 3));
+		chmod("/dev/null", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		mknod("/dev/console", S_IFCHR, makedev(5, 1));
+		chown("/dev/console", 0, 5);
+		chmod("/dev/console", S_IRUSR | S_IWUSR | S_IWGRP | S_IWOTH);
+		mknod("/dev/zero", S_IFCHR, makedev(1, 5));
+		chmod("/dev/zero", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		mknod("/dev/ptmx", S_IFCHR, makedev(5, 2));
+		chown("/dev/ptmx", 0, 5);
+		chmod("/dev/ptmx", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		mknod("/dev/tty", S_IFCHR, makedev(5, 0));
+		chown("/dev/tty", 0, 5);
+		chmod("/dev/tty", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+		mknod("/dev/random", S_IFCHR, makedev(1, 8));
+		chmod("/dev/random", S_IRUSR | S_IRGRP | S_IROTH);
+		mknod("/dev/urandom", S_IFCHR, makedev(1, 9));
+		chmod("/dev/urandom", S_IRUSR | S_IRGRP | S_IROTH);
+		mkdir("/dev/net", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		mknod("/dev/net/tun", S_IFCHR, makedev(10, 200));
+		// Create some system runtime link files in /dev.
+		symlink("/proc/self/fd", "/dev/fd");
+		symlink("/proc/self/fd/0", "/dev/stdin");
+		symlink("/proc/self/fd/1", "/dev/stdout");
+		symlink("/proc/self/fd/2", "/dev/stderr");
+		symlink("/dev/null", "/dev/tty0");
+		// Fix issues in archlinux containers.
+		remove("/etc/mtab");
+		unlink("/etc/mtab");
+		symlink("/proc/mounts", "/etc/mtab");
+	}
+	// Avoid running closedir(NULL), we put it to else branch.
+	else {
+		closedir(direxist);
+	}
+}
+// Run before chroot(2), so that init_container() will not take effect.
+static void mount_host_runtime(struct CONTAINER_INFO *container_info)
+{
+	// Check if system runtime files are already created.
+	char buf[PATH_MAX] = { '\0' };
+	sprintf(buf, "%s/sys/kernel", container_info->container_dir);
+	DIR *direxist = opendir(buf);
+	if (direxist == NULL) {
+		// Mount /dev.
+		memset(buf, '\0', sizeof(buf));
+		sprintf(buf, "%s/dev", container_info->container_dir);
+		mount("/dev", buf, "tmpfs", MS_BIND, NULL);
+		// mount /proc.
+		memset(buf, '\0', sizeof(buf));
+		sprintf(buf, "%s/proc", container_info->container_dir);
+		mount("/proc", buf, "procfs", MS_BIND, NULL);
+		// Mount /sys.
+		memset(buf, '\0', sizeof(buf));
+		sprintf(buf, "%s/sys", container_info->container_dir);
+		mount("/sys", buf, "sysfs", MS_BIND, NULL);
+		// Mount binfmt_misc.
+		memset(buf, '\0', sizeof(buf));
+		sprintf(buf, "%s/proc/sys/fs/binfmt_misc", container_info->container_dir);
+		mount("binfmt_misc", buf, "binfmt_misc", 0, NULL);
+	}
+	// Avoid running closedir(NULL), we put it to else branch.
+	else {
+		closedir(direxist);
+	}
 }
 // Return the same value as mkdir().
 static int mkdirs(char *dir, mode_t mode)
@@ -272,6 +311,10 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 #endif
 	// Mount mountpoints.
 	mount_mountpoints(container_info);
+	// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
+	if (container_info->host_runtime_dir) {
+		mount_host_runtime(container_info);
+	}
 	// Set default command for exec().
 	if (container_info->command[0] == NULL) {
 		container_info->command[0] = "/bin/su";
@@ -281,16 +324,8 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 	// chroot(2) into container.
 	chroot(container_info->container_dir);
 	chdir("/");
-	// Check if system runtime files are already created.
-	DIR *direxist = opendir("/sys/kernel");
-	if (direxist == NULL) {
-		// Mount && create system runtime files.
-		init_container();
-	}
-	// Avoid running closedir(NULL), we put it to else branch.
-	else {
-		closedir(direxist);
-	}
+	// Mount/create system runtime dir/files.
+	init_container();
 	// Set up Seccomp BPF.
 	if (container_info->enable_seccomp) {
 		setup_seccomp(container_info);

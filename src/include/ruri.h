@@ -113,6 +113,8 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 	bool no_warnings;
 	bool use_unshare;
 	bool rootless;
+	// Mount
+	bool host_runtime_dir;
 	// Only be used in ruri_daemon().
 	// For setns(2), we define it as char*.
 	char *unshare_pid;

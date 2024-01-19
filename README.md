@@ -109,10 +109,13 @@ ARGS:
  --drop [cap]            Drop the specified cap
   -e [env] [value]       Set env to its value *Not work if init command is like `su -`
   -m [dir] [mountpoint]  Mount dir to mountpoint
+  -S                     Bind-mount /dev/, /sys/ and /proc/ from host
   -w                     Disable warnings
 ```
 &emsp;This program should be run with root privileges.        
 &emsp;Please unset $LD_PRELOAD before running this program.              
+### About runtime dirs:
+ruri will create /dev/, /sys/ and /proc/ after chroot(2) into container for better security. You can use `-S` option to force it to bind-mount system runtime dirs.      
 ### About cross-arch container:
 It needs CONFIG_BINFMT_MISC enabled in your kernel config.      
 You need to copy qemu-*-static to your container first.      

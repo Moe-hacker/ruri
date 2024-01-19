@@ -46,8 +46,11 @@
  --drop [cap]            Drop the specified cap
   -e [env] [value]       Set env to its value *Not work if init command is like `su -`
   -m [dir] [mountpoint]  Mount dir to mountpoint
+  -S                     Bind-mount /dev/, /sys/ and /proc/ from host
   -w                     Disable warnings
 .SH "NOTES"
+.TP
+\fB\,ruri will create /dev/, /sys/ and /proc/ after chroot(2) into container for better security\&. You can use `-S` option to force it to bind-mount system runtime dirs\&.
 .TP
 \fB\,You need to copy qemu-*-static to your container first to use the `-q` option\&.
 .TP

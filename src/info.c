@@ -147,6 +147,7 @@ void show_helps(void)
 	printf(" --drop [cap]            Drop the specified cap\n");
 	printf("  -e [env] [value]       Set env to its value *Not work if init command is like `su -`\n");
 	printf("  -m [dir] [mountpoint]  Mount dir to mountpoint\n");
+	printf("  -S                     Bind-mount /dev/, /sys/ and /proc/ from host\n");
 	printf("  -w                     Disable warnings\n");
 	printf("\n");
 	printf("Default command to run is `/bin/su` if it's not set\n");

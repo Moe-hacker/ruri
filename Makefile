@@ -122,13 +122,13 @@ dev :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
-	@cp $(BIN_TARGET) ../
+	@cp -f $(BIN_TARGET) ../
 asan :CFLAGS=$(ASAN_CFLAGS)
 asan :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
-	@cp $(BIN_TARGET) ../
+	@cp -f $(BIN_TARGET) ../
 static :CFLAGS=$(STATIC_CFLAGS)
 static :build_dir mandoc $(objects)
 	@cd $(O)
@@ -136,7 +136,7 @@ static :build_dir mandoc $(objects)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
-	@cp $(BIN_TARGET) ../
+	@cp -f $(BIN_TARGET) ../
 static-bionic :CFLAGS=$(BIONIC_CFLAGS)
 static-bionic :build_dir mandoc $(objects)
 	@cd $(O)
@@ -144,7 +144,7 @@ static-bionic :build_dir mandoc $(objects)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(BIONIC_LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
-	@cp $(BIN_TARGET) ../
+	@cp -f $(BIN_TARGET) ../
 build_dir:
 	@mkdir -p $(O)
 $(objects) :%.o:src/%.c $(build_dir)

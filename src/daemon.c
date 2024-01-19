@@ -316,6 +316,28 @@ static void *daemon_init_unshare_container(void *arg)
 	}
 	return 0;
 }
+// Get a new container_info struct.
+static struct CONTAINER_INFO *new_container_info(void)
+{
+	struct CONTAINER_INFO *container_info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
+	container_info->command[0] = NULL;
+	container_info->container_dir = NULL;
+	container_info->unshare_pid = NULL;
+	container_info->mountpoint[0] = NULL;
+	container_info->env[0] = NULL;
+	container_info->enable_seccomp = false;
+	container_info->no_new_privs = false;
+	container_info->drop_caplist[0] = INIT_VALUE;
+	container_info->cross_arch = NULL;
+	container_info->qemu_path = NULL;
+	container_info->rootless = false;
+	container_info->host_runtime_dir = false;
+	container_info->unshare_pid = NULL;
+	for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
+		container_info->drop_caplist[i] = INIT_VALUE;
+	}
+	return container_info;
+}
 // Daemon process used to store unshare container information and init unshare container.
 void ruri_daemon(void)
 {
@@ -360,16 +382,7 @@ void ruri_daemon(void)
 	// Container info.
 	char *container_dir = NULL;
 	// Info of a new container.
-	struct CONTAINER_INFO container_info = {
-		.command[0] = NULL,
-		.container_dir = NULL,
-		.unshare_pid = NULL,
-		.mountpoint[0] = NULL,
-		.env[0] = NULL,
-		.enable_seccomp = true,
-		.no_new_privs = true,
-		.drop_caplist[0] = INIT_VALUE,
-	};
+	struct CONTAINER_INFO *container_info = NULL;
 	// Create socket.
 	int sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
 	if (sockfd < 0) {
@@ -491,14 +504,11 @@ void ruri_daemon(void)
 			}
 			// If container is not active, init and register it.
 			else {
-				container_info.container_dir = strdup(container_dir);
+				free(container_info);
+				container_info = new_container_info();
+				container_info->container_dir = strdup(container_dir);
 				free(container_dir);
 				send_msg_daemon(FROM_DAEMON__CONTAINER_NOT_RUNNING, addr, sockfd);
-				container_info.command[0] = NULL;
-				container_info.unshare_pid = NULL;
-				for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
-					container_info.drop_caplist[i] = INIT_VALUE;
-				}
 				// Read init command.
 				read_msg_daemon(msg, addr, sockfd);
 				// Get init command.
@@ -507,25 +517,25 @@ void ruri_daemon(void)
 					if (strcmp(FROM_CLIENT__END_OF_INIT_COMMAND, msg) == 0) {
 						break;
 					}
-					container_info.command[i] = strdup(msg);
-					container_info.command[i + 1] = NULL;
+					container_info->command[i] = strdup(msg);
+					container_info->command[i + 1] = NULL;
 				}
-				if (container_info.command[0] == NULL) {
-					container_info.command[0] = "/bin/sh";
-					container_info.command[1] = "-c";
-					container_info.command[2] = "while :;do /bin/sleep 100s;done";
-					container_info.command[3] = NULL;
+				if (container_info->command[0] == NULL) {
+					container_info->command[0] = "/bin/sh";
+					container_info->command[1] = "-c";
+					container_info->command[2] = "while :;do /bin/sleep 100s;done";
+					container_info->command[3] = NULL;
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				// Get caps to drop.
 				for (int i = 0; true; i++) {
 					read_msg_daemon(msg, addr, sockfd);
 					if (strcmp(FROM_CLIENT__END_OF_CAP_TO_DROP, msg) == 0) {
-						container_info.drop_caplist[i] = INIT_VALUE;
+						container_info->drop_caplist[i] = INIT_VALUE;
 						break;
 					}
-					cap_from_name(msg, &container_info.drop_caplist[i]);
-					container_info.drop_caplist[i + 1] = INIT_VALUE;
+					cap_from_name(msg, &container_info->drop_caplist[i]);
+					container_info->drop_caplist[i + 1] = INIT_VALUE;
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				// Get mountpoints.
@@ -534,8 +544,8 @@ void ruri_daemon(void)
 					if (strcmp(FROM_CLIENT__END_OF_MOUNTPOINT, msg) == 0) {
 						break;
 					}
-					container_info.mountpoint[i] = strdup(msg);
-					container_info.mountpoint[i + 1] = NULL;
+					container_info->mountpoint[i] = strdup(msg);
+					container_info->mountpoint[i + 1] = NULL;
 				}
 				read_msg_daemon(msg, addr, sockfd);
 				// Get envs.
@@ -544,32 +554,40 @@ void ruri_daemon(void)
 					if (strcmp(FROM_CLIENT__END_OF_ENV, msg) == 0) {
 						break;
 					}
-					container_info.env[i] = strdup(msg);
-					container_info.env[i + 1] = NULL;
+					container_info->env[i] = strdup(msg);
+					container_info->env[i + 1] = NULL;
 				}
 				read_msg_daemon(msg, addr, sockfd);
-				if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_FALSE, msg) == 0) {
-					container_info.no_new_privs = false;
+				if (strcmp(FROM_CLIENT__NO_NEW_PRIVS_TRUE, msg) == 0) {
+					container_info->no_new_privs = true;
 				}
 				read_msg_daemon(msg, addr, sockfd);
-				if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_FALSE, msg) == 0) {
-					container_info.enable_seccomp = false;
+				if (strcmp(FROM_CLIENT__ENABLE_SECCOMP_TRUE, msg) == 0) {
+					container_info->enable_seccomp = true;
 				}
 				// Get cross-arch info.
 				read_msg_daemon(msg, addr, sockfd);
-				if(strcmp(FROM_CLIENT__CROSS_ARCH_TRUE,msg)==0){
+				if (strcmp(FROM_CLIENT__CROSS_ARCH_TRUE, msg) == 0) {
 					// Ignore FROM_CLIENT__CROSS_ARCH_INFO.
 					read_msg_daemon(msg, addr, sockfd);
 					// Get arch.
 					read_msg_daemon(msg, addr, sockfd);
-					container_info.cross_arch=strdup(msg);
+					container_info->cross_arch = strdup(msg);
 					// Get qemu path.
 					read_msg_daemon(msg, addr, sockfd);
-					container_info.qemu_path=strdup(msg);
+					container_info->qemu_path = strdup(msg);
+				} else {
+					container_info->cross_arch = NULL;
+					container_info->qemu_path = NULL;
+				}
+				// Get if we need to bind mount /dev/, /sys/ and /proc/ from host.
+				read_msg_daemon(msg, addr, sockfd);
+				if (strcmp(FROM_CLIENT__HOST_RUNTIME_TRUE, msg) == 0) {
+					container_info->host_runtime_dir = true;
 				}
 				// Init container in new pthread.
 				// It will send all the info of the container back to register it.
-				pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)&container_info);
+				pthread_create(&pthread_id, NULL, daemon_init_unshare_container, (void *)container_info);
 			}
 		}
 		// Get container info from subprocess and add them to container struct.
@@ -577,32 +595,34 @@ void ruri_daemon(void)
 			// Ignore FROM_PTHREAD__UNSHARE_CONTAINER_PID.
 			read_msg_daemon(msg, addr, sockfd);
 			read_msg_daemon(msg, addr, sockfd);
-			container_info.unshare_pid = strdup(msg);
+			free(container_info);
+			container_info = new_container_info();
+			container_info->unshare_pid = strdup(msg);
 			// Ignore FROM_PTHREAD__CONTAINER_DIR
 			read_msg_daemon(msg, addr, sockfd);
 			read_msg_daemon(msg, addr, sockfd);
-			container_info.container_dir = strdup(msg);
+			container_info->container_dir = strdup(msg);
 			// Ignore FROM_PTHREAD__CAP_TO_DROP
 			read_msg_daemon(msg, addr, sockfd);
 			// Get caps to drop.
 			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_CAP_TO_DROP, msg) == 0) {
-					container_info.drop_caplist[i] = INIT_VALUE;
+					container_info->drop_caplist[i] = INIT_VALUE;
 					break;
 				}
-				cap_from_name(msg, &container_info.drop_caplist[i]);
-				container_info.drop_caplist[i + 1] = INIT_VALUE;
+				cap_from_name(msg, &container_info->drop_caplist[i]);
+				container_info->drop_caplist[i + 1] = INIT_VALUE;
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			// Get mountpoints.
 			for (int i = 0; true; i++) {
 				read_msg_daemon(msg, addr, sockfd);
 				if (strcmp(FROM_PTHREAD__END_OF_MOUNTPOINT, msg) == 0) {
-					container_info.mountpoint[i] = NULL;
+					container_info->mountpoint[i] = NULL;
 					break;
 				}
-				container_info.mountpoint[i] = strdup(msg);
+				container_info->mountpoint[i] = strdup(msg);
 			}
 			read_msg_daemon(msg, addr, sockfd);
 			// Get envs.
@@ -611,29 +631,23 @@ void ruri_daemon(void)
 				if (strcmp(FROM_PTHREAD__END_OF_ENV, msg) == 0) {
 					break;
 				}
-				container_info.env[i] = strdup(msg);
-				container_info.env[i + 1] = NULL;
+				container_info->env[i] = strdup(msg);
+				container_info->env[i + 1] = NULL;
 			}
 			read_msg_daemon(msg, addr, sockfd);
-			if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) != 0) {
-				container_info.no_new_privs = false;
+			if (strcmp(FROM_PTHREAD__NO_NEW_PRIVS_TRUE, msg) == 0) {
+				container_info->no_new_privs = true;
 			}
 			read_msg_daemon(msg, addr, sockfd);
-			if (strcmp(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, msg) != 0) {
-				container_info.enable_seccomp = false;
+			if (strcmp(FROM_PTHREAD__ENABLE_SECCOMP_TRUE, msg) == 0) {
+				container_info->enable_seccomp = true;
 			}
 			// Register the container.
-			container = register_container(container, &container_info);
+			container = register_container(container, container_info);
 			// Send unshare_pid to ruri.
 			usleep(200000);
 			send_msg_daemon(FROM_DAEMON__UNSHARE_CONTAINER_PID, addr, sockfd);
-			send_msg_daemon(container_info.unshare_pid, addr, sockfd);
-			container_info.container_dir = NULL;
-			container_info.command[0] = NULL;
-			container_info.unshare_pid = NULL;
-			for (int i = 0; i < (CAP_LAST_CAP + 1); i++) {
-				container_info.drop_caplist[i] = INIT_VALUE;
-			}
+			send_msg_daemon(container_info->unshare_pid, addr, sockfd);
 		}
 		// Kill daemon itself.
 		else if (strcmp(FROM_CLIENT__KILL_DAEMON, msg) == 0) {

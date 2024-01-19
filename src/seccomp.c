@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-// Setup seccomp filter rule.
+// Setup seccomp filter rule, with libseccomp.
 void setup_seccomp(struct CONTAINER_INFO *container_info)
 {
 	/*
