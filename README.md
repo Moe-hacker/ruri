@@ -18,6 +18,11 @@
 * You do it at your own risk and take the responsibility upon yourself.
 * This program has no Super Cow Powers.
 ```
+### Bug reporting:
+> “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
+> --Torvalds
+
+If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
 ### About ruri:         
 &emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
 &emsp;ruri is the romaji acronym of Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
@@ -28,7 +33,6 @@ It uses libcap and libseccomp for security, and most devices in /dev will never 
 - Static:      
 Compile ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
 
-&emsp;The default capability set is based on docker container, which can be elevated with the `-p` option, reduced by `-d`, or you can use `--keep` and `--drop` to set by yourself.      
 ### Install:      
 ```
 git clone https://github.com/Moe-hacker/ruri
