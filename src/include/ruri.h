@@ -122,6 +122,13 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 	char *cross_arch;
 	char *qemu_path;
 };
+// For get_magic().
+#define magicof(x) (x##_magic)
+#define maskof(x) (x##_mask)
+struct MAGIC {
+	char *magic;
+	char *mask;
+};
 // Warnings.
 #define warning(...) fprintf(stderr, ##__VA_ARGS__)
 // Show error msg and exit.
