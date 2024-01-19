@@ -32,5 +32,5 @@
 #ifndef __RURI_DEV__
 #define RURI_VERSION "2.5"
 #else
-#define RURI_VERSION "2.5-dev"
+#define RURI_VERSION "2.6-dev"
 #endif
