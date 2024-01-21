@@ -1,3 +1,5 @@
+# v2.5-hotfix2:
+  * Fix default caplist caused `could not change the root directory` and `Failed to check chroot()`
 # v2.5:
   * Add binfmt_misc support.
   * Add `-a` option: Simulate architecture via binfmt_misc & QEMU.

@@ -322,8 +322,10 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 		container_info->command[2] = NULL;
 	}
 	// chroot(2) into container.
-	chroot(container_info->container_dir);
+	chdir(container_info->container_dir);
+	chroot(".");
 	chdir("/");
+	chroot("/");
 	// Mount/create system runtime dir/files.
 	init_container();
 	// Set up Seccomp BPF.
