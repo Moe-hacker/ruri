@@ -1,12 +1,19 @@
 
 ![](https://github.com/Moe-hacker/ruri/raw/main/logo/logo.png)
 
-![](https://img.shields.io/github/stars/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=starship&logoColor=fee4d0)
+![](https://img.shields.io/github/stars/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=Google%20Bard&logoColor=fee4d0)
 ![](https://img.shields.io/github/forks/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)
-![](https://img.shields.io/github/license/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=cloudera&logoColor=fee4d0)
+![](https://img.shields.io/github/license/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=readme&logoColor=fee4d0)
 ![](https://img.shields.io/github/repo-size/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)
 ![](https://img.shields.io/github/last-commit/Moe-hacker/ruri?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)
-![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=C&logoColor=fee4d0)
+![](https://img.shields.io/badge/language-c-green?style=for-the-badge&color=fee4d0&logo=Codio&logoColor=fee4d0)
+-----
+![](https://img.shields.io/badge/tested%20on-my%20machine-fee4d0?style=for-the-badge&color=fee4d0&logo=cachet&logoColor=fee4d0)
+![](https://img.shields.io/badge/it%20works-why-fee4d0?style=for-the-badge&color=fee4d0&logo=frontendmentor&logoColor=fee4d0)
+![](https://img.shields.io/badge/contain-cats-fee4d0?style=for-the-badge&color=fee4d0&logo=Aiqfome&logoColor=fee4d0)
+![](https://img.shields.io/badge/gugu-everyday-fee4d0?style=for-the-badge&color=fee4d0&logo=fluentd&logoColor=fee4d0)
+![](https://img.shields.io/badge/powered%20by-water-fee4d0?style=for-the-badge&color=fee4d0&logo=Deluge&logoColor=fee4d0)
+![](https://img.shields.io/badge/ages-18%2B-fee4d0?style=for-the-badge&color=fee4d0&logo=erlang&logoColor=fee4d0)
 
 <p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
 
