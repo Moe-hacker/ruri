@@ -30,7 +30,7 @@
  */
 // Version info.
 #ifndef __RURI_DEV__
-#define RURI_VERSION "2.5"
+#define RURI_VERSION "2.5-hotfix2"
 #else
 #define RURI_VERSION "2.6-dev"
 #endif
