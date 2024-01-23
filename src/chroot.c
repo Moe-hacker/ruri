@@ -218,31 +218,123 @@ static int mkdirs(char *dir, mode_t mode)
 	}
 	return ret;
 }
+// Seems that we have to try the filesystem type for mount(2).
+static int trymount(const char *dev, const char *path)
+{
+	/*
+	 * /proc/filesystems format just like:
+	 *
+	 * nodev'\t'sysfs'\n'
+	 * '\t'ext4'\n'
+	 *
+	 * So, every time, we read the buf until we get '\t',
+	 * check if we got before is "nodev" (that means it's not a filesystem type for devices),
+	 * if we reached '\n', and nodev is not set,
+	 * that means we got a true filesystem type to mount,
+	 * so we try to use the type we get for mount(2);
+	 */
+	int ret = 0;
+	// Get filesystems supported.
+	int fssfd = open("/proc/filesystems", O_RDONLY);
+	char buf[4096] = { '\0' };
+	read(fssfd, buf, sizeof(buf));
+	char type[128] = { '\0' };
+	int i = 0;
+	bool nodev = false;
+	for (size_t j = 0; j < sizeof(buf); j++) {
+		// Reached the end of buf.
+		if (buf[j] == '\0') {
+			break;
+		}
+		// Check for nodev flag.
+		if (buf[j] == '\t') {
+			if (strcmp(type, "nodev") == 0) {
+				nodev = true;
+			}
+			i = 0;
+			memset(type, '\0', sizeof(type));
+		}
+		// The end of current line.
+		else if (buf[j] == '\n') {
+			i = 0;
+			if (!nodev) {
+				ret = mount(dev, path, type, 0, NULL);
+				if (ret == 0) {
+					// mount(2) succeed.
+					return ret;
+				}
+				memset(type, '\0', sizeof(type));
+			}
+			nodev = false;
+		}
+		// Get fstype.
+		else {
+			type[i] = buf[j];
+			type[i + 1] = '\0';
+			i++;
+		}
+	}
+	return ret;
+}
 // Mount other mountpoints.
 // Run before chroot(2).
 static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 {
 	for (int i = 0; true; i += 2) {
-		if (container_info->mountpoint[i] != NULL) {
-			// Set the mountpoint to mount.
-			char *mountpoint_dir = (char *)malloc(strlen(container_info->mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
-			strcpy(mountpoint_dir, container_info->container_dir);
-			strcat(mountpoint_dir, container_info->mountpoint[i + 1]);
-			// Check if mountpoint exists.
-			DIR *test = opendir(mountpoint_dir);
-			if (test == NULL) {
-				if (mkdirs(mountpoint_dir, 0755) != 0) {
-					error("\033[31mCould not create mountpoint directory\n");
-				}
-			} else {
-				closedir(test);
-			}
-			// Mount mountpoints.
-			mount(container_info->mountpoint[i], mountpoint_dir, NULL, MS_BIND, NULL);
-			free(mountpoint_dir);
-		} else {
+		if (container_info->mountpoint[i] == NULL) {
 			break;
 		}
+		// Set the mountpoint to mount.
+		char *mountpoint_dir = (char *)malloc(strlen(container_info->mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
+		strcpy(mountpoint_dir, container_info->container_dir);
+		strcat(mountpoint_dir, container_info->mountpoint[i + 1]);
+		// Check if mountpoint exists.
+		DIR *test = opendir(mountpoint_dir);
+		if (test == NULL) {
+			if (mkdirs(mountpoint_dir, 0755) != 0) {
+				error("\033[31mCould not create mountpoint directory\n");
+			}
+		} else {
+			closedir(test);
+		}
+		struct stat dev_stat;
+		if (lstat(container_info->mountpoint[i], &dev_stat) != 0) {
+			error("\033[31mError: mount %s failed, no such file or directory!\n", container_info->mountpoint[i]);
+		}
+		// Bind-mount dir.
+		if (S_ISDIR(dev_stat.st_mode)) {
+			mount(container_info->mountpoint[i], mountpoint_dir, NULL, MS_BIND, NULL);
+		}
+		// Block device.
+		else if (S_ISBLK(dev_stat.st_mode)) {
+			trymount(container_info->mountpoint[i], mountpoint_dir);
+		}
+		// For image file, we setup a loopfile for it first.
+		else if (S_ISREG(dev_stat.st_mode)) {
+			// Get a new loopfile for losetup.
+			int loopctlfd = open("/dev/loop-control", O_RDWR);
+			// It takes the same effect as `losetup -f``.
+			int devnr = ioctl(loopctlfd, LOOP_CTL_GET_FREE);
+			char loopfile[PATH_MAX] = { '\0' };
+			sprintf(loopfile, "/dev/loop%d", devnr);
+			int loopfd = open(loopfile, O_RDWR);
+			if (loopfd < 0) {
+				// On Android, loopfile is in /dev/block.
+				sprintf(loopfile, "/dev/block/loop%d", devnr);
+				loopfd = open(loopfile, O_RDWR);
+				if (loopfd < 0) {
+					error("\033[31mError: losetup error!\n");
+				}
+			}
+			// It takes the same efferct as `losetup`.
+			ioctl(loopfd, LOOP_SET_FD, container_info->mountpoint[i]);
+			trymount(loopfile, mountpoint_dir);
+		}
+		// We do not support to mount other type of files.
+		else {
+			error("\033[31mError: mount %s failed, unknow type to mount.\n", container_info->mountpoint[i]);
+		}
+		free(mountpoint_dir);
 	}
 }
 // Drop capabilities.
@@ -269,11 +361,10 @@ static void set_envs(struct CONTAINER_INFO *container_info)
 	setenv("TMPDIR", "/tmp", 1);
 	// Set other envs.
 	for (int i = 0; true; i += 2) {
-		if (container_info->env[i] != NULL) {
-			setenv(container_info->env[i], container_info->env[i + 1], 1);
-		} else {
+		if (container_info->env[i] == NULL) {
 			break;
 		}
+		setenv(container_info->env[i], container_info->env[i + 1], 1);
 	}
 }
 // Run after init_container().

@@ -34,11 +34,11 @@ If you think something does not work as expected, please [Open a new isssue](htt
 &emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
 &emsp;ruri is the romaji acronym of Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
 - Simple:      
-Although it has many args in the help page, the basic usage is very very simple, you can use it just like the command `chroot`.
+The basic usage is very very simple, you can use it just like the command `chroot`.
 - Secure:      
-It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers.
+It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers by default.
 - Static:      
-Compile ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
+Build ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
 
 ### Install:      
 ```
@@ -57,9 +57,9 @@ sudo tar -xvf rootfs.tar.xz -C /tmp/alpine
 ```
 #### Then:
 ```
-sudo ruri -u /tmp/alpine
+sudo ruri /tmp/alpine
 ```
-Or:      
+For unshare container:      
 ```
 sudo ruri -D
 sudo ruri -u /tmp/alpine
@@ -119,7 +119,7 @@ ARGS:
  --keep [cap]            Keep the specified cap
  --drop [cap]            Drop the specified cap
   -e [env] [value]       Set env to its value *Not work if init command is like `su -`
-  -m [dir] [mountpoint]  Mount dir to mountpoint
+  -m [dir/dev/img] [dir] Mount dir/block-device/image to mountpoint
   -S                     Bind-mount /dev/, /sys/ and /proc/ from host
   -w                     Disable warnings
 ```

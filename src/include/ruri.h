@@ -46,6 +46,7 @@
 #include <linux/securebits.h>
 #include <linux/stat.h>
 #include <linux/version.h>
+#include <linux/loop.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 #warning "This program has not been tested on Linux 3.x or earlier."
 #endif
