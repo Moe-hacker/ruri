@@ -400,6 +400,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 	sigset_t sigs;
 	sigemptyset(&sigs);
 	sigaddset(&sigs, SIGTTIN);
+	sigaddset(&sigs, SIGTTOU);
 	sigprocmask(SIG_BLOCK, &sigs, 0);
 #ifdef __RURI_DEV__
 	devlog(container_info);
