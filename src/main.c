@@ -582,8 +582,10 @@ int main(int argc, char **argv)
 	if ((container_info->use_unshare) && !(container_info->rootless)) {
 		run_unshare_container(container_info);
 	} else if ((container_info->rootless)) {
-		// Create a new user namespace.
+		uid_t uid = geteuid();
+		gid_t gid = getegid();
 		unshare(CLONE_NEWUSER);
+		unshare(CLONE_NEWNS);
 		pid_t pid = fork();
 		if (pid > 0) {
 			waitpid(pid, NULL, 0);
@@ -592,11 +594,16 @@ int main(int argc, char **argv)
 		} else {
 			// Set uid map.
 			char uid_map[32] = { "\0" };
-			sprintf(uid_map, "0 %d 1", getuid());
+			sprintf(uid_map, "0 %d 1\n", uid);
 			int uidmap_fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
-			write(uidmap_fd, uid_map, sizeof(uid_map));
-			// Run chroot container.
-			// mount(2) will fail without CAP_SYS_ADMIN.
+			write(uidmap_fd, uid_map, strlen(uid_map));
+			// Set gid map.
+			int setgroups_fd = open("/proc/self/setgroups", O_RDWR | O_CLOEXEC);
+			write(setgroups_fd, "deny", 5);
+			char gid_map[32] = { "\0" };
+			sprintf(gid_map, "0 %d 1\n", gid);
+			int gidmap_fd = open("/proc/self/gid_map", O_RDWR | O_CLOEXEC);
+			write(gidmap_fd, gid_map, strlen(gid_map));
 			run_chroot_container(container_info);
 		}
 	} else {
