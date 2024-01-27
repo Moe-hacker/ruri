@@ -168,15 +168,15 @@ static void mount_host_runtime(struct CONTAINER_INFO *container_info)
 		// Mount /dev.
 		memset(buf, '\0', sizeof(buf));
 		sprintf(buf, "%s/dev", container_info->container_dir);
-		mount("/dev", buf, "tmpfs", MS_BIND, NULL);
+		mount("/dev", buf, NULL, MS_BIND, NULL);
 		// mount /proc.
 		memset(buf, '\0', sizeof(buf));
 		sprintf(buf, "%s/proc", container_info->container_dir);
-		mount("/proc", buf, "procfs", MS_BIND, NULL);
+		mount("/proc", buf, NULL, MS_BIND, NULL);
 		// Mount /sys.
 		memset(buf, '\0', sizeof(buf));
 		sprintf(buf, "%s/sys", container_info->container_dir);
-		mount("/sys", buf, "sysfs", MS_BIND, NULL);
+		mount("/sys", buf, NULL, MS_BIND, NULL);
 		// Mount binfmt_misc.
 		memset(buf, '\0', sizeof(buf));
 		sprintf(buf, "%s/proc/sys/fs/binfmt_misc", container_info->container_dir);
