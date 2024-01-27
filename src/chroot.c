@@ -239,6 +239,8 @@ static int trymount(const char *dev, const char *path)
 	char buf[4096] = { '\0' };
 	read(fssfd, buf, sizeof(buf));
 	char type[128] = { '\0' };
+	char label[128] = { '\0' };
+	char *out = label;
 	int i = 0;
 	bool nodev = false;
 	for (size_t j = 0; j < sizeof(buf); j++) {
@@ -248,15 +250,15 @@ static int trymount(const char *dev, const char *path)
 		}
 		// Check for nodev flag.
 		if (buf[j] == '\t') {
-			if (strcmp(type, "nodev") == 0) {
+			if (strcmp(label, "nodev") == 0) {
 				nodev = true;
 			}
+			out = type;
 			i = 0;
-			memset(type, '\0', sizeof(type));
+			memset(label, '\0', sizeof(label));
 		}
 		// The end of current line.
 		else if (buf[j] == '\n') {
-			i = 0;
 			if (!nodev) {
 				ret = mount(dev, path, type, 0, NULL);
 				if (ret == 0) {
@@ -265,12 +267,14 @@ static int trymount(const char *dev, const char *path)
 				}
 				memset(type, '\0', sizeof(type));
 			}
+			out = label;
+			i = 0;
 			nodev = false;
 		}
 		// Get fstype.
 		else {
-			type[i] = buf[j];
-			type[i + 1] = '\0';
+			out[i] = buf[j];
+			out[i + 1] = '\0';
 			i++;
 		}
 	}
