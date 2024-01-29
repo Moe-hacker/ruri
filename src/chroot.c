@@ -235,9 +235,10 @@ static int trymount(const char *dev, const char *path)
 	 */
 	int ret = 0;
 	// Get filesystems supported.
-	int fssfd = open("/proc/filesystems", O_RDONLY);
+	int fssfd = open("/proc/filesystems", O_RDONLY | O_CLOEXEC);
 	char buf[4096] = { '\0' };
 	read(fssfd, buf, sizeof(buf));
+	close(fssfd);
 	char type[128] = { '\0' };
 	char label[128] = { '\0' };
 	char *out = label;
@@ -316,22 +317,26 @@ static void mount_mountpoints(struct CONTAINER_INFO *container_info)
 		// For image file, we setup a loopfile for it first.
 		else if (S_ISREG(dev_stat.st_mode)) {
 			// Get a new loopfile for losetup.
-			int loopctlfd = open("/dev/loop-control", O_RDWR);
+			int loopctlfd = open("/dev/loop-control", O_RDWR | O_CLOEXEC);
 			// It takes the same effect as `losetup -f``.
 			int devnr = ioctl(loopctlfd, LOOP_CTL_GET_FREE);
+			close(loopctlfd);
 			char loopfile[PATH_MAX] = { '\0' };
 			sprintf(loopfile, "/dev/loop%d", devnr);
-			int loopfd = open(loopfile, O_RDWR);
+			int loopfd = open(loopfile, O_RDWR | O_CLOEXEC);
 			if (loopfd < 0) {
 				// On Android, loopfile is in /dev/block.
 				sprintf(loopfile, "/dev/block/loop%d", devnr);
-				loopfd = open(loopfile, O_RDWR);
+				loopfd = open(loopfile, O_RDWR | O_CLOEXEC);
 				if (loopfd < 0) {
 					error("\033[31mError: losetup error!\n");
 				}
 			}
-			// It takes the same efferct as `losetup`.
-			ioctl(loopfd, LOOP_SET_FD, container_info->mountpoint[i]);
+			// It takes the same efferct as `losetup` command.
+			int imgfd = open(container_info->mountpoint[i], O_RDWR | O_CLOEXEC);
+			ioctl(loopfd, LOOP_SET_FD, imgfd);
+			close(loopfd);
+			close(imgfd);
 			trymount(loopfile, mountpoint_dir);
 		}
 		// We do not support to mount other type of files.
