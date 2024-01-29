@@ -1,6 +1,7 @@
 # V2.6:
   * Fix uid_map and gid_map.
   * Auto detect mountpoint type.
+  * Remove manpage && update README.md
   * General bug fixes.
 # v2.5-hotfix2:
   * Fix default caplist caused `could not change the root directory` and `Failed to check chroot()`

@@ -108,43 +108,46 @@ objects = caplist.o chroot.o daemon.o info.o seccomp.o socket.o tool.o unshare.o
 O = out
 .ONESHELL:
 all :CFLAGS=$(OPTIMIZE_CFLAGS)
-all :build_dir mandoc $(objects)
+all :build_dir $(objects)
 	@cd $(O)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@cp -f $(BIN_TARGET) ../
-mandoc :
-	@gzip -kf doc/ruri.1
+	@cd ..&&rm -rf $(O)
 dev :CFLAGS=$(DEV_CFLAGS)
 dev :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
 	@cp -f $(BIN_TARGET) ../
+	@cd ..&&rm -rf $(O)
 asan :CFLAGS=$(ASAN_CFLAGS)
 asan :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
 	@cp -f $(BIN_TARGET) ../
+	@cd ..&&rm -rf $(O)
 static :CFLAGS=$(STATIC_CFLAGS)
-static :build_dir mandoc $(objects)
+static :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 	@cp -f $(BIN_TARGET) ../
+	@cd ..&&rm -rf $(O)
 static-bionic :CFLAGS=$(BIONIC_CFLAGS)
-static-bionic :build_dir mandoc $(objects)
+static-bionic :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(BIONIC_LD_FLAGS)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@$(STRIP) $(BIN_TARGET)
 	@cp -f $(BIN_TARGET) ../
+	@cd ..&&rm -rf $(O)
 build_dir:
 	@mkdir -p $(O)
 $(objects) :%.o:src/%.c $(build_dir)
@@ -153,7 +156,6 @@ $(objects) :%.o:src/%.c $(build_dir)
 	$(CC_LOG) $@
 install :all
 	install -m 777 $(BIN_TARGET) ${PREFIX}/bin/$(BIN_TARGET)
-	install -m 777 doc/ruri.1.gz `man -w ls|head -1|sed -e "s/ls.*//"`
 check :
 	@printf "\033[1;38;2;254;228;208mCheck list:\n"
 	@sleep 1.5s
@@ -184,4 +186,4 @@ help :
 	@echo "  make format         format code"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
-	@echo "  libpthread,libcap,libseccomp"
+	@printf " - libpthread\n - libcap (for non-bionic system)\n - libseccomp\n\033[0m"
