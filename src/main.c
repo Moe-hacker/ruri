@@ -566,10 +566,6 @@ int main(int argc, char **argv)
 	/*
 	 * Pogram starts here.
 	 */
-// Dev version warning.
-#ifdef __RURI_DEV__
-	warning("\033[31mWarning: you are using dev build.\033[0m\n\n");
-#endif
 	// Set process name.
 	prctl(PR_SET_NAME, "ruri");
 	// Info of container to run.

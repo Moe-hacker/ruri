@@ -216,9 +216,6 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 	// Pid for setns(2).
 	read_msg_client(msg, addr);
 	container_pid = strdup(msg);
-#ifdef __RURI_DEV__
-	printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mContainer pid from daemon:\033[1;38;2;152;245;225m", container_pid);
-#endif
 	// Use setns(2) to enter namespaces created by daemon.
 	char cgroup_ns_file[PATH_MAX] = { '\0' };
 	char ipc_ns_file[PATH_MAX] = { '\0' };
@@ -321,26 +318,6 @@ int run_unshare_container(struct CONTAINER_INFO *container_info)
 		container_info->command[0] = strdup("/bin/su");
 		container_info->command[1] = NULL;
 	}
-#ifdef __RURI_DEV__
-	printf("\033[1;38;2;254;228;208mRun unshare container:\n");
-	printf("%s%s\n", "\033[1;38;2;254;228;208mcontainer_dir: \033[1;38;2;152;245;225m", container_info->container_dir);
-	printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
-	for (int i = 0; true; i++) {
-		if (container_info->command[i] == NULL) {
-			printf("\n");
-			break;
-		}
-		printf("%s%s", container_info->command[i], " ");
-	}
-	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
-	for (int i = 0; true; i++) {
-		if (container_info->drop_caplist[i] == INIT_VALUE) {
-			printf("\n");
-			break;
-		}
-		printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-	}
-#endif
 	pid_t unshare_pid = INIT_VALUE;
 	// Set socket address.
 	struct sockaddr_un addr;

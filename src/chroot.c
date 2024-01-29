@@ -28,58 +28,6 @@
  *
  */
 #include "include/ruri.h"
-#ifdef __RURI_DEV__
-// Dev log.
-static void devlog(struct CONTAINER_INFO *container_info)
-{
-	printf("\033[1;38;2;254;228;208mRun chroot container:\n");
-	printf("%s%s\n", "container_dir: \033[1;38;2;152;245;225m", container_info->container_dir);
-	if (container_info->no_new_privs) {
-		printf("%s\n", "\033[1;38;2;254;228;208mno_new_privs: \033[1;38;2;152;245;225mtrue");
-	} else {
-		printf("%s\n", "\033[1;38;2;254;228;208mno_new_privs: \033[1;38;2;152;245;225mfalse");
-	}
-	if (container_info->enable_seccomp) {
-		printf("%s\n", "\033[1;38;2;254;228;208menable_seccomp: \033[1;38;2;152;245;225mtrue");
-	} else {
-		printf("%s\n", "\033[1;38;2;254;228;208menable_seccomp: \033[1;38;2;152;245;225mfalse");
-	}
-	printf("\033[1;38;2;254;228;208minit command : \033[1;38;2;152;245;225m");
-	for (int i = 0; true; i++) {
-		if (container_info->command[i] == NULL) {
-			printf("\n");
-			break;
-		}
-		printf("%s%s", container_info->command[i], " ");
-	}
-	printf("\033[1;38;2;254;228;208mdrop caplist: \033[1;38;2;152;245;225m");
-	for (int i = 0; true; i++) {
-		if (container_info->drop_caplist[i] == INIT_VALUE) {
-			printf("\n");
-			break;
-		}
-		printf("%s%s", cap_to_name(container_info->drop_caplist[i]), " ");
-	}
-	printf("\033[1;38;2;254;228;208mMountpoints: \033[1;38;2;152;245;225m\n");
-	for (int i = 0; true; i += 2) {
-		if (container_info->mountpoint[i] == NULL) {
-			printf("\n");
-			break;
-		}
-		printf("%s%s", container_info->mountpoint[i], " \033[1;38;2;123;104;238mto \033[1;38;2;152;245;225m");
-		printf("%s%s", container_info->mountpoint[i + 1], "\n");
-	}
-	printf("\033[1;38;2;254;228;208mEnvs: \033[1;38;2;152;245;225m\n");
-	for (int i = 0; true; i += 2) {
-		if (container_info->env[i] == NULL) {
-			printf("\033[0m\n");
-			break;
-		}
-		printf("%s%s", container_info->env[i], " \033[1;38;2;123;104;238m=\033[1;38;2;152;245;225m ");
-		printf("%s%s", container_info->env[i + 1], "\n");
-	}
-}
-#endif
 // Run after chroot(2), called by run_chroot_container().
 static void init_container(void)
 {
@@ -408,9 +356,6 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 	sigaddset(&sigs, SIGTTIN);
 	sigaddset(&sigs, SIGTTOU);
 	sigprocmask(SIG_BLOCK, &sigs, 0);
-#ifdef __RURI_DEV__
-	devlog(container_info);
-#endif
 	// Mount mountpoints.
 	mount_mountpoints(container_info);
 	// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
