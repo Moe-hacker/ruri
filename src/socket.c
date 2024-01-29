@@ -39,7 +39,7 @@ ssize_t send_msg_daemon(const char *msg, struct sockaddr_un addr, int sockfd)
 	printf("%s%s\033[0m\n", "\033[1;38;2;254;228;208mDaemon send msg: \033[1;38;2;152;245;225m", msg);
 #endif
 	// Accept a connection.
-	u_int size = sizeof(addr);
+	socklen_t size = sizeof(addr);
 	int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
 	// Set timeout duration.
 	struct timeval timeout = { 3, 0 };
@@ -86,7 +86,7 @@ ssize_t read_msg_daemon(char *buf, struct sockaddr_un addr, int sockfd)
 	// Clear buf.
 	memset(buf, '\0', strlen(buf) * sizeof(char));
 	// Accept a connection.
-	u_int size = sizeof(addr);
+	socklen_t size = sizeof(addr);
 	int sock_new = accept4(sockfd, (struct sockaddr *)&addr, &size, SOCK_CLOEXEC);
 	// Set timeout duration.
 	struct timeval timeout = { 3, 0 };
