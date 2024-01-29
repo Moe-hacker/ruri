@@ -393,6 +393,7 @@ static void setup_binfmt_misc(const char *cross_arch, const char *qemu_path)
 	}
 	// Set binfmt_misc config.
 	write(register_fd, buf, strlen(buf));
+	close(register_fd);
 }
 // Run chroot container.
 void run_chroot_container(struct CONTAINER_INFO *container_info)

@@ -242,36 +242,42 @@ static pid_t join_ns_from_daemon(struct CONTAINER_INFO *container_info, struct s
 		warning("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
+		close(ns_fd);
 	}
 	ns_fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
+		close(ns_fd);
 	}
 	ns_fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
+		close(ns_fd);
 	}
 	ns_fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
+		close(ns_fd);
 	}
 	ns_fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
+		close(ns_fd);
 	}
 	ns_fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container_info->no_warnings) {
 		warning("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
 	} else {
 		setns(ns_fd, 0);
+		close(ns_fd);
 	}
 	// Close fds after fork().
 	unshare(CLONE_FILES);

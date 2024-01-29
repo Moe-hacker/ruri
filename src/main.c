@@ -597,13 +597,16 @@ int main(int argc, char **argv)
 			sprintf(uid_map, "0 %d 1\n", uid);
 			int uidmap_fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
 			write(uidmap_fd, uid_map, strlen(uid_map));
+			close(uidmap_fd);
 			// Set gid map.
 			int setgroups_fd = open("/proc/self/setgroups", O_RDWR | O_CLOEXEC);
 			write(setgroups_fd, "deny", 5);
+			close(setgroups_fd);
 			char gid_map[32] = { "\0" };
 			sprintf(gid_map, "0 %d 1\n", gid);
 			int gidmap_fd = open("/proc/self/gid_map", O_RDWR | O_CLOEXEC);
 			write(gidmap_fd, gid_map, strlen(gid_map));
+			close(gidmap_fd);
 			run_chroot_container(container_info);
 		}
 	} else {
