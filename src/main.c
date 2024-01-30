@@ -568,6 +568,8 @@ int main(int argc, char **argv)
 	 */
 	// Set process name.
 	prctl(PR_SET_NAME, "ruri");
+	// Catch coredump signal.
+	register_signal();
 	// Info of container to run.
 	struct CONTAINER_INFO *container_info = NULL;
 	// Parse arguments.

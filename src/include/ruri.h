@@ -146,6 +146,7 @@ struct MAGIC {
 		fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");        \
 		exit(EXIT_FAILURE);                                                                                           \
 	}
+void register_signal(void);
 void setup_seccomp(struct CONTAINER_INFO *container_info);
 void show_version_info(void);
 void show_version_code(void);
