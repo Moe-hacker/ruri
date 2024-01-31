@@ -3,9 +3,9 @@
 static void sighandle(int sig)
 {
 	signal(sig, SIG_DFL);
-	int clifd = open("/proc/self/cmdline", O_RDONLY);
+	int clifd = open("/proc/self/cmdline", O_RDONLY | O_CLOEXEC);
 	char buf[1024];
-	size_t bufsize = read(clifd, buf, sizeof(buf));
+	ssize_t bufsize = read(clifd, buf, sizeof(buf));
 	fprintf(stderr, "\033[1;38;2;254;228;208m");
 	fprintf(stderr, "%s\n", "  .^.   .^.");
 	fprintf(stderr, "%s\n", "  /⋀\\_ﾉ_/⋀\\");
@@ -18,7 +18,7 @@ static void sighandle(int sig)
 	fprintf(stderr, "UID: %u\n", getuid());
 	fprintf(stderr, "PID: %d\n", getpid());
 	fprintf(stderr, "CLI: ");
-	for (size_t i = 0; i < bufsize - 1; i++) {
+	for (ssize_t i = 0; i < bufsize - 1; i++) {
 		if (buf[i] == '\0') {
 			fputc(' ', stderr);
 		} else {

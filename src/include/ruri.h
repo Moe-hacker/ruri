@@ -126,7 +126,7 @@ struct __attribute__((aligned(128))) CONTAINER_INFO {
 // For get_magic().
 #define magicof(x) (x##_magic)
 #define maskof(x) (x##_mask)
-struct MAGIC {
+struct __attribute__((aligned(16))) MAGIC {
 	char *magic;
 	char *mask;
 };
