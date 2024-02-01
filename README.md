@@ -30,7 +30,7 @@
 > --Torvalds
 
 If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
-# About ruri:         
+# About:         
 &emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
 &emsp;ruri is the romaji acronym of Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
 - Simple:      
@@ -71,6 +71,9 @@ sudo ruri -u /tmp/alpine
 ```
 Very simple as you can see.    
 For command line examples, please see `ruri -H`.      
+# About tty:      
+The command `tty` in ruri might say that "not a tty".      
+If you need to run some program like `gpg`, please use `script -q -O /dev/null` in container.      
 # About runtime dirs:
 ruri will create /dev/, /sys/ and /proc/ after chroot(2) into container for better security. You can use `-S` option to force it to bind-mount system runtime dirs.      
 # About cross-arch container:
