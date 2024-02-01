@@ -55,8 +55,6 @@ static void init_container(void)
 		mount("devpts", "/dev/pts", "devpts", 0, "gid=4,mode=620");
 		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
-		mkdir("/dev/mqune", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-		mount("mqune", "/dev/mqune", "mqune", 0, NULL);
 		// Protect some system runtime directories by mounting themselves as read-only.
 		mount("/proc/bus", "/proc/bus", NULL, MS_BIND | MS_REC, NULL);
 		mount("/proc/bus", "/proc/bus", NULL, MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
@@ -135,6 +133,16 @@ static void mount_host_runtime(struct CONTAINER_INFO *container_info)
 	memset(buf, '\0', sizeof(buf));
 	sprintf(buf, "%s/proc/sys/fs/binfmt_misc", container_info->container_dir);
 	mount("binfmt_misc", buf, "binfmt_misc", 0, NULL);
+	// Mount devpts.
+	memset(buf, '\0', sizeof(buf));
+	sprintf(buf, "%s/dev/pts", container_info->container_dir);
+	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("devpts", buf, "devpts", 0, NULL);
+	// Mount devshm.
+	memset(buf, '\0', sizeof(buf));
+	sprintf(buf, "%s/dev/shm", container_info->container_dir);
+	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("tmpfs", buf, "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
 }
 // Return the same value as mkdir().
 static int mkdirs(char *dir, mode_t mode)
