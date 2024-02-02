@@ -93,10 +93,13 @@ void show_version_info(void)
 	printf("  Licensed under the MIT License\n");
 	printf("    <https://mit-license.org>\n");
 	printf("Copyright (C) 2022-2024 Moe-hacker\n");
-	printf("%s%s%s", "ruri version     :    ", RURI_VERSION, "\n");
-	printf("%s%s%s", "Commit id        :    ", RURI_COMMIT_ID, "\n");
-	printf("%s%s\n", "Compiler version :    ", __VERSION__);
-	printf("%s%s\n", "Build date       :    ", __TIMESTAMP__);
+	printf("%s%s%s", "ruri version .....:  ", RURI_VERSION, "\n");
+	printf("%s%s%s", "Commit id ........:  ", RURI_COMMIT_ID, "\n");
+	printf("%s%d%s%d%s", "libcap ...........:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");
+	printf("%s%d%s%d%s%d%s", "libseccomp .......:  ", SCMP_VER_MAJOR, ".", SCMP_VER_MINOR, ".", SCMP_VER_MICRO, "\n");
+	printf("%s%s\n", "Compiler version .:  ", __VERSION__);
+	printf("%s%s\n", "Build date .......:  ", __TIMESTAMP__);
+	printf("\nThere is NO WARRANTY, to the extent permitted by law\n");
 	printf("\033[0m\n");
 }
 // For `ruri -V`.
