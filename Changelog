@@ -1,5 +1,8 @@
 # v2.7:
+  * Catch segfault.
+  * Fix default mountpoint.
   * Fix path_is_absolute(p) failed.
+  * Remove ASAN in Makefile.
   * General bug fixes.
 # v2.6:
   * Fix uid_map and gid_map for `-r` option.

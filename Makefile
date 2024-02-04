@@ -81,8 +81,6 @@ OPTIMIZE_CFLAGS = $(LTO) $(PIE) $(CANARY) $(CLASH_PROTECT) $(SHADOW_STACK) $(AUT
 STATIC_CFLAGS = $(OPTIMIZE_CFLAGS) -static
 # For Testing.
 DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
-# AddressSanitizer.
-ASAN_CFLAGS = $(DEV_CFLAGS) -fsanitize=address,leak -fsanitize-recover=address,all
 SRC = src/*.c
 HEADER = src/include/*.h
 BIN_TARGET = ruri
@@ -118,13 +116,6 @@ all :build_dir $(objects)
 	@cd ..&&rm -rf $(O)
 dev :CFLAGS=$(DEV_CFLAGS)
 dev :build_dir $(objects)
-	@cd $(O)
-	$(LD_LOG) $(BIN_TARGET)
-	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
-	@cp -f $(BIN_TARGET) ../
-	@cd ..&&rm -rf $(O)
-asan :CFLAGS=$(ASAN_CFLAGS)
-asan :build_dir $(objects)
 	@cd $(O)
 	$(LD_LOG) $(BIN_TARGET)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(DEV_LD_FLAGS)
@@ -181,7 +172,6 @@ help :
 	@echo "  make clean          clean"
 	@echo "Only for developers:"
 	@echo "  make dev            compile without optimizations, enable gdb debug information and extra logs."
-	@echo "  make asan           enable ASAN"
 	@echo "  make check          run clang-tidy"
 	@echo "  make format         format code"
 	@echo "*Premature optimization is the root of all evil."
