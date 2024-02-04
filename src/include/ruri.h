@@ -167,6 +167,7 @@ void ruri_daemon(void);
 struct MAGIC *get_magic(const char *cross_arch);
 int run_unshare_container(struct CONTAINER_INFO *container_info);
 void run_chroot_container(struct CONTAINER_INFO *container_info);
+int trymount(const char *source, const char *target, unsigned int mountflags);
 void umount_container(const char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
