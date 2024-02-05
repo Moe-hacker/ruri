@@ -5,6 +5,7 @@
   * Rename option:
   * * `--keep` => `-k`
   * * `--drop` => `-d`
+  * Add `-j` option: join existing namespace.
   * General bug fixes.
 # v2.7:
   * Catch segfault.

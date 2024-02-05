@@ -316,6 +316,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	info->mountpoint[0] = NULL;
 	info->cross_arch = NULL;
 	info->qemu_path = NULL;
+	info->ns_pid = INIT_VALUE;
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
@@ -395,6 +396,12 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		else if (strcmp(argv[index], "-q") == 0) {
 			index++;
 			info->qemu_path = strdup(argv[index]);
+		}
+		// Join existing ns.
+		else if (strcmp(argv[index], "-j") == 0) {
+			index++;
+			info->use_unshare = true;
+			info->ns_pid = (pid_t)atol(argv[index]);
 		}
 		// Enable built-in seccomp profile.
 		else if (strcmp(argv[index], "-s") == 0) {

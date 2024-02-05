@@ -136,6 +136,7 @@ void show_helps(void)
 	printf("  -a [arch]              Simulate architecture via binfmt_misc & QEMU, need `-q`\n");
 	printf("  -q [path]              Specify the path of QEMU\n");
 	printf("  -u                     Enable unshare feature\n");
+	printf("  -j [pid]               Join existing namespace\n");
 	printf("  -n                     Set NO_NEW_PRIVS Flag\n");
 	printf("  -s                     Enable built-in Seccomp profile\n");
 	printf("  -p                     Run privileged container\n");

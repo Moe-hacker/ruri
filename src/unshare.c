@@ -68,9 +68,10 @@ static pid_t init_unshare_container(bool no_warnings)
 	// Fork itself into namespace.
 	// This can fix `can't fork: out of memory` issue.
 	unshare_pid = fork();
-	// Fix `can't access tty` issue.
 	if (unshare_pid > 0) {
-		usleep(200000);
+		// Print pid info.
+		printf("Container PID: %d\n", unshare_pid);
+		// Fix `can't access tty` issue.
 		waitpid(unshare_pid, NULL, 0);
 	} else if (unshare_pid < 0) {
 		error("\033[31mFork error, QwQ?\n");
@@ -78,7 +79,7 @@ static pid_t init_unshare_container(bool no_warnings)
 	return unshare_pid;
 }
 // For run_unshare_container().
-static pid_t join_ns(struct CONTAINER_INFO *container_info, pid_t container_pid)
+static pid_t join_ns(struct CONTAINER_INFO *container_info)
 {
 	pid_t unshare_pid = INIT_VALUE;
 	// Use setns(2) to enter existing namespaces.
@@ -88,12 +89,12 @@ static pid_t join_ns(struct CONTAINER_INFO *container_info, pid_t container_pid)
 	char pid_ns_file[PATH_MAX] = { '\0' };
 	char time_ns_file[PATH_MAX] = { '\0' };
 	char uts_ns_file[PATH_MAX] = { '\0' };
-	sprintf(cgroup_ns_file, "%s%d%s", "/proc/", container_pid, "/ns/cgroup");
-	sprintf(ipc_ns_file, "%s%d%s", "/proc/", container_pid, "/ns/ipc");
-	sprintf(mount_ns_file, "%s%d%s", "/proc/", container_pid, "/ns/mnt");
-	sprintf(pid_ns_file, "%s%d%s", "/proc/", container_pid, "/ns/pid");
-	sprintf(time_ns_file, "%s%d%s", "/proc/", container_pid, "/ns/time");
-	sprintf(uts_ns_file, "%s%d%s", "/proc/", container_pid, "/ns/uts");
+	sprintf(cgroup_ns_file, "%s%d%s", "/proc/", container_info->ns_pid, "/ns/cgroup");
+	sprintf(ipc_ns_file, "%s%d%s", "/proc/", container_info->ns_pid, "/ns/ipc");
+	sprintf(mount_ns_file, "%s%d%s", "/proc/", container_info->ns_pid, "/ns/mnt");
+	sprintf(pid_ns_file, "%s%d%s", "/proc/", container_info->ns_pid, "/ns/pid");
+	sprintf(time_ns_file, "%s%d%s", "/proc/", container_info->ns_pid, "/ns/time");
+	sprintf(uts_ns_file, "%s%d%s", "/proc/", container_info->ns_pid, "/ns/uts");
 	// Enter namespaces via setns(2).
 	int ns_fd = INIT_VALUE;
 	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
@@ -145,10 +146,8 @@ static pid_t join_ns(struct CONTAINER_INFO *container_info, pid_t container_pid)
 	unshare_pid = fork();
 	// Fix `can't access tty` issue.
 	if (unshare_pid > 0) {
-		usleep(200000);
 		// Wait until current process exit.
 		waitpid(unshare_pid, NULL, 0);
-		usleep(200000);
 	}
 	// Maybe this will never be run.
 	else if (unshare_pid < 0) {
@@ -162,14 +161,13 @@ int run_unshare_container(struct CONTAINER_INFO *container_info)
 {
 	pid_t unshare_pid = INIT_VALUE;
 	// unshare(2) itself into new namespaces.
-	if (true) {
+	if (container_info->ns_pid < 0) {
 		unshare_pid = init_unshare_container(container_info->no_warnings);
 	} else {
-		unshare_pid = join_ns(container_info, 0);
+		unshare_pid = join_ns(container_info);
 	}
 	// Check if we have joined the container's namespaces.
 	if (unshare_pid == 0) {
-		usleep(200000);
 		run_chroot_container(container_info);
 	}
 	return 0;
