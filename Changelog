@@ -1,3 +1,11 @@
+# v3.0:
+  * Remove daemon support.
+  * Remove `-D` `-K` `-l` `-t` `-T` option.
+  * Remove `-d` option.
+  * Rename option:
+  * * `--keep` => `-k`
+  * * `--drop` => `-d`
+  * General bug fixes.
 # v2.7:
   * Catch segfault.
   * Fix default mountpoint.

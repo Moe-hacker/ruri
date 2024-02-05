@@ -28,6 +28,7 @@
 #
 # Premature optimization is the root of evil.
 #
+.NOTPARALLEL:
 CCCOLOR     = \033[1;38;2;254;228;208m
 LDCOLOR     = \033[1;38;2;254;228;208m
 STRIPCOLOR  = \033[1;38;2;254;228;208m
@@ -59,8 +60,6 @@ SHADOW_STACK = -mshstk
 FORTIFY = -D_FORTIFY_SOURCE=3 -Wno-unused-result
 # Other "one-key" optimization.
 OPTIMIZE = -O2
-# Dev marco for extra logs.
-DEV_MARCO = -D__RURI_DEV__
 # GNU Symbolic Debugger.
 DEBUGGER = -ggdb
 # Disable other optimizations.
@@ -80,7 +79,7 @@ OPTIMIZE_CFLAGS = $(LTO) $(PIE) $(CANARY) $(CLASH_PROTECT) $(SHADOW_STACK) $(AUT
 # Static link.
 STATIC_CFLAGS = $(OPTIMIZE_CFLAGS) -static
 # For Testing.
-DEV_CFLAGS = $(DEV_MARCO) $(DEBUGGER) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
+DEV_CFLAGS = $(DEBUGGER) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
 SRC = src/*.c
 HEADER = src/include/*.h
 BIN_TARGET = ruri
@@ -102,7 +101,7 @@ BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) -static
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)
 # Target.
-objects = caplist.o chroot.o daemon.o info.o seccomp.o socket.o signal.o tool.o unshare.o mount.o elf-magic.o main.o
+objects = caplist.o chroot.o info.o seccomp.o signal.o tool.o unshare.o mount.o elf-magic.o main.o
 O = out
 .ONESHELL:
 all :CFLAGS=$(OPTIMIZE_CFLAGS)

@@ -249,7 +249,7 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 #endif
 	}
 }
-static void build_caplist(cap_value_t caplist[], int priv_level, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
+static void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
 	/*
 	 * priv_level:
@@ -258,15 +258,8 @@ static void build_caplist(cap_value_t caplist[], int priv_level, cap_value_t dro
 	 */
 	// Based on docker's default capability set.
 	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD };
-	// I hope it will not cause bugs.
-	cap_value_t drop_caplist_unprivileged[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_PTRACE, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_CHROOT, CAP_SETPCAP, CAP_MKNOD, CAP_AUDIT_WRITE, CAP_SETFCAP, CAP_KILL, CAP_NET_BIND_SERVICE, CAP_SYS_TIME, CAP_AUDIT_READ, CAP_PERFMON, CAP_BPF, CAP_CHECKPOINT_RESTORE };
 	// Set default caplist to drop.
-	if (priv_level == 0) {
-		for (size_t i = 0; i < (sizeof(drop_caplist_unprivileged) / sizeof(drop_caplist_unprivileged[0])); i++) {
-			caplist[i] = drop_caplist_unprivileged[i];
-			caplist[i + 1] = INIT_VALUE;
-		}
-	} else if (priv_level == 1) {
+	if (!privileged) {
 		for (size_t i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
 			caplist[i] = drop_caplist_common[i];
 			caplist[i + 1] = INIT_VALUE;
@@ -310,7 +303,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t cap = INIT_VALUE;
-	int priv_level = 1;
+	bool privileged = false;
 	info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
 	info->enable_seccomp = false;
 	info->no_new_privs = false;
@@ -326,6 +319,28 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
+		/**** Deprecated options. ****/
+		if (strcmp(argv[index], "-D") == 0) {
+			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			exit(EXIT_SUCCESS);
+		}
+		if (strcmp(argv[index], "-K") == 0) {
+			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			exit(EXIT_SUCCESS);
+		}
+		if (strcmp(argv[index], "-t") == 0) {
+			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			index++;
+			exit(EXIT_SUCCESS);
+		}
+		if (strcmp(argv[index], "-T") == 0) {
+			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			exit(EXIT_SUCCESS);
+		}
+		if (strcmp(argv[index], "-l") == 0) {
+			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			exit(EXIT_SUCCESS);
+		}
 		/**** For other options ****/
 		// As an easter egg.
 		if (strcmp(argv[index], "AwA") == 0) {
@@ -342,16 +357,6 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			show_version_code();
 			exit(EXIT_SUCCESS);
 		}
-		// Start rurid.
-		if (strcmp(argv[index], "-D") == 0) {
-			ruri_daemon();
-			exit(EXIT_SUCCESS);
-		}
-		// Kill rurid.
-		if (strcmp(argv[index], "-K") == 0) {
-			kill_daemon();
-			exit(EXIT_SUCCESS);
-		}
 		// Show help page.
 		if (strcmp(argv[index], "-h") == 0) {
 			show_helps();
@@ -361,37 +366,6 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		if (strcmp(argv[index], "-H") == 0) {
 			show_helps();
 			show_examples();
-			exit(EXIT_SUCCESS);
-		}
-		// List running unshare containers.
-		if (strcmp(argv[index], "-l") == 0) {
-			container_ps();
-			exit(EXIT_SUCCESS);
-		}
-		// Check if rurid is running.
-		if (strcmp(argv[index], "-t") == 0) {
-			if (geteuid() != 0) {
-				error("\033[31mError: this program should be run with root.\033[0m\n");
-				exit(EXIT_FAILURE);
-			}
-			struct sockaddr_un addr;
-			if (connect_to_daemon(&addr) != 0) {
-				printf("\033[31mrurid is not running.\033[0m\n");
-				exit(EXIT_FAILURE);
-			}
-			printf("\033[1;38;2;254;228;208mrurid is running.\033[0m\n");
-			exit(EXIT_SUCCESS);
-		}
-		// Check if rurid is running, without output.
-		if (strcmp(argv[index], "-T") == 0) {
-			if (geteuid() != 0) {
-				error("\033[31mError: this program should be run with root.\033[0m\n");
-				exit(EXIT_FAILURE);
-			}
-			struct sockaddr_un addr;
-			if (connect_to_daemon(&addr) != 0) {
-				exit(EXIT_FAILURE);
-			}
 			exit(EXIT_SUCCESS);
 		}
 		// Umount a container.
@@ -430,13 +404,9 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		else if (strcmp(argv[index], "-u") == 0) {
 			info->use_unshare = true;
 		}
-		// Run unprivileged container.
-		else if (strcmp(argv[index], "-d") == 0) {
-			priv_level = 0;
-		}
 		// Run privileged container.
 		else if (strcmp(argv[index], "-p") == 0) {
-			priv_level = 2;
+			privileged = true;
 		}
 		// Run rootless container.
 		else if (strcmp(argv[index], "-r") == 0) {
@@ -493,7 +463,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			}
 		}
 		// Extra capabilities to keep.
-		else if (strcmp(argv[index], "--keep") == 0) {
+		else if (strcmp(argv[index], "-k") == 0) {
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
@@ -506,7 +476,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			}
 		}
 		// Extra capabilities to drop.
-		else if (strcmp(argv[index], "--drop") == 0) {
+		else if (strcmp(argv[index], "-d") == 0) {
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
@@ -557,7 +527,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 	}
 	// Get the capabilities to drop.
-	build_caplist(info->drop_caplist, priv_level, drop_caplist_extra, keep_caplist_extra);
+	build_caplist(info->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
 	return info;
 }
 // It works on my machine!!!

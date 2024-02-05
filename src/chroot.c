@@ -213,7 +213,7 @@ void mount_mountpoints(struct CONTAINER_INFO *container_info)
 void run_chroot_container(struct CONTAINER_INFO *container_info)
 {
 	/*
-	 * It's called by main(), run_unshare_container() and daemon_init_unshare_container().
+	 * It's called by main() and run_unshare_container().
 	 * It will chroot(2) to container_dir, call to init_container(), drop capabilities and exec(3) init command in container.
 	 */
 	// Ignore SIGTTIN, if we are running in the background, SIGTTIN may kill this process.

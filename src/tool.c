@@ -28,93 +28,15 @@
  *
  */
 #include "include/ruri.h"
-// For `ruri -l`
-void container_ps(void)
-{
-	/*
-	 * It will connect to daemon and list running containers.
-	 * If daemon is not running, just show error and exit.
-	 */
-	// Set socket address.
-	struct sockaddr_un addr;
-	if (connect_to_daemon(&addr) != 0) {
-		error("\033[31mDaemon not running.\n");
-	}
-	// Message to read.
-	char msg[MSG_BUF_SIZE] = { '\0' };
-	// Clear buf.
-	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
-	// Daemon will return the info of running containers.
-	send_msg_client(FROM_CLIENT__GET_PS_INFO, addr);
-	printf("\033[1;38;2;254;228;208mCONTAINER_DIR\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238mUNSHARE_PID\n");
-	printf("\033[1;38;2;152;245;225m=========================\n");
-	while (true) {
-		read_msg_client(msg, addr);
-		// End of container info.
-		if (strcmp(msg, FROM_DAEMON__END_OF_PS_INFO) == 0) {
-			break;
-		}
-		// Print the received container info.
-		printf("\033[1;38;2;254;228;208m%s", msg);
-		read_msg_client(msg, addr);
-		printf("\033[1;38;2;152;245;225m:\033[1;38;2;123;104;238m%s\n", msg);
-	}
-}
-// For `ruri -K`
-void kill_daemon(void)
-{
-	/*
-	 * It will just send `kill` to daemon.
-	 * If daemon is not running, show error and exit.
-	 */
-	// Set socket address.
-	struct sockaddr_un addr;
-	if (connect_to_daemon(&addr) != 0) {
-		error("\033[31mDaemon not running\n");
-	}
-	// daemon will kill itself after received this message.
-	send_msg_client(FROM_CLIENT__KILL_DAEMON, addr);
-}
-// Kill&umount container.
+// Umount container.
 void umount_container(const char *container_dir)
 {
-	/*
-	 * It will try to connect to daemon, and daemon will kill daemon_init_unshare_container() process of container if the container is running.
-	 * Then it will umount(2) container_dir and other directories in it.
-	 */
 	// Do not use '/' for container_dir.
 	if (strcmp(container_dir, "/") == 0) {
 		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
 	}
-	// Set socket address.
-	struct sockaddr_un addr;
-	char msg[MSG_BUF_SIZE] = { '\0' };
-	// Clear buf.
-	memset(msg, '\0', MSG_BUF_SIZE * sizeof(char));
 	char mountpoint[MAX_MOUNTPOINTS / 2][PATH_MAX];
 	mountpoint[0][0] = '\0';
-	if (connect_to_daemon(&addr) != 0) {
-		warning("\033[33mWarning: seems that container daemon is not running nya~\033[0m\n");
-	} else {
-		// Kill the container from daemon.
-		send_msg_client(FROM_CLIENT__KILL_A_CONTAINER, addr);
-		send_msg_client(container_dir, addr);
-		read_msg_client(msg, addr);
-		if (strcmp(msg, FROM_DAEMON__CONTAINER_NOT_RUNNING) == 0) {
-			warning("\033[33mWarning: seems that container is not running nya~\033[0m\n");
-		} else {
-			read_msg_client(msg, addr);
-			// Get other mountpoints.
-			for (int i = 0; true; i++) {
-				read_msg_client(msg, addr);
-				if (strcmp(msg, FROM_DAEMON__END_OF_MOUNTPOINT) == 0) {
-					break;
-				}
-				strcpy(mountpoint[i], msg);
-				mountpoint[i + 1][0] = '\0';
-			}
-		}
-	}
 	// Get path to umount.
 	char sys_dir[PATH_MAX];
 	char proc_dir[PATH_MAX];
