@@ -167,7 +167,7 @@ int trymount(const char *source, const char *target, unsigned int mountflags)
 	}
 	// Bind-mount dir.
 	if (S_ISDIR(dev_stat.st_mode)) {
-		ret = mount(source, target, NULL, mountflags, NULL);
+		ret = mount(source, target, NULL, mountflags | MS_BIND, NULL);
 	}
 	// Block device.
 	else if (S_ISBLK(dev_stat.st_mode)) {
