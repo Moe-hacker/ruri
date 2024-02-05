@@ -396,11 +396,11 @@ void setup_seccomp(struct CONTAINER_INFO *container_info)
 	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ptrace), 0);
 #endif
 #if !defined(__s390__) && !defined(__s390x__)
-	if (is_in_list(container_info->drop_caplist, CAP_SYS_ADMIN)) {
+	if (is_in_caplist(container_info->drop_caplist, CAP_SYS_ADMIN)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0, SCMP_A0(SCMP_CMP_MASKED_EQ, 2114060288, 0));
 	}
 #else
-	if (is_in_list(container_info->drop_caplist, CAP_SYS_ADMIN)) {
+	if (is_in_caplist(container_info->drop_caplist, CAP_SYS_ADMIN)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0, SCMP_A1(SCMP_CMP_MASKED_EQ, 2114060288, 0));
 	}
 #endif
@@ -427,27 +427,27 @@ void setup_seccomp(struct CONTAINER_INFO *container_info)
 #if defined(__riscv64__)
 	seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(riscv_flush_icache), 0);
 #endif
-	if (!is_in_list(container_info->drop_caplist, CAP_DAC_READ_SEARCH)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_DAC_READ_SEARCH)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(open_by_handle_at), 0);
 	}
-	if (is_in_list(container_info->drop_caplist, CAP_SYS_ADMIN)) {
+	if (is_in_caplist(container_info->drop_caplist, CAP_SYS_ADMIN)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ERRNO(38), SCMP_SYS(clone3), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_BOOT)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_BOOT)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(reboot), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_CHROOT)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_CHROOT)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(chroot), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_MODULE)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_MODULE)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(delete_module), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(init_module), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(finit_module), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_PACCT)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_PACCT)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(acct), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_PTRACE)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_PTRACE)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(kcmp), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(pidfd_getfd), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(process_madvise), 0);
@@ -455,34 +455,34 @@ void setup_seccomp(struct CONTAINER_INFO *container_info)
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(process_vm_writev), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ptrace), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_RAWIO)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_RAWIO)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(iopl), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ioperm), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_TIME)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_TIME)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(settimeofday), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(stime), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clock_settime), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clock_settime64), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_TTY_CONFIG)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_TTY_CONFIG)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(vhangup), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_NICE)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_NICE)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(get_mempolicy), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mbind), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(set_mempolicy), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYSLOG)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYSLOG)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(syslog), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_BPF)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_BPF)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(bpf), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_PERFMON)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_PERFMON)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(perf_event_open), 0);
 	}
-	if (!is_in_list(container_info->drop_caplist, CAP_SYS_ADMIN)) {
+	if (!is_in_caplist(container_info->drop_caplist, CAP_SYS_ADMIN)) {
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(bpf), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone3), 0);

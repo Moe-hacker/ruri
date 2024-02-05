@@ -198,14 +198,14 @@ static void setup_binfmt_misc(const char *cross_arch, const char *qemu_path)
 void mount_mountpoints(struct CONTAINER_INFO *container_info)
 {
 	for (int i = 0; true; i += 2) {
-		if (container_info->mountpoint[i] == NULL) {
+		if (container_info->extra_mountpoint[i] == NULL) {
 			break;
 		}
 		// Set the mountpoint to mount.
-		char *mountpoint_dir = (char *)malloc(strlen(container_info->mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
+		char *mountpoint_dir = (char *)malloc(strlen(container_info->extra_mountpoint[i + 1]) + strlen(container_info->container_dir) + 2);
 		strcpy(mountpoint_dir, container_info->container_dir);
-		strcat(mountpoint_dir, container_info->mountpoint[i + 1]);
-		trymount(container_info->mountpoint[i], mountpoint_dir, 0);
+		strcat(mountpoint_dir, container_info->extra_mountpoint[i + 1]);
+		trymount(container_info->extra_mountpoint[i], mountpoint_dir, 0);
 		free(mountpoint_dir);
 	}
 }
@@ -232,7 +232,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 		// '/' should be a mountpoint in container.
 		mount(container_info->container_dir, container_info->container_dir, NULL, MS_BIND, NULL);
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
-		if (container_info->host_runtime_dir) {
+		if (container_info->mount_host_runtime) {
 			mount_host_runtime(container_info);
 		}
 	}

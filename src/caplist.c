@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Add a cap to caplist.
-void add_to_list(cap_value_t *list, cap_value_t cap)
+void add_to_caplist(cap_value_t *list, cap_value_t cap)
 {
 	/*
 	 * If cap is already in list, just do nothing and quit.
@@ -58,7 +58,7 @@ void add_to_list(cap_value_t *list, cap_value_t cap)
 	}
 }
 // Check if the cap includes in the list.
-bool is_in_list(const cap_value_t *list, cap_value_t cap)
+bool is_in_caplist(const cap_value_t *list, cap_value_t cap)
 {
 	/*
 	 * For setup_seccomp().
@@ -77,7 +77,7 @@ bool is_in_list(const cap_value_t *list, cap_value_t cap)
 	return ret;
 }
 // Del a cap from caplist.
-void del_from_list(cap_value_t *list, cap_value_t cap)
+void del_from_caplist(cap_value_t *list, cap_value_t cap)
 {
 	/*
 	 * If the cap is not in list, just do nothing and quit.

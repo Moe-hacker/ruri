@@ -84,22 +84,33 @@
 #include "version.h"
 // Info of a container to create.
 struct __attribute__((aligned(128))) CONTAINER_INFO {
+	// Container directory.
 	char *container_dir;
+	// Capabilities to drop.
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
+	// Command for exec(2).
 	char *command[MAX_COMMANDS];
-	// Mount before chroot(2).
-	char *mountpoint[MAX_MOUNTPOINTS];
+	// Extra mountpoints.
+	char *extra_mountpoint[MAX_MOUNTPOINTS];
+	// Environment variables.
 	char *env[MAX_ENVS];
+	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
+	// Enable built-in seccomp profile.
 	bool enable_seccomp;
+	// Do not show warnings.
 	bool no_warnings;
-	bool use_unshare;
+	// Unshare container.
+	bool enable_unshare;
+	// Useless rootless container support.
 	bool rootless;
 	// Mount host runtime.
-	bool host_runtime_dir;
+	bool mount_host_runtime;
+	// Container pid for setns(2).
 	pid_t ns_pid;
-	// For cross-architecture containers.
+	// Arch of cross-architecture container.
 	char *cross_arch;
+	// Path of QEMU binary.
 	char *qemu_path;
 };
 // For get_magic().
@@ -132,9 +143,9 @@ void show_version_code(void);
 void AwA(void);
 void show_helps(void);
 void show_examples(void);
-void add_to_list(cap_value_t *list, cap_value_t cap);
-bool is_in_list(const cap_value_t *list, cap_value_t cap);
-void del_from_list(cap_value_t *list, cap_value_t cap);
+void add_to_caplist(cap_value_t *list, cap_value_t cap);
+bool is_in_caplist(const cap_value_t *list, cap_value_t cap);
+void del_from_caplist(cap_value_t *list, cap_value_t cap);
 struct MAGIC *get_magic(const char *cross_arch);
 int run_unshare_container(struct CONTAINER_INFO *container_info);
 void run_chroot_container(struct CONTAINER_INFO *container_info);

@@ -251,11 +251,6 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 }
 static void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
-	/*
-	 * priv_level:
-	 * 0 for unprivileged, 1 for common, 2 for privileged.
-	 * And the capabilities to drop is also affected by drop/keep_caplist_extra[].
-	 */
 	// Based on docker's default capability set.
 	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD };
 	// Set default caplist to drop.
@@ -273,7 +268,7 @@ static void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t dr
 			if (drop_caplist_extra[i] == INIT_VALUE) {
 				break;
 			}
-			add_to_list(caplist, drop_caplist_extra[i]);
+			add_to_caplist(caplist, drop_caplist_extra[i]);
 		}
 	}
 	if (keep_caplist_extra[0] != INIT_VALUE) {
@@ -281,7 +276,7 @@ static void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t dr
 			if (keep_caplist_extra[i] != INIT_VALUE) {
 				break;
 			}
-			del_from_list(caplist, keep_caplist_extra[i]);
+			del_from_caplist(caplist, keep_caplist_extra[i]);
 		}
 	}
 }
@@ -308,12 +303,12 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	info->enable_seccomp = false;
 	info->no_new_privs = false;
 	info->no_warnings = false;
-	info->use_unshare = false;
+	info->enable_unshare = false;
 	info->rootless = false;
-	info->host_runtime_dir = false;
+	info->mount_host_runtime = false;
 	info->command[0] = NULL;
 	info->env[0] = NULL;
-	info->mountpoint[0] = NULL;
+	info->extra_mountpoint[0] = NULL;
 	info->cross_arch = NULL;
 	info->qemu_path = NULL;
 	info->ns_pid = INIT_VALUE;
@@ -400,7 +395,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		// Join existing ns.
 		else if (strcmp(argv[index], "-j") == 0) {
 			index++;
-			info->use_unshare = true;
+			info->enable_unshare = true;
 			info->ns_pid = (pid_t)atol(argv[index]);
 		}
 		// Enable built-in seccomp profile.
@@ -409,7 +404,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// Run unshare container.
 		else if (strcmp(argv[index], "-u") == 0) {
-			info->use_unshare = true;
+			info->enable_unshare = true;
 		}
 		// Run privileged container.
 		else if (strcmp(argv[index], "-p") == 0) {
@@ -425,7 +420,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// Force bind-mount host /dev/, /sys/ and /proc/.
 		else if (strcmp(argv[index], "-S") == 0) {
-			info->host_runtime_dir = true;
+			info->mount_host_runtime = true;
 		}
 		// Set extra env.
 		else if (strcmp(argv[index], "-e") == 0) {
@@ -453,11 +448,11 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-					if (info->mountpoint[i] == NULL) {
-						info->mountpoint[i] = realpath(argv[index], NULL);
+					if (info->extra_mountpoint[i] == NULL) {
+						info->extra_mountpoint[i] = realpath(argv[index], NULL);
 						index++;
-						info->mountpoint[i + 1] = strdup(argv[index]);
-						info->mountpoint[i + 2] = NULL;
+						info->extra_mountpoint[i + 1] = strdup(argv[index]);
+						info->extra_mountpoint[i + 2] = NULL;
 						break;
 					}
 					// Max 128 mountpoints.
@@ -474,7 +469,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
-					add_to_list(keep_caplist_extra, cap);
+					add_to_caplist(keep_caplist_extra, cap);
 				} else {
 					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
@@ -487,7 +482,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
-					add_to_list(drop_caplist_extra, cap);
+					add_to_caplist(drop_caplist_extra, cap);
 				} else {
 					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
@@ -554,7 +549,7 @@ int main(int argc, char **argv)
 	// Check container_info and the running environment.
 	check_container(container_info);
 	// Run container.
-	if ((container_info->use_unshare) && !(container_info->rootless)) {
+	if ((container_info->enable_unshare) && !(container_info->rootless)) {
 		run_unshare_container(container_info);
 	} else if ((container_info->rootless)) {
 		uid_t uid = geteuid();
