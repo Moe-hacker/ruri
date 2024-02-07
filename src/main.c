@@ -61,196 +61,6 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 		error("\033[31mError: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
-	// Check for binfmt_misc config.
-	if (container_info->cross_arch != NULL) {
-// Avoid to simulate the same architecture as host.
-#if defined(__aarch64__)
-		if (strcmp(container_info->cross_arch, "aarch64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__alpha__)
-		if (strcmp(container_info->cross_arch, "alpha") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__arm__)
-		if (strcmp(container_info->cross_arch, "arm") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__armeb__)
-		if (strcmp(container_info->cross_arch, "armeb") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__cris__)
-		if (strcmp(container_info->cross_arch, "cris") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__hexagon__)
-		if (strcmp(container_info->cross_arch, "hexagon") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__hppa__)
-		if (strcmp(container_info->cross_arch, "hppa") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__i386__)
-		if (strcmp(container_info->cross_arch, "i386") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__loongarch64__)
-		if (strcmp(container_info->cross_arch, "loongarch64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__m68k__)
-		if (strcmp(container_info->cross_arch, "m68k") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__microblaze__)
-		if (strcmp(container_info->cross_arch, "microblaze") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__mips__)
-		if (strcmp(container_info->cross_arch, "mips") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__mips64__)
-		if (strcmp(container_info->cross_arch, "mips64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__mips64el__)
-		if (strcmp(container_info->cross_arch, "mips64el") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__mipsel__)
-		if (strcmp(container_info->cross_arch, "mipsel") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__mipsn32__)
-		if (strcmp(container_info->cross_arch, "mipsn32") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__mipsn32el__)
-		if (strcmp(container_info->cross_arch, "mipsn32el") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__ppc__)
-		if (strcmp(container_info->cross_arch, "ppc") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__ppc64__)
-		if (strcmp(container_info->cross_arch, "ppc64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__ppc64le__)
-		if (strcmp(container_info->cross_arch, "ppc64le") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__riscv32__)
-		if (strcmp(container_info->cross_arch, "riscv32") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__riscv64__)
-		if (strcmp(container_info->cross_arch, "riscv64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__s390x__)
-		if (strcmp(container_info->cross_arch, "s390x") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__sh4__)
-		if (strcmp(container_info->cross_arch, "sh4") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__sh4eb__)
-		if (strcmp(container_info->cross_arch, "sh4eb") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__sparc__)
-		if (strcmp(container_info->cross_arch, "sparc") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__sparc32plus__)
-		if (strcmp(container_info->cross_arch, "sparc32plus") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__sparc64__)
-		if (strcmp(container_info->cross_arch, "sparc64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__x86_64__)
-		if (strcmp(container_info->cross_arch, "x86_64") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__xtensa__)
-		if (strcmp(container_info->cross_arch, "xtensa") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-#if defined(__xtensaeb__)
-		if (strcmp(container_info->cross_arch, "xtensaeb") == 0) {
-			error("\033[31mCannot simulate the same architecture QwQ\n");
-		}
-#endif
-	}
-}
-static void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
-{
-	// Based on docker's default capability set.
-	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD };
-	// Set default caplist to drop.
-	if (!privileged) {
-		for (size_t i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
-			caplist[i] = drop_caplist_common[i];
-			caplist[i + 1] = INIT_VALUE;
-		}
-	} else {
-		caplist[0] = INIT_VALUE;
-	}
-	// Comply with drop/keep_caplist_extra[] specified.
-	if (drop_caplist_extra[0] != INIT_VALUE) {
-		for (int i = 0; true; i++) {
-			if (drop_caplist_extra[i] == INIT_VALUE) {
-				break;
-			}
-			add_to_caplist(caplist, drop_caplist_extra[i]);
-		}
-	}
-	if (keep_caplist_extra[0] != INIT_VALUE) {
-		for (int i = 0; true; i++) {
-			if (keep_caplist_extra[i] != INIT_VALUE) {
-				break;
-			}
-			del_from_caplist(caplist, keep_caplist_extra[i]);
-		}
-	}
 }
 static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER_INFO *info)
 {
@@ -412,7 +222,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 					}
 				}
 			} else {
-				error("\033[31mError: unknow env QwQ\n");
+				error("\033[31mError: unknown env QwQ\n");
 			}
 		}
 		// Set extra mountpoints.
@@ -433,7 +243,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 					}
 				}
 			} else {
-				error("\033[31mError: unknow mountpoint QwQ\n");
+				error("\033[31mError: unknown mountpoint QwQ\n");
 			}
 		}
 		// Extra capabilities to keep.
@@ -443,7 +253,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 				if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_caplist(keep_caplist_extra, cap);
 				} else {
-					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
+					error("\033[31mError: unknown capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
 			} else {
 				error("\033[31mMissing argument\n");
@@ -456,7 +266,7 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 				if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_caplist(drop_caplist_extra, cap);
 				} else {
-					error("\033[31mError: unknow capability `%s`\nQwQ\033[0m\n", argv[index]);
+					error("\033[31mError: unknown capability `%s`\nQwQ\033[0m\n", argv[index]);
 				}
 			} else {
 				error("\033[31mMissing argument\n");

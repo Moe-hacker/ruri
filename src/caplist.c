@@ -94,3 +94,34 @@ void del_from_caplist(cap_value_t *list, cap_value_t cap)
 		}
 	}
 }
+void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
+{
+	// Based on docker's default capability set.
+	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD };
+	// Set default caplist to drop.
+	if (!privileged) {
+		for (size_t i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
+			caplist[i] = drop_caplist_common[i];
+			caplist[i + 1] = INIT_VALUE;
+		}
+	} else {
+		caplist[0] = INIT_VALUE;
+	}
+	// Comply with drop/keep_caplist_extra[] specified.
+	if (drop_caplist_extra[0] != INIT_VALUE) {
+		for (int i = 0; true; i++) {
+			if (drop_caplist_extra[i] == INIT_VALUE) {
+				break;
+			}
+			add_to_caplist(caplist, drop_caplist_extra[i]);
+		}
+	}
+	if (keep_caplist_extra[0] != INIT_VALUE) {
+		for (int i = 0; true; i++) {
+			if (keep_caplist_extra[i] != INIT_VALUE) {
+				break;
+			}
+			del_from_caplist(caplist, keep_caplist_extra[i]);
+		}
+	}
+}

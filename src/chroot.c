@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-static void check_binary(struct CONTAINER_INFO *container_info)
+static void check_binary(const struct CONTAINER_INFO *container_info)
 {
 	// Check if command binary exists and is not a directory.
 	char init_binary[PATH_MAX];
@@ -71,10 +71,6 @@ static void init_container(void)
 	// Check if system runtime files are already created.
 	DIR *direxist = opendir("/sys/kernel");
 	if (direxist == NULL) {
-		// Mount && create system runtime files.
-		// umount /proc before we mount it.
-		// Maybe needless.
-		umount2("/proc", MNT_DETACH | MNT_FORCE);
 		// Mount proc,sys and dev.
 		mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
@@ -147,7 +143,7 @@ static void init_container(void)
 	}
 }
 // Run before chroot(2), so that init_container() will not take effect.
-static void mount_host_runtime(struct CONTAINER_INFO *container_info)
+static void mount_host_runtime(const struct CONTAINER_INFO *container_info)
 {
 	char buf[PATH_MAX] = { '\0' };
 	// Mount /dev.
@@ -179,7 +175,7 @@ static void mount_host_runtime(struct CONTAINER_INFO *container_info)
 }
 // Drop capabilities.
 // Use libcap.
-static void drop_caps(struct CONTAINER_INFO *container_info)
+static void drop_caps(const struct CONTAINER_INFO *container_info)
 {
 	for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
 		// INIT_VALUE is the end of drop_caplist[].
@@ -193,7 +189,7 @@ static void drop_caps(struct CONTAINER_INFO *container_info)
 	}
 }
 // Set envs.
-static void set_envs(struct CONTAINER_INFO *container_info)
+static void set_envs(const struct CONTAINER_INFO *container_info)
 {
 	// Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in GNU/Linux containers.
 	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
@@ -208,13 +204,18 @@ static void set_envs(struct CONTAINER_INFO *container_info)
 	}
 }
 // Run after init_container().
-static void setup_binfmt_misc(const char *cross_arch, const char *qemu_path)
+static void setup_binfmt_misc(const struct CONTAINER_INFO *container_info)
 {
 	// Get elf magic header.
-	struct MAGIC *magic = get_magic(cross_arch);
+	struct MAGIC *magic = get_magic(container_info->cross_arch);
+	// Umount container if we get an error.
+	if (magic == NULL) {
+		umount_container(container_info->container_dir);
+		error("\033[31mError: unknown architecture or same architecture as host: %s\n\nSupported architectures: aarch64, alpha, arm, armeb, cris, hexagon, hppa, i386, loongarch64, m68k, microblaze, mips, mips64, mips64el, mipsel, mipsn32, mipsn32el, ppc, ppc64, ppc64le, riscv32, riscv64, s390x, sh4, sh4eb, sparc, sparc32plus, sparc64, x86_64, xtensa, xtensaeb\033[0m\n", container_info->cross_arch);
+	}
 	char buf[1024] = { '\0' };
 	// Format: ":name:type:offset:magic:mask:interpreter:flags".
-	sprintf(buf, ":%s%s:M:0:%s:%s:%s:PCF", "ruri-", cross_arch, magic->magic, magic->mask, qemu_path);
+	sprintf(buf, ":%s%s:M:0:%s:%s:%s:PCF", "ruri-", container_info->cross_arch, magic->magic, magic->mask, container_info->qemu_path);
 	// Just to make clang-tidy happy.
 	free(magic);
 	// This needs CONFIG_BINFMT_MISC enabled in your kernel.
@@ -228,7 +229,7 @@ static void setup_binfmt_misc(const char *cross_arch, const char *qemu_path)
 }
 // Mount other mountpoints.
 // Run before chroot(2).
-void mount_mountpoints(struct CONTAINER_INFO *container_info)
+void mount_mountpoints(const struct CONTAINER_INFO *container_info)
 {
 	for (int i = 0; true; i += 2) {
 		if (container_info->extra_mountpoint[i] == NULL) {
@@ -317,7 +318,7 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 	}
 	// Setup binfmt_misc.
 	if (container_info->cross_arch != NULL) {
-		setup_binfmt_misc(container_info->cross_arch, container_info->qemu_path);
+		setup_binfmt_misc(container_info);
 	}
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.

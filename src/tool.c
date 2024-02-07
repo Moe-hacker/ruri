@@ -48,7 +48,6 @@ void umount_container(const char *container_dir)
 	strcat(sys_dir, "/sys");
 	strcat(proc_dir, "/proc");
 	strcat(dev_dir, "/dev");
-	printf("\033[1;38;2;254;228;208mUmount container.\033[0m\n");
 	// Umount other mountpoints.
 	for (int i = 0; true; i++) {
 		if (mountpoint[i][0] != 0) {

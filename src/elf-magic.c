@@ -33,6 +33,162 @@
 struct MAGIC *get_magic(const char *cross_arch)
 {
 	struct MAGIC *ret = (struct MAGIC *)malloc(sizeof(struct MAGIC));
+// Avoid to simulate the same architecture as host.
+#if defined(__aarch64__)
+	if (strcmp(cross_arch, "aarch64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__alpha__)
+	if (strcmp(cross_arch, "alpha") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__arm__)
+	if (strcmp(cross_arch, "arm") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__armeb__)
+	if (strcmp(cross_arch, "armeb") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__cris__)
+	if (strcmp(cross_arch, "cris") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__hexagon__)
+	if (strcmp(cross_arch, "hexagon") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__hppa__)
+	if (strcmp(cross_arch, "hppa") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__i386__)
+	if (strcmp(cross_arch, "i386") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__loongarch64__)
+	if (strcmp(cross_arch, "loongarch64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__m68k__)
+	if (strcmp(cross_arch, "m68k") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__microblaze__)
+	if (strcmp(cross_arch, "microblaze") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__mips__)
+	if (strcmp(cross_arch, "mips") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__mips64__)
+	if (strcmp(cross_arch, "mips64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__mips64el__)
+	if (strcmp(cross_arch, "mips64el") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__mipsel__)
+	if (strcmp(cross_arch, "mipsel") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__mipsn32__)
+	if (strcmp(cross_arch, "mipsn32") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__mipsn32el__)
+	if (strcmp(cross_arch, "mipsn32el") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__ppc__)
+	if (strcmp(cross_arch, "ppc") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__ppc64__)
+	if (strcmp(cross_arch, "ppc64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__ppc64le__)
+	if (strcmp(cross_arch, "ppc64le") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__riscv32__)
+	if (strcmp(cross_arch, "riscv32") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__riscv64__)
+	if (strcmp(cross_arch, "riscv64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__s390x__)
+	if (strcmp(cross_arch, "s390x") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__sh4__)
+	if (strcmp(cross_arch, "sh4") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__sh4eb__)
+	if (strcmp(cross_arch, "sh4eb") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__sparc__)
+	if (strcmp(cross_arch, "sparc") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__sparc32plus__)
+	if (strcmp(cross_arch, "sparc32plus") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__sparc64__)
+	if (strcmp(cross_arch, "sparc64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__x86_64__)
+	if (strcmp(cross_arch, "x86_64") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__xtensa__)
+	if (strcmp(cross_arch, "xtensa") == 0) {
+		return NULL;
+	}
+#endif
+#if defined(__xtensaeb__)
+	if (strcmp(cross_arch, "xtensaeb") == 0) {
+		return NULL;
+	}
+#endif
 	if (strcmp(cross_arch, "aarch64") == 0) {
 		ret->magic = magicof(aarch64);
 		ret->mask = maskof(aarch64);
@@ -127,7 +283,7 @@ struct MAGIC *get_magic(const char *cross_arch)
 		ret->magic = magicof(xtensaeb);
 		ret->mask = maskof(xtensaeb);
 	} else {
-		error("\033[31mError: unknow architecture: %s\nSupported architectures: aarch64, alpha, arm, armeb, cris, hexagon, hppa, i386, loongarch64, m68k, microblaze, mips, mips64, mips64el, mipsel, mipsn32, mipsn32el, ppc, ppc64, ppc64le, riscv32, riscv64, s390x, sh4, sh4eb, sparc, sparc32plus, sparc64, x86_64, xtensa, xtensaeb\n", cross_arch);
+		return NULL;
 	}
 	return ret;
 }
