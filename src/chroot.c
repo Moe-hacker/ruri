@@ -28,6 +28,39 @@
  *
  */
 #include "include/ruri.h"
+static void check_binary(struct CONTAINER_INFO *container_info)
+{
+	// Check if command binary exists and is not a directory.
+	char init_binary[PATH_MAX];
+	strcpy(init_binary, container_info->container_dir);
+	strcat(init_binary, container_info->command[0]);
+	struct stat init_binary_stat;
+	// lstat(3) will return -1 while the init_binary does not exist.
+	if (lstat(init_binary, &init_binary_stat) != 0) {
+		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
+	}
+	if (S_ISDIR(init_binary_stat.st_mode)) {
+		error("\033[31mCOMMAND can not be a directory QwQ\n");
+	}
+	// Check QEMU path.
+	if (container_info->cross_arch != NULL) {
+		if (container_info->qemu_path == NULL) {
+			error("\033[31mError: path of QEMU is not set QwQ\n");
+		}
+		// Check if QEMU binary exists and is not a directory.
+		char qemu_binary[PATH_MAX];
+		strcpy(qemu_binary, container_info->container_dir);
+		strcat(qemu_binary, container_info->qemu_path);
+		struct stat qemu_binary_stat;
+		// lstat(3) will return -1 while the init_binary does not exist.
+		if (lstat(qemu_binary, &qemu_binary_stat) != 0) {
+			error("\033[31mPlease check if path of QEMU is correct QwQ\n");
+		}
+		if (S_ISDIR(qemu_binary_stat.st_mode)) {
+			error("\033[31mQEMU path can not be a directory QwQ\n");
+		}
+	}
+}
 // Run after chroot(2), called by run_chroot_container().
 static void init_container(void)
 {
@@ -246,6 +279,8 @@ void run_chroot_container(struct CONTAINER_INFO *container_info)
 		container_info->command[1] = "-";
 		container_info->command[2] = NULL;
 	}
+	// Check binary used.
+	check_binary(container_info);
 	// chroot(2) into container.
 	chdir(container_info->container_dir);
 	chroot(".");

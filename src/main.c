@@ -61,36 +61,8 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 		error("\033[31mError: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
-	// Check if command binary exists and is not a directory.
-	char init_binary[PATH_MAX];
-	strcpy(init_binary, container_info->container_dir);
-	strcat(init_binary, container_info->command[0]);
-	struct stat init_binary_stat;
-	// lstat(3) will return -1 while the init_binary does not exist.
-	if (lstat(init_binary, &init_binary_stat) != 0) {
-		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
-	}
-	if (S_ISDIR(init_binary_stat.st_mode)) {
-		error("\033[31mCOMMAND can not be a directory QwQ\n");
-	}
 	// Check for binfmt_misc config.
 	if (container_info->cross_arch != NULL) {
-		// Check QEMU path.
-		if (container_info->qemu_path == NULL) {
-			error("\033[31mError: path of QEMU is not set QwQ\n");
-		}
-		// Check if QEMU binary exists and is not a directory.
-		char qemu_binary[PATH_MAX];
-		strcpy(qemu_binary, container_info->container_dir);
-		strcat(qemu_binary, container_info->qemu_path);
-		struct stat qemu_binary_stat;
-		// lstat(3) will return -1 while the init_binary does not exist.
-		if (lstat(qemu_binary, &qemu_binary_stat) != 0) {
-			error("\033[31mPlease check if path of QEMU is correct QwQ\n");
-		}
-		if (S_ISDIR(qemu_binary_stat.st_mode)) {
-			error("\033[31mQEMU path can not be a directory QwQ\n");
-		}
 // Avoid to simulate the same architecture as host.
 #if defined(__aarch64__)
 		if (strcmp(container_info->cross_arch, "aarch64") == 0) {
