@@ -35,20 +35,9 @@ void add_to_caplist(cap_value_t *list, cap_value_t cap)
 	 * If cap is already in list, just do nothing and quit.
 	 * list[] is initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
 	 */
-	bool in_list = false;
-	// Check if the cap to add is already in caplist.
-	for (int i = 0; i < CAP_LAST_CAP; i++) {
-		if (list[i] == INIT_VALUE) {
-			break;
-		}
-		if (list[i] == cap) {
-			in_list = true;
-			break;
-		}
-	}
 	// Add cap to caplist.
-	if (!in_list) {
-		for (int k = 0; k < CAP_LAST_CAP; k++) {
+	if (!is_in_caplist(list, cap)) {
+		for (int k = 0; true; k++) {
 			if (list[k] == INIT_VALUE) {
 				list[k] = cap;
 				list[k + 1] = INIT_VALUE;
@@ -63,18 +52,17 @@ bool is_in_caplist(const cap_value_t *list, cap_value_t cap)
 	/*
 	 * For setup_seccomp().
 	 */
-	bool ret = false;
 	// Check if the cap to add is already in caplist.
-	for (int i = 0; i < CAP_LAST_CAP; i++) {
+	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
-			ret = true;
+			return true;
 			break;
 		}
 		if (list[i] == INIT_VALUE) {
 			break;
 		}
 	}
-	return ret;
+	return false;
 }
 // Del a cap from caplist.
 void del_from_caplist(cap_value_t *list, cap_value_t cap)
@@ -83,29 +71,36 @@ void del_from_caplist(cap_value_t *list, cap_value_t cap)
 	 * If the cap is not in list, just do nothing and quit.
 	 * Or we will delete it from the list.
 	 */
-	for (int i = 0; i < CAP_LAST_CAP; i++) {
+	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
-			while (i < CAP_LAST_CAP) {
+			while (i <= CAP_LAST_CAP) {
 				list[i] = list[i + 1];
 				i++;
 			}
-			list[i] = INIT_VALUE;
-			break;
+			list[i - 1] = INIT_VALUE;
+			return;
+		}
+		if (list[i] == INIT_VALUE) {
+			return;
 		}
 	}
 }
 void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
 	// Based on docker's default capability set.
-	cap_value_t drop_caplist_common[] = { CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_SYS_PACCT, CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_SYS_TTY_CONFIG, CAP_AUDIT_CONTROL, CAP_MAC_OVERRIDE, CAP_MAC_ADMIN, CAP_NET_ADMIN, CAP_SYSLOG, CAP_DAC_READ_SEARCH, CAP_LINUX_IMMUTABLE, CAP_NET_BROADCAST, CAP_IPC_LOCK, CAP_IPC_OWNER, CAP_SYS_BOOT, CAP_LEASE, CAP_WAKE_ALARM, CAP_BLOCK_SUSPEND, CAP_SYS_TIME, CAP_MKNOD };
+	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_MKNOD, CAP_NET_RAW, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, INIT_VALUE };
 	// Set default caplist to drop.
+	caplist[0] = INIT_VALUE;
 	if (!privileged) {
-		for (size_t i = 0; i < (sizeof(drop_caplist_common) / sizeof(drop_caplist_common[0])); i++) {
-			caplist[i] = drop_caplist_common[i];
-			caplist[i + 1] = INIT_VALUE;
+		for (int i = 0; i <= CAP_LAST_CAP; i++) {
+			caplist[i] = i;
 		}
-	} else {
-		caplist[0] = INIT_VALUE;
+		for (int i = 0; true; i++) {
+			if (keep_caplist_common[i] == INIT_VALUE) {
+				break;
+			}
+			del_from_caplist(caplist, keep_caplist_common[i]);
+		}
 	}
 	// Comply with drop/keep_caplist_extra[] specified.
 	if (drop_caplist_extra[0] != INIT_VALUE) {
