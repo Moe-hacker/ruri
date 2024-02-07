@@ -157,7 +157,7 @@ static pid_t join_ns(struct CONTAINER_INFO *container_info)
 	return unshare_pid;
 }
 // Run unshare container.
-int run_unshare_container(struct CONTAINER_INFO *container_info)
+void run_unshare_container(struct CONTAINER_INFO *container_info)
 {
 	pid_t unshare_pid = INIT_VALUE;
 	// unshare(2) itself into new namespaces.
@@ -170,5 +170,4 @@ int run_unshare_container(struct CONTAINER_INFO *container_info)
 	if (unshare_pid == 0) {
 		run_chroot_container(container_info);
 	}
-	return 0;
 }

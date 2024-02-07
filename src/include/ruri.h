@@ -147,8 +147,9 @@ void add_to_caplist(cap_value_t *list, cap_value_t cap);
 bool is_in_caplist(const cap_value_t *list, cap_value_t cap);
 void del_from_caplist(cap_value_t *list, cap_value_t cap);
 struct MAGIC *get_magic(const char *cross_arch);
-int run_unshare_container(struct CONTAINER_INFO *container_info);
+void run_unshare_container(struct CONTAINER_INFO *container_info);
 void run_chroot_container(struct CONTAINER_INFO *container_info);
+void run_rootless_container(struct CONTAINER_INFO *container_info);
 int trymount(const char *source, const char *target, unsigned int mountflags);
 void umount_container(const char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
