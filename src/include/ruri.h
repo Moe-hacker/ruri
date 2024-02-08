@@ -83,7 +83,7 @@
 #include "elf-magic.h"
 #include "version.h"
 // Info of a container to create.
-struct __attribute__((aligned(128))) CONTAINER_INFO {
+struct __attribute__((aligned(128))) CONTAINER {
 	// Container directory.
 	char *container_dir;
 	// Capabilities to drop.
@@ -137,7 +137,7 @@ struct __attribute__((aligned(16))) MAGIC {
 		exit(EXIT_FAILURE);                                                                                           \
 	}
 void register_signal(void);
-void setup_seccomp(struct CONTAINER_INFO *container_info);
+void setup_seccomp(struct CONTAINER *container);
 void show_version_info(void);
 void show_version_code(void);
 void AwA(void);
@@ -148,9 +148,9 @@ bool is_in_caplist(const cap_value_t *list, cap_value_t cap);
 void del_from_caplist(cap_value_t *list, cap_value_t cap);
 void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[]);
 struct MAGIC *get_magic(const char *cross_arch);
-void run_unshare_container(struct CONTAINER_INFO *container_info);
-void run_chroot_container(struct CONTAINER_INFO *container_info);
-void run_rootless_container(struct CONTAINER_INFO *container_info);
+void run_unshare_container(struct CONTAINER *container);
+void run_chroot_container(struct CONTAINER *container);
+void run_rootless_container(struct CONTAINER *container);
 int trymount(const char *source, const char *target, unsigned int mountflags);
 void umount_container(const char *container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗

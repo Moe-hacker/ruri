@@ -29,24 +29,24 @@
  */
 #include "include/ruri.h"
 // Do some checks before chroot(2),called by main().
-static void check_container(const struct CONTAINER_INFO *container_info)
+static void check_container(const struct CONTAINER *container)
 {
 	/*
-	 * It's called by main() to check if container_info is correct.
+	 * It's called by main() to check if container is correct.
 	 * It will also check the running environment.
 	 * Note that it can only do basic checks,
-	 * and we can't know if container_info can really run a container properly.
+	 * and we can't know if container can really run a container properly.
 	 */
 	// Check if container directory is given.
-	if (container_info->container_dir == NULL) {
+	if (container->container_dir == NULL) {
 		error("\033[31mError: container directory is not set QwQ\n");
 	}
 	// Refuse to use `/` for container directory.
-	if (strcmp(container_info->container_dir, "/") == 0) {
+	if (strcmp(container->container_dir, "/") == 0) {
 		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if we are running with root privileges.
-	if (getuid() != 0 && !(container_info->rootless)) {
+	if (getuid() != 0 && !(container->rootless)) {
 		error("\033[31mError: this program should be run with root privileges QwQ\n");
 	}
 	// Check if $LD_PRELOAD is unset.
@@ -56,13 +56,13 @@ static void check_container(const struct CONTAINER_INFO *container_info)
 		error("\033[31mError: please unset $LD_PRELOAD before running this program QwQ\n");
 	}
 	// Check if container directory exists.
-	DIR *direxist = opendir(container_info->container_dir);
+	DIR *direxist = opendir(container->container_dir);
 	if (direxist == NULL) {
 		error("\033[31mError: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
 }
-static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER_INFO *info)
+static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *container)
 {
 	/*
 	 * 100% shit-code here.
@@ -81,19 +81,19 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t cap = INIT_VALUE;
 	bool privileged = false;
-	info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
-	info->enable_seccomp = false;
-	info->no_new_privs = false;
-	info->no_warnings = false;
-	info->enable_unshare = false;
-	info->rootless = false;
-	info->mount_host_runtime = false;
-	info->command[0] = NULL;
-	info->env[0] = NULL;
-	info->extra_mountpoint[0] = NULL;
-	info->cross_arch = NULL;
-	info->qemu_path = NULL;
-	info->ns_pid = INIT_VALUE;
+	container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+	container->enable_seccomp = false;
+	container->no_new_privs = false;
+	container->no_warnings = false;
+	container->enable_unshare = false;
+	container->rootless = false;
+	container->mount_host_runtime = false;
+	container->command[0] = NULL;
+	container->env[0] = NULL;
+	container->extra_mountpoint[0] = NULL;
+	container->cross_arch = NULL;
+	container->qemu_path = NULL;
+	container->ns_pid = INIT_VALUE;
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
@@ -162,31 +162,31 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// Set no_new_privs bit.
 		if (strcmp(argv[index], "-n") == 0) {
-			info->no_new_privs = true;
+			container->no_new_privs = true;
 		}
 		// Simulate architecture.
 		else if (strcmp(argv[index], "-a") == 0) {
 			index++;
-			info->cross_arch = strdup(argv[index]);
+			container->cross_arch = strdup(argv[index]);
 		}
 		// Path of QEMU.
 		else if (strcmp(argv[index], "-q") == 0) {
 			index++;
-			info->qemu_path = strdup(argv[index]);
+			container->qemu_path = strdup(argv[index]);
 		}
 		// Join existing ns.
 		else if (strcmp(argv[index], "-j") == 0) {
 			index++;
-			info->enable_unshare = true;
-			info->ns_pid = (pid_t)atol(argv[index]);
+			container->enable_unshare = true;
+			container->ns_pid = (pid_t)atol(argv[index]);
 		}
 		// Enable built-in seccomp profile.
 		else if (strcmp(argv[index], "-s") == 0) {
-			info->enable_seccomp = true;
+			container->enable_seccomp = true;
 		}
 		// Run unshare container.
 		else if (strcmp(argv[index], "-u") == 0) {
-			info->enable_unshare = true;
+			container->enable_unshare = true;
 		}
 		// Run privileged container.
 		else if (strcmp(argv[index], "-p") == 0) {
@@ -194,26 +194,26 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 		// Run rootless container.
 		else if (strcmp(argv[index], "-r") == 0) {
-			info->rootless = true;
+			container->rootless = true;
 		}
 		// Do not show warnings.
 		else if (strcmp(argv[index], "-w") == 0) {
-			info->no_warnings = true;
+			container->no_warnings = true;
 		}
 		// Force bind-mount host /dev/, /sys/ and /proc/.
 		else if (strcmp(argv[index], "-S") == 0) {
-			info->mount_host_runtime = true;
+			container->mount_host_runtime = true;
 		}
 		// Set extra env.
 		else if (strcmp(argv[index], "-e") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_ENVS; i++) {
-					if (info->env[i] == NULL) {
-						info->env[i] = strdup(argv[index]);
+					if (container->env[i] == NULL) {
+						container->env[i] = strdup(argv[index]);
 						index++;
-						info->env[i + 1] = strdup(argv[index]);
-						info->env[i + 2] = NULL;
+						container->env[i + 1] = strdup(argv[index]);
+						container->env[i + 2] = NULL;
 						break;
 					}
 					// Max 128 envs.
@@ -230,11 +230,11 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
-					if (info->extra_mountpoint[i] == NULL) {
-						info->extra_mountpoint[i] = realpath(argv[index], NULL);
+					if (container->extra_mountpoint[i] == NULL) {
+						container->extra_mountpoint[i] = realpath(argv[index], NULL);
 						index++;
-						info->extra_mountpoint[i + 1] = strdup(argv[index]);
-						info->extra_mountpoint[i + 2] = NULL;
+						container->extra_mountpoint[i + 1] = strdup(argv[index]);
+						container->extra_mountpoint[i + 2] = NULL;
 						break;
 					}
 					// Max 128 mountpoints.
@@ -275,21 +275,21 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		// A very shit way to judge that this is a dir...
 		else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0)) {
 			// Get the absolute path of container.
-			info->container_dir = realpath(argv[index], NULL);
+			container->container_dir = realpath(argv[index], NULL);
 			index++;
 			// Arguments after container_dir will be read as init command.
 			if (argv[index]) {
 				for (int i = 0; i < argc; i++) {
 					if (argv[index]) {
-						info->command[i] = strdup(argv[index]);
-						info->command[i + 1] = NULL;
+						container->command[i] = strdup(argv[index]);
+						container->command[i + 1] = NULL;
 						index++;
 					} else {
 						break;
 					}
 				}
 			} else {
-				info->command[0] = NULL;
+				container->command[0] = NULL;
 			}
 		}
 		// For unknown arguments, yeah I didn't forgot it...
@@ -299,20 +299,20 @@ static struct CONTAINER_INFO *parse_args(int argc, char **argv, struct CONTAINER
 		}
 	}
 	// Set default init command to run.
-	if (info->command[0] == NULL) {
+	if (container->command[0] == NULL) {
 		// Rootless container can not run program like /bin/su.
-		if (!(info->rootless)) {
-			info->command[0] = "/bin/su";
-			info->command[1] = "-";
-			info->command[2] = NULL;
+		if (!(container->rootless)) {
+			container->command[0] = "/bin/su";
+			container->command[1] = "-";
+			container->command[2] = NULL;
 		} else {
-			info->command[0] = "/bin/sh";
-			info->command[1] = NULL;
+			container->command[0] = "/bin/sh";
+			container->command[1] = NULL;
 		}
 	}
 	// Get the capabilities to drop.
-	build_caplist(info->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
-	return info;
+	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
+	return container;
 }
 // It works on my machine!!!
 int main(int argc, char **argv)
@@ -325,18 +325,18 @@ int main(int argc, char **argv)
 	// Catch coredump signal.
 	register_signal();
 	// Info of container to run.
-	struct CONTAINER_INFO *container_info = NULL;
+	struct CONTAINER *container = NULL;
 	// Parse arguments.
-	container_info = parse_args(argc, argv, container_info);
-	// Check container_info and the running environment.
-	check_container(container_info);
+	container = parse_args(argc, argv, container);
+	// Check container and the running environment.
+	check_container(container);
 	// Run container.
-	if ((container_info->enable_unshare) && !(container_info->rootless)) {
-		run_unshare_container(container_info);
-	} else if ((container_info->rootless)) {
-		run_rootless_container(container_info);
+	if ((container->enable_unshare) && !(container->rootless)) {
+		run_unshare_container(container);
+	} else if ((container->rootless)) {
+		run_rootless_container(container);
 	} else {
-		run_chroot_container(container_info);
+		run_chroot_container(container);
 	}
 	return 0;
 }
