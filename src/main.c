@@ -174,12 +174,6 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			index++;
 			container->qemu_path = strdup(argv[index]);
 		}
-		// Join existing ns.
-		else if (strcmp(argv[index], "-j") == 0) {
-			index++;
-			container->enable_unshare = true;
-			container->ns_pid = (pid_t)atol(argv[index]);
-		}
 		// Enable built-in seccomp profile.
 		else if (strcmp(argv[index], "-s") == 0) {
 			container->enable_seccomp = true;
