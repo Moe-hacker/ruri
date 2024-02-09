@@ -75,7 +75,8 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	sprintf(file, "%s/.rurienv", container_dir);
 	FILE *fp = fopen(file, "r");
 	if (fp == NULL) {
-		return NULL;
+		free(info);
+		return container;
 	}
 	fread(info, sizeof(struct CONTAINER_INFO), 1, fp);
 	if (container == NULL) {
