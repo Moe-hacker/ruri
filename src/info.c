@@ -119,8 +119,8 @@ void show_helps(void)
 	 * Help page of ruri.
 	 * I think you can understand...
 	 */
-	printf("ruri %s %s\n", RURI_VERSION, RURI_COMMIT_ID);
-	printf("\033[1;38;2;254;228;208mLightweight, User-friendly Linux-container Implementation\n");
+	printf("\033[1;38;2;254;228;208mruri %s %s\n\n", RURI_VERSION, RURI_COMMIT_ID);
+	printf("Lightweight, User-friendly Linux-container Implementation\n");
 	printf("\n");
 	printf("Usage:\n");
 	printf("  ruri [OPTIONS]...\n");
