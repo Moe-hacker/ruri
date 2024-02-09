@@ -137,6 +137,7 @@ void show_helps(void)
 	printf("  -q [path]              Specify the path of QEMU\n");
 	printf("  -u                     Enable unshare feature\n");
 	printf("  -n                     Set NO_NEW_PRIVS Flag\n");
+	printf("  -N                     Do not use .rurienv file\n");
 	printf("  -s                     Enable built-in Seccomp profile\n");
 	printf("  -p                     Run privileged container\n");
 	printf("  -r                     Run rootless container\n");

@@ -258,16 +258,19 @@ void run_chroot_container(struct CONTAINER *container)
 	sigprocmask(SIG_BLOCK, &sigs, 0);
 	// Mount mountpoints.
 	mount_mountpoints(container);
-
 	// Check if system runtime files are already created.
-	// container_dir shoud bind-mount before chroot(2).
+	// container_dir shoud bind-mount before chroot(2),
+	// and mount_host_runtime() and store_info() will be called here.
 	char buf[PATH_MAX] = { '\0' };
 	sprintf(buf, "%s/sys/kernel", container->container_dir);
 	DIR *direxist = opendir(buf);
 	if (direxist == NULL) {
 		// '/' should be a mountpoint in container.
 		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
-
+		// Store container info.
+		if (!container->enable_unshare && container->use_rurienv) {
+			store_info(container);
+		}
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
 		if (container->mount_host_runtime) {
 			mount_host_runtime(container);

@@ -94,6 +94,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	container->cross_arch = NULL;
 	container->qemu_path = NULL;
 	container->ns_pid = INIT_VALUE;
+	container->use_rurienv = true;
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
@@ -163,6 +164,10 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		// Set no_new_privs bit.
 		if (strcmp(argv[index], "-n") == 0) {
 			container->no_new_privs = true;
+		}
+		// Do not store .rurienv file.
+		if (strcmp(argv[index], "-N") == 0) {
+			container->use_rurienv = false;
 		}
 		// Simulate architecture.
 		else if (strcmp(argv[index], "-a") == 0) {

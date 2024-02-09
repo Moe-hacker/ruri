@@ -3,8 +3,7 @@
   * Remove `-D` `-K` `-l` `-t` `-T` option.
   * Remove `-d` option.
   * Rename option:
-  * * `--keep` => `-k`
-  * * `--drop` => `-d`
+  * Add `-N` option: Do not use .rurienv file.
   * General bug fixes.
 # v2.7:
   * Catch segfault.

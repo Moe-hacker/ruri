@@ -35,8 +35,10 @@ void umount_container(const char *container_dir)
 	if (strcmp(container_dir, "/") == 0) {
 		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
 	}
-	char mountpoint[MAX_MOUNTPOINTS / 2][PATH_MAX];
-	mountpoint[0][0] = '\0';
+	struct CONTAINER *container = read_info(NULL, container_dir);
+	char infofile[PATH_MAX] = { '\0' };
+	sprintf(infofile, "%s/.rurienv", container_dir);
+	remove(infofile);
 	// Get path to umount.
 	char sys_dir[PATH_MAX];
 	char proc_dir[PATH_MAX];
@@ -49,17 +51,19 @@ void umount_container(const char *container_dir)
 	strcat(proc_dir, "/proc");
 	strcat(dev_dir, "/dev");
 	// Umount other mountpoints.
-	for (int i = 0; true; i++) {
-		if (mountpoint[i][0] != 0) {
-			strcpy(to_umountpoint, container_dir);
-			strcat(to_umountpoint, mountpoint[i]);
-			for (int j = 0; j < 10; j++) {
-				umount2(to_umountpoint, MNT_DETACH | MNT_FORCE);
-				umount(to_umountpoint);
-				usleep(20000);
+	if (container != NULL) {
+		for (int i = 1; true; i += 2) {
+			if (container->extra_mountpoint[i] != NULL) {
+				strcpy(to_umountpoint, container_dir);
+				strcat(to_umountpoint, container->extra_mountpoint[i]);
+				for (int j = 0; j < 10; j++) {
+					umount2(to_umountpoint, MNT_DETACH | MNT_FORCE);
+					umount(to_umountpoint);
+					usleep(20000);
+				}
+			} else {
+				break;
 			}
-		} else {
-			break;
 		}
 	}
 	// Force umount system runtime directories for 10 times.

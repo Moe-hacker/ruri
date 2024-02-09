@@ -112,6 +112,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *cross_arch;
 	// Path of QEMU binary.
 	char *qemu_path;
+	// Do not store .rurienv file.
+	bool use_rurienv;
 };
 struct __attribute__((aligned(128))) CONTAINER_INFO {
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
@@ -152,7 +154,7 @@ void AwA(void);
 void show_helps(void);
 void show_examples(void);
 void store_info(const struct CONTAINER *container);
-struct CONTAINER *read_info(struct CONTAINER *container);
+struct CONTAINER *read_info(struct CONTAINER *container, const char *container_dir);
 void add_to_caplist(cap_value_t *list, cap_value_t cap);
 bool is_in_caplist(const cap_value_t *list, cap_value_t cap);
 void del_from_caplist(cap_value_t *list, cap_value_t cap);

@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // For run_unshare_container().
-static pid_t init_unshare_container(bool no_warnings)
+static pid_t init_unshare_container(struct CONTAINER *container)
 {
 	/*
 	 * Use unshare(2) to create new namespaces and fork(2) to join them.
@@ -38,39 +38,41 @@ static pid_t init_unshare_container(bool no_warnings)
 	 */
 	pid_t unshare_pid = INIT_VALUE;
 	// Create namespaces.
-	if (unshare(CLONE_NEWNS) == -1 && !no_warnings) {
+	if (unshare(CLONE_NEWNS) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that mount namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_NEWUTS) == -1 && !no_warnings) {
+	if (unshare(CLONE_NEWUTS) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that uts namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_NEWIPC) == -1 && !no_warnings) {
+	if (unshare(CLONE_NEWIPC) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that ipc namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_NEWPID) == -1 && !no_warnings) {
+	if (unshare(CLONE_NEWPID) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that pid namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_NEWCGROUP) == -1 && !no_warnings) {
+	if (unshare(CLONE_NEWCGROUP) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that cgroup namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_NEWTIME) == -1 && !no_warnings) {
+	if (unshare(CLONE_NEWTIME) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that time namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_SYSVSEM) == -1 && !no_warnings) {
+	if (unshare(CLONE_SYSVSEM) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that semaphore namespace is not supported on this device QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_FILES) == -1 && !no_warnings) {
+	if (unshare(CLONE_FILES) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that we could not unshare file descriptors with child process QwQ\033[0m\n");
 	}
-	if (unshare(CLONE_FS) == -1 && !no_warnings) {
+	if (unshare(CLONE_FS) == -1 && !container->no_warnings) {
 		warning("\033[33mWarning: seems that we could not unshare filesystem information with child process QwQ\033[0m\n");
 	}
 	// Fork itself into namespace.
 	// This can fix `can't fork: out of memory` issue.
 	unshare_pid = fork();
 	if (unshare_pid > 0) {
-		// Print pid info.
-		printf("Container PID: %d\n", unshare_pid);
+		// Store container info.
+		if (container->use_rurienv) {
+			store_info(container);
+		}
 		// Fix `can't access tty` issue.
 		waitpid(unshare_pid, NULL, 0);
 	} else if (unshare_pid < 0) {
@@ -162,7 +164,7 @@ void run_unshare_container(struct CONTAINER *container)
 	pid_t unshare_pid = INIT_VALUE;
 	// unshare(2) itself into new namespaces.
 	if (container->ns_pid < 0) {
-		unshare_pid = init_unshare_container(container->no_warnings);
+		unshare_pid = init_unshare_container(container);
 	} else {
 		unshare_pid = join_ns(container);
 	}

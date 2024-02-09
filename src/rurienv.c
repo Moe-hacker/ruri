@@ -68,34 +68,48 @@ void store_info(const struct CONTAINER *container)
 	free(info);
 }
 // Read .rurienv file.
-struct CONTAINER *read_info(struct CONTAINER *container)
+struct CONTAINER *read_info(struct CONTAINER *container, const char *container_dir)
 {
 	struct CONTAINER_INFO *info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
 	char file[PATH_MAX] = { '\0' };
-	sprintf(file, "%s/.rurienv", container->container_dir);
-	unlink(file);
-	remove(file);
-	FILE *fp = fopen(file, "w+");
+	sprintf(file, "%s/.rurienv", container_dir);
+	FILE *fp = fopen(file, "r");
+	if (fp == NULL) {
+		return NULL;
+	}
 	fread(info, sizeof(struct CONTAINER_INFO), 1, fp);
-	for (int i = 0; i <= CAP_LAST_CAP + 1; i++) {
-		container->drop_caplist[i] = info->drop_caplist[i];
-	}
-	container->no_new_privs = info->no_new_privs;
-	container->enable_seccomp = info->no_new_privs;
-	container->ns_pid = info->ns_pid;
-	for (int i = 0; true; i++) {
-		if (container->extra_mountpoint[i][0] == '\0') {
-			container->extra_mountpoint[i] = NULL;
-			break;
+	if (container == NULL) {
+		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+		for (int i = 0; true; i++) {
+			if (info->extra_mountpoint[i][0] == '\0') {
+				container->extra_mountpoint[i] = NULL;
+				container->extra_mountpoint[i + 1] = NULL;
+				break;
+			}
+			container->extra_mountpoint[i] = strdup(info->extra_mountpoint[i]);
 		}
-		container->extra_mountpoint[i] = strdup(info->extra_mountpoint[i]);
-	}
-	for (int i = 0; true; i++) {
-		if (container->env[i][0] == '\0') {
-			container->env[i] = NULL;
-			break;
+	} else {
+		for (int i = 0; i <= CAP_LAST_CAP + 1; i++) {
+			container->drop_caplist[i] = info->drop_caplist[i];
 		}
-		container->env[i] = strdup(info->env[i]);
+		container->no_new_privs = info->no_new_privs;
+		container->enable_seccomp = info->no_new_privs;
+		container->ns_pid = info->ns_pid;
+		int j = 0;
+		for (int i = 0; true; i++) {
+			if (container->env[i] == NULL) {
+				j = i;
+				break;
+			}
+		}
+		for (int i = 0; true; i++) {
+			if (info->env[i][0] == '\0') {
+				container->env[j] = NULL;
+				break;
+			}
+			container->env[j] = strdup(info->env[i]);
+			j++;
+		}
 	}
 	fclose(fp);
 	free(info);
