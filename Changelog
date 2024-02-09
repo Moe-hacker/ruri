@@ -2,7 +2,7 @@
   * Remove daemon support.
   * Remove `-D` `-K` `-l` `-t` `-T` option.
   * Remove `-d` option.
-  * Rename option:
+  * Add long args support.
   * Add `-N` option: Do not use .rurienv file.
   * General bug fixes.
 # v2.7:

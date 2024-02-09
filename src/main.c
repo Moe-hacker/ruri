@@ -127,28 +127,28 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			exit(EXIT_SUCCESS);
 		}
 		// Show version info.
-		if (strcmp(argv[index], "-v") == 0) {
+		if (strcmp(argv[index], "-v") == 0 || strcmp(argv[index], "--version") == 0) {
 			show_version_info();
 			exit(EXIT_SUCCESS);
 		}
 		// Show version code, very useless right now.
-		if (strcmp(argv[index], "-V") == 0) {
+		if (strcmp(argv[index], "-V") == 0 || strcmp(argv[index], "--version-code") == 0) {
 			show_version_code();
 			exit(EXIT_SUCCESS);
 		}
 		// Show help page.
-		if (strcmp(argv[index], "-h") == 0) {
+		if (strcmp(argv[index], "-h") == 0 || strcmp(argv[index], "--help") == 0) {
 			show_helps();
 			exit(EXIT_SUCCESS);
 		}
 		// Show help page and example usage.
-		if (strcmp(argv[index], "-H") == 0) {
+		if (strcmp(argv[index], "-H") == 0 || strcmp(argv[index], "--show-examples") == 0) {
 			show_helps();
 			show_examples();
 			exit(EXIT_SUCCESS);
 		}
 		// Umount a container.
-		if (strcmp(argv[index], "-U") == 0) {
+		if (strcmp(argv[index], "-U") == 0 || strcmp(argv[index], "--umount") == 0) {
 			index += 1;
 			if (argv[index] != NULL) {
 				char *container_dir = realpath(argv[index], NULL);
@@ -162,49 +162,49 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			error("\033[31mFailed to parse arguments.\n");
 		}
 		// Set no_new_privs bit.
-		if (strcmp(argv[index], "-n") == 0) {
+		if (strcmp(argv[index], "-n") == 0 || strcmp(argv[index], "--no-new-privs") == 0) {
 			container->no_new_privs = true;
 		}
 		// Do not store .rurienv file.
-		if (strcmp(argv[index], "-N") == 0) {
+		if (strcmp(argv[index], "-N") == 0 || strcmp(argv[index], "--no-rurienv") == 0) {
 			container->use_rurienv = false;
 		}
 		// Simulate architecture.
-		else if (strcmp(argv[index], "-a") == 0) {
+		else if (strcmp(argv[index], "-a") == 0 || strcmp(argv[index], "--arch") == 0) {
 			index++;
 			container->cross_arch = strdup(argv[index]);
 		}
 		// Path of QEMU.
-		else if (strcmp(argv[index], "-q") == 0) {
+		else if (strcmp(argv[index], "-q") == 0 || strcmp(argv[index], "--qemu-path") == 0) {
 			index++;
 			container->qemu_path = strdup(argv[index]);
 		}
 		// Enable built-in seccomp profile.
-		else if (strcmp(argv[index], "-s") == 0) {
+		else if (strcmp(argv[index], "-s") == 0 || strcmp(argv[index], "--enable-seccomp") == 0) {
 			container->enable_seccomp = true;
 		}
 		// Run unshare container.
-		else if (strcmp(argv[index], "-u") == 0) {
+		else if (strcmp(argv[index], "-u") == 0 || strcmp(argv[index], "--unshare") == 0) {
 			container->enable_unshare = true;
 		}
 		// Run privileged container.
-		else if (strcmp(argv[index], "-p") == 0) {
+		else if (strcmp(argv[index], "-p") == 0 || strcmp(argv[index], "--privileged") == 0) {
 			privileged = true;
 		}
 		// Run rootless container.
-		else if (strcmp(argv[index], "-r") == 0) {
+		else if (strcmp(argv[index], "-r") == 0 || strcmp(argv[index], "--rootless") == 0) {
 			container->rootless = true;
 		}
 		// Do not show warnings.
-		else if (strcmp(argv[index], "-w") == 0) {
+		else if (strcmp(argv[index], "-w") == 0 || strcmp(argv[index], "--no-warnings") == 0) {
 			container->no_warnings = true;
 		}
 		// Force bind-mount host /dev/, /sys/ and /proc/.
-		else if (strcmp(argv[index], "-S") == 0) {
+		else if (strcmp(argv[index], "-S") == 0 || strcmp(argv[index], "--host-runtime") == 0) {
 			container->mount_host_runtime = true;
 		}
 		// Set extra env.
-		else if (strcmp(argv[index], "-e") == 0) {
+		else if (strcmp(argv[index], "-e") == 0 || strcmp(argv[index], "--env") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_ENVS; i++) {
@@ -225,7 +225,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			}
 		}
 		// Set extra mountpoints.
-		else if (strcmp(argv[index], "-m") == 0) {
+		else if (strcmp(argv[index], "-m") == 0 || strcmp(argv[index], "--mount") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
@@ -246,7 +246,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			}
 		}
 		// Extra capabilities to keep.
-		else if (strcmp(argv[index], "-k") == 0) {
+		else if (strcmp(argv[index], "-k") == 0 || strcmp(argv[index], "--keep") == 0) {
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {
@@ -259,7 +259,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			}
 		}
 		// Extra capabilities to drop.
-		else if (strcmp(argv[index], "-d") == 0) {
+		else if (strcmp(argv[index], "-d") == 0 || strcmp(argv[index], "--drop") == 0) {
 			index++;
 			if (argv[index] != NULL) {
 				if (cap_from_name(argv[index], &cap) == 0) {

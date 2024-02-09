@@ -119,40 +119,37 @@ void show_helps(void)
 	 * Help page of ruri.
 	 * I think you can understand...
 	 */
+	printf("ruri %s %s\n", RURI_VERSION, RURI_COMMIT_ID);
 	printf("\033[1;38;2;254;228;208mLightweight, User-friendly Linux-container Implementation\n");
 	printf("\n");
 	printf("Usage:\n");
-	printf("  ruri OPTIONS\n");
-	printf("  ruri [ARGS] CONTAINER_DIRECTORY [COMMAND [ARG]...]\n");
+	printf("  ruri [OPTIONS]...\n");
+	printf("  ruri [ARGS]... [CONTAINER_DIRECTORY]... [COMMAND [ARGS]...]\n");
 	printf("\n");
 	printf("OPTIONS:\n");
-	printf("  -v                     Show version info\n");
-	printf("  -V                     Show version code\n");
-	printf("  -h                     Show helps\n");
-	printf("  -H                     Show helps and commandline examples\n");
-	printf("  -U [container_dir]     Umount a container\n");
+	printf("  -v, --version                   Show version info\n");
+	printf("  -V, --version-code              Show version code\n");
+	printf("  -h, --help                      Show helps\n");
+	printf("  -H, --show-examples             Show helps and commandline examples\n");
+	printf("  -U, --umount [container_dir]    Umount a container\n");
 	printf("\n");
 	printf("ARGS:\n");
-	printf("  -a [arch]              Simulate architecture via binfmt_misc & QEMU, need `-q`\n");
-	printf("  -q [path]              Specify the path of QEMU\n");
-	printf("  -u                     Enable unshare feature\n");
-	printf("  -n                     Set NO_NEW_PRIVS Flag\n");
-	printf("  -N                     Do not use .rurienv file\n");
-	printf("  -s                     Enable built-in Seccomp profile\n");
-	printf("  -p                     Run privileged container\n");
-	printf("  -r                     Run rootless container\n");
-	printf("  -k [cap]               Keep the specified cap\n");
-	printf("  -d [cap]               Drop the specified cap\n");
-	printf("  -e [env] [value]       Set env to its value *Not work if init command is like `su -`\n");
-	printf("  -m [dir/dev/img] [dir] Mount dir/block-device/image to mountpoint\n");
-	printf("  -S                     Bind-mount /dev/, /sys/ and /proc/ from host\n");
-	printf("  -w                     Disable warnings\n");
+	printf("  -a, --arch [arch]               Simulate architecture via binfmt_misc & QEMU, need `-q`\n");
+	printf("  -q, --qemu-path [path]          Specify the path of QEMU\n");
+	printf("  -u, --unshare                   Enable unshare feature\n");
+	printf("  -n, --no-new-privs              Set NO_NEW_PRIVS Flag\n");
+	printf("  -N, --no-rurienv                Do not use .rurienv file\n");
+	printf("  -s, --enable-seccomp            Enable built-in Seccomp profile\n");
+	printf("  -p, --privileged                Run privileged container\n");
+	printf("  -r, --rootless                  Run rootless container\n");
+	printf("  -k, --keep [cap]                Keep the specified cap\n");
+	printf("  -d, --drop [cap]                Drop the specified cap\n");
+	printf("  -e, --env [env] [value]         Set env to its value *Not work if init command is like `su -`\n");
+	printf("  -m, --mount [dir/dev/img] [dir] Mount dir/block-device/image to mountpoint\n");
+	printf("  -S, --host-runtime              Bind-mount /dev/, /sys/ and /proc/ from host\n");
+	printf("  -w, --no-warnings               Disable warnings\n");
 	printf("\n");
-	printf("Default command to run is `/bin/su` if it's not set\n");
-	printf("The path of qemu is the absolute path of qemu binary in the chroot container\n");
-	printf("This program should be run with root privileges\n");
-	printf("Please unset $LD_PRELOAD before running this program\n");
-	printf("For a full user guide, see `man ruri`\033[0m\n");
+	printf("Please unset $LD_PRELOAD before running this program.\n");
 	printf("\n");
 }
 // For `ruri -H`.
