@@ -113,6 +113,14 @@ struct __attribute__((aligned(128))) CONTAINER {
 	// Path of QEMU binary.
 	char *qemu_path;
 };
+struct __attribute__((aligned(128))) CONTAINER_INFO {
+	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
+	char extra_mountpoint[MAX_MOUNTPOINTS][PATH_MAX];
+	char env[MAX_ENVS][PATH_MAX];
+	bool no_new_privs;
+	bool enable_seccomp;
+	pid_t ns_pid;
+};
 // For get_magic().
 #define magicof(x) (x##_magic)
 #define maskof(x) (x##_mask)
@@ -143,6 +151,8 @@ void show_version_code(void);
 void AwA(void);
 void show_helps(void);
 void show_examples(void);
+void store_info(const struct CONTAINER *container);
+struct CONTAINER *read_info(struct CONTAINER *container);
 void add_to_caplist(cap_value_t *list, cap_value_t cap);
 bool is_in_caplist(const cap_value_t *list, cap_value_t cap);
 void del_from_caplist(cap_value_t *list, cap_value_t cap);

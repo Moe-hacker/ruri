@@ -267,6 +267,7 @@ void run_chroot_container(struct CONTAINER *container)
 	if (direxist == NULL) {
 		// '/' should be a mountpoint in container.
 		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
+
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
 		if (container->mount_host_runtime) {
 			mount_host_runtime(container);
