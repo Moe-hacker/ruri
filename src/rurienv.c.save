@@ -37,20 +37,10 @@ static bool is_ruri_pid(pid_t pid)
 	if (fd < 0) {
 		return false;
 	}
-	char buf[4096] = { '\0' };
-	char name[1024] = { '\0' };
+	char buf[1024];
 	read(fd, buf, sizeof(buf));
-	for (int i = 0; true; i++) {
-		if (buf[i] == '(') {
-			for (int j = 1; true; j++) {
-				if (buf[i + j] == ')') {
-					break;
-				}
-				name[j - 1] = buf[i + j];
-				name[j] = '\0';
-			}
-			break;
-		}
+	for (int i=0;true;i++){
+	if(buf[i]
 	}
 	if (strcmp(name, "ruri") == 0) {
 		return true;
@@ -118,35 +108,28 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 			}
 			container->extra_mountpoint[i] = strdup(info->extra_mountpoint[i]);
 		}
-
-		fclose(fp);
-		free(info);
-		return container;
-	}
-	if (container->enable_unshare && !is_ruri_pid(info->ns_pid)) {
-		remove(file);
-		return container;
-	}
-	for (int i = 0; i <= CAP_LAST_CAP + 1; i++) {
-		container->drop_caplist[i] = info->drop_caplist[i];
-	}
-	container->no_new_privs = info->no_new_privs;
-	container->enable_seccomp = info->no_new_privs;
-	container->ns_pid = info->ns_pid;
-	int j = 0;
-	for (int i = 0; true; i++) {
-		if (container->env[i] == NULL) {
-			j = i;
-			break;
+	} else {
+		for (int i = 0; i <= CAP_LAST_CAP + 1; i++) {
+			container->drop_caplist[i] = info->drop_caplist[i];
 		}
-	}
-	for (int i = 0; true; i++) {
-		if (info->env[i][0] == '\0') {
-			container->env[j] = NULL;
-			break;
+		container->no_new_privs = info->no_new_privs;
+		container->enable_seccomp = info->no_new_privs;
+		container->ns_pid = info->ns_pid;
+		int j = 0;
+		for (int i = 0; true; i++) {
+			if (container->env[i] == NULL) {
+				j = i;
+				break;
+			}
 		}
-		container->env[j] = strdup(info->env[i]);
-		j++;
+		for (int i = 0; true; i++) {
+			if (info->env[i][0] == '\0') {
+				container->env[j] = NULL;
+				break;
+			}
+			container->env[j] = strdup(info->env[i]);
+			j++;
+		}
 	}
 	fclose(fp);
 	free(info);

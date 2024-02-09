@@ -279,6 +279,10 @@ void run_chroot_container(struct CONTAINER *container)
 	// Avoid running closedir(NULL), we put it to else branch.
 	else {
 		closedir(direxist);
+		// Read container info.
+		if (container->use_rurienv) {
+			read_info(container, container->container_dir);
+		}
 	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
