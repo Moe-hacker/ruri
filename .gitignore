@@ -1,15 +1,15 @@
-# For testing.
-a.out
-t.c
 # Binary
 ruri
 ruri-amd64.zip
 ruri-arm64.zip
 # Editor configuration.
 .vscode/
-# Compressed doc.
-ruri.1.gz
 # Gdb log
 peda-*
+# Build dir.
 out
+# Tmp file.
 TODO
+*.save
+a.out
+t.c
