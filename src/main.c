@@ -155,6 +155,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 				umount_container(container_dir);
 				exit(EXIT_SUCCESS);
 			}
+			exit(EXIT_FAILURE);
 		}
 		/**** For running a container ****/
 		// Just make clang-tidy happy.
