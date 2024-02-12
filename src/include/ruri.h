@@ -82,6 +82,7 @@
 // Include other headers.
 #include "elf-magic.h"
 #include "version.h"
+#include "k2v.h"
 // Info of a container to create.
 struct __attribute__((aligned(128))) CONTAINER {
 	// Container directory.

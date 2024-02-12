@@ -97,6 +97,7 @@ void show_version_info(void)
 	printf("%s%s%s", "Commit id ........:  ", RURI_COMMIT_ID, "\n");
 	printf("%s%d%s%d%s", "libcap ...........:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");
 	printf("%s%d%s%d%s%d%s", "libseccomp .......:  ", SCMP_VER_MAJOR, ".", SCMP_VER_MINOR, ".", SCMP_VER_MICRO, "\n");
+	printf("%s%d%s%d%s", "libk2v ...........:  ", LIBK2V_MAJOR, ".", LIBK2V_MINOR, "\n");
 	printf("%s%s\n", "Compiler version .:  ", __VERSION__);
 	printf("%s%s\n", "Build date .......:  ", __TIMESTAMP__);
 	printf("\nThere is NO WARRANTY, to the extent permitted by law\n");
