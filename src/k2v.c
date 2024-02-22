@@ -117,25 +117,35 @@ static char *get_first_line(const char *buf)
 	 * Get the first line in `buf`.
 	 * It will automatically remove spaces at the start of the line.
 	 */
-	char *ptr = cuts(buf, 0, '\n');
+	const char *ptr = buf;
+	// Remove null line and space.
+	for (size_t i = 0; i < strlen(buf) - 1; i++) {
+		if (ptr[i] != '\n' && ptr[i] != ' ') {
+			break;
+		}
+		ptr = &ptr[i + 1];
+	}
+	char *line = cuts(ptr, 0, '\n');
 	char *ret = NULL;
 	// Check if we have a line to read.
-	if (ptr == NULL) {
+	if (line == NULL) {
 		return NULL;
 	}
-	// Remove spaces.
-	if (ptr[0] == ' ') {
-		for (size_t i = 0; i < strlen(ptr); i++) {
-			if (ptr[i] != ' ') {
-				ret = strdup(&ptr[i]);
-				break;
-			}
-		}
-	} else {
-		ret = strdup(ptr);
-	}
-	free(ptr);
+	ret = strdup(line);
+	free(line);
 	return ret;
+}
+static char *goto_next_line(const char *buf)
+{
+	// Remove null line.
+	const char *ptr = buf;
+	for (size_t i = 0; i < strlen(buf) - 1; i++) {
+		if (ptr[i] != '\n' && ptr[i] != ' ') {
+			break;
+		}
+		ptr = &ptr[i + 1];
+	}
+	return (strchr(ptr, '\n'));
 }
 static bool is_null_val(const char *buf)
 {
@@ -195,9 +205,9 @@ static void do_basic_check(const char *buf)
 			if (!is_null_val(tmp)) {
 				free(tmp);
 				// Right value only have two legal formats: "val" or ["val1","val2"].
-				tmp = cuts(line, '"', '"');
+				tmp = cuts(line, '[', ']');
 				if (tmp == NULL) {
-					tmp = cuts(line, '[', ']');
+					tmp = cuts(line, '"', '"');
 					if (tmp == NULL) {
 						warning("\033[31mlibk2v warning: unrecognized line: %s\n\033[0m", line);
 						goto _continue;
@@ -208,7 +218,7 @@ static void do_basic_check(const char *buf)
 		}
 _continue:
 		// Goto the next line.
-		ptr = strchr(ptr, '\n');
+		ptr = goto_next_line(ptr);
 		ptr = &ptr[1];
 	}
 }
@@ -240,7 +250,7 @@ static char *key_get_right(const char *key, const char *buf)
 				free(tmp);
 			}
 		}
-		ptr = strchr(ptr, '\n');
+		ptr = goto_next_line(ptr);
 		ptr = &ptr[1];
 	}
 	return ret;
@@ -269,9 +279,9 @@ bool have_key(const char *key, const char *buf)
 					if (!is_null_val(tmp)) {
 						free(tmp);
 						// Right value only have two legal formats: "val" or ["val1","val2"].
-						tmp = cuts(line, '"', '"');
+						tmp = cuts(line, '[', ']');
 						if (tmp == NULL) {
-							tmp = cuts(line, '[', ']');
+							tmp = cuts(line, '"', '"');
 							if (tmp == NULL) {
 								free(line);
 								return false;
@@ -286,7 +296,7 @@ bool have_key(const char *key, const char *buf)
 				free(tmp);
 			}
 		}
-		ptr = strchr(ptr, '\n');
+		ptr = goto_next_line(ptr);
 		ptr = &ptr[1];
 	}
 	return ret;
@@ -308,16 +318,16 @@ char *key_get_char(const char *key, const char *buf)
 int key_get_int(const char *key, const char *buf)
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = key_get_right(key, buf);
 	if (tmp == NULL) {
-		return -1;
+		return 0;
 	}
 	char *val = cuts(tmp, '"', '"');
 	if (val == NULL) {
-		return -1;
+		return 0;
 	}
 	ret = atoi(val);
 	return ret;
@@ -325,16 +335,16 @@ int key_get_int(const char *key, const char *buf)
 float key_get_float(const char *key, const char *buf)
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
 	}
 	float ret = 0;
 	char *tmp = key_get_right(key, buf);
 	if (tmp == NULL) {
-		return -1;
+		return 0;
 	}
 	char *val = cuts(tmp, '"', '"');
 	if (val == NULL) {
-		return -1;
+		return 0;
 	}
 	ret = (float)atof(val);
 	return ret;
@@ -363,7 +373,10 @@ bool key_get_bool(const char *key, const char *buf)
 static int char_to_int_array(const char *buf, int *array)
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
+	}
+	if (is_null_val(buf)) {
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = NULL;
@@ -385,7 +398,10 @@ static int char_to_int_array(const char *buf, int *array)
 static int char_to_float_array(const char *buf, float *array)
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
+	}
+	if (is_null_val(buf)) {
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = NULL;
@@ -407,7 +423,10 @@ static int char_to_float_array(const char *buf, float *array)
 static int char_to_char_array(const char *buf, char *array[])
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
+	}
+	if (is_null_val(buf)) {
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = NULL;
@@ -430,12 +449,12 @@ static int char_to_char_array(const char *buf, char *array[])
 int key_get_int_array(const char *key, const char *buf, int *array)
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = key_get_right(key, buf);
 	if (tmp == NULL) {
-		return -1;
+		return 0;
 	}
 	ret = char_to_int_array(tmp, array);
 	free(tmp);
@@ -444,12 +463,12 @@ int key_get_int_array(const char *key, const char *buf, int *array)
 int key_get_char_array(const char *key, const char *buf, char *array[])
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = key_get_right(key, buf);
 	if (tmp == NULL) {
-		return -1;
+		return 0;
 	}
 	ret = char_to_char_array(tmp, array);
 	free(tmp);
@@ -458,12 +477,12 @@ int key_get_char_array(const char *key, const char *buf, char *array[])
 int key_get_float_array(const char *key, const char *buf, float *array)
 {
 	if (buf == NULL) {
-		return -1;
+		return 0;
 	}
 	int ret = 0;
 	char *tmp = key_get_right(key, buf);
 	if (tmp == NULL) {
-		return -1;
+		return 0;
 	}
 	ret = char_to_float_array(tmp, array);
 	free(tmp);
@@ -487,4 +506,68 @@ char *k2v_open_file(char *path, size_t bufsize)
 	ret[len] = '\0';
 	do_basic_check(ret);
 	return ret;
+}
+static void print_shell_array(const char *buf)
+{
+	printf("(");
+	for (size_t i = 0; i < strlen(buf); i++) {
+		if (buf[i] == '"') {
+			printf("%c", buf[i]);
+			i++;
+			if (buf[i] == ',') {
+				printf(" ");
+			} else {
+				printf("%c", buf[i]);
+			}
+		} else {
+			printf("%c", buf[i]);
+		}
+	}
+	printf(")\n");
+}
+static void print_key_to_shell(const char *key, const char *buf)
+{
+	char *right = key_get_right(key, buf);
+	char *test = NULL;
+	if (right == NULL) {
+		return;
+	}
+	if (!is_null_val(right)) {
+		test = cuts(right, '[', ']');
+		if (test == NULL) {
+			test = cuts(right, '"', '"');
+			if (test != NULL) {
+				printf("%s=\"%s\"\n", key, test);
+				free(test);
+			}
+		} else {
+			printf("%s=", key);
+			print_shell_array(test);
+		}
+	} else {
+		printf("%s=\"\"\n", key);
+	}
+	free(right);
+}
+void k2v_to_shell(const char *buf)
+{
+	const char *ptr = buf;
+	char *line = NULL;
+	char *key = NULL;
+	while (true) {
+		free(line);
+		line = get_first_line(ptr);
+		if (line == NULL) {
+			return;
+		}
+		if (line[0] != '#') {
+			key = cuts(line, 0, '=');
+			if (key != NULL) {
+				print_key_to_shell(key, buf);
+				free(key);
+			}
+		}
+		ptr = goto_next_line(ptr);
+		ptr = &ptr[1];
+	}
 }

@@ -116,14 +116,6 @@ struct __attribute__((aligned(128))) CONTAINER {
 	// Do not store .rurienv file.
 	bool use_rurienv;
 };
-struct __attribute__((aligned(128))) CONTAINER_INFO {
-	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
-	char extra_mountpoint[MAX_MOUNTPOINTS][PATH_MAX];
-	char env[MAX_ENVS][PATH_MAX];
-	bool no_new_privs;
-	bool enable_seccomp;
-	pid_t ns_pid;
-};
 // For get_magic().
 #define magicof(x) (x##_magic)
 #define maskof(x) (x##_mask)

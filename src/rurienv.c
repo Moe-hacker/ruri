@@ -31,6 +31,12 @@
 // Check if the running pid is ruri.
 static bool is_ruri_pid(pid_t pid)
 {
+	/*
+	 * /proc/pid/stat example:
+	 * 24320 (bash) S 24317 24320 7406 34816 24392 4194560 365 262 0 0 0 0 0 0 10 -10 1 0 13729015 4689920 920 18446744073709551615 389493096448 389494178872 549307347392 0 0 0 3211264 3686404 1266761467 1 0 0 17 1 0 0 0 0 0 389494244512 389494276064 390520700928 549307350901 549307350907 549307350907 549307351022 0
+	 * So we just get the process name wrapped by `()`,
+	 * and check if it is `ruri`.
+	 */
 	char stat_path[PATH_MAX] = { '\0' };
 	sprintf(stat_path, "/proc/%d/stat", pid);
 	int fd = open(stat_path, O_RDONLY | O_CLOEXEC);
@@ -57,98 +63,145 @@ static bool is_ruri_pid(pid_t pid)
 	}
 	return false;
 }
-// Build container_info struct.
-static struct CONTAINER_INFO *build_container_info(const struct CONTAINER *container)
+// Format container info as k2v.
+static char *build_container_info(const struct CONTAINER *container)
 {
-	struct CONTAINER_INFO *info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
-	for (int i = 0; i <= CAP_LAST_CAP + 1; i++) {
-		info->drop_caplist[i] = container->drop_caplist[i];
+	char *ret = (char *)malloc(65536);
+	ret[0] = '\0';
+	char buf[4096] = { '\0' };
+	sprintf(buf, "drop_caplist=[");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	for (int i = 0; true; i++) {
+		if (container->drop_caplist[i] == INIT_VALUE) {
+			sprintf(buf, "]\n");
+			strcat(ret, buf);
+			memset(buf, 0, sizeof(buf));
+			break;
+		}
+		sprintf(buf, "\"%s\"", cap_to_name(container->drop_caplist[i]));
+		strcat(ret, buf);
+		memset(buf, 0, sizeof(buf));
+		if (container->drop_caplist[i + 1] != INIT_VALUE) {
+			sprintf(buf, ",");
+			strcat(ret, buf);
+			memset(buf, 0, sizeof(buf));
+		}
 	}
-	info->no_new_privs = container->no_new_privs;
-	info->enable_seccomp = container->no_new_privs;
-	info->ns_pid = container->ns_pid;
+	sprintf(buf, "no_new_privs=");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, container->no_new_privs ? "\"true\"\n" : "\"false\"\n");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, "enable_seccomp=");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, container->enable_seccomp ? "\"true\"\n" : "\"false\"\n");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, "ns_pid=\"%d\"\n", container->ns_pid);
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, "extra_mountpoint=[");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
-			info->extra_mountpoint[i][0] = '\0';
+			sprintf(buf, "]\n");
+			strcat(ret, buf);
+			memset(buf, 0, sizeof(buf));
 			break;
 		}
-		strcpy(info->extra_mountpoint[i], container->extra_mountpoint[i]);
+		sprintf(buf, "\"%s\"", container->extra_mountpoint[i]);
+		strcat(ret, buf);
+		memset(buf, 0, sizeof(buf));
+		if (container->extra_mountpoint[i + 1] != NULL) {
+			sprintf(ret, ",");
+			strcat(ret, buf);
+			memset(buf, 0, sizeof(buf));
+		}
 	}
+	sprintf(buf, "env=[");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
 	for (int i = 0; true; i++) {
 		if (container->env[i] == NULL) {
-			info->env[i][0] = '\0';
+			sprintf(buf, "]\n");
+			strcat(ret, buf);
+			memset(buf, 0, sizeof(buf));
 			break;
 		}
-		strcpy(info->env[i], container->env[i]);
+		sprintf(buf, "\"%s\"", container->env[i]);
+		strcat(ret, buf);
+		memset(buf, 0, sizeof(buf));
+		if (container->env[i + 1] != NULL) {
+			sprintf(buf, ",");
+			strcat(ret, buf);
+			memset(buf, 0, sizeof(buf));
+		}
 	}
-	return info;
+	return ret;
 }
 // Store container info.
 void store_info(const struct CONTAINER *container)
 {
-	struct CONTAINER_INFO *info = build_container_info(container);
+	char *info = build_container_info(container);
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container->container_dir);
 	unlink(file);
 	remove(file);
-	FILE *fp = fopen(file, "w+");
-	fwrite(info, sizeof(struct CONTAINER_INFO), 1, fp);
-	fclose(fp);
+	int fd = creat(file, S_IWUSR | S_IRUSR);
+	write(fd, info, strlen(info));
+	close(fd);
 	free(info);
 }
 // Read .rurienv file.
 struct CONTAINER *read_info(struct CONTAINER *container, const char *container_dir)
 {
-	struct CONTAINER_INFO *info = (struct CONTAINER_INFO *)malloc(sizeof(struct CONTAINER_INFO));
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container_dir);
-	FILE *fp = fopen(file, "r");
-	if (fp == NULL) {
-		free(info);
+	int fd = open(file, O_RDONLY);
+	if (fd < 0) {
 		return container;
 	}
-	fread(info, sizeof(struct CONTAINER_INFO), 1, fp);
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	close(fd);
+	char *buf = k2v_open_file(file, (size_t)size);
 	if (container == NULL) {
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
-		for (int i = 0; true; i++) {
-			if (info->extra_mountpoint[i][0] == '\0') {
-				container->extra_mountpoint[i] = NULL;
-				container->extra_mountpoint[i + 1] = NULL;
-				break;
-			}
-			container->extra_mountpoint[i] = strdup(info->extra_mountpoint[i]);
-		}
-
-		fclose(fp);
-		free(info);
+		int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
+		container->extra_mountpoint[mlen] = NULL;
+		container->extra_mountpoint[mlen + 1] = NULL;
+		close(fd);
+		free(buf);
 		return container;
 	}
-	if (container->enable_unshare && !is_ruri_pid(info->ns_pid)) {
+	if (container->enable_unshare && !is_ruri_pid(key_get_int("ns_pid", buf))) {
 		remove(file);
 		return container;
 	}
-	for (int i = 0; i <= CAP_LAST_CAP + 1; i++) {
-		container->drop_caplist[i] = info->drop_caplist[i];
-	}
-	container->no_new_privs = info->no_new_privs;
-	container->enable_seccomp = info->no_new_privs;
-	container->ns_pid = info->ns_pid;
-	int j = 0;
+	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
+	int caplen = key_get_char_array("drop_caplist", buf, drop_caplist);
+	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
-		if (container->env[i] == NULL) {
-			j = i;
+		if (drop_caplist[i] == NULL) {
 			break;
 		}
+		cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
+		free(drop_caplist[i]);
+		container->drop_caplist[i + 1] = INIT_VALUE;
 	}
-	for (int i = 0; true; i++) {
-		if (info->env[i][0] == '\0') {
-			container->env[j] = NULL;
-			break;
-		}
-		container->env[j] = strdup(info->env[i]);
-		j++;
-	}
-	fclose(fp);
-	free(info);
+	container->no_new_privs = key_get_bool("no_new_privs", buf);
+	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
+	container->ns_pid = key_get_int("ns_pid", buf);
+	int envlen = key_get_char_array("env", buf, container->env);
+	container->env[envlen] = NULL;
+	container->env[envlen + 1] = NULL;
+	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
+	container->extra_mountpoint[mlen] = NULL;
+	container->extra_mountpoint[mlen + 1] = NULL;
 	return container;
 }

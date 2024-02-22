@@ -54,3 +54,4 @@ int key_get_char_array(const char *key, const char *buf, char *array[]);
 int key_get_float_array(const char *key, const char *buf, float *array);
 bool have_key(const char *key, const char *buf);
 char *k2v_open_file(char *path, size_t bufsize);
+void k2v_to_shell(const char *buf);
