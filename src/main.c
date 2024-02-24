@@ -35,7 +35,7 @@ static void check_container(const struct CONTAINER *container)
 	 * It's called by main() to check if container is correct.
 	 * It will also check the running environment.
 	 * Note that it can only do basic checks,
-	 * and we can't know if container can really run a container properly.
+	 * and we can't know if the config can really run a container properly.
 	 */
 	// Check if container directory is given.
 	if (container->container_dir == NULL) {

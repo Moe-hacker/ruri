@@ -154,6 +154,7 @@ void del_from_caplist(cap_value_t *list, cap_value_t cap);
 void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[]);
 struct MAGIC *get_magic(const char *cross_arch);
 void run_unshare_container(struct CONTAINER *container);
+char *container_info_to_k2v(const struct CONTAINER *container);
 void run_chroot_container(struct CONTAINER *container);
 void run_rootless_container(struct CONTAINER *container);
 int trymount(const char *source, const char *target, unsigned int mountflags);
