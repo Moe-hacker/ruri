@@ -33,6 +33,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	char *ret = (char *)malloc(65536);
 	ret[0] = '\0';
 	char buf[4096] = { '\0' };
+	// drop_caplist.
 	sprintf(buf, "drop_caplist=[");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
@@ -52,40 +53,41 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			memset(buf, 0, sizeof(buf));
 		}
 	}
+	// no_new_privs.
 	sprintf(buf, "no_new_privs=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->no_new_privs ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-
+	// enable_unshare.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "enable_unshare=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->enable_unshare ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-
+	// rootless.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "rootless=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->rootless ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-
+	// mount_host_runtime.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "mount_host_runtime=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->mount_host_runtime ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-
+	// no_warnings.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "no_warnings=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->no_warnings ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-
+	// cross_arch.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "cross_arch=");
 	strcat(ret, buf);
@@ -96,6 +98,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		sprintf(buf, "\"\"\n");
 	}
 	strcat(ret, buf);
+	// qemu_path.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "qemu_path=");
 	strcat(ret, buf);
@@ -106,23 +109,21 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		sprintf(buf, "\"\"\n");
 	}
 	strcat(ret, buf);
-
+	// use_rurienv.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "use_rurienv=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->use_rurienv ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-
+	// enable_seccomp.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "enable_seccomp=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->enable_seccomp ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
-	memset(buf, 0, sizeof(buf));
-	sprintf(buf, "ns_pid=\"%d\"\n", container->ns_pid);
-	strcat(ret, buf);
+	// extra_mountpoint.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "extra_mountpoint=[");
 	strcat(ret, buf);
@@ -143,6 +144,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			memset(buf, 0, sizeof(buf));
 		}
 	}
+	// env.
 	sprintf(buf, "env=[");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
@@ -162,6 +164,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			memset(buf, 0, sizeof(buf));
 		}
 	}
+	// command.
 	sprintf(buf, "command=[");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));

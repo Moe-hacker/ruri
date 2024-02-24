@@ -46,6 +46,7 @@ static bool is_ruri_pid(pid_t pid)
 	char buf[4096] = { '\0' };
 	char name[1024] = { '\0' };
 	read(fd, buf, sizeof(buf));
+	// Get the process name wrapped by `()`.
 	for (int i = 0; true; i++) {
 		if (buf[i] == '(') {
 			for (int j = 1; true; j++) {
@@ -69,6 +70,7 @@ static char *build_container_info(const struct CONTAINER *container)
 	char *ret = (char *)malloc(65536);
 	ret[0] = '\0';
 	char buf[4096] = { '\0' };
+	// drop_caplist.
 	sprintf(buf, "drop_caplist=[");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
@@ -88,20 +90,24 @@ static char *build_container_info(const struct CONTAINER *container)
 			memset(buf, 0, sizeof(buf));
 		}
 	}
+	// no_new_privs.
 	sprintf(buf, "no_new_privs=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->no_new_privs ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
+	// enable_seccomp.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "enable_seccomp=");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, container->enable_seccomp ? "\"true\"\n" : "\"false\"\n");
 	strcat(ret, buf);
+	// ns_pid.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "ns_pid=\"%d\"\n", container->ns_pid);
 	strcat(ret, buf);
+	// extra_mountpoint.
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "extra_mountpoint=[");
 	strcat(ret, buf);
@@ -122,6 +128,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			memset(buf, 0, sizeof(buf));
 		}
 	}
+	// env.
 	sprintf(buf, "env=[");
 	strcat(ret, buf);
 	memset(buf, 0, sizeof(buf));
@@ -170,6 +177,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	off_t size = filestat.st_size;
 	close(fd);
 	char *buf = k2v_open_file(file, (size_t)size);
+	// Only umount_container() will give a NULL struct.
 	if (container == NULL) {
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
 		int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
@@ -179,10 +187,12 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 		free(buf);
 		return container;
 	}
+	// Check if ns_pid is a ruri process.
 	if (container->enable_unshare && !is_ruri_pid(key_get_int("ns_pid", buf))) {
 		remove(file);
 		return container;
 	}
+	// Get capabilities to drop.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
 	int caplen = key_get_char_array("drop_caplist", buf, drop_caplist);
 	drop_caplist[caplen] = NULL;
@@ -194,12 +204,17 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 		free(drop_caplist[i]);
 		container->drop_caplist[i + 1] = INIT_VALUE;
 	}
+	// Get no_new_privs.
 	container->no_new_privs = key_get_bool("no_new_privs", buf);
+	// Get enable_seccomp.
 	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
+	// Get ns_pid.
 	container->ns_pid = key_get_int("ns_pid", buf);
+	// Get env.
 	int envlen = key_get_char_array("env", buf, container->env);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
+	// Get extra_mountpoint.
 	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;

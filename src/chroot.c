@@ -260,7 +260,7 @@ void run_chroot_container(struct CONTAINER *container)
 	mount_mountpoints(container);
 	// Check if system runtime files are already created.
 	// container_dir shoud bind-mount before chroot(2),
-	// and mount_host_runtime() and store_info() will be called here.
+	// mount_host_runtime() and store_info() will be called here.
 	char buf[PATH_MAX] = { '\0' };
 	sprintf(buf, "%s/sys/kernel", container->container_dir);
 	DIR *direxist = opendir(buf);
