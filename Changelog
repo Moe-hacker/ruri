@@ -1,7 +1,9 @@
 # v3.0:
   * Remove daemon support.
-  * Remove `-D` `-K` `-l` `-t` `-T` option.
-  * Remove `-d` option.
+  * Remove old `-d` `-D` `-K` `-l` `-t` `-T` option.
+  * `-d` option now alias to `--drop`.
+  * `-D` option now alias to `--dump-config`.
+  * Add `-o` option: `--output` for `-D`.
   * Add long args support.
   * Add `-N` option: Do not use .rurienv file.
   * General bug fixes.

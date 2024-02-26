@@ -184,5 +184,64 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			memset(buf, 0, sizeof(buf));
 		}
 	}
+	// container_dir.
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, "container_dir=");
+	strcat(ret, buf);
+	memset(buf, 0, sizeof(buf));
+	sprintf(buf, "\"%s\"\n", container->container_dir);
+	strcat(ret, buf);
 	return ret;
+}
+struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
+{
+	int fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "\033[31mNo such file or directory:%s\n\033[0m", path);
+		exit(EXIT_FAILURE);
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	close(fd);
+	char *buf = k2v_open_file(path, (size_t)size);
+	// Get drop_caplist.
+	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
+	int caplen = key_get_char_array("drop_caplist", buf, drop_caplist);
+	drop_caplist[caplen] = NULL;
+	for (int i = 0; true; i++) {
+		if (drop_caplist[i] == NULL) {
+			break;
+		}
+		cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
+		free(drop_caplist[i]);
+		container->drop_caplist[i + 1] = INIT_VALUE;
+	}
+	// Get no_new_privs.
+	container->no_new_privs = key_get_bool("no_new_privs", buf);
+	// Get enable_seccomp.
+	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
+	// Get container_dir.
+	container->container_dir = key_get_char("container_dir", buf);
+	// Get qemu_path.
+	container->qemu_path = key_get_char("qemu_path", buf);
+	// Get cross_arch.
+	container->cross_arch = key_get_char("cross_arch", buf);
+	// Get rootless.
+	container->rootless = key_get_bool("rootless", buf);
+	// Get mount_host_runtime.
+	container->mount_host_runtime = key_get_bool("mount_host_runtime", buf);
+	// Get no_warnings.
+	container->no_warnings = key_get_bool("no_warnings", buf);
+	// Get use_rurienv.
+	container->use_rurienv = key_get_bool("use_rurienv", buf);
+	// Get env.
+	int envlen = key_get_char_array("env", buf, container->env);
+	container->env[envlen] = NULL;
+	container->env[envlen + 1] = NULL;
+	// Get extra_mountpoint.
+	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
+	container->extra_mountpoint[mlen] = NULL;
+	container->extra_mountpoint[mlen + 1] = NULL;
+	return container;
 }

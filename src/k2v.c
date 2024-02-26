@@ -488,7 +488,7 @@ int key_get_float_array(const char *key, const char *buf, float *array)
 	free(tmp);
 	return ret;
 }
-char *k2v_open_file(char *path, size_t bufsize)
+char *k2v_open_file(const char *path, size_t bufsize)
 {
 	/*
 	 * It will automatically call malloc(2),

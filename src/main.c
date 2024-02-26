@@ -320,6 +320,8 @@ int main(int argc, char **argv)
 	/*
 	 * Pogram starts here.
 	 */
+	// Exit when we get error reading configs.
+	k2v_stop_at_warning = true;
 	// Set process name.
 	prctl(PR_SET_NAME, "ruri");
 	// Catch coredump signal.
@@ -330,6 +332,7 @@ int main(int argc, char **argv)
 	container = parse_args(argc, argv, container);
 	// Check container and the running environment.
 	check_container(container);
+	printf("%s\n", container_info_to_k2v(container));
 	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);

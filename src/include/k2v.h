@@ -40,7 +40,7 @@
 #endif
 // Version info.
 #define LIBK2V_MAJOR 0
-#define LIBK2V_MINOR 1
+#define LIBK2V_MINOR 2
 // Warning.
 extern bool k2v_stop_at_warning;
 extern bool k2v_show_warning;
@@ -53,5 +53,5 @@ int key_get_int_array(const char *key, const char *buf, int *array);
 int key_get_char_array(const char *key, const char *buf, char *array[]);
 int key_get_float_array(const char *key, const char *buf, float *array);
 bool have_key(const char *key, const char *buf);
-char *k2v_open_file(char *path, size_t bufsize);
+char *k2v_open_file(const char *path, size_t bufsize);
 void k2v_to_shell(const char *buf);
