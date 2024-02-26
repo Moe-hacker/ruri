@@ -26,7 +26,6 @@
  * SOFTWARE.
  *
  *
- *
  */
 #include "include/ruri.h"
 // Get ELF magic number and mask for cross_arch specified.
