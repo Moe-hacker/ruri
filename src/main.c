@@ -332,7 +332,6 @@ int main(int argc, char **argv)
 	container = parse_args(argc, argv, container);
 	// Check container and the running environment.
 	check_container(container);
-	printf("%s\n", container_info_to_k2v(container));
 	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);
