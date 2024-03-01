@@ -256,8 +256,6 @@ void run_chroot_container(struct CONTAINER *container)
 	sigaddset(&sigs, SIGTTIN);
 	sigaddset(&sigs, SIGTTOU);
 	sigprocmask(SIG_BLOCK, &sigs, 0);
-	// Mount mountpoints.
-	mount_mountpoints(container);
 	// Check if system runtime files are already created.
 	// container_dir shoud bind-mount before chroot(2),
 	// mount_host_runtime() and store_info() will be called here.
@@ -284,6 +282,8 @@ void run_chroot_container(struct CONTAINER *container)
 			read_info(container, container->container_dir);
 		}
 	}
+	// Mount mountpoints.
+	mount_mountpoints(container);
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
 		container->command[0] = "/bin/su";
