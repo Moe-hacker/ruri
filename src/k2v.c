@@ -571,3 +571,91 @@ void k2v_to_shell(const char *buf)
 		ptr = &ptr[1];
 	}
 }
+char *char_to_k2v(const char *key, const char *val)
+{
+	char *ret = malloc(strlen(key) + strlen(val) + 8);
+	sprintf(ret, "%s=\"%s\"\n", key, val);
+	return ret;
+}
+char *int_to_k2v(const char *key, int val)
+{
+	char *ret = malloc(strlen(key) + 12 + 8);
+	sprintf(ret, "%s=\"%d\"\n", key, val);
+	return ret;
+}
+char *bool_to_k2v(const char *key, bool val)
+{
+	char *ret = malloc(strlen(key) + 8 + 8);
+	sprintf(ret, "%s=\"%s\"\n", key, val ? "true" : "false");
+	return ret;
+}
+char *float_to_k2v(const char *key, float val)
+{
+	char *buf = malloc(strlen(key) + 400 + 8);
+	sprintf(buf, "%s=\"%f\"\n", key, val);
+	char *ret = strdup(buf);
+	free(buf);
+	return ret;
+}
+char *char_array_to_k2v(const char *key, char *const *val, int len)
+{
+	char *buf = malloc(strlen(key) + 8);
+	size_t size = strlen(key) + 8;
+	sprintf(buf, "%s=[", key);
+	char *tmp = NULL;
+	for (int i = 0; i < len; i++) {
+		tmp = malloc(strlen(val[i]) + 8);
+		sprintf(tmp, "\"%s\"", val[i]);
+		size += strlen(val[i]) + 8;
+		buf = realloc(buf, size);
+		strcat(buf, tmp);
+		if (i != len - 1) {
+			strcat(buf, ",");
+		} else {
+			strcat(buf, "]");
+		}
+		free(tmp);
+	}
+	strcat(buf, "\n");
+	char *ret = strdup(buf);
+	free(buf);
+	return ret;
+}
+char *int_array_to_k2v(const char *key, int *val, int len)
+{
+	char *buf = malloc(strlen(key) + 12 * (size_t)len + 8);
+	sprintf(buf, "%s=[", key);
+	char *tmp = malloc(12);
+	for (int i = 0; i < len; i++) {
+		sprintf(tmp, "\"%d\"", val[i]);
+		strcat(buf, tmp);
+		if (i != len - 1) {
+			strcat(buf, ",");
+		} else {
+			strcat(buf, "]");
+		}
+	}
+	strcat(buf, "\n");
+	char *ret = strdup(buf);
+	free(buf);
+	return ret;
+}
+char *float_array_to_k2v(const char *key, float *val, int len)
+{
+	char *buf = malloc(strlen(key) + 400 * (size_t)len + 8);
+	sprintf(buf, "%s=[", key);
+	char *tmp = malloc(400);
+	for (int i = 0; i < len; i++) {
+		sprintf(tmp, "\"%f\"", val[i]);
+		strcat(buf, tmp);
+		if (i != len - 1) {
+			strcat(buf, ",");
+		} else {
+			strcat(buf, "]");
+		}
+	}
+	strcat(buf, "\n");
+	char *ret = strdup(buf);
+	free(buf);
+	return ret;
+}
