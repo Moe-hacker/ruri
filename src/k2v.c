@@ -573,8 +573,14 @@ void k2v_to_shell(const char *buf)
 }
 char *char_to_k2v(const char *key, const char *val)
 {
-	char *ret = malloc(strlen(key) + strlen(val) + 8);
-	sprintf(ret, "%s=\"%s\"\n", key, val);
+	char *ret = NULL;
+	if (val != NULL) {
+		ret = malloc(strlen(key) + strlen(val) + 8);
+		sprintf(ret, "%s=\"%s\"\n", key, val);
+	} else {
+		ret = malloc(strlen(key) + 8);
+		sprintf(ret, "%s=\"\"\n", key);
+	}
 	return ret;
 }
 char *int_to_k2v(const char *key, int val)
