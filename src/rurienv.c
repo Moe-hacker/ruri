@@ -69,85 +69,52 @@ static char *build_container_info(const struct CONTAINER *container)
 {
 	char *ret = (char *)malloc(65536);
 	ret[0] = '\0';
-	char buf[4096] = { '\0' };
+	char *buf = NULL;
 	// drop_caplist.
-	sprintf(buf, "drop_caplist=[");
-	strcat(ret, buf);
-	memset(buf, 0, sizeof(buf));
+	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
+	int len = 0;
 	for (int i = 0; true; i++) {
 		if (container->drop_caplist[i] == INIT_VALUE) {
-			sprintf(buf, "]\n");
-			strcat(ret, buf);
-			memset(buf, 0, sizeof(buf));
+			len = i;
 			break;
 		}
-		sprintf(buf, "\"%s\"", cap_to_name(container->drop_caplist[i]));
-		strcat(ret, buf);
-		memset(buf, 0, sizeof(buf));
-		if (container->drop_caplist[i + 1] != INIT_VALUE) {
-			sprintf(buf, ",");
-			strcat(ret, buf);
-			memset(buf, 0, sizeof(buf));
-		}
+		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
+	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
+	strcat(ret, buf);
+	free(buf);
 	// no_new_privs.
-	sprintf(buf, "no_new_privs=");
+	buf = bool_to_k2v("no_new_privs", container->no_new_privs);
 	strcat(ret, buf);
-	memset(buf, 0, sizeof(buf));
-	sprintf(buf, container->no_new_privs ? "\"true\"\n" : "\"false\"\n");
-	strcat(ret, buf);
+	free(buf);
 	// enable_seccomp.
-	memset(buf, 0, sizeof(buf));
-	sprintf(buf, "enable_seccomp=");
+	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
 	strcat(ret, buf);
-	memset(buf, 0, sizeof(buf));
-	sprintf(buf, container->enable_seccomp ? "\"true\"\n" : "\"false\"\n");
-	strcat(ret, buf);
+	free(buf);
 	// ns_pid.
-	memset(buf, 0, sizeof(buf));
-	sprintf(buf, "ns_pid=\"%d\"\n", container->ns_pid);
+	buf = int_to_k2v("ns_pid", container->ns_pid);
 	strcat(ret, buf);
+	free(buf);
 	// extra_mountpoint.
-	memset(buf, 0, sizeof(buf));
-	sprintf(buf, "extra_mountpoint=[");
-	strcat(ret, buf);
-	memset(buf, 0, sizeof(buf));
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
-			sprintf(buf, "]\n");
-			strcat(ret, buf);
-			memset(buf, 0, sizeof(buf));
+			len = i;
 			break;
 		}
-		sprintf(buf, "\"%s\"", container->extra_mountpoint[i]);
-		strcat(ret, buf);
-		memset(buf, 0, sizeof(buf));
-		if (container->extra_mountpoint[i + 1] != NULL) {
-			sprintf(ret, ",");
-			strcat(ret, buf);
-			memset(buf, 0, sizeof(buf));
-		}
 	}
-	// env.
-	sprintf(buf, "env=[");
+	buf = char_array_to_k2v("extra_mountpoint", container->extra_mountpoint, len);
 	strcat(ret, buf);
-	memset(buf, 0, sizeof(buf));
+	free(buf);
+	// env.
 	for (int i = 0; true; i++) {
 		if (container->env[i] == NULL) {
-			sprintf(buf, "]\n");
-			strcat(ret, buf);
-			memset(buf, 0, sizeof(buf));
+			len = i;
 			break;
 		}
-		sprintf(buf, "\"%s\"", container->env[i]);
-		strcat(ret, buf);
-		memset(buf, 0, sizeof(buf));
-		if (container->env[i + 1] != NULL) {
-			sprintf(buf, ",");
-			strcat(ret, buf);
-			memset(buf, 0, sizeof(buf));
-		}
 	}
+	buf = char_array_to_k2v("env", container->env, len);
+	strcat(ret, buf);
+	free(buf);
 	return ret;
 }
 // Store container info.

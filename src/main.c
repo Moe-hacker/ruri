@@ -333,9 +333,6 @@ int main(int argc, char **argv)
 	// Check container and the running environment.
 	check_container(container);
 	// Run container.
-	// TODO
-	container->use_rurienv = false;
-	//
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);
 	} else if ((container->rootless)) {

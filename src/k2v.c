@@ -600,6 +600,12 @@ char *float_to_k2v(const char *key, float val)
 char *char_array_to_k2v(const char *key, char *const *val, int len)
 {
 	char *buf = malloc(strlen(key) + 8);
+	if (len == 0) {
+		sprintf(buf, "%s=[]\n", key);
+		char *ret = strdup(buf);
+		free(buf);
+		return ret;
+	}
 	size_t size = strlen(key) + 8;
 	sprintf(buf, "%s=[", key);
 	char *tmp = NULL;
@@ -624,6 +630,12 @@ char *char_array_to_k2v(const char *key, char *const *val, int len)
 char *int_array_to_k2v(const char *key, int *val, int len)
 {
 	char *buf = malloc(strlen(key) + 12 * (size_t)len + 8);
+	if (len == 0) {
+		sprintf(buf, "%s=[]\n", key);
+		char *ret = strdup(buf);
+		free(buf);
+		return ret;
+	}
 	sprintf(buf, "%s=[", key);
 	char *tmp = malloc(12);
 	for (int i = 0; i < len; i++) {
@@ -638,11 +650,18 @@ char *int_array_to_k2v(const char *key, int *val, int len)
 	strcat(buf, "\n");
 	char *ret = strdup(buf);
 	free(buf);
+	free(tmp);
 	return ret;
 }
 char *float_array_to_k2v(const char *key, float *val, int len)
 {
 	char *buf = malloc(strlen(key) + 400 * (size_t)len + 8);
+	if (len == 0) {
+		sprintf(buf, "%s=[]\n", key);
+		char *ret = strdup(buf);
+		free(buf);
+		return ret;
+	}
 	sprintf(buf, "%s=[", key);
 	char *tmp = malloc(400);
 	for (int i = 0; i < len; i++) {
@@ -657,5 +676,6 @@ char *float_array_to_k2v(const char *key, float *val, int len)
 	strcat(buf, "\n");
 	char *ret = strdup(buf);
 	free(buf);
+	free(tmp);
 	return ret;
 }
