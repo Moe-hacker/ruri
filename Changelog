@@ -7,6 +7,7 @@
   * Add `-o` option: `--output` for `-D`.
   * Add `-N` option: `--no-rurienv`.
   * Add long args support.
+  * Automatically unset $LD_PRELOAD before running container.
   * General bug fixes.
 # v2.7:
   * Catch segfault.

@@ -153,8 +153,6 @@ void show_helps(void)
 	printf("  -S, --host-runtime              Bind-mount /dev/, /sys/ and /proc/ from host\n");
 	printf("  -w, --no-warnings               Disable warnings\n");
 	printf("\n");
-	printf("Please unset $LD_PRELOAD before running this program.\n");
-	printf("\n");
 }
 // For `ruri -H`.
 void show_examples(void)

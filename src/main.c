@@ -49,12 +49,6 @@ static void check_container(const struct CONTAINER *container)
 	if (getuid() != 0 && !(container->rootless)) {
 		error("\033[31mError: this program should be run with root privileges QwQ\n");
 	}
-	// Check if $LD_PRELOAD is unset.
-	// If LD_PRELOAD is set, container might will not run properly.
-	char *ld_preload = getenv("LD_PRELOAD");
-	if ((ld_preload != NULL) && (strcmp(ld_preload, "") != 0)) {
-		error("\033[31mError: please unset $LD_PRELOAD before running this program QwQ\n");
-	}
 	// Check if container directory exists.
 	DIR *direxist = opendir(container->container_dir);
 	if (direxist == NULL) {
@@ -385,6 +379,13 @@ int main(int argc, char **argv)
 	// Check container and the running environment.
 	check_container(container);
 	// Run container.
+	// unset $LD_PRELOAD.
+	unsetenv("LD_PRELOAD");
+	pid_t pid = fork();
+	if (pid > 0) {
+		waitpid(pid, NULL, 0);
+		exit(EXIT_SUCCESS);
+	}
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);
 	} else if ((container->rootless)) {
