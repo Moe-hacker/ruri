@@ -121,8 +121,7 @@ struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 {
 	int fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		fprintf(stderr, "\033[31mNo such file or directory:%s\n\033[0m", path);
-		exit(EXIT_FAILURE);
+		error("\033[31mNo such file or directory:%s\n\033[0m", path);
 	}
 	struct stat filestat;
 	fstat(fd, &filestat);

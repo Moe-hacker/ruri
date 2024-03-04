@@ -77,6 +77,8 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		show_helps();
 		exit(EXIT_FAILURE);
 	}
+	bool dump_config = false;
+	char *output_path = NULL;
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t cap = INIT_VALUE;
@@ -99,10 +101,6 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
 		/**** Deprecated options. ****/
-		if (strcmp(argv[index], "-D") == 0) {
-			printf("\033[33m%s option has been deprecated.\n", argv[index]);
-			exit(EXIT_SUCCESS);
-		}
 		if (strcmp(argv[index], "-K") == 0) {
 			printf("\033[33m%s option has been deprecated.\n", argv[index]);
 			exit(EXIT_SUCCESS);
@@ -162,22 +160,49 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		if (argv[index] == NULL) {
 			error("\033[31mFailed to parse arguments.\n");
 		}
+		// Use config file.
+		if (strcmp(argv[index], "-c") == 0 || strcmp(argv[index], "--config") == 0) {
+			if (index == argc - 1) {
+				error("\033[31mPlease specify a config file !\n\033[0m");
+			}
+			index++;
+			container = read_config(container, argv[index]);
+			break;
+		}
+		// Dump config.
+		else if (strcmp(argv[index], "-D") == 0 || strcmp(argv[index], "--dump-config") == 0) {
+			dump_config = true;
+		}
+		// Output file.
+		else if (strcmp(argv[index], "-o") == 0 || strcmp(argv[index], "--output") == 0) {
+			index++;
+			if (index == argc - 1) {
+				error("\033[31mPlease specify the output file\n\033[0m");
+			}
+			output_path = argv[index];
+		}
 		// Set no_new_privs bit.
-		if (strcmp(argv[index], "-n") == 0 || strcmp(argv[index], "--no-new-privs") == 0) {
+		else if (strcmp(argv[index], "-n") == 0 || strcmp(argv[index], "--no-new-privs") == 0) {
 			container->no_new_privs = true;
 		}
 		// Do not store .rurienv file.
-		if (strcmp(argv[index], "-N") == 0 || strcmp(argv[index], "--no-rurienv") == 0) {
+		else if (strcmp(argv[index], "-N") == 0 || strcmp(argv[index], "--no-rurienv") == 0) {
 			container->use_rurienv = false;
 		}
 		// Simulate architecture.
 		else if (strcmp(argv[index], "-a") == 0 || strcmp(argv[index], "--arch") == 0) {
+			if (index == argc - 1) {
+				error("\033[31mPlease specify the arch\n\033[0m");
+			}
 			index++;
 			container->cross_arch = strdup(argv[index]);
 		}
 		// Path of QEMU.
 		else if (strcmp(argv[index], "-q") == 0 || strcmp(argv[index], "--qemu-path") == 0) {
 			index++;
+			if (index == argc - 1) {
+				error("\033[31mPlease specify the path of qemu binary\n\033[0m");
+			}
 			container->qemu_path = strdup(argv[index]);
 		}
 		// Enable built-in seccomp profile.
@@ -312,6 +337,33 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	}
 	// Get the capabilities to drop.
 	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
+	// Dump config.
+	if (dump_config) {
+		// Check if container directory is given.
+		if (container->container_dir == NULL) {
+			error("\033[31mError: container directory is not set QwQ\n");
+		}
+		// Refuse to use `/` for container directory.
+		if (strcmp(container->container_dir, "/") == 0) {
+			error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
+		}
+		// Check if container directory exists.
+		DIR *direxist = opendir(container->container_dir);
+		if (direxist == NULL) {
+			error("\033[31mError: container directory does not exist QwQ\n");
+		}
+		closedir(direxist);
+		char *config = container_info_to_k2v(container);
+		if (output_path == NULL) {
+			printf("%s", config);
+			exit(EXIT_SUCCESS);
+		}
+		unlink(output_path);
+		remove(output_path);
+		int fd = open(output_path, O_CREAT | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
+		write(fd, config, strlen(config));
+		exit(EXIT_SUCCESS);
+	}
 	return container;
 }
 // It works on my machine!!!
