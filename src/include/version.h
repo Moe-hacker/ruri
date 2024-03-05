@@ -29,4 +29,4 @@
  *
  */
 // Version info.
-#define RURI_VERSION "3.0-dev"
+#define RURI_VERSION "3.0-pre"
