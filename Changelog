@@ -2,11 +2,11 @@
   * Remove daemon support.
   * Use libk2v for config files and .rurienv file.
   * Remove old `-d` `-D` `-K` `-l` `-t` `-T` option.
+  * Add long args support.
   * `-d` option now aliases to `--drop`.
   * `-D` option now aliases to `--dump-config`.
   * Add `-o` option: `--output` for `-D`.
   * Add `-N` option: `--no-rurienv`.
-  * Add long args support.
   * Automatically unset $LD_PRELOAD before running container.
   * General bug fixes.
 # v2.7:
