@@ -160,6 +160,9 @@ clean :
 	@rm -rf $(O)||true
 	$(CLEAN_LOG) peda*
 	@rm -f peda*
+upk2v :
+	cp ../libk2v/src/k2v.c src/k2v.c
+	cp ../libk2v/src/include/k2v.h src/include/k2v.h
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all            compile"
