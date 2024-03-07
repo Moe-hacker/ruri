@@ -165,6 +165,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
+			container->drop_caplist[i] = INIT_VALUE;
 			break;
 		}
 		cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
