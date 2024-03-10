@@ -334,6 +334,6 @@ void run_chroot_container(struct CONTAINER *container)
 	// Use exec(3) function because system(3) may be unavailable now.
 	if (execv(container->command[0], container->command) == -1) {
 		// Catch exceptions.
-		error("\033[31mFailed to execute `%s`\nexecv() returned: %d\nerror reason: %s\033[0m\n", container->command[0], errno, strerror(errno));
+		error("\033[31mFailed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this\033[0m\n", container->command[0], errno, strerror(errno));
 	}
 }
