@@ -295,6 +295,9 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0)) {
 			// Get the absolute path of container.
 			container->container_dir = realpath(argv[index], NULL);
+			if (container->container_dir == NULL) {
+				error("\033[31mCONTAINER_DIR %s does not exist\033[0m\n", argv[index]);
+			}
 			index++;
 			// Arguments after container_dir will be read as init command.
 			if (argv[index]) {
@@ -380,11 +383,13 @@ int main(int argc, char **argv)
 	check_container(container);
 	// Run container.
 	// unset $LD_PRELOAD.
-	unsetenv("LD_PRELOAD");
-	pid_t pid = fork();
-	if (pid > 0) {
-		waitpid(pid, NULL, 0);
-		exit(EXIT_SUCCESS);
+	if (getenv("LD_PRELOAD") != NULL) {
+		unsetenv("LD_PRELOAD");
+		pid_t pid = fork();
+		if (pid > 0) {
+			waitpid(pid, NULL, 0);
+			exit(EXIT_SUCCESS);
+		}
 	}
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);
