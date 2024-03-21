@@ -77,6 +77,19 @@ void AwA(void)
 	printf("%s\n", "");
 }
 // For `ruri -v`.
+extern char build_id_start;
+extern char build_id_end;
+// See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
+static char *get_build_id(void)
+{
+	static char ret[128] = { '\0' };
+	char buf[4] = { '\0' };
+	for (char *s = &build_id_start + 16; s < &build_id_end; s++) {
+		sprintf(buf, "%x", *s);
+		strcat(ret, buf);
+	}
+	return ret;
+}
 void show_version_info(void)
 {
 	/*
@@ -100,6 +113,7 @@ void show_version_info(void)
 	printf("%s%d%s%d%s", "libk2v ...........:  ", LIBK2V_MAJOR, ".", LIBK2V_MINOR, "\n");
 	printf("%s%s\n", "Compiler version .:  ", __VERSION__);
 	printf("%s%s\n", "Build date .......:  ", __TIMESTAMP__);
+	printf("%s%s\n", "Build ID .........:  ", get_build_id());
 	printf("\nThere is NO WARRANTY, to the extent permitted by law\n");
 	printf("\033[0m\n");
 }
