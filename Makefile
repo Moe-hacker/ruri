@@ -91,13 +91,13 @@ CHECKER = clang-tidy --use-color
 # Unused checks are disabled.
 CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch
 # Link with libcap, libpthread and libseccomp.
-LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO)
-DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX)
+LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO) -Wl,--build-id=sha1
+DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) -Wl,--build-id=sha1
 # Fix issues in termux (with bionic).
 BIONIC_FIX = -ffunction-sections -fdata-sections
 BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) -static
 # Bionic has built-in libpthread.
-BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO)
+BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO) -Wl,--build-id=sha1
 # Target.
 objects = caplist.o chroot.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o main.o
 O = out
