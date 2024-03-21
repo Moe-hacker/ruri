@@ -164,7 +164,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			break;
 		}
 		// Dump config.
-		else if (strcmp(argv[index], "-D") == 0 || strcmp(argv[index], "--dump-config") == 0) {
+		if (strcmp(argv[index], "-D") == 0 || strcmp(argv[index], "--dump-config") == 0) {
 			dump_config = true;
 		}
 		// Output file.
