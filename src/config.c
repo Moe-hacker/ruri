@@ -30,7 +30,9 @@
 #include "include/ruri.h"
 char *container_info_to_k2v(const struct CONTAINER *container)
 {
-	char *ret = (char *)malloc(65536);
+	// The HOMO way!
+	size_t size = 114514;
+	char *ret = (char *)malloc(size);
 	ret[0] = '\0';
 	char *buf = NULL;
 	// drop_caplist.
@@ -44,42 +46,62 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
 	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// no_new_privs.
 	buf = bool_to_k2v("no_new_privs", container->no_new_privs);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// enable_unshare.
 	buf = bool_to_k2v("enable_unshare", container->enable_unshare);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// rootless.
 	buf = bool_to_k2v("rootless", container->rootless);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// mount_host_runtime.
 	buf = bool_to_k2v("mount_host_runtime", container->mount_host_runtime);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// no_warnings.
 	buf = bool_to_k2v("no_warnings", container->no_warnings);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// cross_arch.
 	buf = char_to_k2v("cross_arch", container->cross_arch);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// qemu_path.
 	buf = char_to_k2v("qemu_path", container->qemu_path);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// use_rurienv.
 	buf = bool_to_k2v("use_rurienv", container->use_rurienv);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// enable_seccomp.
 	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// extra_mountpoint.
@@ -90,6 +112,8 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		}
 	}
 	buf = char_array_to_k2v("extra_mountpoint", container->extra_mountpoint, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// env.
@@ -100,6 +124,8 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		}
 	}
 	buf = char_array_to_k2v("env", container->env, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// command.
@@ -110,11 +136,18 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		}
 	}
 	buf = char_array_to_k2v("command", container->command, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// container_dir.
 	buf = char_to_k2v("container_dir", container->container_dir);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
+	char *tmp = strdup(ret);
+	free(ret);
+	ret = tmp;
 	return ret;
 }
 struct CONTAINER *read_config(struct CONTAINER *container, const char *path)

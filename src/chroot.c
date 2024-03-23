@@ -182,9 +182,11 @@ static void drop_caps(const struct CONTAINER *container)
 		if (container->drop_caplist[i] == INIT_VALUE) {
 			break;
 		}
-		if (cap_drop_bound(container->drop_caplist[i]) != 0 && !container->no_warnings) {
-			warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container->drop_caplist[i]));
-			warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
+		if (CAP_IS_SUPPORTED(container->drop_caplist[i])) {
+			if (cap_drop_bound(container->drop_caplist[i]) != 0 && !container->no_warnings) {
+				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container->drop_caplist[i]));
+				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
+			}
 		}
 	}
 }
@@ -296,7 +298,6 @@ void run_chroot_container(struct CONTAINER *container)
 	chdir(container->container_dir);
 	chroot(".");
 	chdir("/");
-	chroot("/");
 	// Mount/create system runtime dir/files.
 	init_container();
 	// Fix /etc/mtab.
