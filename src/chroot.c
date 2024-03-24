@@ -270,6 +270,10 @@ void run_chroot_container(struct CONTAINER *container)
 		if (!container->enable_unshare && container->use_rurienv) {
 			store_info(container);
 		}
+		// If `-R` option is set, make / read-only.
+		if (container->ro_root) {
+			mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
+		}
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
 		if (container->mount_host_runtime) {
 			mount_host_runtime(container);

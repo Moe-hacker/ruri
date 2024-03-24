@@ -115,6 +115,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *qemu_path;
 	// Do not store .rurienv file.
 	bool use_rurienv;
+	// Mount / as read-only.
+	bool ro_root;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

@@ -74,6 +74,12 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
+	// ro_root.
+	buf = bool_to_k2v("ro_root", container->ro_root);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
 	// no_warnings.
 	buf = bool_to_k2v("no_warnings", container->no_warnings);
 	size += strlen(buf);
@@ -187,6 +193,8 @@ struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 	container->rootless = key_get_bool("rootless", buf);
 	// Get mount_host_runtime.
 	container->mount_host_runtime = key_get_bool("mount_host_runtime", buf);
+	// Get ro_root.
+	container->ro_root = key_get_bool("ro_root", buf);
 	// Get no_warnings.
 	container->no_warnings = key_get_bool("no_warnings", buf);
 	// Get use_rurienv.

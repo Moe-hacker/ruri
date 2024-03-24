@@ -91,6 +91,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	container->qemu_path = NULL;
 	container->ns_pid = INIT_VALUE;
 	container->use_rurienv = true;
+	container->ro_root = false;
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
@@ -222,6 +223,10 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		// Force bind-mount host /dev/, /sys/ and /proc/.
 		else if (strcmp(argv[index], "-S") == 0 || strcmp(argv[index], "--host-runtime") == 0) {
 			container->mount_host_runtime = true;
+		}
+		// Mount / as read-only.
+		else if (strcmp(argv[index], "-R") == 0 || strcmp(argv[index], "--read-only") == 0) {
+			container->ro_root = true;
 		}
 		// Set extra env.
 		else if (strcmp(argv[index], "-e") == 0 || strcmp(argv[index], "--env") == 0) {
