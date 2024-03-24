@@ -27,6 +27,8 @@ V3.0 contains some breaking changes, please read the changelog, and help page in
 * You do it at your own risk and take the responsibility upon yourself.
 * This program has no Super Cow Powers.
 ```
+# SECURITY WARNING:
+ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
 # Bug reporting:
 > “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
 > --Torvalds

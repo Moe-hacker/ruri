@@ -7,6 +7,7 @@
   * `-D` option now aliases to `--dump-config`.
   * Add `-o` option: `--output` for `-D`.
   * Add `-N` option: `--no-rurienv`.
+  * Add `-R` option: `--read-only`.
   * Automatically unset $LD_PRELOAD before running container(Maybe will not work).
   * General bug fixes.
 # v2.7:
