@@ -195,16 +195,14 @@ void show_examples(void)
 	printf("  \033[32msudo ruri \033[34m-p \033[35m/tmp/alpine\n");
 	printf("\033[1;38;2;254;228;208m# If you want to run privileged chroot container,\n");
 	printf("# but you don't want to give the container cap_sys_chroot privileges:\n");
-	printf("  \033[32msudo ruri \033[34m-p --drop \033[36mcap_sys_chroot \033[35m/tmp/alpine\n");
+	printf("  \033[32msudo ruri \033[34m-p -d \033[36mcap_sys_chroot \033[35m/tmp/alpine\n");
 	printf("\033[1;38;2;254;228;208m# If you want to run chroot container with common privileges,\n");
 	printf("# but you want cap_sys_admin to be kept:\n");
-	printf("  \033[32msudo ruri \033[34m--keep \033[36mcap_sys_admin \033[35m/tmp/alpine\n");
+	printf("  \033[32msudo ruri \033[34m-k \033[36mcap_sys_admin \033[35m/tmp/alpine\n");
 	printf("\033[1;38;2;254;228;208m# About unshare:\n");
 	printf("# Unshare container's capability options are same with chroot.\n");
 	printf("\033[1;38;2;254;228;208m# Run unshare container:\n");
 	printf("  \033[32msudo ruri \033[34m-u \033[35m/tmp/alpine\n");
-	printf("\033[1;38;2;254;228;208m# List running containers:\n");
-	printf("  \033[32msudo ruri \033[34m-l\n");
 	printf("\033[1;38;2;254;228;208m# Umount the container:\n");
 	printf("  \033[32msudo ruri \033[34m-U \033[35m/tmp/alpine\n");
 	printf("\n");
