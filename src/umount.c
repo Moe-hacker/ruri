@@ -67,7 +67,7 @@ void umount_container(const char *container_dir)
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_mountpoint[i]);
 				for (int j = 0; j < 10; j++) {
-					umount2(to_umountpoint, MNT_DETACH | MNT_FORCE);
+					umount2(to_umountpoint, MNT_DETACH);
 					umount(to_umountpoint);
 					usleep(20000);
 				}
@@ -81,7 +81,7 @@ void umount_container(const char *container_dir)
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_ro_mountpoint[i]);
 				for (int j = 0; j < 10; j++) {
-					umount2(to_umountpoint, MNT_DETACH | MNT_FORCE);
+					umount2(to_umountpoint, MNT_DETACH);
 					umount(to_umountpoint);
 					usleep(20000);
 				}
