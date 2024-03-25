@@ -164,6 +164,7 @@ void show_helps(void)
 	printf("  -d, --drop [cap]                Drop the specified cap\n");
 	printf("  -e, --env [env] [value]         Set env to its value *Not work if init command is like `su -`\n");
 	printf("  -m, --mount [dir/dev/img] [dir] Mount dir/block-device/image to mountpoint\n");
+	printf("  -M, --ro-mount [dir/dev/img] [dir] Mount dir/block-device/image as read-only\n");
 	printf("  -S, --host-runtime              Bind-mount /dev/, /sys/ and /proc/ from host\n");
 	printf("  -R, --read-only                 Mount / as read-only\n");
 	printf("  -w, --no-warnings               Disable warnings\n");

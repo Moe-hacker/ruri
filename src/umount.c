@@ -61,10 +61,25 @@ void umount_container(const char *container_dir)
 	strcat(dev_dir, "/dev");
 	// Umount other mountpoints.
 	if (container != NULL) {
+		// Umount extra_mountpoint.
 		for (int i = 1; true; i += 2) {
 			if (container->extra_mountpoint[i] != NULL) {
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_mountpoint[i]);
+				for (int j = 0; j < 10; j++) {
+					umount2(to_umountpoint, MNT_DETACH | MNT_FORCE);
+					umount(to_umountpoint);
+					usleep(20000);
+				}
+			} else {
+				break;
+			}
+		}
+		// Umount extra_ro_mountpoint.
+		for (int i = 1; true; i += 2) {
+			if (container->extra_ro_mountpoint[i] != NULL) {
+				strcpy(to_umountpoint, container_dir);
+				strcat(to_umountpoint, container->extra_ro_mountpoint[i]);
 				for (int j = 0; j < 10; j++) {
 					umount2(to_umountpoint, MNT_DETACH | MNT_FORCE);
 					umount(to_umountpoint);

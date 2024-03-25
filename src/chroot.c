@@ -232,15 +232,29 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 // Run before chroot(2).
 void mount_mountpoints(const struct CONTAINER *container)
 {
+	char *mountpoint_dir = NULL;
+	// Mount extra_mountpoint.
 	for (int i = 0; true; i += 2) {
 		if (container->extra_mountpoint[i] == NULL) {
 			break;
 		}
 		// Set the mountpoint to mount.
-		char *mountpoint_dir = (char *)malloc(strlen(container->extra_mountpoint[i + 1]) + strlen(container->container_dir) + 2);
+		mountpoint_dir = (char *)malloc(strlen(container->extra_mountpoint[i + 1]) + strlen(container->container_dir) + 2);
 		strcpy(mountpoint_dir, container->container_dir);
 		strcat(mountpoint_dir, container->extra_mountpoint[i + 1]);
 		trymount(container->extra_mountpoint[i], mountpoint_dir, 0);
+		free(mountpoint_dir);
+	}
+	// Mount extra_ro_mountpoint.
+	for (int i = 0; true; i += 2) {
+		if (container->extra_ro_mountpoint[i] == NULL) {
+			break;
+		}
+		// Set the mountpoint to mount.
+		mountpoint_dir = (char *)malloc(strlen(container->extra_ro_mountpoint[i + 1]) + strlen(container->container_dir) + 2);
+		strcpy(mountpoint_dir, container->container_dir);
+		strcat(mountpoint_dir, container->extra_ro_mountpoint[i + 1]);
+		trymount(container->extra_ro_mountpoint[i], mountpoint_dir, MS_RDONLY);
 		free(mountpoint_dir);
 	}
 }

@@ -67,7 +67,9 @@ static bool is_ruri_pid(pid_t pid)
 // Format container info as k2v.
 static char *build_container_info(const struct CONTAINER *container)
 {
-	char *ret = (char *)malloc(65536);
+	// The HOMO way!
+	size_t size = 114514;
+	char *ret = (char *)malloc(size);
 	ret[0] = '\0';
 	char *buf = NULL;
 	// drop_caplist.
@@ -81,18 +83,26 @@ static char *build_container_info(const struct CONTAINER *container)
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
 	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// no_new_privs.
 	buf = bool_to_k2v("no_new_privs", container->no_new_privs);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// enable_seccomp.
 	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// ns_pid.
 	buf = int_to_k2v("ns_pid", container->ns_pid);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// extra_mountpoint.
@@ -103,6 +113,20 @@ static char *build_container_info(const struct CONTAINER *container)
 		}
 	}
 	buf = char_array_to_k2v("extra_mountpoint", container->extra_mountpoint, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
+	// extra_ro_mountpoint.
+	for (int i = 0; true; i++) {
+		if (container->extra_ro_mountpoint[i] == NULL) {
+			len = i;
+			break;
+		}
+	}
+	buf = char_array_to_k2v("extra_ro_mountpoint", container->extra_ro_mountpoint, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	// env.
@@ -113,6 +137,8 @@ static char *build_container_info(const struct CONTAINER *container)
 		}
 	}
 	buf = char_array_to_k2v("env", container->env, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
 	return ret;
@@ -150,6 +176,9 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 		int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
 		container->extra_mountpoint[mlen] = NULL;
 		container->extra_mountpoint[mlen + 1] = NULL;
+		mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+		container->extra_ro_mountpoint[mlen] = NULL;
+		container->extra_ro_mountpoint[mlen + 1] = NULL;
 		close(fd);
 		free(buf);
 		return container;
@@ -186,5 +215,9 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
+	// Get extra_ro_mountpoint.
+	mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+	container->extra_ro_mountpoint[mlen] = NULL;
+	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	return container;
 }

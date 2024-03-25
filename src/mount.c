@@ -104,6 +104,8 @@ static int mount_device(const char *source, const char *target, unsigned long mo
 			if (!nodev) {
 				ret = mount(source, target, type, mountflags, NULL);
 				if (ret == 0) {
+					// For ro mount, we need a remount.
+					ret = mount(source, target, type, mountflags | MS_REMOUNT, NULL);
 					// mount(2) succeed.
 					return ret;
 				}
@@ -169,7 +171,9 @@ int trymount(const char *source, const char *target, unsigned int mountflags)
 	}
 	// Bind-mount dir.
 	if (S_ISDIR(dev_stat.st_mode)) {
-		ret = mount(source, target, NULL, mountflags | MS_BIND, NULL);
+		mount(source, target, NULL, mountflags | MS_BIND, NULL);
+		// For ro mount, we need a remount.
+		ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
 	}
 	// Block device.
 	else if (S_ISBLK(dev_stat.st_mode)) {

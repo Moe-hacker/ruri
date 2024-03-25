@@ -71,6 +71,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		show_helps();
 		exit(EXIT_FAILURE);
 	}
+	// Init configs.
 	bool dump_config = false;
 	char *output_path = NULL;
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
@@ -87,6 +88,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	container->command[0] = NULL;
 	container->env[0] = NULL;
 	container->extra_mountpoint[0] = NULL;
+	container->extra_ro_mountpoint[0] = NULL;
 	container->cross_arch = NULL;
 	container->qemu_path = NULL;
 	container->ns_pid = INIT_VALUE;
@@ -259,6 +261,27 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 						index++;
 						container->extra_mountpoint[i + 1] = strdup(argv[index]);
 						container->extra_mountpoint[i + 2] = NULL;
+						break;
+					}
+					// Max 128 mountpoints.
+					if (i == (MAX_MOUNTPOINTS - 1)) {
+						error("\033[31mToo many mountpoints QwQ\n");
+					}
+				}
+			} else {
+				error("\033[31mError: unknown mountpoint QwQ\n");
+			}
+		}
+		// Set extra read-only mountpoints.
+		else if (strcmp(argv[index], "-M") == 0 || strcmp(argv[index], "--ro-mount") == 0) {
+			index++;
+			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
+				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
+					if (container->extra_ro_mountpoint[i] == NULL) {
+						container->extra_ro_mountpoint[i] = realpath(argv[index], NULL);
+						index++;
+						container->extra_ro_mountpoint[i + 1] = strdup(argv[index]);
+						container->extra_ro_mountpoint[i + 2] = NULL;
 						break;
 					}
 					// Max 128 mountpoints.

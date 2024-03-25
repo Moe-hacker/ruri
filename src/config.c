@@ -122,6 +122,18 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
+	// extra_ro_mountpoint.
+	for (int i = 0; true; i++) {
+		if (container->extra_ro_mountpoint[i] == NULL) {
+			len = i;
+			break;
+		}
+	}
+	buf = char_array_to_k2v("extra_ro_mountpoint", container->extra_ro_mountpoint, len);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
 	// env.
 	for (int i = 0; true; i++) {
 		if (container->env[i] == NULL) {
@@ -207,5 +219,9 @@ struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
+	// Get extra_ro_mountpoint.
+	mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+	container->extra_ro_mountpoint[mlen] = NULL;
+	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	return container;
 }

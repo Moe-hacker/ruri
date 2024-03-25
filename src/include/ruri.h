@@ -93,6 +93,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *command[MAX_COMMANDS];
 	// Extra mountpoints.
 	char *extra_mountpoint[MAX_MOUNTPOINTS];
+	// Extra read-only mountpoints.
+	char *extra_ro_mountpoint[MAX_MOUNTPOINTS];
 	// Environment variables.
 	char *env[MAX_ENVS];
 	// Set NO_NEW_PRIV bit.
