@@ -37,14 +37,17 @@ static void check_binary(const struct CONTAINER *container)
 	struct stat init_binary_stat;
 	// lstat(3) will return -1 while the init_binary does not exist.
 	if (lstat(init_binary, &init_binary_stat) != 0) {
+		umount_container(container->container_dir);
 		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
 	}
 	if (S_ISDIR(init_binary_stat.st_mode)) {
+		umount_container(container->container_dir);
 		error("\033[31mCOMMAND can not be a directory QwQ\n");
 	}
 	// Check QEMU path.
 	if (container->cross_arch != NULL) {
 		if (container->qemu_path == NULL) {
+			umount_container(container->container_dir);
 			error("\033[31mError: path of QEMU is not set QwQ\n");
 		}
 		// Check if QEMU binary exists and is not a directory.
@@ -54,9 +57,11 @@ static void check_binary(const struct CONTAINER *container)
 		struct stat qemu_binary_stat;
 		// lstat(3) will return -1 while the init_binary does not exist.
 		if (lstat(qemu_binary, &qemu_binary_stat) != 0) {
+			umount_container(container->container_dir);
 			error("\033[31mPlease check if path of QEMU is correct QwQ\n");
 		}
 		if (S_ISDIR(qemu_binary_stat.st_mode)) {
+			umount_container(container->container_dir);
 			error("\033[31mQEMU path can not be a directory QwQ\n");
 		}
 	}
