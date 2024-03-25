@@ -176,4 +176,4 @@ help :
 	@echo "  make format         format code"
 	@echo "*Premature optimization is the root of all evil."
 	@echo "Dependent libraries:"
-	@printf " - libpthread\n - libcap (for non-bionic system)\n - libseccomp\n\033[0m"
+	@printf " - libpthread (for non-bionic system)\n - libcap\n - libseccomp\n\033[0m"
