@@ -18,6 +18,8 @@
 <p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
 
 -----------------     
+# 中文文档
+[ruri官方文档](https://blog.crack.moe/2024/03/26/ruri-doc/)      
 # About v3.0:
 V3.0 contains some breaking changes, please read the changelog, and help page in `ruri -h` if you are upgrading from v2.x.        
 # WARNING:      
