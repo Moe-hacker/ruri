@@ -69,9 +69,11 @@
 #endif
 // Bool!!!
 #if __STDC_VERSION__ < 202000L
+#ifndef bool
 #define bool _Bool
 #define true ((_Bool) + 1u)
 #define false ((_Bool) + 0u)
+#endif
 #endif
 // For initializing some variables.
 #define INIT_VALUE (-114)

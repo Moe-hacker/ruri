@@ -34,9 +34,11 @@
 #include <stdlib.h>
 // Bool!!!
 #if __STDC_VERSION__ < 202000L
+#ifndef bool
 #define bool _Bool
 #define true ((_Bool) + 1u)
 #define false ((_Bool) + 0u)
+#endif
 #endif
 // Version info.
 #define LIBK2V_MAJOR 0
