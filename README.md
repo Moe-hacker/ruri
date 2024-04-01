@@ -45,7 +45,8 @@ The basic usage is very very simple, you can use it just like the command `chroo
 It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers by default.
 - Run Everywhere:      
 Build ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
-
+# ruri in production:
+[daijin](https://github.com/Moe-hacker/daijin)      
 # Install:      
 ```
 git clone https://github.com/Moe-hacker/ruri
