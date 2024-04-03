@@ -28,33 +28,88 @@
  *
  */
 #include "include/ruri.h"
-#include <linux/mount.h>
-#include <linux/stat.h>
-static int mount_cgroup_v1(void)
+static void mount_cgroup_v1(void)
 {
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
-	return mount("cgroup", "/sys/fs/cgroup", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "all");
+	// Mount /sys/fs/cgroup as tmpfs.
+	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
+	// We only need cpuset and memory cgroup.
+	mkdir("/sys/fs/cgroup/memory", S_IRUSR | S_IWUSR);
+	mkdir("/sys/fs/cgroup/cpuset", S_IRUSR | S_IWUSR);
+	mount("none", "/sys/fs/cgroup/memory", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "memory");
+	mount("none", "/sys/fs/cgroup/cpuset", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpuset");
+}
+static bool is_cgroupv2_supported(void)
+{
+	bool found_cpuset = false;
+	bool found_memory = false;
+	int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_CLOEXEC);
+	char buf[128] = { '\0' };
+	ssize_t len = read(fd, buf, sizeof(buf));
+	buf[len] = '\0';
+	if (strstr(buf, "cpuset") != NULL) {
+		found_cpuset = true;
+	}
+	if (strstr(buf, "memory") != NULL) {
+		found_memory = true;
+	}
+	close(fd);
+	if (found_cpuset && found_memory) {
+		return true;
+	} else {
+		return false;
+	}
 }
 static int mount_cgroup_v2(void)
 {
+	/*
+	 * We need cgroup2 cpuset and memory controller.
+	 * If the device does not support, return -1.
+	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
-	return mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
-}
-static int mount_cgroup(void)
-{
-	int ret = mount_cgroup_v2();
-	if (ret == 0) {
-		return ret;
-	}
-	return mount_cgroup_v1();
-}
-int set_limit(const struct CONTAINER *container)
-{
-	int ret = mount_cgroup();
+	// I love cgroup2, because it's easy to mount.
+	int ret = mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 	if (ret != 0) {
 		return ret;
 	}
-	return ret;
+	if (!is_cgroupv2_supported()) {
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		return -1;
+	}
+	return 0;
+}
+static int mount_cgroup(void)
+{
+	/*
+	 * Return the type of cgroup (1/2).
+	 * Use cgroupv2 by default if supported.
+	 */
+	// It's better to use cgroupv2.
+	if (mount_cgroup_v2() == 0) {
+		return 2;
+	}
+	// But for old devices, we have to use v1.
+	mount_cgroup_v1();
+	return 1;
+}
+static void set_cgroup_v1(const struct CONTAINER *container)
+{
+	pid_t pid = getpid();
+}
+static void set_cgroup_v2(const struct CONTAINER *container)
+{
+	pid_t pid = getpid();
+}
+void set_limit(const struct CONTAINER *container)
+{
+	int cgtype = mount_cgroup();
+	if (cgtype == 1) {
+		set_cgroup_v1(container);
+	} else {
+		set_cgroup_v2(container);
+	}
 }

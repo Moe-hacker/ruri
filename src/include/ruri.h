@@ -121,6 +121,10 @@ struct __attribute__((aligned(128))) CONTAINER {
 	bool use_rurienv;
 	// Mount / as read-only.
 	bool ro_root;
+	// Cpuset.
+	char cpuset[256];
+	// Memory.
+	int memory;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)
@@ -166,7 +170,7 @@ void run_rootless_container(struct CONTAINER *container);
 int trymount(const char *source, const char *target, unsigned int mountflags);
 void umount_container(const char *container_dir);
 struct CONTAINER *read_config(struct CONTAINER *container, const char *path);
-int set_limit(const struct CONTAINER *container);
+void set_limit(const struct CONTAINER *container);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
