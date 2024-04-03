@@ -82,6 +82,9 @@ extern char build_id_end;
 // See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
 static char *get_build_id(void)
 {
+	/*
+	 * Just like its name.
+	 */
 	static char ret[128] = { '\0' };
 	char buf[4] = { '\0' };
 	for (char *s = &build_id_start + 16; s < &build_id_end; s++) {
@@ -142,7 +145,7 @@ void show_helps(void)
 	printf("  ruri [ARGS]... [CONTAINER_DIRECTORY]... [COMMAND [ARGS]...]\n");
 	printf("\n");
 	printf("OPTIONS:\n");
-	printf("  -v, --version ...................:  Show version info\n");
+	printf("  -v, --version ...................: Show version info\n");
 	printf("  -V, --version-code ..............: Show version code\n");
 	printf("  -h, --help ......................: Show helps\n");
 	printf("  -H, --show-examples .............: Show helps and commandline examples\n");
