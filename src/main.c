@@ -94,6 +94,8 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	container->ns_pid = INIT_VALUE;
 	container->use_rurienv = true;
 	container->ro_root = false;
+	container->cpuset = NULL;
+	container->memory = NULL;
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {

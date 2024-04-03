@@ -122,9 +122,9 @@ struct __attribute__((aligned(128))) CONTAINER {
 	// Mount / as read-only.
 	bool ro_root;
 	// Cpuset.
-	char cpuset[256];
+	char *cpuset;
 	// Memory.
-	int memory;
+	char *memory;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

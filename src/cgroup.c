@@ -99,10 +99,57 @@ static int mount_cgroup(void)
 static void set_cgroup_v1(const struct CONTAINER *container)
 {
 	pid_t pid = getpid();
+	char buf[128] = { '\0' };
+	mkdir("/sys/fs/cgroup/cpuset/ruri", S_IRUSR | S_IWUSR);
+	mkdir("/sys/fs/cgroup/memory/ruri", S_IRUSR | S_IWUSR);
+	usleep(2000);
+	int fd = open("/sys/fs/cgroup/cpuset/ruri/cgroup.procs", O_RDONLY | O_CLOEXEC);
+	sprintf(buf, "%d\n", pid);
+	write(fd, buf, strlen(buf));
+	close(fd);
+	fd = open("/sys/fs/cgroup/memory/ruri/cgroup.procs", O_RDONLY | O_CLOEXEC);
+	sprintf(buf, "%d\n", pid);
+	write(fd, buf, strlen(buf));
+	close(fd);
+	if (container->memory != NULL) {
+		fd = open("/sys/fs/cgroup/memory/ruri/memory.limit_in_bytes", O_RDONLY | O_CLOEXEC);
+		sprintf(buf, "%s\n", container->memory);
+		write(fd, buf, strlen(buf));
+		close(fd);
+	}
+	if (container->cpuset != NULL) {
+		fd = open("/sys/fs/cgroup/cpuset/ruri/cpus", O_RDONLY | O_CLOEXEC);
+		sprintf(buf, "%s\n", container->cpuset);
+		write(fd, buf, strlen(buf));
+		close(fd);
+	}
+	// Do not keep the apifs mounted.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 }
 static void set_cgroup_v2(const struct CONTAINER *container)
 {
 	pid_t pid = getpid();
+	char buf[128] = { '\0' };
+	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
+	usleep(2000);
+	int fd = open("/sys/fs/cgroup/ruri/cgroup.procs", O_RDONLY | O_CLOEXEC);
+	sprintf(buf, "%d\n", pid);
+	write(fd, buf, strlen(buf));
+	close(fd);
+	if (container->memory != NULL) {
+		fd = open("/sys/fs/cgroup/ruri/memory.high", O_RDONLY | O_CLOEXEC);
+		sprintf(buf, "%s\n", container->memory);
+		write(fd, buf, strlen(buf));
+		close(fd);
+	}
+	if (container->cpuset != NULL) {
+		fd = open("/sys/fs/cgroup/ruri/cpuset.cpus", O_RDONLY | O_CLOEXEC);
+		sprintf(buf, "%s\n", container->cpuset);
+		write(fd, buf, strlen(buf));
+		close(fd);
+	}
+	// Do not keep the apifs mounted.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 }
 void set_limit(const struct CONTAINER *container)
 {
