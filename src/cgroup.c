@@ -103,24 +103,33 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 	mkdir("/sys/fs/cgroup/cpuset/ruri", S_IRUSR | S_IWUSR);
 	mkdir("/sys/fs/cgroup/memory/ruri", S_IRUSR | S_IWUSR);
 	usleep(2000);
-	int fd = open("/sys/fs/cgroup/cpuset/ruri/cgroup.procs", O_RDONLY | O_CLOEXEC);
-	sprintf(buf, "%d\n", pid);
-	write(fd, buf, strlen(buf));
-	close(fd);
-	fd = open("/sys/fs/cgroup/memory/ruri/cgroup.procs", O_RDONLY | O_CLOEXEC);
-	sprintf(buf, "%d\n", pid);
-	write(fd, buf, strlen(buf));
-	close(fd);
+	int fd = -1;
 	if (container->memory != NULL) {
-		fd = open("/sys/fs/cgroup/memory/ruri/memory.limit_in_bytes", O_RDONLY | O_CLOEXEC);
+		fd = open("/sys/fs/cgroup/memory/ruri/cgroup.procs", O_RDWR | O_CLOEXEC);
+		sprintf(buf, "%d\n", pid);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("\033[33mSet memory cgroup v1 failed\033[0m\n");
+		}
+		close(fd);
+		fd = open("/sys/fs/cgroup/memory/ruri/memory.limit_in_bytes", O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->memory);
-		write(fd, buf, strlen(buf));
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("\033[33mSet memory limit failed\033[0m\n");
+		}
 		close(fd);
 	}
 	if (container->cpuset != NULL) {
-		fd = open("/sys/fs/cgroup/cpuset/ruri/cpus", O_RDONLY | O_CLOEXEC);
+		fd = open("/sys/fs/cgroup/cpuset/ruri/cgroup.procs", O_RDWR | O_CLOEXEC);
+		sprintf(buf, "%d\n", pid);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("\033[33mSet cpuset cgroup v1 failed\033[0m\n");
+		}
+		close(fd);
+		fd = open("/sys/fs/cgroup/cpuset/ruri/cpus", O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->cpuset);
-		write(fd, buf, strlen(buf));
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("\033[33mSet cpu limit failed\033[0m\n");
+		}
 		close(fd);
 	}
 	// Do not keep the apifs mounted.
@@ -128,24 +137,34 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 }
 static void set_cgroup_v2(const struct CONTAINER *container)
 {
+	if (container->memory == NULL && container->cpuset == NULL) {
+		return;
+	}
 	pid_t pid = getpid();
 	char buf[128] = { '\0' };
 	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
 	usleep(2000);
-	int fd = open("/sys/fs/cgroup/ruri/cgroup.procs", O_RDONLY | O_CLOEXEC);
+	int fd = open("/sys/fs/cgroup/ruri/cgroup.procs", O_RDWR | O_CLOEXEC);
 	sprintf(buf, "%d\n", pid);
-	write(fd, buf, strlen(buf));
+	if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+		warning("\033[33mSetup cgroup failed\033[0m\n");
+		return;
+	}
 	close(fd);
 	if (container->memory != NULL) {
-		fd = open("/sys/fs/cgroup/ruri/memory.high", O_RDONLY | O_CLOEXEC);
+		fd = open("/sys/fs/cgroup/ruri/memory.high", O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->memory);
-		write(fd, buf, strlen(buf));
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("\033[33mSet memory limit failed\033[0m\n");
+		}
 		close(fd);
 	}
 	if (container->cpuset != NULL) {
-		fd = open("/sys/fs/cgroup/ruri/cpuset.cpus", O_RDONLY | O_CLOEXEC);
+		fd = open("/sys/fs/cgroup/ruri/cpuset.cpus", O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->cpuset);
-		write(fd, buf, strlen(buf));
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("\033[33mSet cpu limit failed\033[0m\n");
+		}
 		close(fd);
 	}
 	// Do not keep the apifs mounted.
