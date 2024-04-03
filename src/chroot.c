@@ -326,6 +326,8 @@ void run_chroot_container(struct CONTAINER *container)
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
 	symlink("/proc/mounts", "/etc/mtab");
+	// Set up cgroup limit.
+	set_limit(container);
 	// Set up Seccomp BPF.
 	if (container->enable_seccomp) {
 		setup_seccomp(container);

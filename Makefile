@@ -100,7 +100,7 @@ BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) -static
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO) -Wl,--build-id=sha1
 # Target.
-objects = caplist.o chroot.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o main.o
+objects = caplist.o chroot.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o cgroup.o main.o
 O = out
 .ONESHELL:
 all :CFLAGS=$(OPTIMIZE_CFLAGS)
