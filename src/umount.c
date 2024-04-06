@@ -47,7 +47,16 @@ void umount_container(const char *container_dir)
 	struct CONTAINER *container = read_info(NULL, container_dir);
 	char infofile[PATH_MAX] = { '\0' };
 	sprintf(infofile, "%s/.rurienv", container_dir);
-	remove(infofile);
+	int fd = open(infofile, O_RDONLY | O_CLOEXEC);
+	// Unset immutable flag on .rurienv.
+	int attr = 0;
+	if (fd >= 0) {
+		ioctl(fd, FS_IOC_GETFLAGS, &attr);
+		attr &= ~FS_IMMUTABLE_FL;
+		ioctl(fd, FS_IOC_SETFLAGS, &attr);
+		remove(infofile);
+		close(fd);
+	}
 	// Get path to umount.
 	char sys_dir[PATH_MAX];
 	char proc_dir[PATH_MAX];

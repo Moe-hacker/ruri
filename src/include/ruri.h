@@ -37,6 +37,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <time.h>
 #include <linux/limits.h>
 #include <linux/sched.h>
 #include <linux/securebits.h>
@@ -125,6 +126,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *cpuset;
 	// Memory.
 	char *memory;
+	// A number based on the time when creating container.
+	int container_id;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

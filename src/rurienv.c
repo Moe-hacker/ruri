@@ -105,6 +105,12 @@ static char *build_container_info(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
+	// container_id.
+	buf = int_to_k2v("container_id", container->container_id);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -149,10 +155,23 @@ void store_info(const struct CONTAINER *container)
 	char *info = build_container_info(container);
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container->container_dir);
-	unlink(file);
-	remove(file);
-	int fd = creat(file, S_IWUSR | S_IRUSR);
+	int fd = open(file, O_RDONLY | O_CLOEXEC);
+	int attr = 0;
+	if (fd >= 0) {
+		// Unset the immutable flag so that we can remove the file.
+		ioctl(fd, FS_IOC_GETFLAGS, &attr);
+		attr &= ~FS_IMMUTABLE_FL;
+		ioctl(fd, FS_IOC_SETFLAGS, &attr);
+		remove(file);
+		close(fd);
+	}
+	fd = creat(file, S_IWUSR | S_IRUSR);
 	write(fd, info, strlen(info));
+	// Set immutable flag on .rurienv file to avoid security issue.
+	attr = 0;
+	ioctl(fd, FS_IOC_GETFLAGS, &attr);
+	attr |= FS_IMMUTABLE_FL;
+	ioctl(fd, FS_IOC_SETFLAGS, &attr);
 	close(fd);
 	free(info);
 }
@@ -183,8 +202,19 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 		free(buf);
 		return container;
 	}
+	// Unset cgroup limits because it's already set.
+	container->cpuset = NULL;
+	container->memory = NULL;
 	// Check if ns_pid is a ruri process.
 	if (container->enable_unshare && !is_ruri_pid(key_get_int("ns_pid", buf))) {
+		// Unset immutable flag of .rurienv.
+		fd = open(file, O_RDONLY);
+		int attr = 0;
+		ioctl(fd, FS_IOC_GETFLAGS, &attr);
+		attr &= ~FS_IMMUTABLE_FL;
+		ioctl(fd, FS_IOC_SETFLAGS, &attr);
+		remove(file);
+		close(fd);
 		remove(file);
 		return container;
 	}
@@ -207,6 +237,8 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
 	// Get ns_pid.
 	container->ns_pid = key_get_int("ns_pid", buf);
+	// Get container_id.
+	container->container_id = key_get_int("container_id", buf);
 	// Get env.
 	int envlen = key_get_char_array("env", buf, container->env);
 	container->env[envlen] = NULL;

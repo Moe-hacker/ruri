@@ -96,6 +96,9 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	container->ro_root = false;
 	container->cpuset = NULL;
 	container->memory = NULL;
+	// Use the time for container_id.
+	time_t tm = time(NULL);
+	container->container_id = (int)(tm % 86400);
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
