@@ -1,3 +1,7 @@
+# v3.1:
+  * Make .rurienv immutable.
+  * Drop CapAmb && Clear CapInh.
+  * Add cgroup support for cpuset and memory.
 # v3.0:
   * Remove daemon support.
   * Use libk2v for config files and .rurienv file.
