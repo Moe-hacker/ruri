@@ -187,12 +187,23 @@ static void drop_caps(const struct CONTAINER *container)
 			break;
 		}
 		if (CAP_IS_SUPPORTED(container->drop_caplist[i])) {
+			// Drop CapBnd.
 			if (cap_drop_bound(container->drop_caplist[i]) != 0 && !container->no_warnings) {
 				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container->drop_caplist[i]));
 				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
 			}
+			// Drop CapAmb.
+			prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_LOWER, container->drop_caplist[i], 0, 0);
 		}
 	}
+	// Clear CapInh.
+	cap_user_header_t hrdp = (cap_user_header_t)malloc(sizeof(typeof(*hrdp)));
+	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof(typeof(*datap)));
+	syscall(SYS_capget, hrdp, datap);
+	datap->inheritable = 0;
+	syscall(SYS_capset, hrdp, datap);
+	free(hrdp);
+	free(datap);
 }
 // Set envs.
 static void set_envs(const struct CONTAINER *container)

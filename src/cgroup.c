@@ -58,9 +58,8 @@ static bool is_cgroupv2_supported(void)
 	close(fd);
 	if (found_cpuset && found_memory) {
 		return true;
-	} else {
-		return false;
 	}
+	return false;
 }
 static int mount_cgroup_v2(void)
 {

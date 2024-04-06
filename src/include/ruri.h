@@ -46,6 +46,7 @@
 #include <linux/loop.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
+#include <sys/syscall.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
