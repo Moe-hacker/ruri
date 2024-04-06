@@ -44,6 +44,7 @@
 #include <linux/stat.h>
 #include <linux/version.h>
 #include <linux/loop.h>
+#include <linux/fs.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/syscall.h>
