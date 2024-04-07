@@ -197,8 +197,8 @@ static void drop_caps(const struct CONTAINER *container)
 		}
 	}
 	// Clear CapInh.
-	cap_user_header_t hrdp = (cap_user_header_t)malloc(sizeof(typeof(*hrdp)));
-	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof(typeof(*datap)));
+	cap_user_header_t hrdp = (cap_user_header_t)malloc(sizeof *hrdp);
+	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof *datap);
 	syscall(SYS_capget, hrdp, datap);
 	datap->inheritable = 0;
 	syscall(SYS_capset, hrdp, datap);
