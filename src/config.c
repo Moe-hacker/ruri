@@ -30,6 +30,10 @@
 #include "include/ruri.h"
 char *container_info_to_k2v(const struct CONTAINER *container)
 {
+	/*
+	 * Format container info to k2v format.
+	 * return the string type of config.
+	 */
 	// The HOMO way!
 	size_t size = 114514;
 	char *ret = (char *)malloc(size);
@@ -163,6 +167,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	size += strlen(buf);
 	ret = realloc(ret, size);
 	strcat(ret, buf);
+	// The `ret` is larger than it should be, so we strdup() it.
 	char *tmp = strdup(ret);
 	free(ret);
 	ret = tmp;
@@ -170,7 +175,12 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 }
 struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 {
-	int fd = open(path, O_RDONLY);
+	/*
+	 * Read k2v format config file,
+	 * and set container config.
+	 * Return the `container` struct back.
+	 */
+	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		error("\033[31mNo such file or directory:%s\n\033[0m", path);
 	}

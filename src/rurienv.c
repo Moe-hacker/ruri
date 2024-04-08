@@ -67,8 +67,13 @@ static bool is_ruri_pid(pid_t pid)
 // Format container info as k2v.
 static char *build_container_info(const struct CONTAINER *container)
 {
+	/*
+	 * Format container runtime info to k2v format,
+	 * and return the formatted config.
+	 */
 	// The HOMO way!
 	size_t size = 114514;
+	// Get a larger buffer for ret.
 	char *ret = (char *)malloc(size);
 	ret[0] = '\0';
 	char *buf = NULL;
@@ -84,6 +89,7 @@ static char *build_container_info(const struct CONTAINER *container)
 	}
 	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
 	size += strlen(buf);
+	// realloc() is safe here, because the `size` will always be larger.
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
@@ -147,15 +153,40 @@ static char *build_container_info(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
+	// Because the `ret` is larger, strdup() it to the correct size.
+	buf = ret;
+	ret = strdup(buf);
+	free(buf);
 	return ret;
 }
 // Store container info.
 void store_info(const struct CONTAINER *container)
 {
+	/*
+	 * Format the runtime info of container to k2v format.
+	 * And store the info to container_dir/.rurienv .
+	 * But, how to avoid security issue?
+	 * The .rurienv file is immutable, but the container
+	 * will not have cap_linux_immutable by default,
+	 * that means the file will always be read-only
+	 * into the container.
+	 */
 	char *info = build_container_info(container);
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container->container_dir);
 	int fd = open(file, O_RDONLY | O_CLOEXEC);
+	// We know that it's not recommended to use bitwise operator on signed int.
+	// But I found this code in mandoc:
+	//       int attr;
+	//       fd = open("pathname", ...);
+	//
+	//       ioctl(fd, FS_IOC_GETFLAGS, &attr);  /* Place current flags
+	//                                              in 'attr' */
+	//       attr |= FS_NOATIME_FL;              /* Tweak returned bit mask */
+	//       ioctl(fd, FS_IOC_SETFLAGS, &attr);  /* Update flags for inode
+	//                                              referred to by 'fd' */
+	// And FS_IMMUTABLE_FL (0x00000010) is also (int) by default.
+	// So I leave the `attr` to int.
 	int attr = 0;
 	if (fd >= 0) {
 		// Unset the immutable flag so that we can remove the file.
@@ -165,9 +196,10 @@ void store_info(const struct CONTAINER *container)
 		remove(file);
 		close(fd);
 	}
-	fd = creat(file, S_IWUSR | S_IRUSR);
+	// Creat .rurienv file and open it.
+	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, S_IWUSR | S_IRUSR);
 	write(fd, info, strlen(info));
-	// Set immutable flag on .rurienv file to avoid security issue.
+	// Set immutable flag on .rurienv file.
 	attr = 0;
 	ioctl(fd, FS_IOC_GETFLAGS, &attr);
 	attr |= FS_IMMUTABLE_FL;
@@ -178,9 +210,14 @@ void store_info(const struct CONTAINER *container)
 // Read .rurienv file.
 struct CONTAINER *read_info(struct CONTAINER *container, const char *container_dir)
 {
+	/*
+	 * Get runtime info of container.
+	 * And return the container struct back.
+	 */
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container_dir);
-	int fd = open(file, O_RDONLY);
+	int fd = open(file, O_RDONLY | O_CLOEXEC);
+	// If .rurienv file does not exist, just return.
 	if (fd < 0) {
 		return container;
 	}
@@ -188,6 +225,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
 	close(fd);
+	// Read .rurienv file.
 	char *buf = k2v_open_file(file, (size_t)size);
 	// Only umount_container() will give a NULL struct.
 	if (container == NULL) {
@@ -208,7 +246,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	// Check if ns_pid is a ruri process.
 	if (container->enable_unshare && !is_ruri_pid(key_get_int("ns_pid", buf))) {
 		// Unset immutable flag of .rurienv.
-		fd = open(file, O_RDONLY);
+		fd = open(file, O_RDONLY | O_CLOEXEC);
 		int attr = 0;
 		ioctl(fd, FS_IOC_GETFLAGS, &attr);
 		attr &= ~FS_IMMUTABLE_FL;

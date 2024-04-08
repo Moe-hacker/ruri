@@ -30,6 +30,11 @@
 #include "include/ruri.h"
 static void mount_cgroup_v1(void)
 {
+	/*
+	 * Mount Cgroup v1 memory and cpuset controller.
+	 * Nothing to return because if this function run failed,
+	 * that means cgroup is not supported on the device.
+	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
@@ -43,6 +48,10 @@ static void mount_cgroup_v1(void)
 }
 static bool is_cgroupv2_supported(void)
 {
+	/*
+	 * Check if cgroup v2 supports cpuset and memory controller.
+	 * Return true if cgroup.controllers contains "cpuset" and "memory".
+	 */
 	bool found_cpuset = false;
 	bool found_memory = false;
 	int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_CLOEXEC);
@@ -75,6 +84,7 @@ static int mount_cgroup_v2(void)
 	if (ret != 0) {
 		return ret;
 	}
+	// But if it's not suppored, umount the controller and back to v1.
 	if (!is_cgroupv2_supported()) {
 		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 		return -1;
@@ -91,7 +101,7 @@ static int mount_cgroup(void)
 	if (mount_cgroup_v2() == 0) {
 		return 2;
 	}
-	// But for old devices, we have to use v1.
+	// But on some devices, we have to use v1.
 	mount_cgroup_v1();
 	return 1;
 }
@@ -184,10 +194,18 @@ static void set_cgroup_v2(const struct CONTAINER *container)
 }
 void set_limit(const struct CONTAINER *container)
 {
+	/*
+	 * Mount cgroup controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 */
+	// Mount cgroup controller and get the type of cgroup.
 	int cgtype = mount_cgroup();
+	// For cgroup v1.
 	if (cgtype == 1) {
 		set_cgroup_v1(container);
-	} else {
+	}
+	// For cgroup v2.
+	else {
 		set_cgroup_v2(container);
 	}
 }

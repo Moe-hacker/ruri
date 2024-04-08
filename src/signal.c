@@ -42,6 +42,7 @@ static void sighandle(int sig)
 	fprintf(stderr, "%s\n", " ﾙﾘﾘ >  x )ﾘ");
 	fprintf(stderr, "%s\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
 	fprintf(stderr, "%s\n", "      ⠁⠁");
+	fprintf(stderr, "%s\n", "RURI ERROR MESSAGE");
 	fprintf(stderr, "Seems that it's time to abort.\n");
 	fprintf(stderr, "SIG: %d\n", sig);
 	fprintf(stderr, "UID: %u\n", getuid());

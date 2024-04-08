@@ -116,7 +116,7 @@ struct __attribute__((aligned(128))) CONTAINER {
 	bool mount_host_runtime;
 	// Container pid for setns(2).
 	pid_t ns_pid;
-	// Arch of cross-architecture container.
+	// Arch of multi-architecture container.
 	char *cross_arch;
 	// Path of QEMU binary.
 	char *qemu_path;
@@ -150,6 +150,7 @@ struct __attribute__((aligned(16))) MAGIC {
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " ﾙﾘﾘ >  x )ﾘ");                                       \
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");                                       \
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");                                           \
+		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "RURI ERROR MESSAGE");                                 \
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:"); \
 		fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");        \
 		exit(EXIT_FAILURE);                                                                                           \

@@ -77,9 +77,9 @@ void AwA(void)
 	printf("%s\n", "");
 }
 // For `ruri -v`.
+// See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
 extern char build_id_start;
 extern char build_id_end;
-// See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
 static char *get_build_id(void)
 {
 	/*

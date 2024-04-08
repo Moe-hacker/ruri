@@ -36,7 +36,13 @@ void run_rootless_container(struct CONTAINER *container)
 	unshare(CLONE_NEWNS);
 	pid_t pid = fork();
 	if (pid > 0) {
-		waitpid(pid, NULL, 0);
+		int stat = 0;
+		waitpid(pid, &stat, 0);
+		if (stat == 0) {
+			exit(EXIT_SUCCESS);
+		} else {
+			error("\033[31mContainer exited with %d, what's wrong?\033[0m\n", stat);
+		}
 	} else if (pid < 0) {
 		error("\033[31mFork error QwQ?\n");
 	} else {
@@ -55,6 +61,9 @@ void run_rootless_container(struct CONTAINER *container)
 		int gidmap_fd = open("/proc/self/gid_map", O_RDWR | O_CLOEXEC);
 		write(gidmap_fd, gid_map, strlen(gid_map));
 		close(gidmap_fd);
+		// Maybe needless.
+		setuid(0);
+		setgid(0);
 		run_chroot_container(container);
 	}
 }

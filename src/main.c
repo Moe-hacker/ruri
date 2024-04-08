@@ -390,7 +390,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		}
 		unlink(output_path);
 		remove(output_path);
-		int fd = open(output_path, O_CREAT | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
+		int fd = open(output_path, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
 		write(fd, config, strlen(config));
 		exit(EXIT_SUCCESS);
 	}
@@ -414,16 +414,22 @@ int main(int argc, char **argv)
 	container = parse_args(argc, argv, container);
 	// Check container and the running environment.
 	check_container(container);
-	// Run container.
 	// unset $LD_PRELOAD.
-	if (getenv("LD_PRELOAD") != NULL) {
-		unsetenv("LD_PRELOAD");
+	unsetenv("LD_PRELOAD");
+	// Watch the process, error() when it run failed.
+	if (!container->enable_unshare) {
+		int stat = 0;
 		pid_t pid = fork();
 		if (pid > 0) {
-			waitpid(pid, NULL, 0);
-			exit(EXIT_SUCCESS);
+			waitpid(pid, &stat, 0);
+			if (stat == 0) {
+				exit(EXIT_SUCCESS);
+			} else {
+				error("\033[31mContainer exited with %d, what's wrong?\033[0m\n", stat);
+			}
 		}
 	}
+	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);
 	} else if ((container->rootless)) {

@@ -2,6 +2,7 @@
   * Make .rurienv immutable.
   * Drop CapAmb && Clear CapInh.
   * Add cgroup support for cpuset and memory.
+  * error() when the command run failed in continer.
 # v3.0:
   * Remove daemon support.
   * Use libk2v for config files and .rurienv file.
