@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 // Bool!!!
 #if __STDC_VERSION__ < 202000L
 #ifndef bool
@@ -41,8 +42,8 @@
 #endif
 #endif
 // Version info.
-#define LIBK2V_MAJOR 0
-#define LIBK2V_MINOR 4
+#define LIBK2V_MAJOR 1
+#define LIBK2V_MINOR 0
 // Warning.
 extern bool k2v_stop_at_warning;
 extern bool k2v_show_warning;
@@ -64,3 +65,4 @@ char *float_to_k2v(const char *key, float val);
 char *char_array_to_k2v(const char *key, char *const *val, int len);
 char *int_array_to_k2v(const char *key, int *val, int len);
 char *float_array_to_k2v(const char *key, float *val, int len);
+size_t k2v_get_filesize(const char *path);

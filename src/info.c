@@ -80,6 +80,7 @@ void AwA(void)
 // See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
 extern char build_id_start;
 extern char build_id_end;
+#ifdef __android__
 static char *get_build_id(void)
 {
 	/*
@@ -93,6 +94,7 @@ static char *get_build_id(void)
 	}
 	return ret;
 }
+#endif
 void show_version_info(void)
 {
 	/*
@@ -116,7 +118,9 @@ void show_version_info(void)
 	printf("%s%d%s%d%s", "libk2v ...........:  ", LIBK2V_MAJOR, ".", LIBK2V_MINOR, "\n");
 	printf("%s%s\n", "Compiler version .:  ", __VERSION__);
 	printf("%s%s\n", "Build date .......:  ", __TIMESTAMP__);
+#ifdef __android__
 	printf("%s%s\n", "Build ID .........:  ", get_build_id());
+#endif
 	printf("\nThere is NO WARRANTY, to the extent permitted by law\n");
 	printf("\033[0m\n");
 }

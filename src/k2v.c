@@ -43,6 +43,24 @@
 // We use global variables here, because we need it to be simple for developers.
 bool k2v_stop_at_warning = false;
 bool k2v_show_warning = true;
+// Get file size.
+size_t k2v_get_filesize(const char *path)
+{
+	int fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "\033[31mNo such file or directory:%s\n\033[0m", path);
+		if (k2v_stop_at_warning) {
+			exit(1);
+		} else {
+			return 0;
+		}
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t ret = filestat.st_size;
+	close(fd);
+	return (size_t)ret + 3;
+}
 static char *cuts(const char *str, char start, char end)
 {
 	/*
