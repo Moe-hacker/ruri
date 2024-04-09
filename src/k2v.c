@@ -28,7 +28,7 @@
  *
  */
 #include "include/k2v.h"
-// Warning.
+// Warnings && stop at warning.
 #define warning(...)                                                                              \
 	{                                                                                         \
 		if (k2v_show_warning) {                                                           \
@@ -46,7 +46,7 @@ bool k2v_show_warning = true;
 // Get file size.
 size_t k2v_get_filesize(const char *path)
 {
-	int fd = open(path, O_RDONLY);
+	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		fprintf(stderr, "\033[31mNo such file or directory:%s\n\033[0m", path);
 		if (k2v_stop_at_warning) {
@@ -59,6 +59,7 @@ size_t k2v_get_filesize(const char *path)
 	fstat(fd, &filestat);
 	off_t ret = filestat.st_size;
 	close(fd);
+	// To avoid overflow.
 	return (size_t)ret + 3;
 }
 static char *cuts(const char *str, char start, char end)
@@ -77,8 +78,12 @@ static char *cuts(const char *str, char start, char end)
 	 * cuts(str, '+',  0) = "111-"
 	 *
 	 */
-	// Null string.
-	if (str[0] == '\0') {
+	// If both start and end is 0, return NULL.
+	if (start == 0 && end == 0) {
+		return NULL;
+	}
+	// NULL string.
+	if (str == NULL || str[0] == '\0') {
 		return NULL;
 	}
 	char *buf = NULL;
@@ -117,9 +122,13 @@ static char *cuts(const char *str, char start, char end)
 					ret = strdup(buf);
 					break;
 				}
-				// If `end` is the start of `str`, just return NULL.
+				// If `end` is the start of `buf`, just return NULL.
 				ret = NULL;
 				break;
+			}
+			// If we reach the end of buf, just return NULL.
+			if (i == strlen(buf)) {
+				ret = NULL;
 			}
 		}
 	} else {
@@ -149,6 +158,8 @@ static char *get_first_line(const char *buf)
 	if (line == NULL) {
 		return NULL;
 	}
+	// Seems stupid...
+	// It works, do not change.
 	ret = strdup(line);
 	free(line);
 	return ret;
@@ -163,6 +174,7 @@ static char *goto_next_line(const char *buf)
 		}
 		ptr = &ptr[i + 1];
 	}
+	// NULL will returned here if no `\n` found.
 	return (strchr(ptr, '\n'));
 }
 static bool is_null_val(const char *buf)
@@ -186,6 +198,7 @@ static bool is_null_val(const char *buf)
 	if (strcmp(buf, "[\"\"]") == 0) {
 		return true;
 	}
+	// For other string, we think it's not null, at least.
 	return false;
 }
 static void do_basic_check(const char *buf)
@@ -207,14 +220,14 @@ static void do_basic_check(const char *buf)
 		}
 		// Check if this is a comment line.
 		if (line[0] != '#') {
-			// Check if we have a legal left value.
+			// Check if we have a valid left value.
 			tmp = cuts(line, 0, '=');
 			if (tmp == NULL) {
 				warning("\033[31mlibk2v warning: unrecognized line: %s\n\033[0m", line);
 				goto _continue;
 			}
 			free(tmp);
-			// Check if we have a legal right value.
+			// Check if we have a valid right value.
 			tmp = cuts(line, '=', 0);
 			if (tmp == NULL) {
 				warning("\033[31mlibk2v warning: unrecognized line: %s\n\033[0m", line);
@@ -222,7 +235,7 @@ static void do_basic_check(const char *buf)
 			}
 			if (!is_null_val(tmp)) {
 				free(tmp);
-				// Right value only have two legal formats: "val" or ["val1","val2"].
+				// Right value only have two valid formats: "val" or ["val1","val2"].
 				tmp = cuts(line, '[', ']');
 				if (tmp == NULL) {
 					tmp = cuts(line, '"', '"');
@@ -246,18 +259,26 @@ static char *key_get_right(const char *key, const char *buf)
 	 * Get the right value of `=` for the `key`.
 	 * The value returned will be used in other functions.
 	 */
+	// NULL check.
+	if (key == NULL || buf == NULL) {
+		return NULL;
+	}
 	const char *ptr = buf;
 	char *ret = NULL;
 	char *line = NULL;
 	char *tmp = NULL;
 	while (true) {
 		free(line);
+		// Goto the first valid line.
 		line = get_first_line(ptr);
+		// We reached the end but there is no `key` found.
 		if (line == NULL) {
 			return NULL;
 		}
+		// Skip comment line.
 		if (line[0] != '#') {
 			tmp = cuts(line, 0, '=');
+			// Check if `left` matchs the `key` given.
 			if (tmp != NULL) {
 				if (strcmp(tmp, key) == 0) {
 					free(tmp);
@@ -268,6 +289,7 @@ static char *key_get_right(const char *key, const char *buf)
 				free(tmp);
 			}
 		}
+		// Goto the next line.
 		ptr = goto_next_line(ptr);
 		ptr = &ptr[1];
 	}
@@ -277,7 +299,12 @@ bool have_key(const char *key, const char *buf)
 {
 	/*
 	 * Check if we have the `key` in `buf`.
+	 * Since I never used this function, it might have bugs.
 	 */
+	// NULL check.
+	if (key == NULL || buf == NULL) {
+		return false;
+	}
 	const char *ptr = buf;
 	bool ret = false;
 	char *line = NULL;
@@ -296,7 +323,7 @@ bool have_key(const char *key, const char *buf)
 					tmp = cuts(line, '=', 0);
 					if (!is_null_val(tmp)) {
 						free(tmp);
-						// Right value only have two legal formats: "val" or ["val1","val2"].
+						// Right value only have two valid formats: "val" or ["val1","val2"].
 						tmp = cuts(line, '[', ']');
 						if (tmp == NULL) {
 							tmp = cuts(line, '"', '"');
@@ -321,7 +348,8 @@ bool have_key(const char *key, const char *buf)
 }
 char *key_get_char(const char *key, const char *buf)
 {
-	if (buf == NULL) {
+	// Default return value: NULL.
+	if (key == NULL || buf == NULL) {
 		return NULL;
 	}
 	char *ret = NULL;
@@ -335,7 +363,9 @@ char *key_get_char(const char *key, const char *buf)
 }
 int key_get_int(const char *key, const char *buf)
 {
-	if (buf == NULL) {
+	// Default return value: 0.
+	// NULL check.
+	if (key == NULL || buf == NULL) {
 		return 0;
 	}
 	int ret = 0;
@@ -352,7 +382,9 @@ int key_get_int(const char *key, const char *buf)
 }
 float key_get_float(const char *key, const char *buf)
 {
-	if (buf == NULL) {
+	// Default return value: 0.
+	// NULL check
+	if (key == NULL || buf == NULL) {
 		return 0;
 	}
 	float ret = 0;
@@ -369,7 +401,9 @@ float key_get_float(const char *key, const char *buf)
 }
 bool key_get_bool(const char *key, const char *buf)
 {
-	if (buf == NULL) {
+	// Default return value: false.
+	// NULL check.
+	if (key == NULL || buf == NULL) {
 		return false;
 	}
 	char *tmp = key_get_right(key, buf);
@@ -390,6 +424,8 @@ bool key_get_bool(const char *key, const char *buf)
 }
 static int char_to_int_array(const char *buf, int *array)
 {
+	// Return lenth of the array we get.
+	// Default return value: 0.
 	if (buf == NULL) {
 		return 0;
 	}
@@ -401,6 +437,10 @@ static int char_to_int_array(const char *buf, int *array)
 	const char *ptr = buf;
 	while (true) {
 		tmp = cuts(ptr, '"', '"');
+		// Invalid format.
+		if (tmp == NULL) {
+			return 0;
+		}
 		array[ret] = atoi(tmp);
 		ret++;
 		ptr = strchr(ptr, ',');
@@ -408,6 +448,7 @@ static int char_to_int_array(const char *buf, int *array)
 			free(tmp);
 			break;
 		}
+		// Goto next value.
 		ptr = &ptr[1];
 		free(tmp);
 	}
@@ -415,6 +456,8 @@ static int char_to_int_array(const char *buf, int *array)
 }
 static int char_to_float_array(const char *buf, float *array)
 {
+	// Return lenth of the array we get.
+	// Default return value: 0.
 	if (buf == NULL) {
 		return 0;
 	}
@@ -426,6 +469,10 @@ static int char_to_float_array(const char *buf, float *array)
 	const char *ptr = buf;
 	while (true) {
 		tmp = cuts(ptr, '"', '"');
+		// Invalid format.
+		if (tmp == NULL) {
+			return 0;
+		}
 		array[ret] = (float)atof(tmp);
 		ret++;
 		ptr = strchr(ptr, ',');
@@ -433,6 +480,7 @@ static int char_to_float_array(const char *buf, float *array)
 			free(tmp);
 			break;
 		}
+		// Goto next value.
 		ptr = &ptr[1];
 		free(tmp);
 	}
@@ -440,7 +488,10 @@ static int char_to_float_array(const char *buf, float *array)
 }
 static int char_to_char_array(const char *buf, char *array[])
 {
-	if (buf == NULL) {
+	// Return lenth of the array we get.
+	// Default return value: 0.
+	// We will not alloc memory for `array`.
+	if (buf == NULL || array == NULL) {
 		return 0;
 	}
 	if (is_null_val(buf)) {
@@ -451,6 +502,10 @@ static int char_to_char_array(const char *buf, char *array[])
 	const char *ptr = buf;
 	while (true) {
 		tmp = cuts(ptr, '"', '"');
+		// Invalid format.
+		if (tmp == NULL) {
+			return 0;
+		}
 		array[ret] = strdup(tmp);
 		array[ret + 1] = NULL;
 		ret++;
@@ -466,7 +521,10 @@ static int char_to_char_array(const char *buf, char *array[])
 }
 int key_get_int_array(const char *key, const char *buf, int *array)
 {
-	if (buf == NULL) {
+	// Return lenth of the array we get.
+	// Default return value: 0.
+	// NULL check, we will not alloc memory for array.
+	if (key == NULL || buf == NULL || array == NULL) {
 		return 0;
 	}
 	int ret = 0;
@@ -480,7 +538,10 @@ int key_get_int_array(const char *key, const char *buf, int *array)
 }
 int key_get_char_array(const char *key, const char *buf, char *array[])
 {
-	if (buf == NULL) {
+	// Return lenth of the array we get.
+	// Default return value: 0.
+	// NULL check, we will not alloc memory for array.
+	if (key == NULL || buf == NULL || array == NULL) {
 		return 0;
 	}
 	int ret = 0;
@@ -494,7 +555,10 @@ int key_get_char_array(const char *key, const char *buf, char *array[])
 }
 int key_get_float_array(const char *key, const char *buf, float *array)
 {
-	if (buf == NULL) {
+	// Return lenth of the array we get.
+	// Default return value: 0.
+	// NULL check, we will not alloc memory for array.
+	if (key == NULL || buf == NULL || array == NULL) {
 		return 0;
 	}
 	int ret = 0;
@@ -514,7 +578,12 @@ char *k2v_open_file(const char *path, size_t bufsize)
 	 * read the file to ret, and do basic checks.
 	 * If config file does not exist, return NULL.
 	 */
-	char *ret = (char *)malloc(bufsize);
+	// NULL check.
+	if (path == NULL) {
+		return NULL;
+	}
+	// bufsize+1 might avoid overflow(I hope).
+	char *ret = (char *)malloc(bufsize + 1);
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		free(ret);
@@ -527,6 +596,10 @@ char *k2v_open_file(const char *path, size_t bufsize)
 }
 static void print_shell_array(const char *buf)
 {
+	// NULL check.
+	if (buf == NULL) {
+		return;
+	}
 	printf("(");
 	for (size_t i = 0; i < strlen(buf); i++) {
 		if (buf[i] == '"') {
@@ -545,6 +618,10 @@ static void print_shell_array(const char *buf)
 }
 static void print_key_to_shell(const char *key, const char *buf)
 {
+	// NULL check.
+	if (key == NULL || buf == NULL) {
+		return;
+	}
 	char *right = key_get_right(key, buf);
 	char *test = NULL;
 	if (right == NULL) {
@@ -569,6 +646,10 @@ static void print_key_to_shell(const char *key, const char *buf)
 }
 void k2v_to_shell(const char *buf)
 {
+	// NULL check.
+	if (buf == NULL) {
+		return;
+	}
 	const char *ptr = buf;
 	char *line = NULL;
 	char *key = NULL;
@@ -591,6 +672,10 @@ void k2v_to_shell(const char *buf)
 }
 char *char_to_k2v(const char *key, const char *val)
 {
+	// NULL check.
+	if (key == NULL || val == NULL) {
+		return NULL;
+	}
 	char *ret = NULL;
 	if (val != NULL) {
 		ret = malloc(strlen(key) + strlen(val) + 8);
@@ -603,18 +688,30 @@ char *char_to_k2v(const char *key, const char *val)
 }
 char *int_to_k2v(const char *key, int val)
 {
+	// NULL check.
+	if (key == NULL) {
+		return NULL;
+	}
 	char *ret = malloc(strlen(key) + 12 + 8);
 	sprintf(ret, "%s=\"%d\"\n", key, val);
 	return ret;
 }
 char *bool_to_k2v(const char *key, bool val)
 {
+	// NULL check.
+	if (key == NULL) {
+		return NULL;
+	}
 	char *ret = malloc(strlen(key) + 8 + 8);
 	sprintf(ret, "%s=\"%s\"\n", key, val ? "true" : "false");
 	return ret;
 }
 char *float_to_k2v(const char *key, float val)
 {
+	// NULL check.
+	if (key == NULL) {
+		return NULL;
+	}
 	char *buf = malloc(strlen(key) + 400 + 8);
 	sprintf(buf, "%s=\"%f\"\n", key, val);
 	char *ret = strdup(buf);
@@ -623,6 +720,10 @@ char *float_to_k2v(const char *key, float val)
 }
 char *char_array_to_k2v(const char *key, char *const *val, int len)
 {
+	// NULL check.
+	if (key == NULL || val == NULL) {
+		return NULL;
+	}
 	char *buf = malloc(strlen(key) + 8);
 	if (len == 0) {
 		sprintf(buf, "%s=[]\n", key);
@@ -653,6 +754,10 @@ char *char_array_to_k2v(const char *key, char *const *val, int len)
 }
 char *int_array_to_k2v(const char *key, int *val, int len)
 {
+	// NULL check.
+	if (key == NULL || val == NULL) {
+		return NULL;
+	}
 	char *buf = malloc(strlen(key) + 12 * (size_t)len + 8);
 	if (len == 0) {
 		sprintf(buf, "%s=[]\n", key);
@@ -679,6 +784,10 @@ char *int_array_to_k2v(const char *key, int *val, int len)
 }
 char *float_array_to_k2v(const char *key, float *val, int len)
 {
+	// NULL check.
+	if (key == NULL || val == NULL) {
+		return NULL;
+	}
 	char *buf = malloc(strlen(key) + 400 * (size_t)len + 8);
 	if (len == 0) {
 		sprintf(buf, "%s=[]\n", key);
