@@ -44,16 +44,15 @@
 #include <linux/stat.h>
 #include <linux/version.h>
 #include <linux/loop.h>
+#include <sys/mount.h>
 #include <linux/fs.h>
 #include <sys/ioctl.h>
-#include <sys/mount.h>
 #include <sys/syscall.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <sys/types.h>
-#include <sys/un.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -67,6 +66,10 @@
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
+#ifndef LIBCAP_MAJOR
+#define LIBCAP_MAJOR 114
+#define LIBCAP_MINOR 514
+#endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 #warning "This program has not been tested on Linux 3.x or earlier."
 #endif
