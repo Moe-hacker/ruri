@@ -673,7 +673,7 @@ void k2v_to_shell(const char *buf)
 char *char_to_k2v(const char *key, const char *val)
 {
 	// NULL check.
-	if (key == NULL || val == NULL) {
+	if (key == NULL) {
 		return NULL;
 	}
 	char *ret = NULL;
@@ -721,7 +721,7 @@ char *float_to_k2v(const char *key, float val)
 char *char_array_to_k2v(const char *key, char *const *val, int len)
 {
 	// NULL check.
-	if (key == NULL || val == NULL) {
+	if (key == NULL) {
 		return NULL;
 	}
 	char *buf = malloc(strlen(key) + 8);
@@ -755,7 +755,7 @@ char *char_array_to_k2v(const char *key, char *const *val, int len)
 char *int_array_to_k2v(const char *key, int *val, int len)
 {
 	// NULL check.
-	if (key == NULL || val == NULL) {
+	if (key == NULL) {
 		return NULL;
 	}
 	char *buf = malloc(strlen(key) + 12 * (size_t)len + 8);
@@ -785,7 +785,7 @@ char *int_array_to_k2v(const char *key, int *val, int len)
 char *float_array_to_k2v(const char *key, float *val, int len)
 {
 	// NULL check.
-	if (key == NULL || val == NULL) {
+	if (key == NULL) {
 		return NULL;
 	}
 	char *buf = malloc(strlen(key) + 400 * (size_t)len + 8);

@@ -114,6 +114,18 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
+	// cpuset.
+	buf = char_to_k2v("cpuset", container->cpuset);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
+	// memory.
+	buf = char_to_k2v("memory", container->memory);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -221,6 +233,10 @@ struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 	container->no_warnings = key_get_bool("no_warnings", buf);
 	// Get use_rurienv.
 	container->use_rurienv = key_get_bool("use_rurienv", buf);
+	// Get cpuset.
+	container->cpuset = key_get_char("cpuset", buf);
+	// Get memory.
+	container->memory = key_get_char("memory", buf);
 	// Get env.
 	int envlen = key_get_char_array("env", buf, container->env);
 	container->env[envlen] = NULL;
