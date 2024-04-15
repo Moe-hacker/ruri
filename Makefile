@@ -73,12 +73,14 @@ NO_NX = -z execstack
 NO_CANARY = -fno-stack-protector
 # Warning Options.
 WALL = -Wall -Wextra -pedantic -Wconversion -Wno-newline-eof
+# ASAN.
+ASAN = -fsanitize=address
 # For production.
 OPTIMIZE_CFLAGS = $(LTO) $(PIE) $(CANARY) $(CLASH_PROTECT) $(SHADOW_STACK) $(AUTO_VAR_INIT) $(FORTIFY) $(OPTIMIZE) $(COMMIT_ID) $(STANDARD)
 # Static link.
 STATIC_CFLAGS = $(OPTIMIZE_CFLAGS) -static
 # For Testing.
-DEV_CFLAGS = $(DEBUGGER) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
+DEV_CFLAGS = $(DEBUGGER) $(ASAN) $(NO_OPTIMIZE) $(NO_CANARY) $(WALL) $(COMMIT_ID) $(STANDARD)
 SRC = src/*.c
 HEADER = src/include/*.h
 BIN_TARGET = ruri

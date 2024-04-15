@@ -98,6 +98,7 @@ void umount_container(const char *container_dir)
 				break;
 			}
 		}
+		free(container);
 	}
 	// Force umount system runtime directories for 10 times.
 	for (int i = 1; i < 10; i++) {
