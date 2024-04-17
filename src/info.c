@@ -74,7 +74,7 @@ void AwA(void)
 	printf("%s%s\n", space, "      ██████  ████          ████          ████");
 	printf("%s%s\n", space, "                ████                    ████");
 	printf("%s%s\n", space, "                    ████████████████████");
-	printf("%s\n", "");
+	printf("%s\033[0m\n", "");
 }
 // For `ruri -v`.
 // See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
@@ -179,7 +179,7 @@ void show_helps(void)
 	printf("\n");
 	printf("(*) :  `-a` option also need `-q` is set\n");
 	printf("(**): Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
-	printf("\n");
+	printf("\033[0m\n");
 }
 // For `ruri -H`.
 void show_examples(void)
@@ -213,5 +213,5 @@ void show_examples(void)
 	printf("  \033[32msudo ruri \033[34m-u \033[35m/tmp/alpine\n");
 	printf("\033[1;38;2;254;228;208m# Umount the container:\n");
 	printf("  \033[32msudo ruri \033[34m-U \033[35m/tmp/alpine\n");
-	printf("\n");
+	printf("\033[0m\n");
 }

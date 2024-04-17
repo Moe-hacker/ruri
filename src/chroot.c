@@ -375,6 +375,8 @@ void run_chroot_container(struct CONTAINER *container)
 	if (container->cross_arch != NULL) {
 		setup_binfmt_misc(container);
 	}
+	// Fix console color.
+	printf("\033[0m");
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.
 	if (execv(container->command[0], container->command) == -1) {

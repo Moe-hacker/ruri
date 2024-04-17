@@ -104,20 +104,20 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	for (int index = 1; index < argc; index++) {
 		/**** Deprecated options. ****/
 		if (strcmp(argv[index], "-K") == 0) {
-			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			printf("\033[33m%s option has been deprecated.\033[0m\n", argv[index]);
 			exit(EXIT_SUCCESS);
 		}
 		if (strcmp(argv[index], "-t") == 0) {
-			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			printf("\033[33m%s option has been deprecated.\033[0m\n", argv[index]);
 			index++;
 			exit(EXIT_SUCCESS);
 		}
 		if (strcmp(argv[index], "-T") == 0) {
-			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			printf("\033[33m%s option has been deprecated.\033[0m\n", argv[index]);
 			exit(EXIT_SUCCESS);
 		}
 		if (strcmp(argv[index], "-l") == 0) {
-			printf("\033[33m%s option has been deprecated.\n", argv[index]);
+			printf("\033[33m%s option has been deprecated.\033[0m\n", argv[index]);
 			exit(EXIT_SUCCESS);
 		}
 		/**** For other options ****/
