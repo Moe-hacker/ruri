@@ -78,8 +78,8 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 		int stat = 0;
 		waitpid(unshare_pid, &stat, 0);
 		// Watch the process, error() when it run failed.
-		if (stat == 0 || stat == 255) {
-			exit(EXIT_SUCCESS);
+		if (stat == 0 || stat == 255 || stat == 256) {
+			exit(stat);
 		} else {
 			error("\033[31mContainer exited with %d, what's wrong?\033[0m\n", stat);
 		}
@@ -160,8 +160,8 @@ static pid_t join_ns(struct CONTAINER *container)
 		int stat = 0;
 		waitpid(unshare_pid, &stat, 0);
 		// Watch the process, error() when it run failed.
-		if (stat == 0 || stat == 255) {
-			exit(EXIT_SUCCESS);
+		if (stat == 0 || stat == 255 || stat == 256) {
+			exit(stat);
 		} else {
 			error("\033[31mContainer exited with %d, what's wrong?\033[0m\n", stat);
 		}

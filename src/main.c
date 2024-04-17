@@ -422,8 +422,8 @@ int main(int argc, char **argv)
 		pid_t pid = fork();
 		if (pid > 0) {
 			waitpid(pid, &stat, 0);
-			if (stat == 0 || stat == 255) {
-				exit(EXIT_SUCCESS);
+			if (stat == 0 || stat == 255 || stat == 256) {
+				exit(stat);
 			} else {
 				error("\033[31mContainer exited with %d, what's wrong?\033[0m\n", stat);
 			}
