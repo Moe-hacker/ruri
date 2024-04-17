@@ -204,6 +204,8 @@ static void drop_caps(const struct CONTAINER *container)
 	// hrdp and datap are two pointers, so we malloc() to apply the memory for it first.
 	cap_user_header_t hrdp = (cap_user_header_t)malloc(sizeof *hrdp);
 	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof *datap);
+	hrdp->pid = getpid();
+	hrdp->version = _LINUX_CAPABILITY_VERSION_3;
 	syscall(SYS_capget, hrdp, datap);
 	datap->inheritable = 0;
 	syscall(SYS_capset, hrdp, datap);
