@@ -156,7 +156,7 @@ struct __attribute__((aligned(16))) MAGIC {
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "RURI ERROR MESSAGE");                                 \
 		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:"); \
 		fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");        \
-		exit(EXIT_FAILURE);                                                                                           \
+		exit(255);                                                                                                    \
 	}
 void register_signal(void);
 void setup_seccomp(struct CONTAINER *container);
