@@ -91,6 +91,7 @@
 #include "elf-magic.h"
 #include "version.h"
 #include "k2v.h"
+#include "cprintf.h"
 // Info of a container to create.
 struct __attribute__((aligned(128))) CONTAINER {
 	// Container directory.

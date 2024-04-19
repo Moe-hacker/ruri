@@ -92,7 +92,7 @@ FORMATER = clang-format -i
 # For `make check`.
 CHECKER = clang-tidy --use-color
 # Unused checks are disabled.
-CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn
+CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-clang-analyzer-valist.Uninitialized,-cppcoreguidelines-avoid-non-const-global-variables,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn
 # Link with libcap, libpthread and libseccomp.
 LD_FLAGS = -lcap -lpthread -lseccomp $(NX) $(RELRO) -Wl,--build-id=sha1
 DEV_LD_FLAGS = -lcap -lpthread -lseccomp $(NO_RELRO) $(NO_NX) -Wl,--build-id=sha1
@@ -102,7 +102,7 @@ BIONIC_CFLAGS = $(OPTIMIZE_CFLAGS) $(BIONIC_FIX) -static
 # Bionic has built-in libpthread.
 BIONIC_LD_FLAGS = -lcap -lseccomp -Wl,--gc-sections $(NX) $(RELRO) -Wl,--build-id=sha1
 # Target.
-objects = caplist.o chroot.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o cgroup.o main.o
+objects = caplist.o chroot.o cprintf.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o cgroup.o main.o
 O = out
 .ONESHELL:
 all :CFLAGS=$(OPTIMIZE_CFLAGS)
@@ -166,6 +166,9 @@ clean :
 upk2v :
 	cp ../libk2v/src/k2v.c src/k2v.c
 	cp ../libk2v/src/include/k2v.h src/include/k2v.h
+upcprintf :
+	cp ../cprintf/cprintf.c src/cprintf.c
+	cp ../cprintf/include/cprintf.h src/include/cprintf.h
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all            compile"
