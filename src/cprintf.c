@@ -28,7 +28,103 @@
  *
  */
 #include "include/cprintf.h"
-const char *cprintf_print_color(const char *buf)
+#if __STDC_VERSION__ < 202000L
+#define bool _Bool
+#define true ((_Bool) + 1u)
+#define false ((_Bool) + 0u)
+#endif
+static void print_rgb_color(const char *color)
+{
+	char buf[17];
+	for (size_t i = 1; i < strlen(color) - 1; i++) {
+		buf[i - 1] = color[i];
+		buf[i] = 0;
+	}
+	printf("\033[1;38;2;%sm", buf);
+}
+static void fprint_rgb_color(FILE *stream, const char *color)
+{
+	char buf[17];
+	for (size_t i = 1; i < strlen(color) - 1; i++) {
+		buf[i - 1] = color[i];
+		buf[i] = 0;
+	}
+	fprintf(stream, "\033[1;38;2;%sm", buf);
+}
+static bool is_rgb_color(const char *color)
+{
+	int sem = 0;
+	if (atoi(color) > 255) {
+		return false;
+	}
+	for (size_t i = 1; i < strlen(color) - 1; i++) {
+		if (color[i] == ';') {
+			sem++;
+			if (atoi(&color[i + 1]) > 255) {
+				return false;
+			}
+		}
+		if (sem > 2) {
+			return false;
+		}
+		if (!isdigit(color[i]) && color[i] != ';') {
+			return false;
+		}
+	}
+	if (sem != 2) {
+		return false;
+	}
+	return true;
+}
+static const char *cfprintf_print_color(FILE *stream, const char *buf)
+{
+	/*
+	 * Only valid {color} will be recognized,
+	 * and for other '{' without 'color}', we print a '{'.
+	 * we return the pointer to the last character that is
+	 * not recognized as color.
+	 */
+	const char *ret = buf;
+	char color[17] = { '\0' };
+	for (int i = 0; i < 16; i++) {
+		if (buf[i] == '}') {
+			color[i] = buf[i];
+			color[i + 1] = 0;
+			ret = &(buf[i]);
+			break;
+		}
+		color[i] = buf[i];
+		color[i + 1] = 0;
+	}
+	if (strcmp(color, "{clear}") == 0) {
+		fprintf(stream, "\033[0m");
+	} else if (strcmp(color, "{black}") == 0) {
+		fprintf(stream, "\033[30m");
+	} else if (strcmp(color, "{red}") == 0) {
+		fprintf(stream, "\033[31m");
+	} else if (strcmp(color, "{green}") == 0) {
+		fprintf(stream, "\033[32m");
+	} else if (strcmp(color, "{yellow}") == 0) {
+		fprintf(stream, "\033[33m");
+	} else if (strcmp(color, "{blue}") == 0) {
+		fprintf(stream, "\033[34m");
+	} else if (strcmp(color, "{purple}") == 0) {
+		fprintf(stream, "\033[35m");
+	} else if (strcmp(color, "{cyan}") == 0) {
+		fprintf(stream, "\033[36m");
+	} else if (strcmp(color, "{white}") == 0) {
+		fprintf(stream, "\033[37m");
+	} else if (strcmp(color, "{base}") == 0) {
+		fprintf(stream, CPRINTF_BASE_COLOR);
+	} else if (is_rgb_color(color)) {
+		fprint_rgb_color(stream, color);
+	} else {
+		ret = buf;
+		fprintf(stream, "{");
+	}
+	return ret;
+}
+static const char *cprintf_print_color(const char *buf)
 {
 	/*
 	 * Only valid {color} will be recognized,
@@ -68,6 +164,8 @@ const char *cprintf_print_color(const char *buf)
 		printf("\033[37m");
 	} else if (strcmp(color, "{base}") == 0) {
 		printf(CPRINTF_BASE_COLOR);
+	} else if (is_rgb_color(color)) {
+		print_rgb_color(color);
 	} else {
 		ret = buf;
 		printf("{");
@@ -93,6 +191,26 @@ void __cprintf(const char *buf)
 	}
 	// We will always reset the color in the end.
 	printf("\033[0m");
+}
+void __cfprintf(FILE *stream, const char *buf)
+{
+	const char *p = NULL;
+	p = buf;
+	for (size_t i = 0; i < strlen(buf); i++) {
+		// Search for '{'.
+		if (*p == '{') {
+			// *p will be moved because we need to skip the {color} string.
+			p = cfprintf_print_color(stream, p);
+		} else {
+			fprintf(stream, "%c", *p);
+		}
+		// Recompute the value of i.
+		i = (size_t)(p - buf);
+		// Goto the next charactor.
+		p = &(p[1]);
+	}
+	// We will always reset the color in the end.
+	fprintf(stream, "\033[0m");
 }
 size_t cprintf_get_bufsize(const char *format, ...)
 {

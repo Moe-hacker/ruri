@@ -32,9 +32,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <ctype.h>
 void __cprintf(const char *buf);
+void __cfprintf(FILE *stream, const char *buf);
 size_t cprintf_get_bufsize(const char *format, ...);
-const char *cprintf_print_color(const char *buf);
 // The `base` color.
 #define CPRINTF_BASE_COLOR "\033[1;38;2;254;228;208m"
 /*
@@ -50,5 +51,14 @@ const char *cprintf_print_color(const char *buf);
 		buf = malloc(bufsize);                                       \
 		sprintf(buf, format, ##__VA_ARGS__);                         \
 		__cprintf(buf);                                              \
+		free(buf);                                                   \
+	}
+#define cfprintf(stream, format, ...)                                        \
+	{                                                                    \
+		char *buf = NULL;                                            \
+		size_t bufsize = cprintf_get_bufsize(format, ##__VA_ARGS__); \
+		buf = malloc(bufsize);                                       \
+		sprintf(buf, format, ##__VA_ARGS__);                         \
+		__cfprintf(stream, buf);                                     \
 		free(buf);                                                   \
 	}
