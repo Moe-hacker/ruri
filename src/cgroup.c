@@ -54,7 +54,8 @@ static bool is_cgroupv2_supported(void)
 	 */
 	bool found_cpuset = false;
 	bool found_memory = false;
-	int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_CLOEXEC);
+	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
+	int fd = open("/sys/fs/cgroup/ruri/cgroup.controllers", O_RDONLY | O_CLOEXEC);
 	char buf[128] = { '\0' };
 	ssize_t len = read(fd, buf, sizeof(buf));
 	buf[len] = '\0';
