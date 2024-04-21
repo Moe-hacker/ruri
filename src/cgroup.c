@@ -128,13 +128,6 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 	mkdir(memory_cgroup_path, S_IRUSR | S_IWUSR);
 	usleep(2000);
 	int fd = -1;
-	char memory_cgroup_procs_path[PATH_MAX] = { '\0' };
-	sprintf(memory_cgroup_procs_path, "/sys/fs/cgroup/memory/%d/cgroup.procs", container->container_id);
-	// Add pid to container_id memory cgroup.
-	fd = open(memory_cgroup_procs_path, O_RDWR | O_CLOEXEC);
-	sprintf(buf, "%d\n", pid);
-	write(fd, buf, strlen(buf));
-	close(fd);
 	if (container->memory != NULL) {
 		// Set memory limit.
 		char memory_cgroup_limit_path[PATH_MAX] = { '\0' };
@@ -146,17 +139,22 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 		}
 		close(fd);
 	}
-	char cpuset_cgroup_procs_path[PATH_MAX] = { '\0' };
-	sprintf(cpuset_cgroup_procs_path, "/sys/fs/cgroup/cpuset/%d/cgroup.procs", container->container_id);
-	// Add pid to container_id cpuset cgroup.
-	fd = open(cpuset_cgroup_procs_path, O_RDWR | O_CLOEXEC);
+	char memory_cgroup_procs_path[PATH_MAX] = { '\0' };
+	sprintf(memory_cgroup_procs_path, "/sys/fs/cgroup/memory/%d/cgroup.procs", container->container_id);
+	// Add pid to container_id memory cgroup.
+	fd = open(memory_cgroup_procs_path, O_RDWR | O_CLOEXEC);
 	sprintf(buf, "%d\n", pid);
 	write(fd, buf, strlen(buf));
 	close(fd);
 	if (container->cpuset != NULL) {
 		// Set cpuset limit.
+		char cpuset_cgroup_mems_path[PATH_MAX] = { '\0' };
+		sprintf(cpuset_cgroup_mems_path, "/sys/fs/cgroup/cpuset/%d/cpuset.mems", container->container_id);
+		fd = open(cpuset_cgroup_mems_path, O_RDWR | O_CLOEXEC);
+		write(fd, "0\n", strlen("0\n"));
+		close(fd);
 		char cpuset_cgroup_cpus_path[PATH_MAX] = { '\0' };
-		sprintf(cpuset_cgroup_cpus_path, "/sys/fs/cgroup/%d/cpus", container->container_id);
+		sprintf(cpuset_cgroup_cpus_path, "/sys/fs/cgroup/cpuset/%d/cpuset.cpus", container->container_id);
 		fd = open(cpuset_cgroup_cpus_path, O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->cpuset);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
@@ -164,6 +162,13 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 		}
 		close(fd);
 	}
+	char cpuset_cgroup_procs_path[PATH_MAX] = { '\0' };
+	sprintf(cpuset_cgroup_procs_path, "/sys/fs/cgroup/cpuset/%d/cgroup.procs", container->container_id);
+	// Add pid to container_id cpuset cgroup.
+	fd = open(cpuset_cgroup_procs_path, O_RDWR | O_CLOEXEC);
+	sprintf(buf, "%d\n", pid);
+	write(fd, buf, strlen(buf));
+	close(fd);
 	// Do not keep the apifs mounted.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 }

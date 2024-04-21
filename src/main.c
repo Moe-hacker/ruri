@@ -56,6 +56,35 @@ static void check_container(const struct CONTAINER *container)
 	}
 	closedir(direxist);
 }
+static void parse_cgroup_settings(const char *str, struct CONTAINER *container)
+{
+	/*
+	 * Parse and set cgroup limit.
+	 * We will not check if the config is vaild.
+	 */
+	char buf[16] = { '\0' };
+	char *limit = NULL;
+	// Get limit type.
+	for (size_t i = 0; i < 16; i++) {
+		// Avoid overflow.
+		if (i >= strlen(str)) {
+			break;
+		}
+		if (str[i] == '=') {
+			limit = strdup(&(str[i + 1]));
+			break;
+		}
+		buf[i] = str[i];
+		buf[i + 1] = '\0';
+	}
+	if (strcmp("cpuset", buf) == 0) {
+		container->cpuset = limit;
+	} else if (strcmp("memory", buf) == 0) {
+		container->memory = limit;
+	} else {
+		error("{red}Unknown cgroup option %s\n", str);
+	}
+}
 static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *container)
 {
 	/*
@@ -113,10 +142,6 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			exit(EXIT_SUCCESS);
 		}
 		if (strcmp(argv[index], "-T") == 0) {
-			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
-			exit(EXIT_SUCCESS);
-		}
-		if (strcmp(argv[index], "-l") == 0) {
 			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
 			exit(EXIT_SUCCESS);
 		}
@@ -235,6 +260,15 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		else if (strcmp(argv[index], "-R") == 0 || strcmp(argv[index], "--read-only") == 0) {
 			container->ro_root = true;
 		}
+		// cgroup limit.
+		else if (strcmp(argv[index], "-l") == 0) {
+			index++;
+			if ((argv[index] != NULL)) {
+				parse_cgroup_settings(argv[index], container);
+			} else {
+				error("{red}Unknown cgroup option\n");
+			}
+		}
 		// Set extra env.
 		else if (strcmp(argv[index], "-e") == 0 || strcmp(argv[index], "--env") == 0) {
 			index++;
@@ -350,7 +384,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		// For unknown arguments, yeah I didn't forgot it...
 		else {
 			show_helps();
-			error("{red}Error: unknow option `%s`{clear}\n", argv[index]);
+			error("{red}Error: unknown option `%s`{clear}\n", argv[index]);
 		}
 	}
 	// Set default init command to run.
