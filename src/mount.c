@@ -142,7 +142,7 @@ static char *losetup(const char *img)
 		sprintf(loopfile, "/dev/block/loop%d", devnr);
 		loopfd = open(loopfile, O_RDWR | O_CLOEXEC);
 		if (loopfd < 0) {
-			error("\033[31mError: losetup error!\n");
+			error("{red}Error: losetup error!\n");
 		}
 	}
 	// It takes the same efferct as `losetup` command.

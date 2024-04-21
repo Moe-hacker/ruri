@@ -41,10 +41,10 @@ void run_rootless_container(struct CONTAINER *container)
 		if (stat == 0 || stat == 255 || stat == 256) {
 			exit(stat);
 		} else {
-			error("\033[31mContainer exited with %d, what's wrong?\033[0m\n", stat);
+			error("{red}Container exited with %d, what's wrong?{clear}\n", stat);
 		}
 	} else if (pid < 0) {
-		error("\033[31mFork error QwQ?\n");
+		error("{red}Fork error QwQ?\n");
 	} else {
 		// Set uid map.
 		char uid_map[32] = { "\0" };

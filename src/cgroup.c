@@ -142,7 +142,7 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 		fd = open(memory_cgroup_limit_path, O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->memory);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
-			warning("\033[33mSet memory limit failed\033[0m\n");
+			warning("{yellow}Set memory limit failed{clear}\n");
 		}
 		close(fd);
 	}
@@ -160,7 +160,7 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 		fd = open(cpuset_cgroup_cpus_path, O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->cpuset);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
-			warning("\033[33mSet cpu limit failed\033[0m\n");
+			warning("{yellow}Set cpu limit failed{clear}\n");
 		}
 		close(fd);
 	}
@@ -192,7 +192,7 @@ static void set_cgroup_v2(const struct CONTAINER *container)
 		fd = open(cgroup_memlimit_path, O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->memory);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
-			warning("\033[33mSet memory limit failed\033[0m\n");
+			warning("{yellow}Set memory limit failed{clear}\n");
 		}
 		close(fd);
 	}
@@ -203,7 +203,7 @@ static void set_cgroup_v2(const struct CONTAINER *container)
 		fd = open(cgroup_cpuset_path, O_RDWR | O_CLOEXEC);
 		sprintf(buf, "%s\n", container->cpuset);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
-			warning("\033[33mSet cpu limit failed\033[0m\n");
+			warning("{yellow}Set cpu limit failed{clear}\n");
 		}
 		close(fd);
 	}

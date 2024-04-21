@@ -38,17 +38,17 @@ static void check_binary(const struct CONTAINER *container)
 	// lstat(3) will return -1 while the init_binary does not exist.
 	if (lstat(init_binary, &init_binary_stat) != 0) {
 		umount_container(container->container_dir);
-		error("\033[31mPlease check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
+		error("{red}Please check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
 	}
 	if (S_ISDIR(init_binary_stat.st_mode)) {
 		umount_container(container->container_dir);
-		error("\033[31mCOMMAND can not be a directory QwQ\n");
+		error("{red}COMMAND can not be a directory QwQ\n");
 	}
 	// Check QEMU path.
 	if (container->cross_arch != NULL) {
 		if (container->qemu_path == NULL) {
 			umount_container(container->container_dir);
-			error("\033[31mError: path of QEMU is not set QwQ\n");
+			error("{red}Error: path of QEMU is not set QwQ\n");
 		}
 		// Check if QEMU binary exists and is not a directory.
 		char qemu_binary[PATH_MAX];
@@ -58,11 +58,11 @@ static void check_binary(const struct CONTAINER *container)
 		// lstat(3) will return -1 while the init_binary does not exist.
 		if (lstat(qemu_binary, &qemu_binary_stat) != 0) {
 			umount_container(container->container_dir);
-			error("\033[31mPlease check if path of QEMU is correct QwQ\n");
+			error("{red}Please check if path of QEMU is correct QwQ\n");
 		}
 		if (S_ISDIR(qemu_binary_stat.st_mode)) {
 			umount_container(container->container_dir);
-			error("\033[31mQEMU path can not be a directory QwQ\n");
+			error("{red}QEMU path can not be a directory QwQ\n");
 		}
 	}
 }
@@ -193,8 +193,8 @@ static void drop_caps(const struct CONTAINER *container)
 		if (CAP_IS_SUPPORTED(container->drop_caplist[i])) {
 			// Drop CapBnd.
 			if (cap_drop_bound(container->drop_caplist[i]) != 0 && !container->no_warnings) {
-				warning("\033[33mWarning: Failed to drop cap `%s`\n", cap_to_name(container->drop_caplist[i]));
-				warning("\033[33merror reason: %s\033[0m\n", strerror(errno));
+				warning("{yellow}Warning: Failed to drop cap `%s`\n", cap_to_name(container->drop_caplist[i]));
+				warning("{yellow}error reason: %s{clear}\n", strerror(errno));
 			}
 			// Drop CapAmb.
 			prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_LOWER, container->drop_caplist[i], 0, 0);
@@ -239,7 +239,7 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 	// Umount container if we get an error.
 	if (magic == NULL) {
 		umount_container(container->container_dir);
-		error("\033[31mError: unknown architecture or same architecture as host: %s\n\nSupported architectures: aarch64, alpha, arm, armeb, cris, hexagon, hppa, i386, loongarch64, m68k, microblaze, mips, mips64, mips64el, mipsel, mipsn32, mipsn32el, ppc, ppc64, ppc64le, riscv32, riscv64, s390x, sh4, sh4eb, sparc, sparc32plus, sparc64, x86_64, xtensa, xtensaeb\033[0m\n", container->cross_arch);
+		error("{red}Error: unknown architecture or same architecture as host: %s\n\nSupported architectures: aarch64, alpha, arm, armeb, cris, hexagon, hppa, i386, loongarch64, m68k, microblaze, mips, mips64, mips64el, mipsel, mipsn32, mipsn32el, ppc, ppc64, ppc64le, riscv32, riscv64, s390x, sh4, sh4eb, sparc, sparc32plus, sparc64, x86_64, xtensa, xtensaeb{clear}\n", container->cross_arch);
 	}
 	char buf[1024] = { '\0' };
 	// Format: ":name:type:offset:magic:mask:interpreter:flags".
@@ -249,7 +249,7 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 	// This needs CONFIG_BINFMT_MISC enabled in your kernel.
 	int register_fd = open("/proc/sys/fs/binfmt_misc/register", O_WRONLY | O_CLOEXEC);
 	if (register_fd < 0) {
-		error("\033[31mError: Failed to setup binfmt_misc, check your kernel config QwQ");
+		error("{red}Error: Failed to setup binfmt_misc, check your kernel config QwQ");
 	}
 	// Set binfmt_misc config.
 	write(register_fd, buf, strlen(buf));
@@ -378,11 +378,11 @@ void run_chroot_container(struct CONTAINER *container)
 		setup_binfmt_misc(container);
 	}
 	// Fix console color.
-	printf("\033[0m");
+	cprintf("{clear}");
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.
 	if (execv(container->command[0], container->command) == -1) {
 		// Catch exceptions.
-		error("\033[31mFailed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this\033[0m\n", container->command[0], errno, strerror(errno));
+		error("{red}Failed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this{clear}\n", container->command[0], errno, strerror(errno));
 	}
 }

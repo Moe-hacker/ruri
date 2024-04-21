@@ -35,6 +35,9 @@
 #endif
 static void print_rgb_color(const char *color)
 {
+	/*
+	 * print \033[1;38;2;R;G;Bm format color.
+	 */
 	char buf[17];
 	for (size_t i = 1; i < strlen(color) - 1; i++) {
 		buf[i - 1] = color[i];
@@ -44,6 +47,9 @@ static void print_rgb_color(const char *color)
 }
 static void fprint_rgb_color(FILE *stream, const char *color)
 {
+	/*
+	 * print \033[1;38;2;R;G;Bm format color.
+	 */
 	char buf[17];
 	for (size_t i = 1; i < strlen(color) - 1; i++) {
 		buf[i - 1] = color[i];
@@ -53,24 +59,32 @@ static void fprint_rgb_color(FILE *stream, const char *color)
 }
 static bool is_rgb_color(const char *color)
 {
+	/*
+	 * Check if color is an R;G;B format color.
+	 */
 	int sem = 0;
+	// If R > 255, it's not a color.
 	if (atoi(color) > 255) {
 		return false;
 	}
 	for (size_t i = 1; i < strlen(color) - 1; i++) {
 		if (color[i] == ';') {
 			sem++;
+			// If G or B > 255, it's not a color.
 			if (atoi(&color[i + 1]) > 255) {
 				return false;
 			}
 		}
+		// If there are more than 2 `;`, the format is not correct.
 		if (sem > 2) {
 			return false;
 		}
+		// If the color include other charactor, the format is not correct.
 		if (!isdigit(color[i]) && color[i] != ';') {
 			return false;
 		}
 	}
+	// If there are not 2 `;`, the format is not correct.
 	if (sem != 2) {
 		return false;
 	}

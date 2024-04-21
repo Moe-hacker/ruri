@@ -32,16 +32,16 @@
 void umount_container(const char *container_dir)
 {
 	if (container_dir == NULL) {
-		error("\033[31mError: container directory does not exist QwQ\n");
+		error("{red}Error: container directory does not exist QwQ\n");
 	}
 	// Do not use '/' for container_dir.
 	if (strcmp(container_dir, "/") == 0) {
-		error("\033[31mError: `/` is not allowed to use as a container directory QwQ\n");
+		error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if container_dir exist.
 	DIR *direxist = opendir(container_dir);
 	if (direxist == NULL) {
-		error("\033[31mError: container directory does not exist QwQ\n");
+		error("{red}Error: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
 	struct CONTAINER *container = read_info(NULL, container_dir);

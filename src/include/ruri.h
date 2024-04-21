@@ -143,20 +143,20 @@ struct __attribute__((aligned(16))) MAGIC {
 	char *mask;
 };
 // Warnings.
-#define warning(...) fprintf(stderr, ##__VA_ARGS__)
+#define warning(...) cfprintf(stderr, ##__VA_ARGS__)
 // Show error msg and exit.
 #define error(...)                                                                                                            \
 	{                                                                                                                     \
-		fprintf(stderr, ##__VA_ARGS__);                                                                               \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  .^.   .^.");                                        \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                      \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", " ﾙﾘﾘ >  x )ﾘ");                                       \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "ﾉノ㇏  ^ ﾉ|ﾉ");                                       \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "      ⠁⠁");                                           \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "RURI ERROR MESSAGE");                                 \
-		fprintf(stderr, "\033[1;38;2;254;228;208m%s\033[0m\n", "If you think something is wrong, please report at:"); \
-		fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n", "https://github.com/Moe-hacker/ruri/issues");        \
+		cfprintf(stderr, ##__VA_ARGS__);                                                                               \
+		cfprintf(stderr, "{base}%s{clear}\n", "  .^.   .^.");                                        \
+		cfprintf(stderr, "{base}%s{clear}\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
+		cfprintf(stderr, "{base}%s{clear}\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                      \
+		cfprintf(stderr, "{base}%s{clear}\n", " ﾙﾘﾘ >  x )ﾘ");                                       \
+		cfprintf(stderr, "{base}%s{clear}\n", "ﾉノ㇏  ^ ﾉ|ﾉ");                                       \
+		cfprintf(stderr, "{base}%s{clear}\n", "      ⠁⠁");                                           \
+		cfprintf(stderr, "{base}%s{clear}\n", "RURI ERROR MESSAGE");                                 \
+		cfprintf(stderr, "{base}%s{clear}\n", "If you think something is wrong, please report at:"); \
+		cfprintf(stderr, "\033[4m{base}%s{clear}\n", "https://github.com/Moe-hacker/ruri/issues");        \
 		exit(EXIT_FAILURE);                                                                                           \
 	}
 void register_signal(void);

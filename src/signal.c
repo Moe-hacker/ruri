@@ -35,19 +35,19 @@ static void sighandle(int sig)
 	int clifd = open("/proc/self/cmdline", O_RDONLY | O_CLOEXEC);
 	char buf[1024];
 	ssize_t bufsize = read(clifd, buf, sizeof(buf));
-	fprintf(stderr, "\033[1;38;2;254;228;208m");
-	fprintf(stderr, "%s\n", "  .^.   .^.");
-	fprintf(stderr, "%s\n", "  /⋀\\_ﾉ_/⋀\\");
-	fprintf(stderr, "%s\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
-	fprintf(stderr, "%s\n", " ﾙﾘﾘ >  x )ﾘ");
-	fprintf(stderr, "%s\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
-	fprintf(stderr, "%s\n", "      ⠁⠁");
-	fprintf(stderr, "%s\n", "RURI ERROR MESSAGE");
-	fprintf(stderr, "Seems that it's time to abort.\n");
-	fprintf(stderr, "SIG: %d\n", sig);
-	fprintf(stderr, "UID: %u\n", getuid());
-	fprintf(stderr, "PID: %d\n", getpid());
-	fprintf(stderr, "CLI: ");
+	cfprintf(stderr, "{base}");
+	cfprintf(stderr, "{base}%s\n", "  .^.   .^.");
+	cfprintf(stderr, "{base}%s\n", "  /⋀\\_ﾉ_/⋀\\");
+	cfprintf(stderr, "{base}%s\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
+	cfprintf(stderr, "{base}%s\n", " ﾙﾘﾘ >  x )ﾘ");
+	cfprintf(stderr, "{base}%s\n", "ﾉノ㇏  ^ ﾉ|ﾉ");
+	cfprintf(stderr, "{base}%s\n", "      ⠁⠁");
+	cfprintf(stderr, "{base}%s\n", "RURI ERROR MESSAGE");
+	cfprintf(stderr, "{base}Seems that it's time to abort.\n");
+	cfprintf(stderr, "{base}SIG: %d\n", sig);
+	cfprintf(stderr, "{base}UID: %u\n", getuid());
+	cfprintf(stderr, "{base}PID: %d\n", getpid());
+	cfprintf(stderr, "{base}CLI: ");
 	for (ssize_t i = 0; i < bufsize - 1; i++) {
 		if (buf[i] == '\0') {
 			fputc(' ', stderr);
@@ -55,9 +55,9 @@ static void sighandle(int sig)
 			fputc(buf[i], stderr);
 		}
 	}
-	fprintf(stderr, "\nThis message might caused by an internal error.\n");
-	fprintf(stderr, "If you think something is wrong, please report at:\n");
-	fprintf(stderr, "\033[4;1;38;2;254;228;208m%s\033[0m\n\n", "https://github.com/Moe-hacker/ruri/issues");
+	cfprintf(stderr, "{base}\nThis message might caused by an internal error.\n");
+	cfprintf(stderr, "{base}If you think something is wrong, please report at:\n");
+	cfprintf(stderr, "\033[4m{base}%s{clear}\n\n", "https://github.com/Moe-hacker/ruri/issues");
 }
 // Catch coredump signal.
 void register_signal(void)
