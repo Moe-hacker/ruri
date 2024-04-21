@@ -145,9 +145,9 @@ struct __attribute__((aligned(16))) MAGIC {
 // Warnings.
 #define warning(...) cfprintf(stderr, ##__VA_ARGS__)
 // Show error msg and exit.
-#define error(...)                                                                                                            \
-	{                                                                                                                     \
-		cfprintf(stderr, ##__VA_ARGS__);                                                                               \
+#define error(...)                                                                                           \
+	{                                                                                                    \
+		cfprintf(stderr, ##__VA_ARGS__);                                                             \
 		cfprintf(stderr, "{base}%s{clear}\n", "  .^.   .^.");                                        \
 		cfprintf(stderr, "{base}%s{clear}\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
 		cfprintf(stderr, "{base}%s{clear}\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                      \
@@ -156,8 +156,8 @@ struct __attribute__((aligned(16))) MAGIC {
 		cfprintf(stderr, "{base}%s{clear}\n", "      ⠁⠁");                                           \
 		cfprintf(stderr, "{base}%s{clear}\n", "RURI ERROR MESSAGE");                                 \
 		cfprintf(stderr, "{base}%s{clear}\n", "If you think something is wrong, please report at:"); \
-		cfprintf(stderr, "\033[4m{base}%s{clear}\n", "https://github.com/Moe-hacker/ruri/issues");        \
-		exit(EXIT_FAILURE);                                                                                           \
+		cfprintf(stderr, "\033[4m{base}%s{clear}\n", "https://github.com/Moe-hacker/ruri/issues");   \
+		exit(EXIT_FAILURE);                                                                          \
 	}
 void register_signal(void);
 void setup_seccomp(struct CONTAINER *container);

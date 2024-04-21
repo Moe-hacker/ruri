@@ -62,3 +62,5 @@ size_t cprintf_get_bufsize(const char *format, ...);
 		__cfprintf(stream, buf);                                     \
 		free(buf);                                                   \
 	}
+#define CPRINTF_MAJOR 1
+#define CPRINTF_MINOR 0
