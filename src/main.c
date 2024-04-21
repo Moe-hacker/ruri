@@ -261,7 +261,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			container->ro_root = true;
 		}
 		// cgroup limit.
-		else if (strcmp(argv[index], "-l") == 0) {
+		else if (strcmp(argv[index], "-l") == 0 || strcmp(argv[index], "--limit") == 0) {
 			index++;
 			if ((argv[index] != NULL)) {
 				parse_cgroup_settings(argv[index], container);
