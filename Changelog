@@ -3,6 +3,8 @@
   * Drop CapAmb && Clear CapInh.
   * Add cgroup support for cpuset and memory.
   * Add `-l` option: `--limit`.
+  * Remove `-s` option.
+  * Enable Seccomp by default.
   * error() when the command run failed in continer.
 # v3.0:
   * Remove daemon support.

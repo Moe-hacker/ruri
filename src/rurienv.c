@@ -99,12 +99,6 @@ static char *build_container_info(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
-	// enable_seccomp.
-	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
 	// ns_pid.
 	buf = int_to_k2v("ns_pid", container->ns_pid);
 	size += strlen(buf);
@@ -271,8 +265,6 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	}
 	// Get no_new_privs.
 	container->no_new_privs = key_get_bool("no_new_privs", buf);
-	// Get enable_seccomp.
-	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
 	// Get ns_pid.
 	container->ns_pid = key_get_int("ns_pid", buf);
 	// Get container_id.
