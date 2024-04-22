@@ -108,6 +108,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *env[MAX_ENVS];
 	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
+	// Enable built-in seccomp profile.
+	bool enable_seccomp;
 	// Do not show warnings.
 	bool no_warnings;
 	// Unshare container.

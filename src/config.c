@@ -108,6 +108,12 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	ret = realloc(ret, size);
 	strcat(ret, buf);
 	free(buf);
+	// enable_seccomp.
+	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
+	size += strlen(buf);
+	ret = realloc(ret, size);
+	strcat(ret, buf);
+	free(buf);
 	// cpuset.
 	buf = char_to_k2v("cpuset", container->cpuset);
 	size += strlen(buf);
@@ -209,6 +215,8 @@ struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 	}
 	// Get no_new_privs.
 	container->no_new_privs = key_get_bool("no_new_privs", buf);
+	// Get enable_seccomp.
+	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
 	// Get container_dir.
 	container->container_dir = key_get_char("container_dir", buf);
 	// Get qemu_path.

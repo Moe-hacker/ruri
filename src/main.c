@@ -108,6 +108,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	cap_value_t cap = INIT_VALUE;
 	bool privileged = false;
 	container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+	container->enable_seccomp = false;
 	container->no_new_privs = false;
 	container->no_warnings = false;
 	container->enable_unshare = false;
@@ -141,10 +142,6 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			exit(EXIT_SUCCESS);
 		}
 		if (strcmp(argv[index], "-T") == 0) {
-			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
-			exit(EXIT_SUCCESS);
-		}
-		if (strcmp(argv[index], "-s") == 0) {
 			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
 			exit(EXIT_SUCCESS);
 		}
@@ -234,6 +231,10 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 				error("{red}Please specify the path of qemu binary\n{clear}");
 			}
 			container->qemu_path = strdup(argv[index]);
+		}
+		// Enable built-in seccomp profile.
+		else if (strcmp(argv[index], "-s") == 0 || strcmp(argv[index], "--enable-seccomp") == 0) {
+			container->enable_seccomp = true;
 		}
 		// Run unshare container.
 		else if (strcmp(argv[index], "-u") == 0 || strcmp(argv[index], "--unshare") == 0) {

@@ -351,7 +351,9 @@ void run_chroot_container(struct CONTAINER *container)
 	// Set up cgroup limit.
 	set_limit(container);
 	// Set up Seccomp BPF.
+	if (container->enable_seccomp) {
 		setup_seccomp(container);
+	}
 	// Drop caps.
 	drop_caps(container);
 	// Set envs.
