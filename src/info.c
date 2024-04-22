@@ -166,7 +166,7 @@ void show_helps(void)
 	cprintf("{base}  -u, --unshare .......................: Enable unshare feature\n");
 	cprintf("{base}  -n, --no-new-privs ..................: Set NO_NEW_PRIVS Flag\n");
 	cprintf("{base}  -N, --no-rurienv ....................: Do not use .rurienv file\n");
-	cprintf("{base}  -s, --enable-seccomp ................: Enable built-in Seccomp profile\n");
+	cprintf("{base}  -s, --disable-seccomp ...............: Disable built-in Seccomp profile\n");
 	cprintf("{base}  -p, --privileged ....................: Run privileged container\n");
 	cprintf("{base}  -r, --rootless ......................: Run rootless container\n");
 	cprintf("{base}  -k, --keep [cap] ....................: Keep the specified cap\n");
