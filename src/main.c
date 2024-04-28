@@ -108,7 +108,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	cap_value_t cap = INIT_VALUE;
 	bool privileged = false;
 	container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
-	container->enable_seccomp = true;
+	container->enable_seccomp = false;
 	container->no_new_privs = false;
 	container->no_warnings = false;
 	container->enable_unshare = false;
@@ -232,8 +232,8 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 			}
 			container->qemu_path = strdup(argv[index]);
 		}
-		// Disable built-in seccomp profile.
-		else if (strcmp(argv[index], "-s") == 0 || strcmp(argv[index], "--disable-seccomp") == 0) {
+		// Enable built-in seccomp profile.
+		else if (strcmp(argv[index], "-s") == 0 || strcmp(argv[index], "--enable-seccomp") == 0) {
 			container->enable_seccomp = true;
 		}
 		// Run unshare container.
