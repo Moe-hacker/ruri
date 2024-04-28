@@ -284,6 +284,9 @@ void mount_mountpoints(const struct CONTAINER *container)
 		trymount(container->extra_ro_mountpoint[i], mountpoint_dir, MS_RDONLY);
 		free(mountpoint_dir);
 	}
+
+	// '/' should be a mountpoint in container.
+	mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
 }
 // Run chroot container.
 void run_chroot_container(struct CONTAINER *container)
@@ -305,8 +308,8 @@ void run_chroot_container(struct CONTAINER *container)
 	sprintf(buf, "%s/sys/kernel", container->container_dir);
 	DIR *direxist = opendir(buf);
 	if (direxist == NULL) {
-		// '/' should be a mountpoint in container.
-		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
+		// Mount mountpoints.
+		mount_mountpoints(container);
 		// Store container info.
 		if (!container->enable_unshare && container->use_rurienv) {
 			store_info(container);
@@ -328,8 +331,6 @@ void run_chroot_container(struct CONTAINER *container)
 			read_info(container, container->container_dir);
 		}
 	}
-	// Mount mountpoints.
-	mount_mountpoints(container);
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
 		container->command[0] = "/bin/su";
