@@ -185,7 +185,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	ret = tmp;
 	return ret;
 }
-struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
+void read_config(struct CONTAINER *container, const char *path)
 {
 	/*
 	 * Read k2v format config file,
@@ -249,5 +249,4 @@ struct CONTAINER *read_config(struct CONTAINER *container, const char *path)
 	mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
-	return container;
 }

@@ -85,7 +85,7 @@ static void parse_cgroup_settings(const char *str, struct CONTAINER *container)
 		error("{red}Unknown cgroup option %s\n", str);
 	}
 }
-static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *container)
+static void parse_args(int argc, char **argv, struct CONTAINER *container)
 {
 	/*
 	 * 100% shit-code here.
@@ -107,7 +107,6 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t cap = INIT_VALUE;
 	bool privileged = false;
-	container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
 	container->enable_seccomp = false;
 	container->no_new_privs = false;
 	container->no_warnings = false;
@@ -193,7 +192,7 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 				error("{red}Please specify a config file !\n{clear}");
 			}
 			index++;
-			container = read_config(container, argv[index]);
+			read_config(container, argv[index]);
 			break;
 		}
 		// Dump config.
@@ -428,7 +427,6 @@ static struct CONTAINER *parse_args(int argc, char **argv, struct CONTAINER *con
 		write(fd, config, strlen(config));
 		exit(EXIT_SUCCESS);
 	}
-	return container;
 }
 // It works on my machine!!!
 int main(int argc, char **argv)
@@ -443,9 +441,9 @@ int main(int argc, char **argv)
 	// Catch coredump signal.
 	register_signal();
 	// Info of container to run.
-	struct CONTAINER *container = NULL;
+	struct CONTAINER *container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
 	// Parse arguments.
-	container = parse_args(argc, argv, container);
+	parse_args(argc, argv, container);
 	// Check container and the running environment.
 	check_container(container);
 	// unset $LD_PRELOAD.

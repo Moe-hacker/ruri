@@ -33,9 +33,6 @@ void setup_seccomp(struct CONTAINER *container)
 {
 	/*
 	 * Based on docker's default seccomp profile.
-	 * When I wrote this, only the compiler and I understood what I was doing.
-	 * Now, only the compiler knows.
-	 * Anyway, I hope it works...
 	 */
 	scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_ALLOW);
 	// I hope this is the right way to write the seccomp rule...
