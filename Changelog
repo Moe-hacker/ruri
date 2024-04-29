@@ -4,6 +4,7 @@
   * Add cgroup support for cpuset and memory.
   * Add `-l` option: `--limit`.
   * error() when the command run failed in continer.
+  * Update seccomp profile.
 # v3.0:
   * Remove daemon support.
   * Use libk2v for config files and .rurienv file.
