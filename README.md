@@ -40,7 +40,7 @@ If you think something does not work as expected, please [Open a new isssue](htt
 - Simple:      
 The basic usage is very very simple, you can use it just like the command `chroot`.
 - Secure:      
-It uses libcap and libseccomp for security, and most devices in /dev will never be reached in containers by default.
+It uses libcap and libseccomp for security, with other protections.
 - Run Everywhere:      
 Build ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
 # Install:      
