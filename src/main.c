@@ -425,6 +425,7 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		remove(output_path);
 		int fd = open(output_path, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
 		write(fd, config, strlen(config));
+		free(config);
 		exit(EXIT_SUCCESS);
 	}
 }

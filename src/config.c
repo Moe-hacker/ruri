@@ -50,6 +50,10 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
 	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
+	// Make ASAN happy.
+	for (int i = 0; i < len; i++) {
+		cap_free(drop_caplist[i]);
+	}
 	size += strlen(buf);
 	ret = realloc(ret, size);
 	strcat(ret, buf);
@@ -179,6 +183,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	size += strlen(buf);
 	ret = realloc(ret, size);
 	strcat(ret, buf);
+	free(buf);
 	// The `ret` is larger than it should be, so we strdup() it.
 	char *tmp = strdup(ret);
 	free(ret);
@@ -249,4 +254,5 @@ void read_config(struct CONTAINER *container, const char *path)
 	mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
+	free(buf);
 }
