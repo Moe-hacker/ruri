@@ -5,6 +5,7 @@
   * Add `-l` option: `--limit`.
   * error() when the command run failed in continer.
   * Update seccomp profile.
+  * General bug fixes.
 # v3.0:
   * Remove daemon support.
   * Use libk2v for config files and .rurienv file.
