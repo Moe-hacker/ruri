@@ -28,54 +28,6 @@
  *
  */
 #include "include/ruri.h"
-// As an easter egg.
-void AwA(void)
-{
-	/*
-	 * Nothing is useful at this function, just for fun.
-	 */
-	// Get the size of terminal.
-	struct winsize size;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-	u_short col = size.ws_col;
-	if (col % 2 == 1) {
-		col -= 1;
-	}
-	// For centering output.
-	char space[col / 2 + 1];
-	space[0] = '\0';
-	if (col > 60) {
-		col /= 2;
-		col -= 28;
-		memset(space, ' ', col * sizeof(char));
-		space[col] = '\0';
-	} else {
-		strcat(space, "");
-	}
-	cprintf("%s%s\n", space, "{255;255;255}              ██                        ██");
-	cprintf("%s%s\n", space, "{255;255;255}            ██  ██          ██        ██  ██");
-	cprintf("%s%s\n", space, "{255;255;255}            ██    ████        ██    ██      ██");
-	cprintf("%s%s\n", space, "{255;255;255}          ██          ██    ██    ████      ██");
-	cprintf("%s%s\n", space, "{255;255;255}          ██      ██████████████████          ██");
-	cprintf("%s%s\n", space, "{255;255;255}        ██      ██                  ██        ██");
-	cprintf("%s%s\n", space, "{255;255;255}        ██    ██                      ████    ██");
-	cprintf("%s%s\n", space, "{255;255;255}      ████████        ██      ██          ████  ██");
-	cprintf("%s%s\n", space, "{255;255;255}      ██    ██        ██    ██  ██    ██    ██  ██");
-	cprintf("%s%s\n", space, "{255;255;255}    ████      ██    ██  ████  ██    ██  ██    ██████");
-	cprintf("%s%s\n", space, "{255;255;255}    ██        ██  ██    ██      ████  ██  ██  ████████");
-	cprintf("%s%s\n", space, "{255;255;255}    ██      ██  ██                          ████");
-	cprintf("%s%s\n", space, "{255;255;255}    ██        ██                    ██████    ██");
-	cprintf("%s%s\n", space, "{255;255;255}  ████        ██    ████          ██      ██  ██");
-	cprintf("%s%s\n", space, "{255;255;255}  ██          ██        ██          {255;0;0}██  ██{255;255;255}    ██");
-	cprintf("%s%s\n", space, "{255;255;255}  ██          ██          ██          {255;0;0}██{255;255;255}      ██");
-	cprintf("%s%s\n", space, "{255;255;255}  ██          ██    ██████          {255;0;0}██  ██{255;255;255}      ██");
-	cprintf("%s%s\n", space, "{255;255;255}  ████    ██  ██                                ██");
-	cprintf("%s%s\n", space, "{255;255;255}    ████  ██████          ██    ██            ██");
-	cprintf("%s%s\n", space, "{255;255;255}      ██████  ████          ████          ████");
-	cprintf("%s%s\n", space, "{255;255;255}                ████                    ████");
-	cprintf("%s%s\n", space, "{255;255;255}                    ████████████████████");
-	cprintf("%s{clear}\n", "");
-}
 // For `ruri -v`.
 // See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
 extern char build_id_start;
