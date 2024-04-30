@@ -1,0 +1,200 @@
+#!/bin/sh
+#
+# SPDX-License-Identifier: MIT
+#
+# This file is part of ruri, with ABSOLUTELY NO WARRANTY.
+#
+# MIT License
+#
+# Copyright (c) 2022-2024 Moe-hacker
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+error() {
+  printf "$@\n"
+  exit 1
+}
+init() {
+  printf "checking for prefix... "
+  if [ ! $PREFIX ]; then
+    echo "/"
+  else
+    if [ -e $PREFIX/bin ]; then
+      echo "$PREFIX"
+    else
+      error "\n$PREFIX/bin/ not found, prefix cannot be used"
+    fi
+  fi
+  printf "checking for install... "
+  if ! command -v install; then
+    error "not found"
+  fi
+  printf "checking for make... "
+  if ! command -v make; then
+    error "not found"
+  fi
+  printf "checking for strip... "
+  if ! command -v strip; then
+    error "not found"
+  fi
+  printf "checking for compiler... "
+  if [ !$CC ]; then
+    if [[ ! $(which cc) ]]; then
+      error "not found"
+    fi
+    CC=$(realpath $(which cc))
+    export CC=${CC##*/}
+  fi
+  printf "$CC\n"
+  printf "checking whether the compiler supports GNU C99... "
+  echo "int main(){}" | $CC -x c -o /dev/null -std=gnu99 - &>/dev/null && printf "ok\n" || error "no"
+  if [ $STATIC_COMPILE ]; then
+    printf "checking whether the compiler supports -static compile... "
+    echo "int main(){}" | $CC -static -x c -o /dev/null -std=gnu99 - &>/dev/null && printf "ok\n" || error "no"
+  fi
+}
+test_and_add_cflag() {
+  printf "checking whether the compiler supports $1... "
+  if
+    echo "int main(){}" | $CC $1 -x c -o /dev/null - &>/dev/null
+  then
+    printf "ok\n" && export CFLAG="$CFLAG $1"
+  else
+    printf "no\n"
+  fi
+}
+test_and_add_ldflag() {
+  printf "checking for $1... "
+  if
+    echo "int main(){}" | $CC -x c -o /dev/null - $1 &>/dev/null
+  then
+    printf "ok\n" && export LDFLAG="$LDFLAG $1"
+  else
+    printf "no\n"
+  fi
+}
+check_header() {
+  printf "checking for header $i... "
+  printf "#include <$1>\nint main(){}" | $CC -x c -o /dev/null - &>/dev/null && printf "ok\n" || error "not found"
+}
+check_lib() {
+  printf "checking for lib $i... "
+  if [ ! -e $(clang -print-file-name=$1) ]; then
+    error "not found!\033[0m"
+  fi
+  printf "found\n"
+}
+default_cflag() {
+  # Auto var init.
+  test_and_add_cflag "-ftrivial-auto-var-init=zero"
+  # Link-Time Optimization.
+  test_and_add_cflag "-flto"
+  # Position-Independent Executables.
+  test_and_add_cflag "-fPIE"
+  # No-eXecute.
+  test_and_add_cflag "-Wl,-znoexecstack"
+  # Relocation Read-Only.
+  test_and_add_cflag "-Wl,-znow"
+  # Stack Canary.
+  test_and_add_cflag "-fstack-protector-all"
+  # Stack Clash Protection.
+  test_and_add_cflag "-fstack-clash-protection"
+  # Shadow Stack.
+  test_and_add_cflag "-mshstk"
+  # Fortified Source.
+  test_and_add_cflag "-D_FORTIFY_SOURCE=3"
+  # Disable warnings.
+  test_and_add_cflag "-Wno-unused-result"
+  # Other "one-key" optimization.
+  test_and_add_cflag "-O2"
+  # Warning as error.
+  test_and_add_cflag "-Werror"
+  # Build id.
+  test_and_add_cflag "-Wl,--build-id=sha1"
+  # Fix bionic on Android.
+  test_and_add_cflag "-ffunction-sections"
+  test_and_add_cflag "-fdata-sections"
+  test_and_add_cflag "-Wl,--gc-sections"
+  if [ $STATIC_COMPILE ]; then
+    test_and_add_cflag "-static"
+  fi
+  test_and_add_ldflag "-lcap"
+  test_and_add_ldflag "-lseccomp"
+  test_and_add_ldflag "-lpthread"
+}
+dev_cflag() {
+  # GNU Symbolic Debugger.
+  test_and_add_cflag "-ggdb"
+  # Disable other optimizations.
+  test_and_add_cflag "-O0"
+  test_and_add_cflag "-fno-omit-frame-pointer"
+  # Disable Relocation Read-Only.
+  test_and_add_cflag "-Wl,-znorelro"
+  # Disable No-eXecute.
+  test_and_add_cflag "-Wl,-zexecstack"
+  # Disable Stack Canary.
+  test_and_add_cflag "-fno-stack-protector"
+  # Warning Options.
+  test_and_add_cflag "-Wall"
+  test_and_add_cflag "-Wextra"
+  test_and_add_cflag "-pedantic"
+  test_and_add_cflag "-Wconversion"
+  test_and_add_cflag "-Wno-newline-eof"
+  # ASAN.
+  test_and_add_cflag "-fsanitize=address"
+  # Build id.
+  test_and_add_cflag "-Wl,--build-id=sha1"
+  # Fix bionic on Android.
+  test_and_add_cflag "-ffunction-sections"
+  test_and_add_cflag "-fdata-sections"
+  test_and_add_cflag "-Wl,--gc-sections"
+  if [ $STATIC_COMPILE ]; then
+    test_and_add_cflag "-static"
+  fi
+  test_and_add_ldflag "-lcap"
+  test_and_add_ldflag "-lseccomp"
+  test_and_add_ldflag "-lpthread"
+}
+check_headers_and_libs() {
+  # Check system headers.
+  for i in fcntl.h sys/ioctl.h sys/mount.h sys/socket.h unistd.h pthread.h; do
+    check_header $i
+  done
+  # Check library headers.
+  for i in sys/capability.h seccomp.h; do
+    check_header $i
+  done
+  # Check library.
+  if [ $STATIC_COMPILE ]; then
+    for i in libc.a libcap.a libseccomp.so; do
+      check_lib $i
+    done
+  else
+    for i in libcap.so libseccomp.so; do
+      check_lib $i
+    done
+  fi
+}
+init
+check_headers_and_libs
+default_cflag
+echo $CFLAG
+export CFLAG=
+dev_cflag
+echo $CFLAG
