@@ -27,6 +27,7 @@
 # SOFTWARE.
 #
 error() {
+  rm test.c
   printf "$@\n"
   exit 1
 }
@@ -55,7 +56,7 @@ init() {
   fi
   printf "checking for compiler... "
   if [ !$CC ]; then
-    if [[ ! $(which cc) ]]; then
+    if [ ! $(which cc) ]; then
       error "not found"
     fi
     CC=$(realpath $(which cc))
@@ -63,38 +64,57 @@ init() {
   fi
   printf "$CC\n"
   printf "checking whether the compiler supports GNU C99... "
-  echo "int main(){}" | $CC -x c -o /dev/null -std=gnu99 - &>/dev/null && printf "ok\n" || error "no"
+  echo "int main(){}" > test.c
+  sleep 0.1
+  ($CC -x c -o /dev/null -std=gnu99 test.c) >/dev/null 2>&1 && printf "ok\n" || error "no"
+  rm test.c
   if [ $STATIC_COMPILE ]; then
     printf "checking whether the compiler supports -static compile... "
-    echo "int main(){}" | $CC -static -x c -o /dev/null -std=gnu99 - &>/dev/null && printf "ok\n" || error "no"
+    echo "int main(){}" > test.c
+    sleep 0.1
+    $CC -static -x c -o /dev/null -std=gnu99 test.c >/dev/null 2>&1 && printf "ok\n" || error "no"
+    rm test.c
   fi
 }
 test_and_add_cflag() {
   printf "checking whether the compiler supports $1... "
-  if
-    echo "int main(){}" | $CC $1 -x c -o /dev/null - &>/dev/null
+  echo "int main(){}" > test.c
+  sleep 0.1
+  if $CC $1 -x c -o /dev/null test.c >/dev/null 2>&1
   then
     printf "ok\n" && export CFLAG="$CFLAG $1"
   else
     printf "no\n"
   fi
+  rm test.c
 }
 test_and_add_ldflag() {
   printf "checking for $1... "
-  if
-    echo "int main(){}" | $CC -x c -o /dev/null - $1 &>/dev/null
-  then
-    printf "ok\n" && export LDFLAG="$LDFLAG $1"
+  echo "int main(){}" > test.c
+  sleep 0.1
+  if [ $STATIC_COMPILE ]; then
+    if $CC -static -x c -o /dev/null test.c $1 >/dev/null 2>&1
+    then
+      printf "ok\n" && export LDFLAG="$LDFLAG $1"
+    else
+      printf "no\n"
+    fi
   else
-    printf "no\n"
+    if $CC -x c -o /dev/null test.c $1 >/dev/null 2>&1
+    then
+      printf "ok\n" && export LDFLAG="$LDFLAG $1"
+    else
+      printf "no\n"
+    fi
   fi
+  rm test.c
 }
 check_header() {
   printf "checking for header $i... "
-  printf "#include <$1>\nint main(){}" | $CC -x c -o /dev/null - &>/dev/null && printf "ok\n" || error "not found"
+  printf "#include <$1>\nint main(){}" | $CC -x c -o /dev/null - >/dev/null 2>&1 && printf "ok\n" || error "not found"
 }
 check_lib() {
-  printf "checking for lib $i... "
+  printf "checking for lib $1... "
   if [ ! -e $(clang -print-file-name=$1) ]; then
     error "not found!\033[0m"
   fi
