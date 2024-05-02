@@ -13,3 +13,4 @@ TODO
 *.save
 a.out
 t.c
+config.mk

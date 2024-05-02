@@ -42,15 +42,22 @@ The basic usage is very very simple, you can use it just like the command `chroo
 - Secure:      
 It uses libcap and libseccomp for security, with other protections.
 - Run Everywhere:      
-Build ruri with `make static`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
+Build ruri with `./configure -s`, it will be compiled as a small binary file(~1M), but it can be run anywhere without dependent libraries.      
 # Install:      
 ```
 git clone https://github.com/Moe-hacker/ruri
 cd ruri
-sudo make install
+./configure
+make
+sudo cp ruri /usr/bin/ruri
 ```
 # Build options:
-See `make help`.      
+```
+Usage: ./configure [OPTION]...
+    -h, --help          show help
+    -s, --static        compile static binary
+    -d, --dev           compile dev version
+```
 
 # Usage:    
 See `ruri -h`

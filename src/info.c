@@ -28,26 +28,6 @@
  *
  */
 #include "include/ruri.h"
-// For `ruri -v`.
-// See https://stackoverflow.com/questions/55641889/access-build-id-at-runtime
-extern char build_id_start;
-extern char build_id_end;
-// Seems it only works on aarch64.
-#ifdef __aarch64__
-static char *get_build_id(void)
-{
-	/*
-	 * Just like its name.
-	 */
-	static char ret[128] = { '\0' };
-	char buf[4] = { '\0' };
-	for (char *s = &build_id_start + 16; s < &build_id_end; s++) {
-		sprintf(buf, "%x", *s);
-		strcat(ret, buf);
-	}
-	return ret;
-}
-#endif
 void show_version_info(void)
 {
 	/*
@@ -65,16 +45,12 @@ void show_version_info(void)
 	cprintf("{base}    <https://mit-license.org>\n");
 	cprintf("{base}Copyright (C) 2022-2024 Moe-hacker\n");
 	cprintf("{base}%s%s%s", "ruri version .....:  ", RURI_VERSION, "\n");
-	cprintf("{base}%s%s%s", "Commit id ........:  ", RURI_COMMIT_ID, "\n");
 	cprintf("{base}%s%d%s%d%s", "libcap ...........:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");
 	cprintf("{base}%s%d%s%d%s%d%s", "libseccomp .......:  ", SCMP_VER_MAJOR, ".", SCMP_VER_MINOR, ".", SCMP_VER_MICRO, "\n");
 	cprintf("{base}%s%d%s%d%s", "libk2v ...........:  ", LIBK2V_MAJOR, ".", LIBK2V_MINOR, "\n");
 	cprintf("{base}%s%d%s%d%s", "cprintf ..........:  ", CPRINTF_MAJOR, ".", CPRINTF_MINOR, "\n");
 	cprintf("{base}%s%s\n", "Compiler version .:  ", __VERSION__);
 	cprintf("{base}%s%s\n", "Build date .......:  ", __TIMESTAMP__);
-#ifdef __aarch64__
-	cprintf("{base}%s%s\n", "Build ID .........:  ", get_build_id());
-#endif
 	cprintf("{base}\nThere is NO WARRANTY, to the extent permitted by law\n");
 	cprintf("{clear}\n");
 }
@@ -95,7 +71,7 @@ void show_helps(void)
 	 * Help page of ruri.
 	 * I think you can understand...
 	 */
-	cprintf("{base}ruri %s %s\n\n", RURI_VERSION, RURI_COMMIT_ID);
+	cprintf("{base}ruri %s\n\n", RURI_VERSION);
 	cprintf("{base}Lightweight, User-friendly Linux-container Implementation\n");
 	cprintf("\n");
 	cprintf("{base}Usage:\n");
