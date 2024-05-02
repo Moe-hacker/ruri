@@ -449,19 +449,6 @@ int main(int argc, char **argv)
 	check_container(container);
 	// unset $LD_PRELOAD.
 	unsetenv("LD_PRELOAD");
-	// Watch the process, error() when it run failed.
-	if (!container->enable_unshare) {
-		int stat = 0;
-		pid_t pid = fork();
-		if (pid > 0) {
-			waitpid(pid, &stat, 0);
-			if (stat == 0 || stat == 255 || stat == 256) {
-				exit(stat);
-			} else {
-				error("{red}Container exited with %d, what's wrong?{clear}\n", stat);
-			}
-		}
-	}
 	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
 		run_unshare_container(container);

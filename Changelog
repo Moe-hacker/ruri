@@ -3,7 +3,6 @@
   * Drop CapAmb && Clear CapInh.
   * Add cgroup support for cpuset and memory.
   * Add `-l` option: `--limit`.
-  * error() when the command run failed in continer.
   * Update seccomp profile.
   * General bug fixes.
 # v3.0:

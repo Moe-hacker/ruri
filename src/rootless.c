@@ -38,11 +38,7 @@ void run_rootless_container(struct CONTAINER *container)
 	if (pid > 0) {
 		int stat = 0;
 		waitpid(pid, &stat, 0);
-		if (stat == 0 || stat == 255 || stat == 256) {
-			exit(stat);
-		} else {
-			error("{red}Container exited with %d, what's wrong?{clear}\n", stat);
-		}
+		exit(stat);
 	} else if (pid < 0) {
 		error("{red}Fork error QwQ?\n");
 	} else {

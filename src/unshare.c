@@ -77,12 +77,7 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 		// Fix `can't access tty` issue.
 		int stat = 0;
 		waitpid(unshare_pid, &stat, 0);
-		// Watch the process, error() when it run failed.
-		if (stat == 0 || stat == 255 || stat == 256) {
-			exit(stat);
-		} else {
-			error("{red}Container exited with %d, what's wrong?{clear}\n", stat);
-		}
+		exit(stat);
 	} else if (unshare_pid < 0) {
 		error("{red}Fork error, QwQ?\n");
 	}
@@ -159,12 +154,7 @@ static pid_t join_ns(struct CONTAINER *container)
 		// Wait until current process exit.
 		int stat = 0;
 		waitpid(unshare_pid, &stat, 0);
-		// Watch the process, error() when it run failed.
-		if (stat == 0 || stat == 255 || stat == 256) {
-			exit(stat);
-		} else {
-			error("{red}Container exited with %d, what's wrong?{clear}\n", stat);
-		}
+		exit(stat);
 	}
 	// Maybe this will never be run.
 	else if (unshare_pid < 0) {
