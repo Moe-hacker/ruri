@@ -31,10 +31,6 @@ error() {
   exit 1
 }
 init() {
-  printf "checking for install... "
-  if ! command -v install; then
-    error "not found"
-  fi
   printf "checking for make... "
   if ! command -v make; then
     error "not found"
@@ -61,7 +57,7 @@ init() {
 }
 test_and_add_cflag() {
   printf "checking whether the compiler supports $1... "
-  if echo "int main(){}" | $CC $1 -x c -o /dev/null - >/dev/null 2>&1; then
+  if echo "int main(void){}" | $CC $1 -Werror -x c -o /dev/null - >/dev/null 2>&1; then
     printf "ok\n" && export CFLAGS="$CFLAGS $1"
   else
     printf "no\n"
@@ -108,6 +104,7 @@ default_cflag() {
   test_and_add_cflag "-mshstk"
   test_and_add_cflag "-D_FORTIFY_SOURCE=3"
   test_and_add_cflag "-Wno-unused-result"
+  test_and_add_cflag "-Wno-unused-command-line-argument"
   test_and_add_cflag "-O2"
   test_and_add_cflag "-Wl,--build-id=sha1"
   test_and_add_cflag "-ffunction-sections"
@@ -189,4 +186,5 @@ fi
 printf "create config.mk... "
 echo "CFLAGS = $CFLAGS" >config.mk
 echo "LD_FLAGS = $LD_FLAGS" >>config.mk
+echo "CC = $CC" >>config.mk
 printf "ok\n"
