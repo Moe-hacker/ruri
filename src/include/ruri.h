@@ -60,8 +60,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// This program need to be linked with `-lpthread` if the system uses glibc or musl.
-#include <pthread.h>
 // This program need to be linked with `-lseccomp`.
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.

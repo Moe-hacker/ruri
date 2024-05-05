@@ -61,7 +61,7 @@ build_dir:
 	@mkdir -p $(O)
 $(objects) :%.o:src/%.c $(build_dir)
 	@cd $(O)
-	@$(CC) $(CFLAGS) -Wno-unused-command-line-argument -c ../$< -o $@
+	@$(CC) $(CFLAGS) -c ../$< -o $@
 	$(CC_LOG) $@
 check :
 	@printf "\033[1;38;2;254;228;208mCheck list:\n"
