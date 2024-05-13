@@ -85,7 +85,7 @@ void show_helps(void)
 	cprintf("{base}  -H, --show-examples .............: Show helps and commandline examples\n");
 	cprintf("{base}  -U, --umount [container_dir] ....: Umount a container\n");
 	cprintf("\n");
-	cprintf("ARGS:\n");
+	cprintf("{base}ARGS:\n");
 	cprintf("{base}  -D, --dump-config ...................: Dump the config.\n");
 	cprintf("{base}  -o, --output [config file] ..........: Set output file of `-D` option\n");
 	cprintf("{base}  -c, --config [config file] ..........: Use config file\n");
