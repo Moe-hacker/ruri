@@ -1,3 +1,5 @@
+# v3.2:
+  * Fix rootless container.
 # v3.1:
   * Make .rurienv immutable.
   * Drop CapAmb && Clear CapInh.

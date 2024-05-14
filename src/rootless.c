@@ -37,6 +37,9 @@ static void try_unshare(int flags)
 		error("{red}Your device does not support some namespaces needed!\n");
 	}
 }
+static void init_rootless_container(void){
+
+}
 void run_rootless_container(struct CONTAINER *container)
 {
 	uid_t uid = geteuid();
