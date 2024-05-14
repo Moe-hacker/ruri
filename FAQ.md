@@ -15,8 +15,6 @@ It needs CONFIG_BINFMT_MISC enabled in your kernel config.
 You need to copy qemu-*-static to your container first.      
 The path of qemu is the absolute path of qemu binary in the chroot container, for example, you have a qemu binary at `/path/to/container/qemu-amd64-static`, use `-a x86_64 -q /qemu-amd64-static` arguments to start the container.
 # About rootless container:
-It requires user namespace enabled in your kernel config.      
-It's a very useless function. Ruri creates a new user namespace and run chroot(2) in it, but without any real privileges, it can not even mount /proc /dev and /sys.       
-Adding CAP_SYS_ADMIN can not fix any problems, so just do not use this function.      
+WIP      
 # About Seccomp:
 The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and replace setup_seccomp() with your own config.      
