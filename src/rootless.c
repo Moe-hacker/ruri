@@ -28,12 +28,28 @@
  *
  */
 #include "include/ruri.h"
+static void try_unshare(int flags)
+{
+	/*
+	 * Try to use unshare(2).
+	 */
+	if (unshare(flags) == -1) {
+		error("{red}Your device does not support some namespaces needed!\n");
+	}
+}
 void run_rootless_container(struct CONTAINER *container)
 {
 	uid_t uid = geteuid();
 	gid_t gid = getegid();
-	unshare(CLONE_NEWUSER);
-	unshare(CLONE_NEWNS);
+	/*
+	 * Seems mount(2) for sysfs and procfs need all unshare option enabled.
+	 */
+	try_unshare(CLONE_NEWUSER);
+	try_unshare(CLONE_NEWNS);
+	try_unshare(CLONE_NEWPID);
+	try_unshare(CLONE_NEWIPC);
+	try_unshare(CLONE_NEWUTS);
+	try_unshare(CLONE_NEWNET);
 	pid_t pid = fork();
 	if (pid > 0) {
 		int stat = 0;
