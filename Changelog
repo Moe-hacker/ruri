@@ -4,6 +4,7 @@
   * Add cgroup support for cpuset and memory.
   * Add `-l` option: `--limit`.
   * Update seccomp profile.
+  * Add a configure script.
   * General bug fixes.
 # v3.0:
   * Remove daemon support.
