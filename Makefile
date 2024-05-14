@@ -40,6 +40,10 @@ STRIP_LOG = @printf ' $(STRIPCOLOR)STRIP$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 CLEAN_LOG = @printf ' $(CCCOLOR)CLEAN$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 # Strip.
 STRIP = strip
+# Formater.
+FORMATER = clang-format -i
+SRC = src/*.c
+HEADER = src/include/*.h
 include config.mk
 # Target.
 objects = anime.o caplist.o chroot.o cprintf.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o cgroup.o main.o
