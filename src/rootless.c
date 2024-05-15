@@ -78,6 +78,37 @@ static void init_rootless_container(struct CONTAINER *container)
 	mount("/dev/urandom", "./dev/urandom", NULL, MS_BIND, NULL);
 	creat("./dev/zero", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("/dev/zero", "./dev/zero", NULL, MS_BIND, NULL);
+	symlink("/proc/self/fd", "./dev/fd");
+	symlink("/proc/self/fd/0", "./dev/stdin");
+	symlink("/proc/self/fd/1", "./dev/stdout");
+	symlink("/proc/self/fd/2", "./dev/stderr");
+	symlink("/dev/null", "./dev/tty0");
+	mkdir("./dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("devpts", "./dev/pts", "devpts", 0, "gid=4,mode=620");
+	mkdir("./dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("tmpfs", "./dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
+	mount("./proc/bus", "./proc/bus", NULL, MS_BIND | MS_REC, NULL);
+	mount("./proc/bus", "./proc/bus", NULL, MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+	mount("./proc/fs", "./proc/fs", NULL, MS_BIND | MS_REC, NULL);
+	mount("./proc/fs", "./proc/fs", NULL, MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+	mount("./proc/irq", "./proc/irq", NULL, MS_BIND | MS_REC, NULL);
+	mount("./proc/irq", "./proc/irq", NULL, MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+	mount("./proc/sys", "./proc/sys", NULL, MS_BIND | MS_REC, NULL);
+	mount("./proc/sys", "./proc/sys", NULL, MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+	mount("./proc/sys-trigger", "./proc/sys-trigger", NULL, MS_BIND | MS_REC, NULL);
+	mount("./proc/sys-trigger", "./proc/sys-trigger", NULL, MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+	mount("tmpfs", "./proc/asound", "tmpfs", MS_RDONLY, NULL);
+	mount("tmpfs", "./proc/acpi", "tmpfs", MS_RDONLY, NULL);
+	mount("/dev/null", "./proc/kcore", "", MS_BIND, NULL);
+	mount("/dev/null", "./proc/keys", "", MS_BIND, NULL);
+	mount("/dev/null", "./proc/latency_stats", "", MS_BIND, NULL);
+	mount("/dev/null", "./proc/timer_list", "", MS_BIND, NULL);
+	mount("/dev/null", "./proc/timer_stats", "", MS_BIND, NULL);
+	mount("/dev/null", "./proc/sched_debug", "", MS_BIND, NULL);
+	mount("tmpfs", "./proc/scsi", "tmpfs", MS_RDONLY, NULL);
+	mount("tmpfs", "./sys/firmware", "tmpfs", MS_RDONLY, NULL);
+	mount("tmpfs", "./sys/devices/virtual/powercap", "tmpfs", MS_RDONLY, NULL);
+	mount("tmpfs", "./sys/block", "tmpfs", MS_RDONLY, NULL);
 }
 void run_rootless_container(struct CONTAINER *container)
 {
