@@ -284,9 +284,10 @@ void mount_mountpoints(const struct CONTAINER *container)
 		trymount(container->extra_ro_mountpoint[i], mountpoint_dir, MS_RDONLY);
 		free(mountpoint_dir);
 	}
-
-	// '/' should be a mountpoint in container.
-	mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
+	if (!container->rootless) {
+		// '/' should be a mountpoint in container.
+		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
+	}
 }
 // Run chroot container.
 void run_chroot_container(struct CONTAINER *container)
@@ -406,10 +407,6 @@ void run_rootless_chroot_container(struct CONTAINER *container)
 	if (container->use_rurienv) {
 		store_info(container);
 	}
-	// If `-R` option is set, make / read-only.
-	if (container->ro_root) {
-		mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
-	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
 		container->command[0] = "/bin/su";
@@ -422,8 +419,6 @@ void run_rootless_chroot_container(struct CONTAINER *container)
 	chdir(container->container_dir);
 	chroot(".");
 	chdir("/");
-	// Seems procfs need to be mounted in container.
-	mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 	// Fix /etc/mtab.
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
