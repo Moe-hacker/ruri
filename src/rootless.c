@@ -44,15 +44,24 @@ static void init_rootless_container(struct CONTAINER *container)
 	// Note: sys/block will not be mounted.
 	mkdir("./sys/block", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mkdir("./sys/bus", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("/sys/bus", "./sys/bus", NULL, MS_BIND, NULL);
 	mkdir("./sys/class", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("/sys/class", "./sys/class", NULL, MS_BIND, NULL);
 	// Note: sys/dev will not be mounted.
 	mkdir("./sys/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mkdir("./sys/devices", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("/sys/devices", "./sys/devices", NULL, MS_BIND, NULL);
 	mkdir("./sys/firmware", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("/sys/firmware", "./sys/firmware", NULL, MS_BIND, NULL);
+	// Note: sys/fs will not be mounted.
 	mkdir("./sys/fs", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mkdir("./sys/kernel", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	// TODO: This will be failed.
+	mount("/sys/kernel", "./sys/kernel", NULL, MS_BIND, NULL);
 	mkdir("./sys/module", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("/sys/module", "./sys/module", NULL, MS_BIND, NULL);
 	mkdir("./proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mount("proc", "./proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 	mkdir("./dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 }
 void run_rootless_container(struct CONTAINER *container)
