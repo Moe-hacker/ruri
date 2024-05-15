@@ -387,3 +387,80 @@ void run_chroot_container(struct CONTAINER *container)
 		error("{red}Failed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this{clear}\n", container->command[0], errno, strerror(errno));
 	}
 }
+// Run chroot container.
+void run_rootless_chroot_container(struct CONTAINER *container)
+{
+	/*
+	 * It's called by run_rootless_container().
+	 * It will chroot(2) to container_dir, and exec(3) init command in container.
+	 */
+	// Ignore SIGTTIN, if we are running in the background, SIGTTIN may kill this process.
+	sigset_t sigs;
+	sigemptyset(&sigs);
+	sigaddset(&sigs, SIGTTIN);
+	sigaddset(&sigs, SIGTTOU);
+	sigprocmask(SIG_BLOCK, &sigs, 0);
+	// Mount mountpoints.
+	mount_mountpoints(container);
+	// Store container info.
+	if (container->use_rurienv) {
+		store_info(container);
+	}
+	// If `-R` option is set, make / read-only.
+	if (container->ro_root) {
+		mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
+	}
+	// Set default command for exec().
+	if (container->command[0] == NULL) {
+		container->command[0] = "/bin/su";
+		container->command[1] = "-";
+		container->command[2] = NULL;
+	}
+	// Check binary used.
+	check_binary(container);
+	// chroot(2) into container.
+	chdir(container->container_dir);
+	chroot(".");
+	chdir("/");
+	// Seems procfs need to be mounted in container.
+	mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
+	// Fix /etc/mtab.
+	remove("/etc/mtab");
+	unlink("/etc/mtab");
+	symlink("/proc/mounts", "/etc/mtab");
+	// Set up Seccomp BPF.
+	if (container->enable_seccomp) {
+		setup_seccomp(container);
+	}
+	// Drop caps.
+	drop_caps(container);
+	// Set envs.
+	set_envs(container);
+	// Fix a bug that the terminal is frozen.
+	usleep(200000);
+	// Set NO_NEW_PRIVS Flag.
+	// It requires Linux3.5 or later.
+	// It will make sudo unavailable in container.
+	if (container->no_new_privs) {
+		prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+	}
+	// Disallow raising ambient capabilities via the prctl(2) PR_CAP_AMBIENT_RAISE operation.
+	prctl(PR_SET_SECUREBITS, SECBIT_NO_CAP_AMBIENT_RAISE);
+	// We only need 0(stdin), 1(stdout), 2(stderr),
+	// So we close the other fds to avoid security issues.
+	for (int i = 3; i <= 10; i++) {
+		close(i);
+	}
+	// Setup binfmt_misc.
+	if (container->cross_arch != NULL) {
+		setup_binfmt_misc(container);
+	}
+	// Fix console color.
+	cprintf("{clear}");
+	// Execute command in container.
+	// Use exec(3) function because system(3) may be unavailable now.
+	if (execv(container->command[0], container->command) == -1) {
+		// Catch exceptions.
+		error("{red}Failed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this{clear}\n", container->command[0], errno, strerror(errno));
+	}
+}

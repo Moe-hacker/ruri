@@ -245,6 +245,7 @@ size_t cprintf_get_bufsize(const char *format, ...)
 			case 's': {
 				// For string, we get the lenth of it.
 				ret += strlen(buf);
+				break;
 			}
 			default: {
 				// For other format, we use a 114 byte buffer.
