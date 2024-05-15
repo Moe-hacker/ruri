@@ -175,6 +175,7 @@ void run_unshare_container(struct CONTAINER *container);
 char *container_info_to_k2v(const struct CONTAINER *container);
 void run_chroot_container(struct CONTAINER *container);
 void run_rootless_container(struct CONTAINER *container);
+void run_rootless_chroot_container(struct CONTAINER *container);
 int trymount(const char *source, const char *target, unsigned int mountflags);
 void umount_container(const char *container_dir);
 void read_config(struct CONTAINER *container, const char *path);

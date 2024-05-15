@@ -37,22 +37,34 @@ static void try_unshare(int flags)
 		error("{red}Your device does not support some namespaces needed!\n");
 	}
 }
-static void init_rootless_container(void){
-
+static void init_rootless_container(struct CONTAINER *container)
+{
+	chdir(container->container_dir);
+	mkdir("./sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	// Note: sys/block will not be mounted.
+	mkdir("./sys/block", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/bus", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/class", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	// Note: sys/dev will not be mounted.
+	mkdir("./sys/dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/devices", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/firmware", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/fs", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/kernel", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./sys/module", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+	mkdir("./dev", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 }
 void run_rootless_container(struct CONTAINER *container)
 {
 	uid_t uid = geteuid();
 	gid_t gid = getegid();
-	/*
-	 * Seems mount(2) for sysfs and procfs need all unshare option enabled.
-	 */
+	// Enable user namespace.
 	try_unshare(CLONE_NEWUSER);
+	// We need to own mount namespace.
 	try_unshare(CLONE_NEWNS);
+	// Seems procfs need pid namespace.
 	try_unshare(CLONE_NEWPID);
-	try_unshare(CLONE_NEWIPC);
-	try_unshare(CLONE_NEWUTS);
-	try_unshare(CLONE_NEWNET);
 	pid_t pid = fork();
 	if (pid > 0) {
 		int stat = 0;
@@ -79,6 +91,8 @@ void run_rootless_container(struct CONTAINER *container)
 		// Maybe needless.
 		setuid(0);
 		setgid(0);
-		run_chroot_container(container);
+		// Init rootless container.
+		init_rootless_container(container);
+		run_rootless_chroot_container(container);
 	}
 }
