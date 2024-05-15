@@ -74,7 +74,7 @@ static void init_container(void)
 	 * The device list and permissions are based on common docker container.
 	 */
 	// Check if system runtime files are already created.
-	DIR *direxist = opendir("/sys/kernel");
+	DIR *direxist = opendir("/sys/class/input");
 	if (direxist == NULL) {
 		// Mount proc,sys and dev.
 		mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
@@ -306,7 +306,7 @@ void run_chroot_container(struct CONTAINER *container)
 	// container_dir shoud bind-mount before chroot(2),
 	// mount_host_runtime() and store_info() will be called here.
 	char buf[PATH_MAX] = { '\0' };
-	sprintf(buf, "%s/sys/kernel", container->container_dir);
+	sprintf(buf, "%s/sys/class/input", container->container_dir);
 	DIR *direxist = opendir(buf);
 	if (direxist == NULL) {
 		// Mount mountpoints.
