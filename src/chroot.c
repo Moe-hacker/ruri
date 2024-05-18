@@ -259,6 +259,10 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 // Run before chroot(2).
 void mount_mountpoints(const struct CONTAINER *container)
 {
+	if (!container->rootless) {
+		// '/' should be a mountpoint in container.
+		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
+	}
 	char *mountpoint_dir = NULL;
 	// Mount extra_mountpoint.
 	for (int i = 0; true; i += 2) {
@@ -283,10 +287,6 @@ void mount_mountpoints(const struct CONTAINER *container)
 		strcat(mountpoint_dir, container->extra_ro_mountpoint[i + 1]);
 		trymount(container->extra_ro_mountpoint[i], mountpoint_dir, MS_RDONLY);
 		free(mountpoint_dir);
-	}
-	if (!container->rootless) {
-		// '/' should be a mountpoint in container.
-		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
 	}
 }
 // Run chroot container.
