@@ -76,7 +76,6 @@ static char *build_container_info(const struct CONTAINER *container)
 	// Get a larger buffer for ret.
 	char *ret = (char *)malloc(size);
 	ret[0] = '\0';
-	char *buf = NULL;
 	// drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
 	int len = 0;
@@ -87,36 +86,15 @@ static char *build_container_info(const struct CONTAINER *container)
 		}
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
-	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
-	size += strlen(buf);
-	// realloc() is safe here, because the `size` will always be larger.
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "drop_caplist", drop_caplist, len);
 	// no_new_privs.
-	buf = bool_to_k2v("no_new_privs", container->no_new_privs);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
 	// enable_seccomp.
-	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
 	// ns_pid.
-	buf = int_to_k2v("ns_pid", container->ns_pid);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(int, ret, "ns_pid", container->ns_pid);
 	// container_id.
-	buf = int_to_k2v("container_id", container->container_id);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(int, ret, "container_id", container->container_id);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -124,11 +102,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("extra_mountpoint", container->extra_mountpoint, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "extra_mountpoint", container->extra_mountpoint, len);
 	// extra_ro_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_ro_mountpoint[i] == NULL) {
@@ -136,11 +110,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("extra_ro_mountpoint", container->extra_ro_mountpoint, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "extra_ro_mountpoint", container->extra_ro_mountpoint, len);
 	// env.
 	for (int i = 0; true; i++) {
 		if (container->env[i] == NULL) {
@@ -148,15 +118,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("env", container->env, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
-	// Because the `ret` is larger, strdup() it to the correct size.
-	buf = ret;
-	ret = strdup(buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "env", container->env, len);
 	return ret;
 }
 // Store container info.

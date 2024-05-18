@@ -38,7 +38,6 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	size_t size = 114514;
 	char *ret = (char *)malloc(size);
 	ret[0] = '\0';
-	char *buf = NULL;
 	// drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
 	int len = 0;
@@ -49,87 +48,35 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		}
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
-	buf = char_array_to_k2v("drop_caplist", drop_caplist, len);
+	ret = k2v_add_config(char_array, ret, "drop_caplist", drop_caplist, len);
 	// Make ASAN happy.
 	for (int i = 0; i < len; i++) {
 		cap_free(drop_caplist[i]);
 	}
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
 	// no_new_privs.
-	buf = bool_to_k2v("no_new_privs", container->no_new_privs);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
 	// enable_unshare.
-	buf = bool_to_k2v("enable_unshare", container->enable_unshare);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "enable_unshare", container->enable_unshare);
 	// rootless.
-	buf = bool_to_k2v("rootless", container->rootless);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "rootless", container->rootless);
 	// mount_host_runtime.
-	buf = bool_to_k2v("mount_host_runtime", container->mount_host_runtime);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "mount_host_runtime", container->mount_host_runtime);
 	// ro_root.
-	buf = bool_to_k2v("ro_root", container->ro_root);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "ro_root", container->ro_root);
 	// no_warnings.
-	buf = bool_to_k2v("no_warnings", container->no_warnings);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "no_warnings", container->no_warnings);
 	// cross_arch.
-	buf = char_to_k2v("cross_arch", container->cross_arch);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char, ret, "cross_arch", container->cross_arch);
 	// qemu_path.
-	buf = char_to_k2v("qemu_path", container->qemu_path);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char, ret, "qemu_path", container->qemu_path);
 	// use_rurienv.
-	buf = bool_to_k2v("use_rurienv", container->use_rurienv);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "use_rurienv", container->use_rurienv);
 	// enable_seccomp.
-	buf = bool_to_k2v("enable_seccomp", container->enable_seccomp);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
 	// cpuset.
-	buf = char_to_k2v("cpuset", container->cpuset);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char, ret, "cpuset", container->cpuset);
 	// memory.
-	buf = char_to_k2v("memory", container->memory);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char, ret, "memory", container->memory);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -137,11 +84,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("extra_mountpoint", container->extra_mountpoint, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "extra_mountpoint", container->extra_mountpoint, len);
 	// extra_ro_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_ro_mountpoint[i] == NULL) {
@@ -149,11 +92,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("extra_ro_mountpoint", container->extra_ro_mountpoint, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "extra_ro_mountpoint", container->extra_ro_mountpoint, len);
 	// env.
 	for (int i = 0; true; i++) {
 		if (container->env[i] == NULL) {
@@ -161,11 +100,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("env", container->env, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "env", container->env, len);
 	// command.
 	for (int i = 0; true; i++) {
 		if (container->command[i] == NULL) {
@@ -173,21 +108,9 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
-	buf = char_array_to_k2v("command", container->command, len);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
+	ret = k2v_add_config(char_array, ret, "command", container->command, len);
 	// container_dir.
-	buf = char_to_k2v("container_dir", container->container_dir);
-	size += strlen(buf);
-	ret = realloc(ret, size);
-	strcat(ret, buf);
-	free(buf);
-	// The `ret` is larger than it should be, so we strdup() it.
-	char *tmp = strdup(ret);
-	free(ret);
-	ret = tmp;
+	ret = k2v_add_config(char, ret, "container_dir", container->container_dir);
 	return ret;
 }
 void read_config(struct CONTAINER *container, const char *path)
