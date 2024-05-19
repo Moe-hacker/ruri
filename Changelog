@@ -1,5 +1,6 @@
 # v3.2:
-  * Fix rootless container.
+  * Fix mountpoint in rootless container.
+  * General bug fixes.
 # v3.1:
   * Make .rurienv immutable.
   * Drop CapAmb && Clear CapInh.
