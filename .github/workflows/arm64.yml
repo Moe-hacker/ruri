@@ -40,8 +40,8 @@ jobs:
           arch: aarch64
           distro: ubuntu22.04
           run: |
-            sudo apt update
-            sudo apt install -y \
+            apt update
+            apt install -y \
               make \
               clang \
               libseccomp-dev \
