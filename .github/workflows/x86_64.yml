@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Build ruri x86_64 binary
 
 on:
   push:
@@ -32,7 +32,6 @@ jobs:
         run: |
           echo ruri_remote_version=${{ needs.check_ruri_update.outputs.remote_version }} | tee -a $GITHUB_ENV
           echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
-          
       - uses: actions/checkout@v4
       - name: Install packages
         run: |
@@ -48,12 +47,12 @@ jobs:
         run: ./configure -s
       - name: make
         run: make&&mv ruri ruri-x86_64
-  
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.ruri_remote_version }}
           body: |
+            This is ruri binary release for arm64 and x86_64.
             Build_Time: ${{ env.build_time }}
           prerelease: false
           files: |
