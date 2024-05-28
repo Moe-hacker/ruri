@@ -18,6 +18,8 @@
 <p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
 
 -----------------     
+# Download:    
+You can get ruri binary for arm64 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 # 中文文档
 [ruri官方文档](https://blog.crack.moe/2024/03/26/ruri-doc/)      
 # WARNING:      
