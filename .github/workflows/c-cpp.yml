@@ -1,0 +1,31 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: configure
+      run: ./configure -s
+    - name: make
+      run: make
+    - name: Install packages
+      run: |
+          sudo apt update
+          sudo apt install -y \
+              make \
+              clang \
+              libseccomp-dev \
+              libcap-dev \
+              libc6-dev \
+              binutils
+           files: |
+            /home/runner/work/ruri/ruri/ruri
