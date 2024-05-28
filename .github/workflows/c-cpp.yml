@@ -13,10 +13,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure -s
-    - name: make
-      run: make
     - name: Install packages
       run: |
           sudo apt update
@@ -27,5 +23,7 @@ jobs:
               libcap-dev \
               libc6-dev \
               binutils
-           files: |
-            /home/runner/work/ruri/ruri/ruri
+    - name: configure
+      run: ./configure -s
+    - name: make
+      run: make
