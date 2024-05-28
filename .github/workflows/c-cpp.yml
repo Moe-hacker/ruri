@@ -7,6 +7,20 @@ on:
     branches: [ "main" ]
 
 jobs:
+  check_ruri_update:
+    name: Check Ruri update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Ruri version
+        id: check_ruri_version
+        run: |
+          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          remote_version=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .tag_name)
+          echo local_version=$local_version | tee -a $GITHUB_OUTPUT
+          echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
+    outputs:
+      local_version: ${{ steps.check_ruri_version.outputs.local_version }}
+      remote_version: ${{ steps.check_ruri_version.outputs.remote_version }}
   build:
 
     runs-on: ubuntu-latest
@@ -26,4 +40,14 @@ jobs:
     - name: configure
       run: ./configure -s
     - name: make
-      run: make
+      run: make&&mv ruri ruri-x86_64
+  
+    - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.ruri_remote_version }}
+          body: |
+            Build_Time: ${{ env.build_time }}
+          prerelease: false
+          files: |
+            /home/runner/work/ruri/ruri/ruri-x86_64
