@@ -24,7 +24,6 @@ jobs:
   build:
     name: Build Ruri
     needs: check_ruri_update
-    if: inputs.allow_rebuild || needs.check_ruri_update.outputs.local_version != needs.check_ruri_update.outputs.remote_version
     runs-on: ubuntu-latest
     permissions:
       contents: write
