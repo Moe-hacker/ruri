@@ -22,13 +22,21 @@ jobs:
       local_version: ${{ steps.check_ruri_version.outputs.local_version }}
       remote_version: ${{ steps.check_ruri_version.outputs.remote_version }}
   build:
-
+    name: Build Ruri
+    needs: check_ruri_update
+    if: inputs.allow_rebuild || needs.check_ruri_update.outputs.local_version != needs.check_ruri_update.outputs.remote_version
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-    - uses: actions/checkout@v4
-    - name: Install packages
-      run: |
+      - name: Set env
+        run: |
+          echo ruri_remote_version=${{ needs.check_ruri_update.outputs.remote_version }} | tee -a $GITHUB_ENV
+          echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
+          
+      - uses: actions/checkout@v4
+      - name: Install packages
+        run: |
           sudo apt update
           sudo apt install -y \
               make \
@@ -37,14 +45,14 @@ jobs:
               libcap-dev \
               libc6-dev \
               binutils
-    - name: configure
-      run: ./configure -s
-    - name: make
-      run: make&&mv ruri ruri-x86_64
+      - name: configure
+        run: ./configure -s
+      - name: make
+        run: make&&mv ruri ruri-x86_64
   
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
           tag_name: ${{ env.ruri_remote_version }}
           body: |
             Build_Time: ${{ env.build_time }}
