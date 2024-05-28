@@ -34,7 +34,8 @@ jobs:
           echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
       - uses: actions/checkout@v4
       - uses: uraimo/run-on-arch-action@v2
-      - name: Install packages
+        name: Install packages
+        id: runcmd
         with:
           arch: aarch64
           distro: ubuntu22.04
@@ -46,11 +47,7 @@ jobs:
               libseccomp-dev \
               libcap-dev \
               libc6-dev \
-              binutils
-      - name: configure
-        run: ./configure -s
-      - name: make
-        run: make&&mv ruri ruri-arm64
+              binutils&& ./configure -s&&make&&mv ruri ruri-arm64
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
