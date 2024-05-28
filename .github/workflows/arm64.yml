@@ -34,13 +34,13 @@ jobs:
           echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
       - uses: actions/checkout@v4
       - uses: uraimo/run-on-arch-action@v2
+      - name: Install packages
         with:
           arch: aarch64
           distro: ubuntu22.04
-      - name: Install packages
-        run: |
-          sudo apt update
-          sudo apt install -y \
+          run: |
+            sudo apt update
+            sudo apt install -y \
               make \
               clang \
               libseccomp-dev \
