@@ -43,8 +43,8 @@ jobs:
       run: make&&mv ruri ruri-x86_64
   
     - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
+      uses: softprops/action-gh-release@v2
+      with:
           tag_name: ${{ env.ruri_remote_version }}
           body: |
             Build_Time: ${{ env.build_time }}
