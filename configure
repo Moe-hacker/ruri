@@ -41,10 +41,10 @@ init() {
   fi
   printf "checking for compiler... "
   if [ !$CC ]; then
-    if [ ! $(which cc) ]; then
+    if [ ! $(command -v cc) ]; then
       error "not found"
     fi
-    CC=$(realpath $(which cc))
+    CC=$(realpath $(command -v cc))
     export CC=${CC##*/}
   fi
   printf "$CC\n"
