@@ -44,6 +44,9 @@ STRIP = strip
 FORMATER = clang-format -i
 SRC = src/*.c
 HEADER = src/include/*.h
+# Checker.
+CHECKER = clang-tidy
+CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn
 include config.mk
 # Target.
 objects = anime.o caplist.o chroot.o cprintf.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o cgroup.o main.o
