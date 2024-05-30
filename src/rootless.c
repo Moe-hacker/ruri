@@ -128,6 +128,9 @@ void run_rootless_container(struct CONTAINER *container)
 		// Maybe needless.
 		setuid(0);
 		setgid(0);
+		setgroups_fd = open("/proc/self/setgroups", O_RDWR | O_CLOEXEC);
+		write(setgroups_fd, "allow", 5);
+		close(setgroups_fd);
 		// Init rootless container.
 		init_rootless_container(container);
 		run_rootless_chroot_container(container);
