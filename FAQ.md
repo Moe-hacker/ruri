@@ -17,5 +17,6 @@ The path of qemu is the absolute path of qemu binary in the chroot container, fo
 # About rootless container:
 Command need setgroups() may not work in rootless container, like su or apt.      
 You might need /etc/subuid and /etc/subgid configured in your system.      
+Rootless container is still WIP.      
 # About Seccomp:
 The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and replace setup_seccomp() with your own config.      

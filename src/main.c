@@ -167,7 +167,6 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		}
 		// Show help page and example usage.
 		if (strcmp(argv[index], "-H") == 0 || strcmp(argv[index], "--show-examples") == 0) {
-			show_helps();
 			show_examples();
 			exit(EXIT_SUCCESS);
 		}

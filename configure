@@ -93,7 +93,7 @@ check_lib() {
 default_cflag() {
   test_and_add_cflag "-ftrivial-auto-var-init=pattern"
   test_and_add_cflag "-fcf-protection=full"
-  test_and_add_cflag "-flto"
+  test_and_add_cflag "-flto=auto"
   test_and_add_cflag "-fPIE"
   test_and_add_cflag "-pie"
   test_and_add_cflag "-Wl,-z,relro"
@@ -102,7 +102,6 @@ default_cflag() {
   test_and_add_cflag "-fstack-protector-all"
   test_and_add_cflag "-fstack-clash-protection"
   test_and_add_cflag "-mshstk"
-  test_and_add_cflag "-D_FORTIFY_SOURCE=3"
   test_and_add_cflag "-Wno-unused-result"
   test_and_add_cflag "-O2"
   test_and_add_cflag "-Wl,--build-id=sha1"
@@ -112,6 +111,7 @@ default_cflag() {
   if [ $STATIC_COMPILE ]; then
     test_and_add_cflag "-static"
   fi
+  test_and_add_cflag "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
   test_and_add_ldflag "-lcap"
   test_and_add_ldflag "-lseccomp"
 }

@@ -79,11 +79,11 @@ void show_helps(void)
 	cprintf("{base}  ruri [ARGS]... [CONTAINER_DIRECTORY]... [COMMAND [ARGS]...]\n");
 	cprintf("\n");
 	cprintf("{base}OPTIONS:\n");
-	cprintf("{base}  -v, --version ...................: Show version info\n");
-	cprintf("{base}  -V, --version-code ..............: Show version code\n");
-	cprintf("{base}  -h, --help ......................: Show helps\n");
-	cprintf("{base}  -H, --show-examples .............: Show helps and commandline examples\n");
-	cprintf("{base}  -U, --umount [container_dir] ....: Umount a container\n");
+	cprintf("{base}  -v, --version .......................: Show version info\n");
+	cprintf("{base}  -V, --version-code ..................: Show version code\n");
+	cprintf("{base}  -h, --help ..........................: Show helps\n");
+	cprintf("{base}  -H, --show-examples .................: Show commandline examples\n");
+	cprintf("{base}  -U, --umount [container_dir] ........: Umount a container\n");
 	cprintf("\n");
 	cprintf("{base}ARGS:\n");
 	cprintf("{base}  -D, --dump-config ...................: Dump the config.\n");
