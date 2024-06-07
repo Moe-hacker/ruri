@@ -68,6 +68,8 @@
 #define LIBCAP_MAJOR 114
 #define LIBCAP_MINOR 514
 #endif
+#undef CAP_LAST_CAP
+#define CAP_LAST_CAP 114
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 #warning "This program has not been tested on Linux 3.x or earlier."
 #endif
