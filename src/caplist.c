@@ -92,8 +92,9 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 	// Set default caplist to drop.
 	caplist[0] = INIT_VALUE;
 	if (!privileged) {
-		for (int i = 0; i <= CAP_LAST_CAP; i++) {
+		for (int i = 0; CAP_IS_SUPPORTED(i); i++) {
 			caplist[i] = i;
+			caplist[i + 1] = INIT_VALUE;
 		}
 		for (int i = 0; true; i++) {
 			if (keep_caplist_common[i] == INIT_VALUE) {
