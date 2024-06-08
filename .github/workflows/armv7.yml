@@ -47,7 +47,7 @@ jobs:
               libseccomp-dev \
               libcap-dev \
               libc6-dev \
-              binutils&& ./configure -s&&make&&mv ruri ruri-armv7
+              binutils&& cc -Wl,--gc-sections -static src/*.c -o ruri-armv7 -lcap -lseccomp&&strip ruri-armv7
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
