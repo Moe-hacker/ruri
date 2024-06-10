@@ -52,8 +52,8 @@ jobs:
         with:
           tag_name: ${{ env.ruri_remote_version }}
           body: |
-            This is ruri binary release for arm64 and x86_64.
-            Build_Time: ${{ env.build_time }}
+            This is ruri binary release.
+            Build time: ${{ env.build_time }}
           prerelease: false
           files: |
             /home/runner/work/ruri/ruri/ruri-x86_64
