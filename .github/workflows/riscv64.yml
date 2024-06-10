@@ -1,4 +1,4 @@
-name: Build ruri arm64 binary
+name: Build ruri riscv64 binary
 
 on:
   push:
@@ -37,8 +37,8 @@ jobs:
         name: Install packages
         id: runcmd
         with:
-          arch: aarch64
-          distro: ubuntu22.04
+          arch: riscv64
+          distro: bookworm
           run: |
             apt update
             apt install -y \
@@ -47,7 +47,7 @@ jobs:
               libseccomp-dev \
               libcap-dev \
               libc6-dev \
-              binutils&& ./configure -s&&make&&mv ruri ruri-arm64
+              binutils&& cc -Wl,--gc-sections -static src/*.c -o ruri-riscv64 -lcap -lseccomp&&strip ruri-riscv64
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -57,4 +57,4 @@ jobs:
             Build time: ${{ env.build_time }}
           prerelease: false
           files: |
-            /home/runner/work/ruri/ruri/ruri-arm64
+            /home/runner/work/ruri/ruri/ruri-riscv64
