@@ -38,7 +38,7 @@ jobs:
         id: runcmd
         with:
           arch: riscv64
-          distro: ubuntu-latest
+          distro: ubuntu_latest
           run: |
             apt update
             apt install -y \
