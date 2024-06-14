@@ -34,7 +34,6 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	 * Format container info to k2v format.
 	 * return the string type of config.
 	 */
-	// The HOMO way!
 	char *ret = NULL;
 	// drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
