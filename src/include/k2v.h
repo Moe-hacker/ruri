@@ -66,18 +66,22 @@ char *char_array_to_k2v(const char *key, char *const *val, int len);
 char *int_array_to_k2v(const char *key, int *val, int len);
 char *float_array_to_k2v(const char *key, float *val, int len);
 size_t k2v_get_filesize(const char *path);
-#define k2v_add_config(type, __k2v_buf, ...)                  \
-	({                                                    \
-		char *__k2v_tmp = type##_to_k2v(__VA_ARGS__); \
-		size_t __k2v_size = 4;                        \
-		if (__k2v_buf != NULL) {                      \
-			__k2v_size += strlen(__k2v_buf);      \
-		}                                             \
-		__k2v_size += strlen(__k2v_tmp) + 4;          \
-		__k2v_buf = realloc(__k2v_buf, __k2v_size);   \
-		strcat(__k2v_buf, __k2v_tmp);                 \
-		free(__k2v_tmp);                              \
-		__k2v_tmp = strdup(__k2v_buf);                \
-		free(__k2v_buf);                              \
-		__k2v_tmp;                                    \
+#define k2v_add_config(type, __k2v_buf, ...)                              \
+	({                                                                \
+		char *__k2v_tmp = type##_to_k2v(__VA_ARGS__);             \
+		size_t __k2v_size = 4;                                    \
+		if (__k2v_buf != NULL) {                                  \
+			__k2v_size += strlen(__k2v_buf);                  \
+		}                                                         \
+		__k2v_size += strlen(__k2v_tmp) + 4;                      \
+		char *__k2v_ret = malloc(__k2v_size);                     \
+		if (__k2v_buf != NULL) {                                  \
+			sprintf(__k2v_ret, "%s%s", __k2v_buf, __k2v_tmp); \
+		} else {                                                  \
+			sprintf(__k2v_ret, "%s", __k2v_tmp);              \
+		}                                                         \
+		free(__k2v_buf);                                          \
+		free(__k2v_tmp);                                          \
+		__k2v_ret;                                                \
 	})
+char *k2v_add_comment(char *buf, char *comment);
