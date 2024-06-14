@@ -812,3 +812,23 @@ char *float_array_to_k2v(const char *key, float *val, int len)
 	free(tmp);
 	return ret;
 }
+char *k2v_add_comment(char *buf, char *comment)
+{
+	size_t size = 0;
+	if (buf != NULL) {
+		size += strlen(buf);
+	}
+	size += strlen(comment);
+	char *ret = malloc(size + 8);
+	if (buf != NULL) {
+		sprintf(ret, "%s# %s\n", buf, comment);
+	} else {
+		sprintf(ret, "# %s\n", comment);
+	}
+	free(buf);
+	// Correct memory size.
+	char *tmp = strdup(ret);
+	free(ret);
+	ret = tmp;
+	return ret;
+}

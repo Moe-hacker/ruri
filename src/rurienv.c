@@ -71,11 +71,7 @@ static char *build_container_info(const struct CONTAINER *container)
 	 * Format container runtime info to k2v format,
 	 * and return the formatted config.
 	 */
-	// The HOMO way!
-	size_t size = 114514;
-	// Get a larger buffer for ret.
-	char *ret = (char *)malloc(size);
-	ret[0] = '\0';
+	char *ret = NULL;
 	// drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
 	int len = 0;
@@ -86,14 +82,19 @@ static char *build_container_info(const struct CONTAINER *container)
 		}
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
+	ret = k2v_add_comment(ret, "The capabilty to drop.");
 	ret = k2v_add_config(char_array, ret, "drop_caplist", drop_caplist, len);
 	// no_new_privs.
+	ret = k2v_add_comment(ret, "Set NO_NEW_PRIVS bit.");
 	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
 	// enable_seccomp.
+	ret = k2v_add_comment(ret, "Enable built-in seccomp profile.");
 	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
 	// ns_pid.
+	ret = k2v_add_comment(ret, "PID owning unshare namespace.");
 	ret = k2v_add_config(int, ret, "ns_pid", container->ns_pid);
 	// container_id.
+	ret = k2v_add_comment(ret, "Container ID.");
 	ret = k2v_add_config(int, ret, "container_id", container->container_id);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
@@ -102,6 +103,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Extra mountpoint.");
 	ret = k2v_add_config(char_array, ret, "extra_mountpoint", container->extra_mountpoint, len);
 	// extra_ro_mountpoint.
 	for (int i = 0; true; i++) {
@@ -110,6 +112,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Extra read-only mountpoint.");
 	ret = k2v_add_config(char_array, ret, "extra_ro_mountpoint", container->extra_ro_mountpoint, len);
 	// env.
 	for (int i = 0; true; i++) {
@@ -118,6 +121,7 @@ static char *build_container_info(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Environment variable.");
 	ret = k2v_add_config(char_array, ret, "env", container->env, len);
 	return ret;
 }

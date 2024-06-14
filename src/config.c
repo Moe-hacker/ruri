@@ -35,9 +35,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	 * return the string type of config.
 	 */
 	// The HOMO way!
-	size_t size = 114514;
-	char *ret = (char *)malloc(size);
-	ret[0] = '\0';
+	char *ret = NULL;
 	// drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
 	int len = 0;
@@ -48,34 +46,47 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 		}
 		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
 	}
+	ret = k2v_add_comment(ret, "The capability to drop.");
 	ret = k2v_add_config(char_array, ret, "drop_caplist", drop_caplist, len);
 	// Make ASAN happy.
 	for (int i = 0; i < len; i++) {
 		cap_free(drop_caplist[i]);
 	}
 	// no_new_privs.
+	ret = k2v_add_comment(ret, "Set NO_NEW_PRIVS bit.");
 	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
 	// enable_unshare.
+	ret = k2v_add_comment(ret, "Enable unshare feature.");
 	ret = k2v_add_config(bool, ret, "enable_unshare", container->enable_unshare);
 	// rootless.
+	ret = k2v_add_comment(ret, "Run rootless container.");
 	ret = k2v_add_config(bool, ret, "rootless", container->rootless);
 	// mount_host_runtime.
+	ret = k2v_add_comment(ret, "Mount runtime dirs from the host.");
 	ret = k2v_add_config(bool, ret, "mount_host_runtime", container->mount_host_runtime);
 	// ro_root.
+	ret = k2v_add_comment(ret, "Make / read-only.");
 	ret = k2v_add_config(bool, ret, "ro_root", container->ro_root);
 	// no_warnings.
+	ret = k2v_add_comment(ret, "Disable warnings.");
 	ret = k2v_add_config(bool, ret, "no_warnings", container->no_warnings);
 	// cross_arch.
+	ret = k2v_add_comment(ret, "The arch for running cross-arch container.");
 	ret = k2v_add_config(char, ret, "cross_arch", container->cross_arch);
 	// qemu_path.
+	ret = k2v_add_comment(ret, "The path of qemu-user static binary.");
 	ret = k2v_add_config(char, ret, "qemu_path", container->qemu_path);
 	// use_rurienv.
+	ret = k2v_add_comment(ret, "If enable using .rurienv file.");
 	ret = k2v_add_config(bool, ret, "use_rurienv", container->use_rurienv);
 	// enable_seccomp.
+	ret = k2v_add_comment(ret, "Enable built-in seccomp profile.");
 	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
 	// cpuset.
+	ret = k2v_add_comment(ret, "Cgroup cpuset limit.");
 	ret = k2v_add_config(char, ret, "cpuset", container->cpuset);
 	// memory.
+	ret = k2v_add_comment(ret, "Cgroup memory limit.");
 	ret = k2v_add_config(char, ret, "memory", container->memory);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
@@ -84,6 +95,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Extra mountpoint.");
 	ret = k2v_add_config(char_array, ret, "extra_mountpoint", container->extra_mountpoint, len);
 	// extra_ro_mountpoint.
 	for (int i = 0; true; i++) {
@@ -92,6 +104,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Extra read-only mountpoint.");
 	ret = k2v_add_config(char_array, ret, "extra_ro_mountpoint", container->extra_ro_mountpoint, len);
 	// env.
 	for (int i = 0; true; i++) {
@@ -100,6 +113,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Environment variable.");
 	ret = k2v_add_config(char_array, ret, "env", container->env, len);
 	// command.
 	for (int i = 0; true; i++) {
@@ -108,8 +122,10 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 			break;
 		}
 	}
+	ret = k2v_add_comment(ret, "Default comand to run.");
 	ret = k2v_add_config(char_array, ret, "command", container->command, len);
 	// container_dir.
+	ret = k2v_add_comment(ret, "The CONTAINER_DIR.");
 	ret = k2v_add_config(char, ret, "container_dir", container->container_dir);
 	return ret;
 }
