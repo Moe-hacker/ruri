@@ -1,3 +1,10 @@
+# v3.3:
+  * Add github action, you can now download static binary.
+  * Fix configure script.
+  * Fix CAP_LAST_CAP.
+  * Update libk2v.
+  * Add commit in configs.
+  * General bug fixes.
 # v3.2:
   * Fix mountpoint in rootless container.
   * General bug fixes.
