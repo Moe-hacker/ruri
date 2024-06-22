@@ -85,7 +85,7 @@ check_header() {
 }
 check_lib() {
   printf "checking for lib $1... "
-  if [ ! -e $(clang -print-file-name=$1) ]; then
+  if [ ! -e $($CC -print-file-name=$1) ]; then
     error "not found!\033[0m"
   fi
   printf "found\n"
