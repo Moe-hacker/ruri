@@ -55,6 +55,10 @@ static void check_container(const struct CONTAINER *container)
 		error("{red}Error: container directory does not exist QwQ\n");
 	}
 	closedir(direxist);
+	// --arch and --qemu-path should be set at the same time.
+	if ((container->cross_arch == NULL) ^ (container->qemu_path == NULL)) {
+		error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
+	}
 }
 static void parse_cgroup_settings(const char *str, struct CONTAINER *container)
 {
