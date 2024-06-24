@@ -100,17 +100,19 @@ void show_helps(void)
 	cprintf("{base}  -k, --keep [cap] ....................: Keep the specified cap\n");
 	cprintf("{base}  -d, --drop [cap] ....................: Drop the specified cap\n");
 	cprintf("{base}  -e, --env [env] [value] .............: Set environment variables to its value (**)\n");
-	cprintf("{base}  -m, --mount [dir/dev/img] [dir] .....: Mount dir/block-device/image to mountpoint\n");
+	cprintf("{base}  -m, --mount [dir/dev/img] [dir] .....: Mount dir/block-device/image to mountpoint (***)\n");
 	cprintf("{base}  -M, --ro-mount [dir/dev/img] [dir] ..: Mount dir/block-device/image as read-only\n");
 	cprintf("{base}  -S, --host-runtime ..................: Bind-mount /dev/, /sys/ and /proc/ from host\n");
 	cprintf("{base}  -R, --read-only .....................: Mount / as read-only\n");
-	cprintf("{base}  -l, --limit [cpuset=cpu/memory=mem] .: Set cpuset/memory limit(***)\n");
+	cprintf("{base}  -l, --limit [cpuset=cpu/memory=mem] .: Set cpuset/memory limit(****)\n");
 	cprintf("{base}  -w, --no-warnings ...................: Disable warnings\n");
 	cprintf("\n");
-	cprintf("{base}(*)  :  `-a` option also need `-q` is set\n");
-	cprintf("{base}(**) : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
-	cprintf("{base}(***): Each `-l` option can only set one of the cpuset/memory limits\n");
-	cprintf("{base}(***): for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
+	cprintf("{base}Note:\n");
+	cprintf("{base}(*)   :  `-a` option also need `-q` is set\n");
+	cprintf("{base}(**)  : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
+	cprintf("{base}(***) : You can use `-m [source] /` to mount a block device as root\n");
+	cprintf("{base}(****): Each `-l` option can only set one of the cpuset/memory limits\n");
+	cprintf("{base}        for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
 	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.

@@ -155,6 +155,7 @@ static char *losetup(const char *img)
 // Mount dev/dir/img to target.
 int trymount(const char *source, const char *target, unsigned int mountflags)
 {
+	// umount target before mount(2), to avoid `device or resource busy`.
 	umount2(target, MNT_DETACH | MNT_FORCE);
 	int ret = 0;
 	// Check if mountpoint exists.
