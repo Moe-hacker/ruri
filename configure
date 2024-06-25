@@ -40,7 +40,7 @@ init() {
     error "not found"
   fi
   printf "checking for compiler... "
-  if [ !$CC ]; then
+  if [ ! $CC ]; then
     if [ ! $(command -v cc) ]; then
       error "not found"
     fi
@@ -82,13 +82,6 @@ test_and_add_ldflag() {
 check_header() {
   printf "checking for header $i... "
   printf "#include <$1>\nint main(){}" | $CC -x c -o /dev/null - >/dev/null 2>&1 && printf "ok\n" || error "not found"
-}
-check_lib() {
-  printf "checking for lib $1... "
-  if [ ! -e $($CC -print-file-name=$1) ]; then
-    error "not found!\033[0m"
-  fi
-  printf "found\n"
 }
 default_cflag() {
   test_and_add_cflag "-ftrivial-auto-var-init=pattern"
@@ -148,16 +141,6 @@ check_headers_and_libs() {
   for i in sys/capability.h seccomp.h; do
     check_header $i
   done
-  # Check library.
-  if [ $STATIC_COMPILE ]; then
-    for i in libc.a libcap.a libseccomp.a; do
-      check_lib $i
-    done
-  else
-    for i in libcap.so libseccomp.so; do
-      check_lib $i
-    done
-  fi
 }
 show_help() {
   echo "Usage: ./configure [OPTION]..."
