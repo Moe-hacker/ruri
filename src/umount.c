@@ -80,6 +80,9 @@ void umount_container(const char *container_dir)
 					umount(to_umountpoint);
 					usleep(20000);
 				}
+				// Make ASAN happy.
+				free(container->extra_mountpoint[i]);
+				free(container->extra_mountpoint[i - 1]);
 			} else {
 				break;
 			}
@@ -94,6 +97,9 @@ void umount_container(const char *container_dir)
 					umount(to_umountpoint);
 					usleep(20000);
 				}
+				// Make ASAN happy.
+				free(container->extra_mountpoint[i]);
+				free(container->extra_mountpoint[i - 1]);
 			} else {
 				break;
 			}
