@@ -61,7 +61,12 @@ all :build_dir $(objects)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@cp -f $(BIN_TARGET) ../
 	@cd ..&&rm -rf $(O)
-dev :all
+dev :build_dir $(objects)
+	@cd $(O)
+	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
+	$(LD_LOG) $(BIN_TARGET)
+	@cp -f $(BIN_TARGET) ../
+	@cd ..&&rm -rf $(O)
 static :all
 static-bionic :all
 build_dir:
@@ -95,6 +100,7 @@ upcprintf :
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all            compile"
+	@echo "  make dev            compile, do not strip"
 	@echo "  make clean          clean"
 	@echo "Only for developers:"
 	@echo "  make check          run clang-tidy"
