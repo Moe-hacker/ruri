@@ -146,7 +146,7 @@ static char *losetup(const char *img)
 		}
 	}
 	// It takes the same efferct as `losetup` command.
-	int imgfd = open(img, O_RDONLY | O_CLOEXEC);
+	int imgfd = open(img, O_RDWR | O_CLOEXEC);
 	ioctl(loopfd, LOOP_SET_FD, imgfd);
 	close(loopfd);
 	close(imgfd);
