@@ -28,7 +28,6 @@
 #
 # Premature optimization is the root of evil.
 #
-.NOTPARALLEL:
 CCCOLOR     = \033[1;38;2;254;228;208m
 LDCOLOR     = \033[1;38;2;254;228;208m
 STRIPCOLOR  = \033[1;38;2;254;228;208m
@@ -52,6 +51,7 @@ include config.mk
 objects = anime.o caplist.o chroot.o cprintf.o info.o rurienv.o seccomp.o signal.o umount.o unshare.o rootless.o mount.o k2v.o elf-magic.o config.o cgroup.o main.o
 O = out
 BIN_TARGET = ruri
+.NOTPARALLEL:
 .ONESHELL:
 all :build_dir $(objects)
 	@cd $(O)
