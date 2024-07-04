@@ -1,3 +1,5 @@
+# About container environment:      
+For safety, ruri container is like default docker container, it will mask some directory in /sys and /proc, drop unneed capabilities, and you are not able to run command like mknod or mount by default.      
 # About config:
 Since v3.0, ruri can use [k2v](https://github.com/Moe-hacker/libk2v), a new simple config format, to store the config of a container.          
 # About rurienv:
@@ -19,4 +21,4 @@ Command need setgroups() may not work in rootless container, like su or apt.
 You might need /etc/subuid and /etc/subgid configured in your system.      
 Rootless container is still WIP.      
 # About Seccomp:
-The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and replace setup_seccomp() with your own config.      
+The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and rewrite setup_seccomp() with your own config.      
