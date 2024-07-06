@@ -160,7 +160,7 @@ struct __attribute__((aligned(16))) MAGIC {
 		exit(EXIT_FAILURE);                                                                          \
 	}
 void register_signal(void);
-void setup_seccomp(struct CONTAINER *container);
+void setup_seccomp(const struct CONTAINER *container);
 void show_version_info(void);
 void show_version_code(void);
 void AwA(void);
