@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Setup seccomp filter rule, with libseccomp.
-void setup_seccomp(struct CONTAINER *container)
+void setup_seccomp(const struct CONTAINER *container)
 {
 	/*
 	 * Based on docker's default seccomp profile.
