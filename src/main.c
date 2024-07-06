@@ -389,18 +389,6 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 			error("{red}Error: unknown option `%s`{clear}\n", argv[index]);
 		}
 	}
-	// Set default init command to run.
-	if (container->command[0] == NULL) {
-		// Rootless container can not run program like /bin/su.
-		if (!(container->rootless)) {
-			container->command[0] = "/bin/su";
-			container->command[1] = "-";
-			container->command[2] = NULL;
-		} else {
-			container->command[0] = "/bin/sh";
-			container->command[1] = NULL;
-		}
-	}
 	// Get the capabilities to drop.
 	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
 	// Dump config.

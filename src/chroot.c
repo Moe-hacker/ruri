@@ -28,6 +28,18 @@
  *
  */
 #include "include/ruri.h"
+static bool su_biany_exist(char *container_dir)
+{
+	// Check if /bin/su exists in container.
+	char su_path[PATH_MAX] = { '\0' };
+	sprintf(su_path, "%s/bin/su", container_dir);
+	int fd = open(su_path, O_RDONLY);
+	if (fd < 0) {
+		return false;
+	}
+	close(fd);
+	return true;
+}
 static void check_binary(const struct CONTAINER *container)
 {
 	// Check if command binary exists and is not a directory.
@@ -334,9 +346,14 @@ void run_chroot_container(struct CONTAINER *container)
 	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
-		container->command[0] = "/bin/su";
-		container->command[1] = "-";
-		container->command[2] = NULL;
+		if (su_biany_exist(container->container_dir)) {
+			container->command[0] = "/bin/su";
+			container->command[1] = "-";
+			container->command[2] = NULL;
+		} else {
+			container->command[0] = "/bin/sh";
+			container->command[1] = NULL;
+		}
 	}
 	// Check binary used.
 	check_binary(container);
@@ -409,9 +426,14 @@ void run_rootless_chroot_container(struct CONTAINER *container)
 	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
-		container->command[0] = "/bin/su";
-		container->command[1] = "-";
-		container->command[2] = NULL;
+		if (su_biany_exist(container->container_dir)) {
+			container->command[0] = "/bin/su";
+			container->command[1] = "-";
+			container->command[2] = NULL;
+		} else {
+			container->command[0] = "/bin/sh";
+			container->command[1] = NULL;
+		}
 	}
 	// Check binary used.
 	check_binary(container);
