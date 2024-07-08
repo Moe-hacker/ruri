@@ -46,13 +46,12 @@ void add_to_caplist(cap_value_t *list, cap_value_t cap)
 		}
 	}
 }
-// Check if the cap includes in the list.
+// Check if the cap is in the list.
 bool is_in_caplist(const cap_value_t *list, cap_value_t cap)
 {
 	/*
 	 * For setup_seccomp().
 	 */
-	// Check if the cap to add is already in caplist.
 	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
 			return true;
