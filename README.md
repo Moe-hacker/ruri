@@ -9,7 +9,7 @@
 # Download:    
 You can get ruri binary (statically linked) for arm64, armv7, riscv64 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 # 中文文档
-[ruri官方文档](https://blog.crack.moe/2024/03/26/ruri-doc/)      
+[中文文档](/README_zh.md)      
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -67,19 +67,19 @@ OPTIONS:
   -U, --umount [container_dir] ........: Umount a container
 
 ARGS:
-  -D, --dump-config ...................: Dump the config.
+  -D, --dump-config ...................: Dump the config
   -o, --output [config file] ..........: Set output file of `-D` option
   -c, --config [config file] ..........: Use config file
-  -a, --arch [arch] ...................: Simulate architecture via binfmt_misc (*)
+  -a, --arch [arch] ...................: Simulate architecture via binfmt_misc/QEMU (*)
   -q, --qemu-path [path] ..............: Specify the path of QEMU
   -u, --unshare .......................: Enable unshare feature
-  -n, --no-new-privs ..................: Set NO_NEW_PRIVS Flag
+  -n, --no-new-privs ..................: Set NO_NEW_PRIVS flag
   -N, --no-rurienv ....................: Do not use .rurienv file
   -s, --enable-seccomp ................: Enable built-in Seccomp profile
   -p, --privileged ....................: Run privileged container
-  -r, --rootless ......................: Run rootless container
-  -k, --keep [cap] ....................: Keep the specified cap
-  -d, --drop [cap] ....................: Drop the specified cap
+  -r, --rootless ......................: Run rootless container (WIP)
+  -k, --keep [cap] ....................: Keep the specified capability
+  -d, --drop [cap] ....................: Drop the specified capability
   -e, --env [env] [value] .............: Set environment variables to its value (**)
   -m, --mount [dir/dev/img] [dir] .....: Mount dir/block-device/image to mountpoint (***)
   -M, --ro-mount [dir/dev/img] [dir] ..: Mount dir/block-device/image as read-only
