@@ -1,4 +1,4 @@
-name: Build ruri x86_64 binary
+name: Build ruri i386 binary
 
 on:
   push:
@@ -39,13 +39,13 @@ jobs:
           sudo apt update
           sudo apt install -y \
               make \
-              clang \
+              clang gcc-12 libx32gcc-12-dev lib32gcc-12-dev libgcc-12-dev-x32-cross\
               libseccomp-dev libseccomp-dev:i386\
               libcap-dev libcap-dev:i386\
-              libc6-dev libc6-dev:i386\
+              libc6-dev libc6-dev:i386 libc6:i386\
               binutils
       - name: configure
-        run: CC="clang -m32" ./configure -s
+        run: ./configure -s && echo CC = clang -m32 >> config.mk
       - name: make
         run: make&&mv ruri ruri-i386
       - name: Release
