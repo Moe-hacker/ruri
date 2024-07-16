@@ -1,0 +1,60 @@
+name: Build ruri x86_64 binary
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check_ruri_update:
+    name: Check Ruri update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Ruri version
+        id: check_ruri_version
+        run: |
+          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          remote_version=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .tag_name)
+          echo local_version=$local_version | tee -a $GITHUB_OUTPUT
+          echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
+    outputs:
+      local_version: ${{ steps.check_ruri_version.outputs.local_version }}
+      remote_version: ${{ steps.check_ruri_version.outputs.remote_version }}
+  build:
+    name: Build Ruri
+    needs: check_ruri_update
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Set env
+        run: |
+          echo ruri_remote_version=${{ needs.check_ruri_update.outputs.remote_version }} | tee -a $GITHUB_ENV
+          echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
+      - uses: actions/checkout@v4
+      - name: Install packages
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install -y \
+              make \
+              clang \
+              libseccomp-dev libseccomp-dev:i386\
+              libcap-dev libcap-dev:i386\
+              libc6-dev libc6-dev:i386\
+              binutils
+      - name: configure
+        run: CC="clang -m32" ./configure -s
+      - name: make
+        run: make&&mv ruri ruri-i386
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.ruri_remote_version }}
+          body: |
+            This is ruri binary release.
+            Build time: ${{ env.build_time }}
+          prerelease: false
+          files: |
+            /home/runner/work/ruri/ruri/ruri-i386
