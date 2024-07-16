@@ -1,3 +1,9 @@
+# v3.4:
+  * Default command wil be /bin/sh if /bin/su does not exist.
+  * Fix mount image file.
+  * Fix block device as root.
+  * Fix configure script.
+  * General bug fixes.
 # v3.3:
   * Add github action, you can now download static binary.
   * Fix configure script.
