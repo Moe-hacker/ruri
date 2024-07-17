@@ -7,7 +7,7 @@
 
 -----------------     
 # Download:    
-You can get ruri binary (statically linked) for arm64, armv7, riscv64 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
+You can get ruri binary (statically linked) for arm64, armv7, riscv64, i386 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 # 中文文档
 [中文文档](/README_zh.md)      
 # WARNING:      
