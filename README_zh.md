@@ -9,33 +9,33 @@ Usage:
   ruri [参数]... [容器目录]... [命令 [参数]...]
 
 OPTIONS:
-  -v, --version .......................: 显示版本信息
-  -V, --version-code ..................: 显示版本号
-  -h, --help ..........................: 显示帮助
-  -H, --show-examples .................: 显示命令行示例
-  -U, --umount [容器目录] ..............: 解除容器挂载
+  -v, --version ...............................: 显示版本信息
+  -V, --version-code ..........................: 显示版本号
+  -h, --help ..................................: 显示帮助
+  -H, --show-examples .........................: 显示命令行示例
+  -U, --umount [容器目录] ......................: 解除容器挂载
 
 ARGS:
-  -D, --dump-config ...................: 转储配置
-  -o, --output [config file] ..........: 设置配置转储路径
-  -c, --config [config file] ..........: 使用配置文件运行容器
-  -a, --arch [arch] ...................: 使用binfmt_misc/QEMU模拟架构 (*)
-  -q, --qemu-path [path] ..............: 设置QEMU路径
-  -u, --unshare .......................: 开启unshare
-  -n, --no-new-privs ..................: 设置NO_NEW_PRIVS标志
-  -N, --no-rurienv ....................: 不使用.rurienv文件
-  -s, --enable-seccomp ................: 开启内置Seccomp配置
-  -p, --privileged ....................: 运行特权容器
-  -r, --rootless ......................: 运行rootless容器(WIP)
-  -k, --keep [cap] ....................: 保留指定的capability
-  -d, --drop [cap] ....................: 移除指定的capability
-  -e, --env [env] [value] .............: 设置环境变量 (**)
-  -m, --mount [dir/dev/img] [dir] .....: 挂载文件夹/块设备/镜像文件到挂载点 (***)
-  -M, --ro-mount [dir/dev/img] [dir] ..: 挂载文件夹/块设备/镜像文件为只读
-  -S, --host-runtime ..................: 从主机挂载 /dev/, /sys/ and /proc/
-  -R, --read-only .....................: 挂载 / 为只读
-  -l, --limit [cpuset=cpu/memory=mem] .: 设置cpuset/memory限制(****)
-  -w, --no-warnings ...................: 关闭警告
+  -D, --dump-config ...........................: 转储配置
+  -o, --output [config file] ..................: 设置配置转储路径
+  -c, --config [config file] ..................: 使用配置文件运行容器
+  -a, --arch [arch] ...........................: 使用binfmt_misc/QEMU模拟架构 (*)
+  -q, --qemu-path [path] ......................: 设置QEMU路径
+  -u, --unshare ...............................: 开启unshare
+  -n, --no-new-privs ..........................: 设置NO_NEW_PRIVS标志
+  -N, --no-rurienv ............................: 不使用.rurienv文件
+  -s, --enable-seccomp ........................: 开启内置Seccomp配置
+  -p, --privileged ............................: 运行特权容器
+  -r, --rootless ..............................: 运行rootless容器(WIP)
+  -k, --keep [cap] ............................: 保留指定的capability
+  -d, --drop [cap] ............................: 移除指定的capability
+  -e, --env [env] [value] .....................: 设置环境变量 (**)
+  -m, --mount [dir/dev/file] [target] .........: 挂载文件夹/块设备/镜像文件到挂载点 (***)
+  -M, --ro-mount [dir/dev/img/file] [target] ..: 挂载文件夹/块设备/镜像文件为只读
+  -S, --host-runtime ..........................: 从主机挂载 /dev/, /sys/ and /proc/
+  -R, --read-only .............................: 挂载 / 为只读
+  -l, --limit [cpuset=cpu/memory=mem] .........: 设置cpuset/memory限制(****)
+  -w, --no-warnings ...........................: 关闭警告
 
 Note:
 (*)   :  `-a` 和 `-q` 参数需要同时设置

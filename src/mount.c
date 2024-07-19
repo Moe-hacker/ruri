@@ -152,38 +152,83 @@ static char *losetup(const char *img)
 	close(imgfd);
 	return loopfile;
 }
+static int mk_mountpoint_dir(const char *target)
+{
+	// Check if mountpoint exists.
+	remove(target);
+	DIR *test = opendir(target);
+	if (test == NULL) {
+		if (mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) != 0) {
+			return -1;
+		}
+	} else {
+		closedir(test);
+	}
+	return 0;
+}
+static int touch_mountpoint_file(const char *target)
+{
+	// Check if mountpoint exists.
+	rmdir(target);
+	int fd = open(target, O_RDONLY);
+	if (fd < 0) {
+		if (fd = open(target, O_CREAT | O_RDWR, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) <= 0) {
+			return -1;
+		}
+	} else {
+		close(fd);
+	}
+	return 0;
+}
 // Mount dev/dir/img to target.
 int trymount(const char *source, const char *target, unsigned int mountflags)
 {
 	// umount target before mount(2), to avoid `device or resource busy`.
 	umount2(target, MNT_DETACH | MNT_FORCE);
 	int ret = 0;
-	// Check if mountpoint exists.
-	DIR *test = opendir(target);
-	if (test == NULL) {
-		if (mkdirs(target, 0755) != 0) {
-			return -1;
-		}
-	} else {
-		closedir(test);
-	}
 	struct stat dev_stat;
 	if (lstat(source, &dev_stat) != 0) {
 		return -1;
 	}
 	// Bind-mount dir.
 	if (S_ISDIR(dev_stat.st_mode)) {
+		if (mk_mountpoint_dir(target) != 0) {
+			return -1;
+		}
 		mount(source, target, NULL, mountflags | MS_BIND, NULL);
 		// For ro mount, we need a remount.
 		ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
 	}
 	// Block device.
 	else if (S_ISBLK(dev_stat.st_mode)) {
+		if (mk_mountpoint_dir(target) != 0) {
+			return -1;
+		}
 		ret = mount_device(source, target, mountflags);
 	}
-	// For image file, we run losetup first.
+	// Image and common file.
 	else if (S_ISREG(dev_stat.st_mode)) {
+		// Image file.
+		if (mk_mountpoint_dir(target) != 0) {
+			return -1;
+		}
 		ret = mount_device(losetup(source), target, mountflags);
+		// Common file.
+		if (ret != 0) {
+			if (touch_mountpoint_file(target) != 0) {
+				return -1;
+			}
+			mount(source, target, NULL, mountflags | MS_BIND, NULL);
+			ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
+		}
+	}
+	// For char device/FIFO/socket, we bind-mount it.
+	else if (S_ISCHR(dev_stat.st_mode) || S_ISFIFO(dev_stat.st_mode) || S_ISSOCK(dev_stat.st_mode)) {
+		if (touch_mountpoint_file(target) != 0) {
+			return -1;
+		}
+		mount(source, target, NULL, mountflags | MS_BIND, NULL);
+		ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
 	}
 	// We do not support to mount other type of files.
 	else {
