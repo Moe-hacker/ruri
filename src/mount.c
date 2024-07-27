@@ -169,6 +169,7 @@ static int mk_mountpoint_dir(const char *target)
 static int touch_mountpoint_file(const char *target)
 {
 	// Check if mountpoint exists.
+	mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH);
 	rmdir(target);
 	int fd = open(target, O_RDONLY);
 	if (fd < 0) {
