@@ -6,6 +6,8 @@
 <p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
 
 -----------------     
+# Get support:      
+Feel free to discuss at https://t.me/ruri_daijin_support     
 # Download:    
 You can get ruri binary (statically linked) for arm64, armv7, riscv64, i386 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 # 中文文档
