@@ -84,6 +84,7 @@ check :
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
 	$(FORMATER) $(SRC) $(HEADER)
+	yapf -i tools/*.py
 clean :
 	$(CLEAN_LOG) $(BIN_TARGET)
 	@rm -f $(BIN_TARGET)||true

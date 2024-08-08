@@ -14,3 +14,4 @@ TODO
 a.out
 t.c
 config.mk
+*.pyc
