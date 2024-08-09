@@ -190,6 +190,16 @@ def show_help():
     print("  -s, --search  [image] <page_size>     search for image, like `docker search`")
     print("  -t, --tag     [image] <page_size>     get tags of image")
     print("  -p, --pull    [image] [tag] [savedir] pull rootfs and unpack to savedir")
+    print("")
+    print("How to use:")
+    print("First, search the image you need, for example:")
+    print("./dockerhub.py -s alpine")
+    print("You can use the yellow output for [image]")
+    print("Then, when you get the [image] you need, search for [tag]")
+    print("./dockerhub.py -t alpine")
+    print("and when you get the tag you need to download, pull the rootfs")
+    print("./dockerhub.py -p alpine edge alpine")
+    print("The rootfs will be unpacked to `alpine` directory")
 
 
 def parse_arg(argv):
@@ -253,6 +263,7 @@ def parse_arg(argv):
                 tag = argv[i + 2]
                 savedir = argv[i + 3]
                 pull(image, tag, savedir)
+                exit(0)
             else:
                 panic("missing argument [image] [tag] [savedir]")
         elif argv[i] == "--pull":
@@ -261,6 +272,7 @@ def parse_arg(argv):
                 tag = argv[i + 2]
                 savedir = argv[i + 3]
                 pull(image, tag, savedir)
+                exit(0)
             else:
                 panic("missing argument [image] [tag] [savedir]")
         else:
