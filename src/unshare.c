@@ -69,9 +69,9 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 		warning("{yellow}Warning: seems that we could not unshare filesystem information with child process QwQ{clear}\n");
 	}
 	// Add uid and gid map, or it will be nobody(65534) by default.
-	// Copied from `src/rootless.c`
-	uid_t uid = geteuid();
-	gid_t gid = getegid();
+	// Copied from `src/rootless.c`, removed geteuid() & getegid()
+	uid_t uid = 0;
+	gid_t gid = 0;
 	// Set uid map.
 	char uid_map[32] = { "\0" };
 	sprintf(uid_map, "0 %d 1\n", uid);
