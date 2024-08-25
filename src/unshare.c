@@ -62,6 +62,9 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 	if (unshare(CLONE_FILES) == -1 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that we could not unshare file descriptors with child process QwQ{clear}\n");
 	}
+	if (unshare(CLONE_NEWUSER) == -1 && !container->no_warnings) {
+		warning("{yellow}Warning: seems that user namespace is not supported on this device QwQ{clear}\n");
+	}
 	if (unshare(CLONE_FS) == -1 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that we could not unshare filesystem information with child process QwQ{clear}\n");
 	}
@@ -91,6 +94,7 @@ static pid_t join_ns(struct CONTAINER *container)
 	char cgroup_ns_file[PATH_MAX] = { '\0' };
 	char ipc_ns_file[PATH_MAX] = { '\0' };
 	char mount_ns_file[PATH_MAX] = { '\0' };
+	char user_ns_file[PATH_MAX] = { '\0' };
 	char pid_ns_file[PATH_MAX] = { '\0' };
 	char time_ns_file[PATH_MAX] = { '\0' };
 	char uts_ns_file[PATH_MAX] = { '\0' };
@@ -99,6 +103,7 @@ static pid_t join_ns(struct CONTAINER *container)
 	sprintf(mount_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/mnt");
 	sprintf(pid_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/pid");
 	sprintf(time_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/time");
+	sprintf(user_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/user");
 	sprintf(uts_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/uts");
 	// Enter namespaces via setns(2).
 	int ns_fd = INIT_VALUE;
@@ -126,6 +131,13 @@ static pid_t join_ns(struct CONTAINER *container)
 	ns_fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that uts namespace is not supported on this device QwQ{clear}\n");
+	} else {
+		setns(ns_fd, 0);
+		close(ns_fd);
+	}
+	ns_fd = open(user_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !container->no_warnings) {
+		warning("{yellow}Warning: seems that user namespace is not supported on this device QwQ{clear}\n");
 	} else {
 		setns(ns_fd, 0);
 		close(ns_fd);
