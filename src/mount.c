@@ -173,7 +173,8 @@ static int touch_mountpoint_file(const char *target)
 	rmdir(target);
 	int fd = open(target, O_RDONLY);
 	if (fd < 0) {
-		if (fd = open(target, O_CREAT | O_RDWR, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) <= 0) {
+		fd = open(target, O_CREAT | O_RDWR, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH);
+		if (fd < 0) {
 			return -1;
 		}
 	} else {
