@@ -338,7 +338,9 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		else if (strcmp(argv[index], "-k") == 0 || strcmp(argv[index], "--keep") == 0) {
 			index++;
 			if (argv[index] != NULL) {
-				if (cap_from_name(argv[index], &cap) == 0) {
+				if (atoi(argv[index]) != 0) {
+					add_to_caplist(keep_caplist_extra, atoi(argv[index]));
+				} else if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_caplist(keep_caplist_extra, cap);
 				} else {
 					error("{red}or: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
@@ -351,7 +353,9 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		else if (strcmp(argv[index], "-d") == 0 || strcmp(argv[index], "--drop") == 0) {
 			index++;
 			if (argv[index] != NULL) {
-				if (cap_from_name(argv[index], &cap) == 0) {
+				if (atoi(argv[index]) != 0) {
+					add_to_caplist(drop_caplist_extra, atoi(argv[index]));
+				} else if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_caplist(drop_caplist_extra, cap);
 				} else {
 					error("{red}Error: unknown capability `%s`\nQwQ{clear}\n", argv[index]);

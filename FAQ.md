@@ -1,5 +1,9 @@
 # About container environment:      
 For safety, ruri container is like default docker container, it will mask some directory in /sys and /proc, drop unneed capabilities, and you are not able to run command like mknod or mount by default.      
+# About capability:      
+ruri will set capability to the same as docker common container by default, you can use `-k [cap]` or `-d [cap]` to change the capability settings.      
+For example, use `-d cap_sys_admin` to drop CAP_SYS_ADMIN.      
+In fulture, maybe new caps will be added to the kernel, and their name might cannot be recognized if you are using old builds. You can use the value of cap (use `capsh  --explain=[cap]` to get the value) to drop it, for example, use `-d 114` to drop the cap 114 (I don't know what the cap should be, mabe can make superuser to be a homo).
 # About config:
 Since v3.0, ruri can use [k2v](https://github.com/Moe-hacker/libk2v), a new simple config format, to store the config of a container.          
 # About rurienv:
