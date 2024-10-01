@@ -146,7 +146,7 @@ void read_config(struct CONTAINER *container, const char *path)
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Get drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-	int caplen = key_get_char_array("drop_caplist", buf, drop_caplist);
+	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist);
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
@@ -157,39 +157,39 @@ void read_config(struct CONTAINER *container, const char *path)
 		container->drop_caplist[i + 1] = INIT_VALUE;
 	}
 	// Get no_new_privs.
-	container->no_new_privs = key_get_bool("no_new_privs", buf);
+	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
 	// Get enable_seccomp.
-	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
+	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	// Get container_dir.
-	container->container_dir = key_get_char("container_dir", buf);
+	container->container_dir = k2v_get_key(char, "container_dir", buf);
 	// Get qemu_path.
-	container->qemu_path = key_get_char("qemu_path", buf);
+	container->qemu_path = k2v_get_key(char, "qemu_path", buf);
 	// Get cross_arch.
-	container->cross_arch = key_get_char("cross_arch", buf);
+	container->cross_arch = k2v_get_key(char, "cross_arch", buf);
 	// Get rootless.
-	container->rootless = key_get_bool("rootless", buf);
+	container->rootless = k2v_get_key(bool, "rootless", buf);
 	// Get mount_host_runtime.
-	container->mount_host_runtime = key_get_bool("mount_host_runtime", buf);
+	container->mount_host_runtime = k2v_get_key(bool, "mount_host_runtime", buf);
 	// Get ro_root.
-	container->ro_root = key_get_bool("ro_root", buf);
+	container->ro_root = k2v_get_key(bool, "ro_root", buf);
 	// Get no_warnings.
-	container->no_warnings = key_get_bool("no_warnings", buf);
+	container->no_warnings = k2v_get_key(bool, "no_warnings", buf);
 	// Get use_rurienv.
-	container->use_rurienv = key_get_bool("use_rurienv", buf);
+	container->use_rurienv = k2v_get_key(bool, "use_rurienv", buf);
 	// Get cpuset.
-	container->cpuset = key_get_char("cpuset", buf);
+	container->cpuset = k2v_get_key(char, "cpuset", buf);
 	// Get memory.
-	container->memory = key_get_char("memory", buf);
+	container->memory = k2v_get_key(char, "memory", buf);
 	// Get env.
-	int envlen = key_get_char_array("env", buf, container->env);
+	int envlen = k2v_get_key(char_array, "env", buf, container->env);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
-	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
+	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
-	mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	free(buf);

@@ -196,10 +196,10 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	// Only umount_container() will give a NULL struct.
 	if (container == NULL) {
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
-		int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
+		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
 		container->extra_mountpoint[mlen] = NULL;
 		container->extra_mountpoint[mlen + 1] = NULL;
-		mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
 		close(fd);
@@ -210,7 +210,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	container->cpuset = NULL;
 	container->memory = NULL;
 	// Check if ns_pid is a ruri process.
-	if (container->enable_unshare && !is_ruri_pid(key_get_int("ns_pid", buf))) {
+	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);
 		int attr = 0;
@@ -224,7 +224,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	}
 	// Get capabilities to drop.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-	int caplen = key_get_char_array("drop_caplist", buf, drop_caplist);
+	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist);
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
@@ -236,23 +236,23 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 		container->drop_caplist[i + 1] = INIT_VALUE;
 	}
 	// Get no_new_privs.
-	container->no_new_privs = key_get_bool("no_new_privs", buf);
+	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
 	// Get enable_seccomp.
-	container->enable_seccomp = key_get_bool("enable_seccomp", buf);
+	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	// Get ns_pid.
-	container->ns_pid = key_get_int("ns_pid", buf);
+	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 	// Get container_id.
-	container->container_id = key_get_int("container_id", buf);
+	container->container_id = k2v_get_key(int, "container_id", buf);
 	// Get env.
-	int envlen = key_get_char_array("env", buf, container->env);
+	int envlen = k2v_get_key(char_array, "env", buf, container->env);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
-	int mlen = key_get_char_array("extra_mountpoint", buf, container->extra_mountpoint);
+	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
-	mlen = key_get_char_array("extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	return container;

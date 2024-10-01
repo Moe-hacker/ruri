@@ -66,6 +66,7 @@ char *char_array_to_k2v(const char *key, char *const *val, int len);
 char *int_array_to_k2v(const char *key, int *val, int len);
 char *float_array_to_k2v(const char *key, float *val, int len);
 size_t k2v_get_filesize(const char *path);
+#define k2v_get_key(type, ...) key_get_##type(__VA_ARGS__)
 #define k2v_add_config(type, __k2v_buf, ...)                              \
 	({                                                                \
 		char *__k2v_tmp = type##_to_k2v(__VA_ARGS__);             \
