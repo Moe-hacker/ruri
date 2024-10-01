@@ -80,6 +80,8 @@ void umount_container(const char *container_dir)
 					umount(to_umountpoint);
 					usleep(20000);
 				}
+				// Remove the empty file we created for mounting files into container.
+				remove(to_umountpoint);
 				// Make ASAN happy.
 				free(container->extra_mountpoint[i]);
 				free(container->extra_mountpoint[i - 1]);
@@ -97,6 +99,8 @@ void umount_container(const char *container_dir)
 					umount(to_umountpoint);
 					usleep(20000);
 				}
+				// Remove the empty file we created for mounting files into container.
+				remove(to_umountpoint);
 				// Make ASAN happy.
 				free(container->extra_mountpoint[i]);
 				free(container->extra_mountpoint[i - 1]);

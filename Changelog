@@ -1,3 +1,7 @@
+# v3.5:
+  * Capability can now be controled by value.
+  * Support mount files to container.
+  * General bug fixes.
 # v3.4:
   * Default command wil be /bin/sh if /bin/su does not exist.
   * Fix mount image file.
