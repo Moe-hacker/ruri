@@ -33,7 +33,7 @@ static bool su_biany_exist(char *container_dir)
 	// Check if /bin/su exists in container.
 	char su_path[PATH_MAX] = { '\0' };
 	sprintf(su_path, "%s/bin/su", container_dir);
-	int fd = open(su_path, O_RDONLY);
+	int fd = open(su_path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		return false;
 	}
