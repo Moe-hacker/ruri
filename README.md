@@ -32,7 +32,7 @@ If you think something does not work as expected, please [Open a new isssue](htt
 - Simple:      
 The basic usage is very very simple, you can use it just like the command `chroot`.
 - Secure:      
-Ruri focus on security, with many protections.
+Ruri focus on security, with many built-in protections.
 - Run Everywhere:      
 The binary is very small, only about 1M, and you can also use `upx` to make it less than 500k, so it can be run anywhere even if the storage is tight.
 # Build:      
