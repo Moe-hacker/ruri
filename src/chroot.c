@@ -86,8 +86,8 @@ static void init_container(void)
 	 * The device list and permissions are based on common docker container.
 	 */
 	// Check if system runtime files are already created.
-	DIR *direxist = opendir("/sys/class/input");
-	if (direxist == NULL) {
+	char *test = realpath("/sys/class/input", NULL);
+	if (test == NULL) {
 		// Mount proc,sys and dev.
 		mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mkdir("/proc", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
@@ -152,10 +152,8 @@ static void init_container(void)
 		mount("tmpfs", "/sys/firmware", "tmpfs", MS_RDONLY, NULL);
 		mount("tmpfs", "/sys/devices/virtual/powercap", "tmpfs", MS_RDONLY, NULL);
 		mount("tmpfs", "/sys/block", "tmpfs", MS_RDONLY, NULL);
-	}
-	// Avoid running closedir(NULL), we put it to else branch.
-	else {
-		closedir(direxist);
+	} else {
+		free(test);
 	}
 }
 // Run before chroot(2), so that init_container() will not take effect.
@@ -319,8 +317,8 @@ void run_chroot_container(struct CONTAINER *container)
 	// mount_host_runtime() and store_info() will be called here.
 	char buf[PATH_MAX] = { '\0' };
 	sprintf(buf, "%s/sys/class/input", container->container_dir);
-	DIR *direxist = opendir(buf);
-	if (direxist == NULL) {
+	char *test = realpath(buf, NULL);
+	if (test == NULL) {
 		// Mount mountpoints.
 		mount_mountpoints(container);
 		// Store container info.
@@ -336,9 +334,9 @@ void run_chroot_container(struct CONTAINER *container)
 			mount_host_runtime(container);
 		}
 	}
-	// Avoid running closedir(NULL), we put it to else branch.
+	// If container already mounted, sync the config.
 	else {
-		closedir(direxist);
+		free(test);
 		// Read container info.
 		if (container->use_rurienv) {
 			read_info(container, container->container_dir);

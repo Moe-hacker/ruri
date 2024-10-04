@@ -156,13 +156,14 @@ static int mk_mountpoint_dir(const char *target)
 {
 	// Check if mountpoint exists.
 	remove(target);
-	DIR *test = opendir(target);
+	char *test = realpath(target, NULL);
 	if (test == NULL) {
 		if (mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) != 0) {
 			return -1;
 		}
 	} else {
-		closedir(test);
+		free(test);
+		return -1;
 	}
 	return 0;
 }

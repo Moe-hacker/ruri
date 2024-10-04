@@ -39,7 +39,7 @@ static void check_container(const struct CONTAINER *container)
 	 */
 	// Check if container directory is given.
 	if (container->container_dir == NULL) {
-		error("{red}Error: container directory is not set QwQ\n");
+		error("{red}Error: container directory is not set or does not exist QwQ\n");
 	}
 	// Refuse to use `/` for container directory.
 	if (strcmp(container->container_dir, "/") == 0) {
@@ -49,12 +49,6 @@ static void check_container(const struct CONTAINER *container)
 	if (getuid() != 0 && !(container->rootless)) {
 		error("{red}Error: this program should be run with root privileges QwQ\n");
 	}
-	// Check if container directory exists.
-	DIR *direxist = opendir(container->container_dir);
-	if (direxist == NULL) {
-		error("{red}Error: container directory does not exist QwQ\n");
-	}
-	closedir(direxist);
 	// --arch and --qemu-path should be set at the same time.
 	if ((container->cross_arch == NULL) ^ (container->qemu_path == NULL)) {
 		error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
@@ -364,13 +358,8 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 				error("{red}Missing argument\n");
 			}
 		}
-		// A very shit way to judge that this is a dir...
-		else if ((strchr(argv[index], '/') && strcmp(strchr(argv[index], '/'), argv[index]) == 0) || (strchr(argv[index], '.') && strcmp(strchr(argv[index], '.'), argv[index]) == 0)) {
-			// Get the absolute path of container.
-			container->container_dir = realpath(argv[index], NULL);
-			if (container->container_dir == NULL) {
-				error("{red}CONTAINER_DIR %s does not exist{clear}\n", argv[index]);
-			}
+		// If this argument is CONTAINER_DIR.
+		else if ((container->container_dir = realpath(argv[index], NULL)) != NULL) {
 			index++;
 			// Arguments after container_dir will be read as init command.
 			if (argv[index]) {
@@ -399,18 +388,12 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 	if (dump_config) {
 		// Check if container directory is given.
 		if (container->container_dir == NULL) {
-			error("{red}Error: container directory is not set QwQ\n");
+			error("{red}Error: container directory is not set or does not exist QwQ\n");
 		}
 		// Refuse to use `/` for container directory.
 		if (strcmp(container->container_dir, "/") == 0) {
 			error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 		}
-		// Check if container directory exists.
-		DIR *direxist = opendir(container->container_dir);
-		if (direxist == NULL) {
-			error("{red}Error: container directory does not exist QwQ\n");
-		}
-		closedir(direxist);
 		char *config = container_info_to_k2v(container);
 		if (output_path == NULL) {
 			cprintf("%s", config);

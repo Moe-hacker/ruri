@@ -39,11 +39,11 @@ void umount_container(const char *container_dir)
 		error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if container_dir exist.
-	DIR *direxist = opendir(container_dir);
-	if (direxist == NULL) {
+	char *test = realpath(container_dir, NULL);
+	if (test == NULL) {
 		error("{red}Error: container directory does not exist QwQ\n");
 	}
-	closedir(direxist);
+	free(test);
 	struct CONTAINER *container = read_info(NULL, container_dir);
 	char infofile[PATH_MAX] = { '\0' };
 	sprintf(infofile, "%s/.rurienv", container_dir);
