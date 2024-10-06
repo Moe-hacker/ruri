@@ -21,8 +21,8 @@ It needs CONFIG_BINFMT_MISC enabled in your kernel config.
 You need to copy qemu-*-static to your container first.      
 The path of qemu is the absolute path of qemu binary in the chroot container, for example, you have a qemu binary at `/path/to/container/qemu-amd64-static`, use `-a x86_64 -q /qemu-amd64-static` arguments to start the container.
 # About rootless container:
-Command need setgroups() may not work in rootless container, like su or apt.      
-You might need /etc/subuid and /etc/subgid configured in your system.      
-Rootless container is still WIP.      
+If you get error like `Couldn't create temporary file /tmp/apt.conf.sIKx3J for passing config to apt-key` in container, please `chmod 777 /tmp`.      
+You need uidmap installed in your host.      
+You might need /etc/subuid and /etc/subgid configured in your host.       
 # About Seccomp:
 The seccomp rule of ruri is based on Docker's default seccomp profile. ruri does not provide the way to change it, but you can edit src/seccomp.c and rewrite setup_seccomp() with your own config.      

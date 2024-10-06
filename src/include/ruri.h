@@ -60,6 +60,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
 // This program need to be linked with `-lseccomp`.
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
