@@ -178,6 +178,7 @@ static int touch_mountpoint_file(const char *target)
 		if (fd < 0) {
 			return -1;
 		}
+		close(fd);
 	} else {
 		close(fd);
 	}

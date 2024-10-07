@@ -592,6 +592,7 @@ char *k2v_open_file(const char *path, size_t bufsize)
 	ssize_t len = read(fd, ret, bufsize);
 	ret[len] = '\0';
 	do_basic_check(ret);
+	close(fd);
 	return ret;
 }
 static void print_shell_array(const char *buf)

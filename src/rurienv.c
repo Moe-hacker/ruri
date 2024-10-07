@@ -46,6 +46,7 @@ static bool is_ruri_pid(pid_t pid)
 	char buf[4096] = { '\0' };
 	char name[1024] = { '\0' };
 	read(fd, buf, sizeof(buf));
+	close(fd);
 	// Get the process name wrapped by `()`.
 	for (int i = 0; true; i++) {
 		if (buf[i] == '(') {

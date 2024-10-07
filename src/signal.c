@@ -35,6 +35,7 @@ static void sighandle(int sig)
 	int clifd = open("/proc/self/cmdline", O_RDONLY | O_CLOEXEC);
 	char buf[1024];
 	ssize_t bufsize = read(clifd, buf, sizeof(buf));
+	close(clifd);
 	cfprintf(stderr, "{base}");
 	cfprintf(stderr, "{base}%s\n", "  .^.   .^.");
 	cfprintf(stderr, "{base}%s\n", "  /⋀\\_ﾉ_/⋀\\");
