@@ -126,7 +126,7 @@ static int try_execvp(char *argv[])
 	int pid = fork();
 	if (pid == 0) {
 		execvp(argv[0], argv);
-		exit(0);
+		exit(114);
 	}
 	int status = 0;
 	waitpid(pid, &status, 0);
@@ -252,6 +252,8 @@ static void set_id_map(uid_t uid, gid_t gid)
 }
 void run_rootless_container(struct CONTAINER *container)
 {
+	uid_t uid = geteuid();
+	gid_t gid = getegid();
 	bool set_id_map_succeed = false;
 	pid_t ppid = getpid();
 	pid_t pid_1 = fork();
@@ -268,23 +270,22 @@ void run_rootless_container(struct CONTAINER *container)
 		int stat = try_setup_idmap(ppid);
 		exit(stat);
 	}
-	uid_t uid = geteuid();
-	gid_t gid = getegid();
 	// We need to own mount namespace.
 	try_unshare(CLONE_NEWNS);
 	// Seems procfs need pid namespace.
 	try_unshare(CLONE_NEWPID);
 	pid_t pid = fork();
 	if (pid > 0) {
+		if (!set_id_map_succeed) {
+			warning("\033[33mCheck if uidmap is installed on your host, command like su will run failed without uidmap.\n");
+			set_id_map(uid, gid);
+		}
 		int stat = 0;
 		waitpid(pid, &stat, 0);
 		exit(stat);
 	} else if (pid < 0) {
 		error("{red}Fork error QwQ?\n");
 	} else {
-		if (!set_id_map_succeed) {
-			set_id_map(uid, gid);
-		}
 		// Init rootless container.
 		init_rootless_container(container);
 		run_rootless_chroot_container(container);
