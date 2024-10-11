@@ -29,6 +29,7 @@
  */
 #include "include/ruri.h"
 __attribute__((aligned(32))) struct ID_MAP {
+	// For `newuidmap` and `newgidmap`.
 	uid_t uid;
 	uid_t uid_lower;
 	uid_t uid_count;
@@ -41,6 +42,9 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	// Get uid_map.
 	id_map->uid_lower = 0;
 	id_map->uid_count = 0;
+	// /etc/subuid format:
+	//   foo:uid_lower:uid_count
+	//   bar:uid_lower:uid_count
 	int fd = open("/etc/subuid", O_RDONLY | O_CLOEXEC);
 	struct stat filestat;
 	fstat(fd, &filestat);
@@ -48,12 +52,15 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	char *buf = malloc(size + 1);
 	read(fd, buf, size);
 	close(fd);
+	// Find username in /etc/subuid.
 	char *map = strstr(buf, user);
 	if (map == NULL) {
+		// If username is not in /etc/subuid.
 		id_map->uid_lower = -1;
 		id_map->uid_count = -1;
 		return;
 	}
+	// Get uid_lower and uid_count.
 	for (int i = 0;; i++) {
 		if (map[i] == ':') {
 			for (int j = i + 1;; j++) {
@@ -62,6 +69,7 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 						if (map[k] == '\n') {
 							break;
 						}
+						// Minus '0' to convert char to number.
 						id_map->uid_count = (id_map->uid_count) * 10 + map[k] - '0';
 					}
 					break;
@@ -113,6 +121,7 @@ static void get_gid_map(char *user, struct ID_MAP *id_map)
 static struct ID_MAP get_idmap(void)
 {
 	// Get uid_map and gid_map.
+	// This function will return a ID_MAP struct for `newuidmap` and `newgidmap`.
 	struct ID_MAP ret;
 	ret.uid = getuid();
 	ret.gid = getgid();
@@ -123,9 +132,11 @@ static struct ID_MAP get_idmap(void)
 }
 static int try_execvp(char *argv[])
 {
+	// fork(2) and execvp(3).
 	int pid = fork();
 	if (pid == 0) {
 		execvp(argv[0], argv);
+		// If execvp(3) failed, exit as error status 114.
 		exit(114);
 	}
 	int status = 0;
@@ -134,7 +145,9 @@ static int try_execvp(char *argv[])
 }
 static int try_setup_idmap(pid_t ppid)
 {
+	// Try to use `uidmap` suid binary to setup uid and gid map.
 	struct ID_MAP id_map = get_idmap();
+	// Failed to get /etc/subuid or /etc/subgid config for current user.
 	if (id_map.gid_lower < 0 || id_map.uid_lower < 0) {
 		return -1;
 	}
@@ -173,6 +186,7 @@ static void try_unshare(int flags)
 }
 static void init_rootless_container(struct CONTAINER *container)
 {
+	// For rootless container, the way to create/mount runtime dir/files is different.
 	chdir(container->container_dir);
 	mkdir("./sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("/sys", "./sys", NULL, MS_BIND | MS_REC, NULL);
@@ -228,6 +242,12 @@ static void init_rootless_container(struct CONTAINER *container)
 }
 static void set_id_map(uid_t uid, gid_t gid)
 {
+	/*
+	 * If try_setup_idmap() failed, this function will be called,
+	 * to setup the uid and gid map.
+	 * NOTE: command like `su` or `apt` will run failed if uid and gid map
+	 * is not configured by `uidmap` suid binary.
+	 */
 	// Set uid map.
 	char uid_map[32] = { "\0" };
 	sprintf(uid_map, "0 %d 1\n", uid);
@@ -256,6 +276,10 @@ void run_rootless_container(struct CONTAINER *container)
 	gid_t gid = getegid();
 	bool set_id_map_succeed = false;
 	pid_t ppid = getpid();
+	// We fork() a new child process, and then,
+	// parent process will call unshare(2) to be the owner of a new user ns,
+	// then, we can use the child process to call `newuidmap` and `newgidmap`,
+	// to change the parent process's id map.
 	pid_t pid_1 = fork();
 	if (pid_1 > 0) {
 		// Enable user namespace.
@@ -266,13 +290,14 @@ void run_rootless_container(struct CONTAINER *container)
 			set_id_map_succeed = true;
 		}
 	} else {
+		// To ensure that unshare(2) finished in parent process.
 		usleep(1000);
 		int stat = try_setup_idmap(ppid);
 		exit(stat);
 	}
 	// We need to own mount namespace.
 	try_unshare(CLONE_NEWNS);
-	// Seems procfs need pid namespace.
+	// Seems we need to own a new pid namespace for mount procfs.
 	try_unshare(CLONE_NEWPID);
 	pid_t pid = fork();
 	if (pid > 0) {
