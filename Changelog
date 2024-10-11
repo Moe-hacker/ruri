@@ -1,3 +1,7 @@
+# v3.6:
+  * Add `uidmap` suid support, to fix setgroup() failed in rootless container.
+  * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.
+  * General bug fixes.
 # v3.5:
   * Capability can now be controled by value.
   * Support mount files to container.
