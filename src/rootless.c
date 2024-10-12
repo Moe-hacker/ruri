@@ -302,7 +302,7 @@ void run_rootless_container(struct CONTAINER *container)
 	pid_t pid = fork();
 	if (pid > 0) {
 		if (!set_id_map_succeed) {
-			warning("\033[33mCheck if uidmap is installed on your host, command like su will run failed without uidmap.\n");
+			warning("{yellow}Check if uidmap is installed on your host, command like su will run failed without uidmap.\n");
 			set_id_map(uid, gid);
 		}
 		int stat = 0;
