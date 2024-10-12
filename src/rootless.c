@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-__attribute__((aligned(32))) struct ID_MAP {
+struct __attribute__((aligned(32))) ID_MAP {
 	// For `newuidmap` and `newgidmap`.
 	uid_t uid;
 	uid_t uid_lower;
@@ -49,15 +49,15 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
-	char *buf = malloc(size + 1);
-	read(fd, buf, size);
+	char *buf = malloc((size_t)size + 1);
+	read(fd, buf, (size_t)size);
 	close(fd);
 	// Find username in /etc/subuid.
 	char *map = strstr(buf, user);
 	if (map == NULL) {
 		// If username is not in /etc/subuid.
-		id_map->uid_lower = -1;
-		id_map->uid_count = -1;
+		id_map->uid_lower = 0;
+		id_map->uid_count = 0;
 		return;
 	}
 	// Get uid_lower and uid_count.
@@ -70,11 +70,11 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 							break;
 						}
 						// Minus '0' to convert char to number.
-						id_map->uid_count = (id_map->uid_count) * 10 + map[k] - '0';
+						id_map->uid_count = (id_map->uid_count) * 10 + (uid_t)(map[k] - '0');
 					}
 					break;
 				}
-				id_map->uid_lower = (id_map->uid_lower) * 10 + map[j] - '0';
+				id_map->uid_lower = (id_map->uid_lower) * 10 + (uid_t)(map[j] - '0');
 			}
 			break;
 		}
@@ -90,13 +90,13 @@ static void get_gid_map(char *user, struct ID_MAP *id_map)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
-	char *buf = malloc(size + 1);
-	read(fd, buf, size);
+	char *buf = malloc((size_t)size + 1);
+	read(fd, buf, (size_t)size);
 	close(fd);
 	char *map = strstr(buf, user);
 	if (map == NULL) {
-		id_map->gid_lower = -1;
-		id_map->gid_count = -1;
+		id_map->gid_lower = 0;
+		id_map->gid_count = 0;
 		return;
 	}
 	for (int i = 0;; i++) {
@@ -107,11 +107,11 @@ static void get_gid_map(char *user, struct ID_MAP *id_map)
 						if (map[k] == '\n') {
 							break;
 						}
-						id_map->gid_count = (id_map->gid_count) * 10 + map[k] - '0';
+						id_map->gid_count = (id_map->gid_count) * 10 + (gid_t)(map[k] - '0');
 					}
 					break;
 				}
-				id_map->gid_lower = (id_map->gid_lower) * 10 + map[j] - '0';
+				id_map->gid_lower = (id_map->gid_lower) * 10 + (gid_t)(map[j] - '0');
 			}
 			break;
 		}
@@ -148,7 +148,7 @@ static int try_setup_idmap(pid_t ppid)
 	// Try to use `uidmap` suid binary to setup uid and gid map.
 	struct ID_MAP id_map = get_idmap();
 	// Failed to get /etc/subuid or /etc/subgid config for current user.
-	if (id_map.gid_lower < 0 || id_map.uid_lower < 0) {
+	if (id_map.gid_lower == 0 || id_map.uid_lower == 0) {
 		return -1;
 	}
 	char pid[128] = { '\0' };
@@ -284,7 +284,7 @@ void run_rootless_container(struct CONTAINER *container)
 	if (pid_1 > 0) {
 		// Enable user namespace.
 		try_unshare(CLONE_NEWUSER);
-		int stat;
+		int stat = 0;
 		waitpid(pid_1, &stat, 0);
 		if (WEXITSTATUS(stat) == 0) {
 			set_id_map_succeed = true;

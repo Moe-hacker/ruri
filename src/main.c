@@ -359,7 +359,10 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 			}
 		}
 		// If this argument is CONTAINER_DIR.
-		else if ((container->container_dir = realpath(argv[index], NULL)) != NULL) {
+		else if (({
+				 container->container_dir = realpath(argv[index], NULL);
+				 container->container_dir;
+			 }) != NULL) {
 			index++;
 			// Arguments after container_dir will be read as init command.
 			if (argv[index]) {
