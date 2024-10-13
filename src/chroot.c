@@ -72,10 +72,6 @@ static void check_binary(const struct CONTAINER *container)
 			umount_container(container->container_dir);
 			error("{red}Please check if path of QEMU is correct QwQ\n");
 		}
-		if (S_ISDIR(qemu_binary_stat.st_mode)) {
-			umount_container(container->container_dir);
-			error("{red}QEMU path can not be a directory QwQ\n");
-		}
 	}
 }
 // Run after chroot(2), called by run_chroot_container().
