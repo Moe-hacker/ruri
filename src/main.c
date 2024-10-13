@@ -231,10 +231,10 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 				for (int i = 0;; i += 2) {
 					if (container->extra_mountpoint[i] == NULL) {
 						container->extra_mountpoint[i] = qemu_path;
-						container->extra_mountpoint[i + 1] = "/dev/qemu";
+						container->extra_mountpoint[i + 1] = "/qemu-ruri";
 						container->extra_mountpoint[i + 2] = NULL;
 						container->extra_mountpoint[i + 3] = NULL;
-						container->qemu_path = "/dev/qemu";
+						container->qemu_path = "/qemu-ruri";
 						break;
 					}
 				}

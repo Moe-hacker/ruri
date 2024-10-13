@@ -249,7 +249,7 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 	}
 	char buf[1024] = { '\0' };
 	// Format: ":name:type:offset:magic:mask:interpreter:flags".
-	sprintf(buf, ":%s%s:M:0:%s:%s:%s:PCF", "ruri-", container->cross_arch, magic->magic, magic->mask, container->qemu_path);
+	sprintf(buf, ":%s%d:M:0:%s:%s:%s:PCF", "ruri-", container->container_id, magic->magic, magic->mask, container->qemu_path);
 	// Just to make clang-tidy happy.
 	free(magic);
 	// This needs CONFIG_BINFMT_MISC enabled in your kernel.
