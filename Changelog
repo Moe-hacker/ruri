@@ -1,5 +1,5 @@
 # v3.6:
-  * Add `uidmap` suid support, to fix setgroup() failed in rootless container.
+  * Add `uidmap` suid binary support, to fix setgroup() failed in rootless container.
   * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.
   * `-q` option can now use qemu path on host.
   * Support architecture aliases for `-a` option (e.g. arm64=>aarch64).
