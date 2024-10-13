@@ -122,6 +122,8 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 	container->ro_root = false;
 	container->cpuset = NULL;
 	container->memory = NULL;
+	// For using qemu binary outside the container.
+	char *qemu_path = NULL;
 	// Use the time for container_id.
 	time_t tm = time(NULL);
 	container->container_id = (int)(tm % 86400);
@@ -226,18 +228,9 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 			if (index == argc - 1) {
 				error("{red}Please specify the path of qemu binary\n{clear}");
 			}
-			char *qemu_path = realpath(argv[index], NULL);
+			qemu_path = realpath(argv[index], NULL);
 			if (qemu_path != NULL) {
-				for (int i = 0;; i += 2) {
-					if (container->extra_mountpoint[i] == NULL) {
-						container->extra_mountpoint[i] = qemu_path;
-						container->extra_mountpoint[i + 1] = "/qemu-ruri";
-						container->extra_mountpoint[i + 2] = NULL;
-						container->extra_mountpoint[i + 3] = NULL;
-						container->qemu_path = "/qemu-ruri";
-						break;
-					}
-				}
+				container->qemu_path = "/qemu-ruri";
 			} else {
 				container->qemu_path = strdup(argv[index]);
 			}
@@ -398,6 +391,18 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 			show_helps();
 			error("{red}Error: unknown option `%s`{clear}\n", argv[index]);
 		}
+	}
+	// Copy qemu binary into container.
+	if (qemu_path != NULL) {
+		char target[PATH_MAX] = { '\0' };
+		printf("%s\n", container->container_dir);
+		sprintf(target, "%s/qemu-ruri", container->container_dir);
+		int sourcefd = open(qemu_path, O_RDONLY, O_CLOEXEC);
+		int targetfd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, S_IRGRP | S_IXGRP | S_IWGRP | S_IWUSR | S_IRUSR | S_IXUSR | S_IWOTH | S_IXOTH | S_IROTH);
+		struct stat stat_buf;
+		fstat(sourcefd, &stat_buf);
+		off_t offset = 0;
+		syscall(SYS_sendfile, targetfd, sourcefd, &offset, stat_buf.st_size);
 	}
 	// Get the capabilities to drop.
 	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
