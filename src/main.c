@@ -395,7 +395,6 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 	// Copy qemu binary into container.
 	if (qemu_path != NULL) {
 		char target[PATH_MAX] = { '\0' };
-		printf("%s\n", container->container_dir);
 		sprintf(target, "%s/qemu-ruri", container->container_dir);
 		int sourcefd = open(qemu_path, O_RDONLY, O_CLOEXEC);
 		int targetfd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, S_IRGRP | S_IXGRP | S_IWGRP | S_IWUSR | S_IRUSR | S_IXUSR | S_IWOTH | S_IXOTH | S_IROTH);

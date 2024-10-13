@@ -34,7 +34,7 @@ struct MAGIC *get_magic(const char *cross_arch)
 	struct MAGIC *ret = (struct MAGIC *)malloc(sizeof(struct MAGIC));
 // Avoid to simulate the same architecture as host.
 #if defined(__aarch64__)
-	if (strcmp(cross_arch, "aarch64") == 0) {
+	if (strcmp(cross_arch, "aarch64") == 0 || strcmp(cross_arch, "arm64") == 0) {
 		free(ret);
 		return NULL;
 	}
@@ -46,7 +46,7 @@ struct MAGIC *get_magic(const char *cross_arch)
 	}
 #endif
 #if defined(__arm__)
-	if (strcmp(cross_arch, "arm") == 0) {
+	if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "armel") == 0) {
 		free(ret);
 		return NULL;
 	}
@@ -202,7 +202,7 @@ struct MAGIC *get_magic(const char *cross_arch)
 	}
 #endif
 #if defined(__x86_64__)
-	if (strcmp(cross_arch, "x86_64") == 0) {
+	if (strcmp(cross_arch, "x86_64") == 0 || strcmp(cross_arch, "amd64") == 0) {
 		free(ret);
 		return NULL;
 	}
@@ -219,13 +219,13 @@ struct MAGIC *get_magic(const char *cross_arch)
 		return NULL;
 	}
 #endif
-	if (strcmp(cross_arch, "aarch64") == 0) {
+	if (strcmp(cross_arch, "aarch64") == 0 || strcmp(cross_arch, "arm64") == 0 || strcmp(cross_arch, "armv8") == 0) {
 		ret->magic = magicof(aarch64);
 		ret->mask = maskof(aarch64);
 	} else if (strcmp(cross_arch, "alpha") == 0) {
 		ret->magic = magicof(alpha);
 		ret->mask = maskof(alpha);
-	} else if (strcmp(cross_arch, "arm") == 0) {
+	} else if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armel") == 0) {
 		ret->magic = magicof(arm);
 		ret->mask = maskof(arm);
 	} else if (strcmp(cross_arch, "armeb") == 0) {
@@ -303,7 +303,7 @@ struct MAGIC *get_magic(const char *cross_arch)
 	} else if (strcmp(cross_arch, "sparc64") == 0) {
 		ret->magic = magicof(sparc64);
 		ret->mask = maskof(sparc64);
-	} else if (strcmp(cross_arch, "x86_64") == 0) {
+	} else if (strcmp(cross_arch, "x86_64") == 0 || strcmp(cross_arch, "amd64") == 0) {
 		ret->magic = magicof(x86_64);
 		ret->mask = maskof(x86_64);
 	} else if (strcmp(cross_arch, "xtensa") == 0) {
