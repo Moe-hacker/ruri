@@ -396,12 +396,14 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 	if (qemu_path != NULL) {
 		char target[PATH_MAX] = { '\0' };
 		sprintf(target, "%s/qemu-ruri", container->container_dir);
-		int sourcefd = open(qemu_path, O_RDONLY, O_CLOEXEC);
+		int sourcefd = open(qemu_path, O_RDONLY | O_CLOEXEC);
 		int targetfd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, S_IRGRP | S_IXGRP | S_IWGRP | S_IWUSR | S_IRUSR | S_IXUSR | S_IWOTH | S_IXOTH | S_IROTH);
 		struct stat stat_buf;
 		fstat(sourcefd, &stat_buf);
 		off_t offset = 0;
 		syscall(SYS_sendfile, targetfd, sourcefd, &offset, stat_buf.st_size);
+		close(targetfd);
+		close(sourcefd);
 	}
 	// Get the capabilities to drop.
 	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);

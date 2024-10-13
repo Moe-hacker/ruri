@@ -216,6 +216,8 @@ static void drop_caps(const struct CONTAINER *container)
 	datap->inheritable = 0;
 	syscall(SYS_capset, hrdp, datap);
 	// free(2) hrdp and datap here might cause ASAN error.
+	free(hrdp);
+	free(datap);
 }
 // Set envs.
 static void set_envs(const struct CONTAINER *container)
