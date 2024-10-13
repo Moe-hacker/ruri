@@ -1,6 +1,8 @@
 # v3.6:
   * Add `uidmap` suid support, to fix setgroup() failed in rootless container.
   * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.
+  * `-q` option can now use qemu path on host.
+  * Support architecture aliases for `-a` option (e.g. arm64=>aarch64).
   * General bug fixes.
 # v3.5:
   * Capability can now be controled by value.
@@ -17,7 +19,7 @@
   * Fix configure script.
   * Fix CAP_LAST_CAP.
   * Update libk2v.
-  * Add commit in configs.
+  * Add comments in configs.
   * General bug fixes.
 # v3.2:
   * Fix mountpoint in rootless container.
