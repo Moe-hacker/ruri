@@ -212,9 +212,9 @@ static void drop_caps(const struct CONTAINER *container)
 	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof(typeof(*datap)));
 	hrdp->pid = getpid();
 	hrdp->version = _LINUX_CAPABILITY_VERSION_3;
-	syscall(SYS_capget, hrdp, datap);
+	capget(hrdp, datap);
 	datap->inheritable = 0;
-	syscall(SYS_capset, hrdp, datap);
+	capset(hrdp, datap);
 	// free(2) hrdp and datap here might cause ASAN error.
 	free(hrdp);
 	free(datap);
@@ -247,7 +247,7 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 	if (magic == NULL) {
 		warning("{red}Error: unknown architecture or same architecture as host: %s\n\nSupported architectures: aarch64, alpha, arm, armeb, cris, hexagon, hppa, i386, loongarch64, m68k, microblaze, mips, mips64, mips64el, mipsel, mipsn32, mipsn32el, ppc, ppc64, ppc64le, riscv32, riscv64, s390x, sh4, sh4eb, sparc, sparc32plus, sparc64, x86_64, xtensa, xtensaeb{clear}\n", container->cross_arch);
 		umount_container(container->container_dir);
-		error("");
+		error(" ");
 	}
 	char buf[1024] = { '\0' };
 	// Format: ":name:type:offset:magic:mask:interpreter:flags".

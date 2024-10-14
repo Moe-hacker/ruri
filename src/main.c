@@ -401,7 +401,7 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		struct stat stat_buf;
 		fstat(sourcefd, &stat_buf);
 		off_t offset = 0;
-		syscall(SYS_sendfile, targetfd, sourcefd, &offset, stat_buf.st_size);
+		sendfile(targetfd, sourcefd, &offset, stat_buf.st_size);
 		close(targetfd);
 		close(sourcefd);
 	}

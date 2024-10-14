@@ -48,6 +48,7 @@
 #include <linux/fs.h>
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
+#include <sys/sendfile.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
