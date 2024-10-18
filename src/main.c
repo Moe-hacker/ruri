@@ -417,7 +417,7 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		// In linux, I think it's more safe to use sendfile(2) to copy files,
 		// because it does not need a buffer.
 		// !NOTE: Linux version under 2.6.33 does not support sendfile(2) for copying files.
-		sendfile(targetfd, sourcefd, &offset, stat_buf.st_size);
+		sendfile(targetfd, sourcefd, &offset, (size_t)stat_buf.st_size);
 		close(targetfd);
 		close(sourcefd);
 	}

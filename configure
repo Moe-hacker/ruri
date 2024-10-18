@@ -48,11 +48,11 @@ init() {
     export CC=${CC##*/}
   fi
   printf "$CC\n"
-  printf "checking whether the compiler supports GNU C99... "
-  (echo "int main(){}" | $CC -x c -o /dev/null -std=gnu99 -) >/dev/null 2>&1 && printf "ok\n" || error "no"
+  printf "checking whether the compiler supports GNU C11... "
+  (echo "int main(){}" | $CC -x c -o /dev/null -std=gnu11 -) >/dev/null 2>&1 && printf "ok\n" || error "no"
   if [ $STATIC_COMPILE ]; then
     printf "checking whether the compiler supports -static compile... "
-    echo "int main(){}" | $CC -static -x c -o /dev/null -std=gnu99 - >/dev/null 2>&1 && printf "ok\n" || error "no"
+    echo "int main(){}" | $CC -static -x c -o /dev/null -std=gnu11 - >/dev/null 2>&1 && printf "ok\n" || error "no"
   fi
 }
 test_and_add_cflag() {
