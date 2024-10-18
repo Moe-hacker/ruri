@@ -79,22 +79,23 @@ ARGS:
   -N, --no-rurienv ............................: Do not use .rurienv file
   -s, --enable-seccomp ........................: Enable built-in Seccomp profile
   -p, --privileged ............................: Run privileged container
-  -r, --rootless ..............................: Run rootless container (WIP)
-  -k, --keep [cap] ............................: Keep the specified capability
+  -r, --rootless ..............................: Run rootless container
+  -k, --keep [cap] ............................: Keep the specified capability(**)
   -d, --drop [cap] ............................: Drop the specified capability
-  -e, --env [env] [value] .....................: Set environment variables to its value (**)
-  -m, --mount [dir/dev/img/file] [target] .....: Mount dir/block-device/image/file to target (***)
+  -e, --env [env] [value] .....................: Set environment variables to its value (***)
+  -m, --mount [dir/dev/img/file] [target] .....: Mount dir/block-device/image/file to target (****)
   -M, --ro-mount [dir/dev/img/file] [target] ..: Mount dir/block-device/image/file as read-only
   -S, --host-runtime ..........................: Bind-mount /dev/, /sys/ and /proc/ from host
   -R, --read-only .............................: Mount / as read-only
-  -l, --limit [cpuset=cpu/memory=mem] .........: Set cpuset/memory limit(****)
+  -l, --limit [cpuset=cpu/memory=mem] .........: Set cpuset/memory limit(*****)
   -w, --no-warnings ...........................: Disable warnings
 
 Note:
-(*)   :  `-a` option also need `-q` is set
-(**)  : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`
-(***) : You can use `-m [source] /` to mount a block device as root
-(****): Each `-l` option can only set one of the cpuset/memory limits
+(*)    : `-a` option also need `-q` is set
+(**)   : cap can both be value or name (e.j. cap_chown == 0)
+(***)  : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`
+(****) : You can use `-m [source] /` to mount a block device as root
+(*****): Each `-l` option can only set one of the cpuset/memory limits
         for example: `ruri -l memory=1M -l cpuset=1 /test`
 ```
 # Quick start(with rootfstool):
