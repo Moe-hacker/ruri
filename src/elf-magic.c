@@ -31,6 +31,11 @@
 // Get ELF magic number and mask for cross_arch specified.
 struct MAGIC *get_magic(const char *cross_arch)
 {
+	/*
+	 * I know that this seems to be a little bit stupid,
+	 * but we have no other ways to match the architecture to its ELF magic.
+	 * TODO: Support more architecture aliases.
+	 */
 	struct MAGIC *ret = (struct MAGIC *)malloc(sizeof(struct MAGIC));
 // Avoid to simulate the same architecture as host.
 #if defined(__aarch64__)

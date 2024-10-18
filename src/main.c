@@ -32,7 +32,7 @@
 static void check_container(const struct CONTAINER *container)
 {
 	/*
-	 * It's called by main() to check if container is correct.
+	 * It's called by main() to check if container config is correct.
 	 * It will also check the running environment.
 	 * Note that it can only do basic checks,
 	 * and we can't know if the config can really run a container properly.
@@ -58,6 +58,7 @@ static void parse_cgroup_settings(const char *str, struct CONTAINER *container)
 {
 	/*
 	 * Parse and set cgroup limit.
+	 * The format should be like `cpuset=1` or `memory=1M`.
 	 * We will not check if the config is vaild.
 	 */
 	char buf[16] = { '\0' };
@@ -123,9 +124,14 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 	container->cpuset = NULL;
 	container->memory = NULL;
 	// For using qemu binary outside the container.
+	// This is the path of qemu binary in host,
+	// and we will copy it into container as /qemu-ruri.
+	// And after that, we will use /qemu-ruri as container->qemu_path.
 	char *qemu_path = NULL;
-	// Use the time for container_id.
+	// Use the time now for container_id.
 	time_t tm = time(NULL);
+	// We need a int value for container_id, so use long%86400.
+	// (86400 is the seconds of a day).
 	container->container_id = (int)(tm % 86400);
 	// A very large and shit-code for() loop.
 	// At least it works fine...
@@ -228,8 +234,11 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 			if (index == argc - 1) {
 				error("{red}Please specify the path of qemu binary\n{clear}");
 			}
+			// Auto recognize if qemu_path is in host or in container.
 			qemu_path = realpath(argv[index], NULL);
 			if (qemu_path != NULL) {
+				// If qemu_path is in host, we will copy it into container,
+				// and use /qemu-ruri as container->qemu_path.
 				container->qemu_path = "/qemu-ruri";
 			} else {
 				container->qemu_path = strdup(argv[index]);
@@ -339,6 +348,9 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		else if (strcmp(argv[index], "-k") == 0 || strcmp(argv[index], "--keep") == 0) {
 			index++;
 			if (argv[index] != NULL) {
+				// We both support capability name and number,
+				// because in the fulture, there might be new capabilities that
+				// we can not use the name to match it in current libcap.
 				if (atoi(argv[index]) != 0) {
 					add_to_caplist(keep_caplist_extra, atoi(argv[index]));
 				} else if (cap_from_name(argv[index], &cap) == 0) {
@@ -367,11 +379,12 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		}
 		// If this argument is CONTAINER_DIR.
 		else if (({
+				 // We use a GNU extension here.
 				 container->container_dir = realpath(argv[index], NULL);
 				 container->container_dir;
 			 }) != NULL) {
 			index++;
-			// Arguments after container_dir will be read as init command.
+			// Arguments after container_dir will be read as command to exec in container.
 			if (argv[index]) {
 				for (int i = 0; i < argc; i++) {
 					if (argv[index]) {
@@ -401,11 +414,14 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 		struct stat stat_buf;
 		fstat(sourcefd, &stat_buf);
 		off_t offset = 0;
+		// In linux, I think it's more safe to use sendfile(2) to copy files,
+		// because it does not need a buffer.
+		// !NOTE: Linux version under 2.6.33 does not support sendfile(2) for copying files.
 		sendfile(targetfd, sourcefd, &offset, stat_buf.st_size);
 		close(targetfd);
 		close(sourcefd);
 	}
-	// Get the capabilities to drop.
+	// Build the caplist to drop.
 	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
 	// Dump config.
 	if (dump_config) {
@@ -435,7 +451,7 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 int main(int argc, char **argv)
 {
 	/*
-	 * Pogram starts here.
+	 * Pogram starts here!
 	 */
 	// Exit when we get error reading configs.
 	k2v_stop_at_warning = true;
@@ -453,10 +469,13 @@ int main(int argc, char **argv)
 	unsetenv("LD_PRELOAD");
 	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
+		// Unshare container.
 		run_unshare_container(container);
 	} else if ((container->rootless)) {
+		// Rootless container.
 		run_rootless_container(container);
 	} else {
+		// Common chroot container.
 		run_chroot_container(container);
 	}
 	return 0;

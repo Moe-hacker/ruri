@@ -39,7 +39,9 @@ struct __attribute__((aligned(32))) ID_MAP {
 };
 static void get_uid_map(char *user, struct ID_MAP *id_map)
 {
-	// Get uid_map.
+	/*
+	 *Get uid_map.
+	 */
 	id_map->uid_lower = 0;
 	id_map->uid_count = 0;
 	// /etc/subuid format:
@@ -61,6 +63,7 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 		return;
 	}
 	// Get uid_lower and uid_count.
+	// Looks shit? But this is really only O(n) nya~.
 	for (int i = 0;; i++) {
 		if (map[i] == ':') {
 			for (int j = i + 1;; j++) {
@@ -83,9 +86,14 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 }
 static void get_gid_map(char *user, struct ID_MAP *id_map)
 {
-	// Get gid_map.
+	/*
+	 *Get gid_map.
+	 */
 	id_map->gid_lower = 0;
 	id_map->gid_count = 0;
+	// /etc/subgid format:
+	//   foo:gid_lower:gid_count
+	//   bar:gid_lower:gid_count
 	int fd = open("/etc/subgid", O_RDONLY | O_CLOEXEC);
 	struct stat filestat;
 	fstat(fd, &filestat);
@@ -120,8 +128,10 @@ static void get_gid_map(char *user, struct ID_MAP *id_map)
 }
 static struct ID_MAP get_idmap(void)
 {
-	// Get uid_map and gid_map.
-	// This function will return a ID_MAP struct for `newuidmap` and `newgidmap`.
+	/*
+	 * Get uid_map and gid_map.
+	 * This function will return a ID_MAP struct for `newuidmap` and `newgidmap`.
+	 */
 	struct ID_MAP ret;
 	ret.uid = getuid();
 	ret.gid = getgid();
@@ -132,7 +142,10 @@ static struct ID_MAP get_idmap(void)
 }
 static int try_execvp(char *argv[])
 {
-	// fork(2) and execvp(3).
+	/*
+	 * fork(2) and then execvp(3).
+	 * Return the exit status of the child process.
+	 */
 	int pid = fork();
 	if (pid == 0) {
 		execvp(argv[0], argv);
@@ -145,7 +158,10 @@ static int try_execvp(char *argv[])
 }
 static int try_setup_idmap(pid_t ppid)
 {
-	// Try to use `uidmap` suid binary to setup uid and gid map.
+	/*
+	 * Try to use `uidmap` suid binary to setup uid and gid map.
+	 * If this function failed, we will use set_id_map() to setup the id map.
+	 */
 	struct ID_MAP id_map = get_idmap();
 	// Failed to get /etc/subuid or /etc/subgid config for current user.
 	if (id_map.gid_lower == 0 || id_map.uid_lower == 0) {
@@ -165,10 +181,13 @@ static int try_setup_idmap(pid_t ppid)
 	sprintf(gid, "%d", id_map.gid);
 	sprintf(gid_lower, "%d", id_map.gid_lower);
 	sprintf(gid_count, "%d", id_map.gid_count);
+	// In fact I don't know how it works, but it works.
+	// newuidmap pid 0 uid 1 1 uid_lower uid_count
 	char *newuidmap[] = { "newuidmap", pid, "0", uid, "1", "1", uid_lower, uid_count, NULL };
 	if (try_execvp(newuidmap) != 0) {
 		return -1;
 	}
+	// newgidmap pid 0 gid 1 1 gid_lower gid_count
 	char *newgidmap[] = { "newgidmap", pid, "0", gid, "1", "1", gid_lower, gid_count, NULL };
 	if (try_execvp(newgidmap) != 0) {
 		return -1;
@@ -178,7 +197,8 @@ static int try_setup_idmap(pid_t ppid)
 static void try_unshare(int flags)
 {
 	/*
-	 * Try to use unshare(2).
+	 * Try to use unshare(2),
+	 * if failed, we just error() and exit.
 	 */
 	if (unshare(flags) == -1) {
 		error("{red}Your device does not support some namespaces needed!\n");
@@ -186,7 +206,11 @@ static void try_unshare(int flags)
 }
 static void init_rootless_container(struct CONTAINER *container)
 {
-	// For rootless container, the way to create/mount runtime dir/files is different.
+	/*
+	 * For rootless container, the way to create/mount runtime dir/files is different.
+	 * as we don't have the permission to mount sysfs and mknod(2),
+	 * we need to bind-mount some dirs/files from host.
+	 */
 	chdir(container->container_dir);
 	mkdir("./sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("/sys", "./sys", NULL, MS_BIND | MS_REC, NULL);
@@ -245,8 +269,7 @@ static void set_id_map(uid_t uid, gid_t gid)
 	/*
 	 * If try_setup_idmap() failed, this function will be called,
 	 * to setup the uid and gid map.
-	 * NOTE: command like `su` or `apt` will run failed if uid and gid map
-	 * is not configured by `uidmap` suid binary.
+	 * NOTE: command like `su` or `apt` will run failed if we use this function.
 	 */
 	// Set uid map.
 	char uid_map[32] = { "\0" };
@@ -272,6 +295,9 @@ static void set_id_map(uid_t uid, gid_t gid)
 }
 void run_rootless_container(struct CONTAINER *container)
 {
+	/*
+	 * Setup namespaces and run rootless container.
+	 */
 	uid_t uid = geteuid();
 	gid_t gid = getegid();
 	bool set_id_map_succeed = false;
@@ -299,6 +325,7 @@ void run_rootless_container(struct CONTAINER *container)
 	try_unshare(CLONE_NEWNS);
 	// Seems we need to own a new pid namespace for mount procfs.
 	try_unshare(CLONE_NEWPID);
+	// fork(2) into new namespaces we created.
 	pid_t pid = fork();
 	if (pid > 0) {
 		if (!set_id_map_succeed) {

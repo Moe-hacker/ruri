@@ -33,7 +33,7 @@ static void mount_cgroup_v1(void)
 	/*
 	 * Mount Cgroup v1 memory and cpuset controller.
 	 * Nothing to return because if this function run failed,
-	 * that means cgroup is not supported on the device.
+	 * that means cgroup is fully not supported on the device.
 	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
@@ -55,6 +55,7 @@ static bool is_cgroupv2_supported(void)
 	bool found_cpuset = false;
 	bool found_memory = false;
 	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
+	// Check if we have a controlable cgroup for cpuset and memory.
 	int fd = open("/sys/fs/cgroup/ruri/cgroup.controllers", O_RDONLY | O_CLOEXEC);
 	char buf[128] = { '\0' };
 	ssize_t len = read(fd, buf, sizeof(buf));
@@ -74,13 +75,14 @@ static bool is_cgroupv2_supported(void)
 static int mount_cgroup_v2(void)
 {
 	/*
-	 * We need cgroup2 cpuset and memory controller.
-	 * If the device does not support, return -1.
+	 * We will mount cgroup2 cpuset and memory controller.
+	 * If the device does not support, return -1,
+	 * or we just return 0.
 	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
-	// I love cgroup2, because it's easy to mount.
+	// I love cgroup2, because it's easy to mount and control.
 	int ret = mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 	if (ret != 0) {
 		return ret;
@@ -102,8 +104,9 @@ static int mount_cgroup(void)
 	if (mount_cgroup_v2() == 0) {
 		return 2;
 	}
-	// But on some devices, we have to use v1.
+	// But on some devices, we have to use v1, as v2 is not supported.
 	mount_cgroup_v1();
+	// Note that if even v1 is not supported, we will go ahead, but cgroup will not work.
 	return 1;
 }
 static void set_cgroup_v1(const struct CONTAINER *container)

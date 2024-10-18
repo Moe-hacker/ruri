@@ -127,6 +127,10 @@ static int mount_device(const char *source, const char *target, unsigned long mo
 // Same as `losetup` command.
 static char *losetup(const char *img)
 {
+	/*
+	 * We return the loopfile we get for losetup,
+	 * so that we can use the return value to mount the image.
+	 */
 	// Get a new loopfile for losetup.
 	int loopctlfd = open("/dev/loop-control", O_RDWR | O_CLOEXEC);
 	// It takes the same effect as `losetup -f`.
@@ -143,6 +147,8 @@ static char *losetup(const char *img)
 		loopfd = open(loopfile, O_RDWR | O_CLOEXEC);
 		if (loopfd < 0) {
 			// Never mind, it works.
+			// We know that 1145141919810 is hardly to be exist as a directory.
+			// So use this string will cause mount(2) to fail, and then we just go ahead.
 			return "1145141919810";
 		}
 	}
@@ -155,8 +161,13 @@ static char *losetup(const char *img)
 }
 static int mk_mountpoint_dir(const char *target)
 {
-	// Check if mountpoint exists.
+	/*
+	 * Just to mkdir(target).
+	 */
+	// remove the target if it exists as a file.
+	// I know this can hardly be happen, just to avoid some unexpected errors.
 	remove(target);
+	// Check if mountpoint exists.
 	char *test = realpath(target, NULL);
 	if (test == NULL) {
 		if (mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) != 0) {
@@ -170,9 +181,15 @@ static int mk_mountpoint_dir(const char *target)
 }
 static int touch_mountpoint_file(const char *target)
 {
-	// Check if mountpoint exists.
+	/*
+	 * Create a common file at target.
+	 */
+	// We use mkdirs() to create the parent directory of the file,
+	// And rmdir() target, so we will never get error that
+	// the parent directory of the file is not exist.
 	mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH);
 	rmdir(target);
+	// Check if mountpoint exists.
 	int fd = open(target, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		fd = open(target, O_CREAT | O_CLOEXEC | O_RDWR, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH);
@@ -188,10 +205,23 @@ static int touch_mountpoint_file(const char *target)
 // Mount dev/dir/img to target.
 int trymount(const char *source, const char *target, unsigned int mountflags)
 {
+	/*
+	 * This function is designed to mount a device/dir/image/file to target.
+	 * We support to mount:
+	 * Block device
+	 * Directory
+	 * Image file
+	 * Common file
+	 * Char device
+	 * FIFO
+	 * Socket
+	 * I hope it works as expected.
+	 */
 	// umount target before mount(2), to avoid `device or resource busy`.
 	umount2(target, MNT_DETACH | MNT_FORCE);
 	int ret = 0;
 	struct stat dev_stat;
+	// If source does not exist, just return -1 as error.
 	if (lstat(source, &dev_stat) != 0) {
 		return -1;
 	}
@@ -212,6 +242,9 @@ int trymount(const char *source, const char *target, unsigned int mountflags)
 		ret = mount_device(source, target, mountflags);
 	}
 	// Image and common file.
+	// We cannot distinguish image file and common file by stat(2),
+	// So we try to mount it as an image file first.
+	// If it fails, we bind-mount it as a common file.
 	else if (S_ISREG(dev_stat.st_mode)) {
 		// Image file.
 		if (mk_mountpoint_dir(target) != 0) {
@@ -227,7 +260,7 @@ int trymount(const char *source, const char *target, unsigned int mountflags)
 			ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
 		}
 	}
-	// For char device/FIFO/socket, we bind-mount it.
+	// For char-device/FIFO/socket, we just bind-mount it.
 	else if (S_ISCHR(dev_stat.st_mode) || S_ISFIFO(dev_stat.st_mode) || S_ISSOCK(dev_stat.st_mode)) {
 		if (touch_mountpoint_file(target) != 0) {
 			return -1;

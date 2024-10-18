@@ -30,7 +30,10 @@
 #include "include/ruri.h"
 static bool su_biany_exist(char *container_dir)
 {
-	// Check if /bin/su exists in container.
+	/*
+	 * Check if /bin/su exists in container.
+	 * Because in some rootfs, /bin/su is not exist.
+	 */
 	char su_path[PATH_MAX] = { '\0' };
 	sprintf(su_path, "%s/bin/su", container_dir);
 	int fd = open(su_path, O_RDONLY | O_CLOEXEC);
@@ -42,6 +45,9 @@ static bool su_biany_exist(char *container_dir)
 }
 static void check_binary(const struct CONTAINER *container)
 {
+	/*
+	 * Check for binaries we need for starting the container.
+	 */
 	// Check if command binary exists and is not a directory.
 	char init_binary[PATH_MAX];
 	strcpy(init_binary, container->container_dir);
@@ -79,10 +85,12 @@ static void init_container(void)
 {
 	/*
 	 * It'll be run after chroot(2), so `/` is the root dir of container now.
-	 * The device list and permissions are based on common docker container.
+	 * The device list and permissions are based on common docker containers.
 	 */
-	// Check if system runtime files are already created.
-	char *test = realpath("/sys/class/input", NULL);
+	// If /proc/1 exists, that means container is already initialized.
+	// I used to check /sys/class/input, but in WSL1, /sys/class/input is not exist.
+	// But /proc/1 is exist in all Linux systems, because it's the init process.
+	char *test = realpath("/proc/1", NULL);
 	if (test == NULL) {
 		// Mount proc,sys and dev.
 		mkdir("/sys", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
@@ -158,6 +166,8 @@ static void mount_host_runtime(const struct CONTAINER *container)
 	/*
 	 * It's unsafe to mount /dev, /proc and /sys from the host.
 	 * But in some cases, we have to do this.
+	 * This function will be called before chroot(2),
+	 * so it's before init_container().
 	 */
 	char buf[PATH_MAX] = { '\0' };
 	// Mount /dev.
@@ -196,6 +206,8 @@ static void drop_caps(const struct CONTAINER *container)
 		if (container->drop_caplist[i] == INIT_VALUE) {
 			break;
 		}
+		// Check if the capability is supported in the kernel,
+		// so that we can avoid unnecessary warnings.
 		if (CAP_IS_SUPPORTED(container->drop_caplist[i])) {
 			// Drop CapBnd.
 			if (cap_drop_bound(container->drop_caplist[i]) != 0 && !container->no_warnings) {
@@ -216,13 +228,21 @@ static void drop_caps(const struct CONTAINER *container)
 	datap->inheritable = 0;
 	capset(hrdp, datap);
 	// free(2) hrdp and datap here might cause ASAN error.
+	// I think it's because the kernel will write to the memory directly,
+	// but I don't know the behavior of ASAN to allocate memory, maybe after this,
+	// ASAN can not recognize the memory is allocated by it.
 	free(hrdp);
 	free(datap);
 }
 // Set envs.
 static void set_envs(const struct CONTAINER *container)
 {
-	// Set $PATH to the common value in GNU/Linux, because $PATH in termux will not work in GNU/Linux containers.
+	/*
+	 * A very useless feature, I hope it works as expected.
+	 * $PATH and $TMPDIR will also be set here.
+	 */
+	// Set $PATH to the common value in GNU/Linux,
+	// because $PATH in termux is not correct for common GNU/Linux containers.
 	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 	// Set $TMPDIR.
 	setenv("TMPDIR", "/tmp", 1);
@@ -239,7 +259,7 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 {
 	/*
 	 * For running multi-arch container.
-	 * It need the device support binfmt_misc.
+	 * It need the kernel support binfmt_misc.
 	 */
 	// Get elf magic header.
 	struct MAGIC *magic = get_magic(container->cross_arch);
@@ -265,8 +285,12 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 }
 // Mount other mountpoints.
 // Run before chroot(2).
-void mount_mountpoints(const struct CONTAINER *container)
+static void mount_mountpoints(const struct CONTAINER *container)
 {
+	/*
+	 * Mount extra_mountpoint and extra_ro_mountpoint.
+	 * It will be called before chroot(2).
+	 */
 	if (!container->rootless) {
 		// '/' should be a mountpoint in container.
 		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
@@ -284,7 +308,7 @@ void mount_mountpoints(const struct CONTAINER *container)
 		trymount(container->extra_mountpoint[i], mountpoint_dir, 0);
 		free(mountpoint_dir);
 	}
-	// Mount extra_ro_mountpoint.
+	// Mount extra_ro_mountpoint as read-only.
 	for (int i = 0; true; i += 2) {
 		if (container->extra_ro_mountpoint[i] == NULL) {
 			break;
@@ -302,9 +326,11 @@ void run_chroot_container(struct CONTAINER *container)
 {
 	/*
 	 * It's called by main() and run_unshare_container().
-	 * It will chroot(2) to container_dir, and exec(3) init command in container.
+	 * It will run container as the config in CONTAINER struct.
 	 */
 	// Ignore SIGTTIN, if we are running in the background, SIGTTIN may kill this process.
+	// This code is wrote when ruri had a daemon process,
+	// now even the daemon mode is removed, I still keep this code here.
 	sigset_t sigs;
 	sigemptyset(&sigs);
 	sigaddset(&sigs, SIGTTIN);
@@ -385,6 +411,7 @@ void run_chroot_container(struct CONTAINER *container)
 	prctl(PR_SET_SECUREBITS, SECBIT_NO_CAP_AMBIENT_RAISE);
 	// We only need 0(stdin), 1(stdout), 2(stderr),
 	// So we close the other fds to avoid security issues.
+	// NOTE: this might cause unknown issues.
 	for (int i = 3; i <= 10; i++) {
 		close(i);
 	}
@@ -406,7 +433,9 @@ void run_rootless_chroot_container(struct CONTAINER *container)
 {
 	/*
 	 * It's called by run_rootless_container().
-	 * It will chroot(2) to container_dir, and exec(3) init command in container.
+	 * It will run container as the config in CONTAINER struct.
+	 *
+	 * This function is modified from run_chroot_container().
 	 */
 	// Ignore SIGTTIN, if we are running in the background, SIGTTIN may kill this process.
 	sigset_t sigs;

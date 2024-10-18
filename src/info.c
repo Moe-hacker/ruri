@@ -33,7 +33,7 @@ void show_version_info(void)
 	/*
 	 * Just show version info and license.
 	 * Version info is defined in macro RURI_VERSION.
-	 * RURI_COMMIT_ID is defined in Makefile.
+	 * RURI_COMMIT_ID is defined as -D option of compiler.
 	 */
 	cprintf("\n");
 	cprintf("{base}      ●●●●  ●   ● ●●●●   ●●●\n");
@@ -45,8 +45,15 @@ void show_version_info(void)
 	cprintf("{base}    <https://mit-license.org>\n");
 	cprintf("{base}Copyright (C) 2022-2024 Moe-hacker\n");
 	cprintf("{base}%s%s%s", "ruri version .....:  ", RURI_VERSION, "\n");
+#if defined(RURI_COMMIT_ID)
+	cprintf("{base}%s%s%s", "ruri commit id ...:  ", RURI_COMMIT_ID, "\n");
+#endif
+#if defined(LIBCAP_MAJOR) && defined(LIBCAP_MINOR)
 	cprintf("{base}%s%d%s%d%s", "libcap ...........:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");
+#endif
+#if defined(SCMP_VER_MAJOR) && defined(SCMP_VER_MINOR) && defined(SCMP_VER_MICRO)
 	cprintf("{base}%s%d%s%d%s%d%s", "libseccomp .......:  ", SCMP_VER_MAJOR, ".", SCMP_VER_MINOR, ".", SCMP_VER_MICRO, "\n");
+#endif
 	cprintf("{base}%s%d%s%d%s", "libk2v ...........:  ", LIBK2V_MAJOR, ".", LIBK2V_MINOR, "\n");
 	cprintf("{base}%s%d%s%d%s", "cprintf ..........:  ", CPRINTF_MAJOR, ".", CPRINTF_MINOR, "\n");
 	cprintf("{base}%s%s\n", "Compiler version .:  ", __VERSION__);

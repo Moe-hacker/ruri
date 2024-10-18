@@ -31,6 +31,10 @@
 // Show some extra info when segfault.
 static void sighandle(int sig)
 {
+	/*
+	 * This is very useful when bug reporting,
+	 * because we will get the cmdline that caused the error.
+	 */
 	signal(sig, SIG_DFL);
 	int clifd = open("/proc/self/cmdline", O_RDONLY | O_CLOEXEC);
 	char buf[1024];
@@ -56,6 +60,8 @@ static void sighandle(int sig)
 			fputc(buf[i], stderr);
 		}
 	}
+	// I'm afraid to have bugs written by myself,
+	// but I'm more afraid that no one will report them.
 	cfprintf(stderr, "{base}\nThis message might caused by an internal error.\n");
 	cfprintf(stderr, "{base}If you think something is wrong, please report at:\n");
 	cfprintf(stderr, "\033[4m{base}%s{clear}\n\n", "https://github.com/Moe-hacker/ruri/issues");
@@ -63,6 +69,10 @@ static void sighandle(int sig)
 // Catch coredump signal.
 void register_signal(void)
 {
+	/*
+	 * Only SIGSEGV means segmentation fault,
+	 * but we catch all signals that might cause coredump.
+	 */
 	signal(SIGABRT, sighandle);
 	signal(SIGBUS, sighandle);
 	signal(SIGFPE, sighandle);

@@ -31,6 +31,11 @@
 // Umount container.
 void umount_container(const char *container_dir)
 {
+	/*
+	 * Read /.rurienv file and umount all mountpoints,
+	 * including extra_mountpoint and extra_ro_mountpoint,
+	 * and umount system runtime directories.
+	 */
 	if (container_dir == NULL) {
 		error("{red}Error: container directory does not exist QwQ\n");
 	}
@@ -111,6 +116,7 @@ void umount_container(const char *container_dir)
 		free(container);
 	}
 	// Force umount system runtime directories for 10 times.
+	// Not necessary, but I think it's more secure.
 	for (int i = 1; i < 10; i++) {
 		umount2(sys_dir, MNT_DETACH | MNT_FORCE);
 		usleep(20000);

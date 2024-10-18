@@ -32,7 +32,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 {
 	/*
 	 * Format container info to k2v format.
-	 * return the string type of config.
+	 * return the config as string.
 	 */
 	char *ret = NULL;
 	// drop_caplist.
@@ -133,7 +133,6 @@ void read_config(struct CONTAINER *container, const char *path)
 	/*
 	 * Read k2v format config file,
 	 * and set container config.
-	 * Return the `container` struct back.
 	 */
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {

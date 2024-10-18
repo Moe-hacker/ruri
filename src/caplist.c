@@ -50,7 +50,8 @@ void add_to_caplist(cap_value_t *list, cap_value_t cap)
 bool is_in_caplist(const cap_value_t *list, cap_value_t cap)
 {
 	/*
-	 * For setup_seccomp().
+	 * If cap is in list, return true,
+	 * else, return false.
 	 */
 	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
@@ -86,15 +87,26 @@ void del_from_caplist(cap_value_t *list, cap_value_t cap)
 }
 void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
+	/*
+	 * If privileged is true, we setup a full list of all capabilities,
+	 * del keep_caplist_common[] from the list,
+	 * and then add drop_caplist_extra[] to the list,
+	 * and del keep_caplist_extra[] from the list.
+	 *
+	 * If privileged is false, we just add drop_caplist_extra[] to the list,
+	 * and del keep_caplist_extra[] from the list.
+	 */
 	// Based on docker's default capability set.
 	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_MKNOD, CAP_NET_RAW, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, INIT_VALUE };
 	// Set default caplist to drop.
 	caplist[0] = INIT_VALUE;
 	if (!privileged) {
+		// Add all capabilities to caplist.
 		for (int i = 0; CAP_IS_SUPPORTED(i); i++) {
 			caplist[i] = i;
 			caplist[i + 1] = INIT_VALUE;
 		}
+		// Del keep_caplist_common[] from caplist.
 		for (int i = 0; true; i++) {
 			if (keep_caplist_common[i] == INIT_VALUE) {
 				break;
@@ -102,7 +114,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 			del_from_caplist(caplist, keep_caplist_common[i]);
 		}
 	}
-	// Comply with drop/keep_caplist_extra[] specified.
+	// Add drop_caplist_extra[] to caplist.
 	if (drop_caplist_extra[0] != INIT_VALUE) {
 		for (int i = 0; true; i++) {
 			if (drop_caplist_extra[i] == INIT_VALUE) {
@@ -111,6 +123,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 			add_to_caplist(caplist, drop_caplist_extra[i]);
 		}
 	}
+	// Del keep_caplist_extra[] from caplist.
 	if (keep_caplist_extra[0] != INIT_VALUE) {
 		for (int i = 0; true; i++) {
 			if (keep_caplist_extra[i] != INIT_VALUE) {

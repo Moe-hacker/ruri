@@ -34,8 +34,10 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 	/*
 	 * Use unshare(2) to create new namespaces and fork(2) to join them.
 	 * Return pid of forked process.
-	 * unshare_pid in forked process is 0.
+	 *
+	 * NOTE: Network namespace is not supported.
 	 */
+	// unshare_pid in forked process is 0.
 	pid_t unshare_pid = INIT_VALUE;
 	// Create namespaces.
 	if (unshare(CLONE_NEWNS) == -1 && !container->no_warnings) {
@@ -86,6 +88,9 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 // For run_unshare_container().
 static pid_t join_ns(struct CONTAINER *container)
 {
+	/*
+	 * Use setns(2) to enter existing namespaces.
+	 */
 	pid_t unshare_pid = INIT_VALUE;
 	// Use setns(2) to enter existing namespaces.
 	char cgroup_ns_file[PATH_MAX] = { '\0' };
@@ -166,6 +171,11 @@ static pid_t join_ns(struct CONTAINER *container)
 // Run unshare container.
 void run_unshare_container(struct CONTAINER *container)
 {
+	/*
+	 * We first read /.rurienv file to get container config.
+	 * If container->ns_pid is not set, use unshare(2) to create new namespaces.
+	 * If container->ns_pid is set, use setns(2) to enter existing namespaces.
+	 */
 	pid_t unshare_pid = INIT_VALUE;
 	// unshare(2) itself into new namespaces.
 	if (container->use_rurienv) {

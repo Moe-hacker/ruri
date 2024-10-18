@@ -132,18 +132,23 @@ void store_info(const struct CONTAINER *container)
 	/*
 	 * Format the runtime info of container to k2v format.
 	 * And store the info to container_dir/.rurienv .
-	 * But, how to avoid security issue?
-	 * The .rurienv file is immutable, but the container
+	 *
+	 * How to avoid security issue?
+	 *
+	 * The .rurienv file is set to be immutable, but the container
 	 * will not have cap_linux_immutable by default,
 	 * that means the file will always be read-only
-	 * into the container.
+	 * into the container. So even if ruri have memory overflow bugs,
+	 * it can not be exploited by modifying the .rurienv file.
 	 */
+	// Format container info.
 	char *info = build_container_info(container);
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container->container_dir);
 	int fd = open(file, O_RDONLY | O_CLOEXEC);
 	// We know that it's not recommended to use bitwise operator on signed int.
-	// But I found this code in mandoc:
+	// But I found this code in man-doc:
+	//
 	//       int attr;
 	//       fd = open("pathname", ...);
 	//
@@ -165,6 +170,7 @@ void store_info(const struct CONTAINER *container)
 	}
 	// Creat .rurienv file and open it.
 	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, S_IWUSR | S_IRUSR);
+	// Write info to .rurienv file.
 	write(fd, info, strlen(info));
 	// Set immutable flag on .rurienv file.
 	attr = 0;
@@ -180,6 +186,8 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	/*
 	 * Get runtime info of container.
 	 * And return the container struct back.
+	 * For umount_container(), it will accept a NULL struct,
+	 * and return a struct with malloced memory.
 	 */
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container_dir);
@@ -211,6 +219,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	container->cpuset = NULL;
 	container->memory = NULL;
 	// Check if ns_pid is a ruri process.
+	// If not, that means the container is not running.
 	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);

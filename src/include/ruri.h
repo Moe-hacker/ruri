@@ -66,10 +66,8 @@
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
-#ifndef LIBCAP_MAJOR
-#define LIBCAP_MAJOR 114
-#define LIBCAP_MINOR 514
-#endif
+// We redefine CAP_LAST_CAP to 114,
+// because for kernel in the fulture, there may be more capabilities than today.
 #undef CAP_LAST_CAP
 #define CAP_LAST_CAP 114
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
@@ -161,6 +159,7 @@ struct __attribute__((aligned(16))) MAGIC {
 		cfprintf(stderr, "\033[4m{base}%s{clear}\n", "https://github.com/Moe-hacker/ruri/issues");   \
 		exit(EXIT_FAILURE);                                                                          \
 	}
+// Shared functions.
 void register_signal(void);
 void setup_seccomp(const struct CONTAINER *container);
 void show_version_info(void);
