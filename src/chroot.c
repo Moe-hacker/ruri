@@ -201,6 +201,11 @@ static void mount_host_runtime(const struct CONTAINER *container)
 // Use libcap.
 static void drop_caps(const struct CONTAINER *container)
 {
+	/*
+	 * Drop CapBnd and CapAmb as the config in container->drop_caplist[].
+	 * And clear CapInh.
+	 * It will be called after chroot(2).
+	 */
 	for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
 		// INIT_VALUE is the end of drop_caplist[].
 		if (container->drop_caplist[i] == INIT_VALUE) {

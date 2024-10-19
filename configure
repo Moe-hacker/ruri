@@ -136,11 +136,11 @@ dev_cflag() {
 }
 check_headers_and_libs() {
   # Check system headers.
-  for i in fcntl.h sys/ioctl.h sys/mount.h sys/socket.h unistd.h pthread.h; do
+  for i in fcntl.h sys/ioctl.h sys/mount.h sys/socket.h unistd.h; do
     check_header $i
   done
   # Check library headers.
-  for i in sys/capability.h seccomp.h; do
+  for i in sys/capability.h seccomp.h pthread.h; do
     check_header $i
   done
 }

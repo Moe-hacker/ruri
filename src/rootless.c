@@ -40,7 +40,7 @@ struct __attribute__((aligned(32))) ID_MAP {
 static void get_uid_map(char *user, struct ID_MAP *id_map)
 {
 	/*
-	 *Get uid_map.
+	 * Get uid_map.
 	 */
 	id_map->uid_lower = 0;
 	id_map->uid_count = 0;
@@ -87,7 +87,7 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 static void get_gid_map(char *user, struct ID_MAP *id_map)
 {
 	/*
-	 *Get gid_map.
+	 * Get gid_map.
 	 */
 	id_map->gid_lower = 0;
 	id_map->gid_count = 0;
