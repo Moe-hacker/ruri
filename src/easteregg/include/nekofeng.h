@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdatomic.h>
+#include <pthread.h>
 #define X_SIZE 36
 #define Y_SIZE 2
 struct LAYER {
@@ -27,10 +30,15 @@ struct MSG {
 };
 extern int x;
 extern int y;
+extern atomic_flag lock;
+void spin_lock(atomic_flag *lock);
+void spin_unlock(atomic_flag *lock);
 void play_action(struct ACTION *action, __useconds_t inr, unsigned int keep);
 void playback_action(struct ACTION *action, __useconds_t inr, unsigned int keep);
 void free_action(struct ACTION *action);
 struct ACTION *add_action(struct ACTION *action, int x_offset, int y_offset, char *layer);
+void face(__useconds_t inr, unsigned int keep);
+void mouth(__useconds_t inr, unsigned int keep);
 void blink_lefteye(__useconds_t inr, unsigned int keep);
 void blink_righteye(__useconds_t inr, unsigned int keep);
 void close_and_open_lefteye(__useconds_t inr, unsigned int keep);

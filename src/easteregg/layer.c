@@ -1,6 +1,7 @@
 #include "include/nekofeng.h"
 static void clear_layer(struct LAYER *layer)
 {
+	spin_lock(&lock);
 	int y_offset = 0;
 	int x_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
@@ -36,9 +37,12 @@ static void clear_layer(struct LAYER *layer)
 		x_offset++;
 	}
 	fflush(stdout);
+	spin_unlock(&lock);
+	usleep(10000);
 }
 static void print_layer(struct LAYER *layer)
 {
+	spin_lock(&lock);
 	int y_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
 	printf("\033[%dG", x + layer->x_offset);
@@ -62,6 +66,8 @@ static void print_layer(struct LAYER *layer)
 	}
 	printf("\033[0m");
 	fflush(stdout);
+	spin_unlock(&lock);
+	usleep(10000);
 }
 void play_action(struct ACTION *action, __useconds_t inr, unsigned int keep)
 {

@@ -107,6 +107,7 @@ default_cflag() {
   test_and_add_cflag "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
   test_and_add_ldflag "-lcap"
   test_and_add_ldflag "-lseccomp"
+  test_and_add_ldflag "-lpthread"
 }
 dev_cflag() {
   test_and_add_cflag "-ggdb"
@@ -131,6 +132,7 @@ dev_cflag() {
   fi
   test_and_add_ldflag "-lcap"
   test_and_add_ldflag "-lseccomp"
+  test_and_add_ldflag "-lpthread"
 }
 check_headers_and_libs() {
   # Check system headers.

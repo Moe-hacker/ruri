@@ -1,6 +1,16 @@
 #include "include/nekofeng.h"
 int x;
 int y;
+atomic_flag lock = ATOMIC_FLAG_INIT;
+void spin_lock(atomic_flag *lock)
+{
+	while (atomic_flag_test_and_set(lock)) {
+	}
+}
+void spin_unlock(atomic_flag *lock)
+{
+	atomic_flag_clear(lock);
+}
 // init() function for getting window size.
 static void init()
 {
@@ -10,20 +20,33 @@ static void init()
 	x = size.ws_col / 2 - X_SIZE / 2;
 	y = size.ws_row / 2 - Y_SIZE / 2;
 }
-void test()
+void *test0(void *arg)
+{
+	face(100000, 15);
+	return arg;
+}
+void *test1(void *arg)
 {
 	close_and_open_lefteye(100000, 1);
 	blink_lefteye(100000, 5);
+	return arg;
 }
-void test2()
+void *test2(void *arg)
 {
 	close_and_open_righteye(100000, 1);
 	blink_righteye(100000, 5);
+	return arg;
+}
+void *test3(void *arg)
+{
+	mouth(100000, 15);
+	return arg;
 }
 void AwA()
 {
 	printf("\033[?25l");
 	init();
+	/*
 	struct LAYER layer;
 	layer.layer = "\033[1;38;2;254;228;208m\n"
 		      "          Keep moe.\n"
@@ -37,19 +60,12 @@ void AwA()
 	typewrite_layer(&layer, 50000, true);
 	sleep(2);
 	clear_typewrite_layer(&layer, 50000);
-	pid_t pid = fork();
-	if (pid == 0) {
-		test();
-		exit(0);
-	} else {
-		waitpid(pid, NULL, WNOHANG);
-	}
-	pid = fork();
-	if (pid == 0) {
-		test2();
-		exit(0);
-	} else {
-		waitpid(pid, NULL, WNOHANG);
-	}
+	*/
+	pthread_t t0, t1, t2, t3;
+	pthread_create(&t0, NULL, test0, NULL);
+	pthread_create(&t3, NULL, test3, NULL);
+	pthread_create(&t1, NULL, test1, NULL);
+	pthread_create(&t2, NULL, test2, NULL);
+	sleep(15);
 	printf("\n\033[?25h");
 }
