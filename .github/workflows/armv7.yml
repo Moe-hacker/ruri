@@ -38,7 +38,7 @@ jobs:
         id: runcmd
         with:
           arch: armv7
-          distro: bookworm
+          distro: ubuntu_rolling
           run: |
             apt update
             apt install -y \
