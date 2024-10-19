@@ -38,7 +38,7 @@ jobs:
         id: runcmd
         with:
           arch: riscv64
-          distro: ubuntu_latest
+          distro: bookworm
           run: |
             apt update
             apt install -y \
