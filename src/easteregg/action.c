@@ -46,6 +46,17 @@ void mouth(__useconds_t inr, unsigned int keep)
 	play_action(action, inr, keep);
 	free_action(action);
 }
+void ahoge(__useconds_t inr, unsigned int keep)
+{
+	struct ACTION *action = NULL;
+	action = add_action(action, 9, 8,
+			    "\n"
+			    "██    ██\n"
+			    "  ████\n");
+	play_action(action, inr, keep);
+	playback_action(action, inr, keep);
+	free_action(action);
+}
 void blink_lefteye(__useconds_t inr, unsigned int keep)
 {
 	struct ACTION *action = NULL;

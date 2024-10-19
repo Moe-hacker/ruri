@@ -46,7 +46,6 @@ void AwA()
 {
 	printf("\033[?25l");
 	init();
-	/*
 	struct LAYER layer;
 	layer.layer = "\033[1;38;2;254;228;208m\n"
 		      "          Keep moe.\n"
@@ -60,7 +59,6 @@ void AwA()
 	typewrite_layer(&layer, 50000, true);
 	sleep(2);
 	clear_typewrite_layer(&layer, 50000);
-	*/
 	pthread_t t0, t1, t2, t3;
 	pthread_create(&t0, NULL, test0, NULL);
 	pthread_create(&t3, NULL, test3, NULL);
