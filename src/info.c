@@ -41,9 +41,10 @@ void show_version_info(void)
 	cprintf("{base}      ●●●●  ●   ● ●●●●    ●\n");
 	cprintf("{base}      ●  ●  ●   ● ●  ●    ●\n");
 	cprintf("{base}      ●   ●  ●●●  ●   ●  ●●●\n");
+	cprintf("{base}    Revamp, Until Reach Ideal\n");
 	cprintf("{base}  Licensed under the MIT License\n");
 	cprintf("{base}    <https://mit-license.org>\n");
-	cprintf("{base}Copyright (C) 2022-2024 Moe-hacker\n");
+	cprintf("{base}Copyright (C) 2022-2024 Moe-hacker\n\n");
 	cprintf("{base}%s%s%s", "ruri version .....:  ", RURI_VERSION, "\n");
 #if defined(RURI_COMMIT_ID)
 	cprintf("{base}%s%s%s", "ruri commit id ...:  ", RURI_COMMIT_ID, "\n");
@@ -116,11 +117,11 @@ void show_helps(void)
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*)    : `-a` option also need `-q` is set\n");
-	cprintf("{base}(*)    : cap can both be value or name (e.j. cap_chown == 0)\n");
+	cprintf("{base}(**)   : cap can both be value or name (e.j. cap_chown == 0)\n");
 	cprintf("{base}(***)  : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
 	cprintf("{base}(****) : You can use `-m [source] /` to mount a block device as root\n");
 	cprintf("{base}(*****): Each `-l` option can only set one of the cpuset/memory limits\n");
-	cprintf("{base}        for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
+	cprintf("{base}         for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
 	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.

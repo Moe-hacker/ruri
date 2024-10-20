@@ -31,7 +31,7 @@
 /*
  * This file provides the function
  * add_action(), play_action(), playback_action(), and free_action().
- * 
+ *
  * Usage:
  *
  *  struct ACTION *action = NULL;
@@ -45,7 +45,7 @@
  *
  * Do not care how it works, because I forgot,
  * and I am too lazy to read the code.
- * 
+ *
  */
 static void clear_layer(struct LAYER *layer)
 {

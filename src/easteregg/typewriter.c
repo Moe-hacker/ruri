@@ -31,7 +31,7 @@
 /*
  * This file provides the function
  * typewrite_layer() and clear_typewrite_layer().
- * 
+ *
  * Usage:
  *
  *  struct LAYER layer;
@@ -41,7 +41,7 @@
  *  typewrite_layer(&layer, 50000, true);
  *  sleep(2);
  *  clear_typewrite_layer(&layer, 50000);
- * 
+ *
  * Do not care how it works, because I forgot,
  * and I am too lazy to read the code.
  *

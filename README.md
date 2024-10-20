@@ -96,7 +96,7 @@ Note:
 (***)  : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`
 (****) : You can use `-m [source] /` to mount a block device as root
 (*****): Each `-l` option can only set one of the cpuset/memory limits
-        for example: `ruri -l memory=1M -l cpuset=1 /test`
+         for example: `ruri -l memory=1M -l cpuset=1 /test`
 ```
 # Quick start(with rootfstool):
 ## Download and unpack a rootfs:

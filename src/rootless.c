@@ -37,6 +37,7 @@ struct __attribute__((aligned(32))) ID_MAP {
 	gid_t gid_lower;
 	gid_t gid_count;
 };
+
 static void get_uid_map(char *user, struct ID_MAP *id_map)
 {
 	/*
@@ -135,9 +136,17 @@ static struct ID_MAP get_idmap(void)
 	struct ID_MAP ret;
 	ret.uid = getuid();
 	ret.gid = getgid();
-	struct passwd *pw = getpwuid(getuid());
-	get_uid_map(pw->pw_name, &ret);
-	get_gid_map(pw->pw_name, &ret);
+	char *username = get_username(getuid());
+	if (username == NULL) {
+		ret.uid_lower = 0;
+		ret.uid_count = 0;
+		ret.gid_lower = 0;
+		ret.gid_count = 0;
+		return ret;
+	}
+	get_uid_map(username, &ret);
+	get_gid_map(username, &ret);
+	free(username);
 	return ret;
 }
 static int try_execvp(char *argv[])

@@ -65,7 +65,7 @@ void *test0(void *arg)
 }
 void *test1(void *arg)
 {
-	close_and_open_lefteye(100000, 1);
+	blink_lefteye(100000, 1);
 	blink_lefteye(100000, 5);
 	return arg;
 }
@@ -77,13 +77,21 @@ void *test2(void *arg)
 }
 void *test3(void *arg)
 {
-	mouth(100000, 15);
+	mouth(1000000, 1);
+	mouth(1000000, 5);
+	return arg;
+}
+void *test4(void *arg)
+{
+	ahoge(100000, 1);
+	ahoge(100000, 5);
 	return arg;
 }
 void AwA()
 {
 	printf("\033[?25l");
 	init();
+	/*
 	struct LAYER layer;
 	layer.layer = "\033[1;38;2;254;228;208m\n"
 		      "          Keep moe.\n"
@@ -97,11 +105,13 @@ void AwA()
 	typewrite_layer(&layer, 50000, true);
 	sleep(2);
 	clear_typewrite_layer(&layer, 50000);
-	pthread_t t0, t1, t2, t3;
+	*/
+	pthread_t t0, t1, t2, t3, t4;
 	pthread_create(&t0, NULL, test0, NULL);
 	pthread_create(&t3, NULL, test3, NULL);
 	pthread_create(&t1, NULL, test1, NULL);
 	pthread_create(&t2, NULL, test2, NULL);
+	pthread_create(&t4, NULL, test4, NULL);
 	sleep(15);
 	printf("\n\033[?25h");
 }
