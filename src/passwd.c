@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-char *line_get_username(char *p)
+char *line_get_username(const char *p)
 {
 	char *ret = malloc(128);
 	for (int i = 0; p[i] != '\0'; i++) {
@@ -40,23 +40,23 @@ char *line_get_username(char *p)
 	}
 	return ret;
 }
-uid_t line_get_uid(char *p)
+uid_t line_get_uid(const char *p)
 {
 	uid_t ret = 0;
 	int j = 0;
+	for (int i = 0; i < 3; i++) {
+		if (strchr(p, ':') == NULL) {
+			return 0;
+		}
+		p = strchr(p, ':') + 1;
+	}
 	for (int i = 0; p[i] != '\0'; i++) {
 		if (p[i] == ':') {
-			j++;
-			if (j == 3) {
-				for (int k = i + 1; p[k] != '\0'; k++) {
-					if (p[k] == ':') {
-						return ret;
-					}
-					ret = ret * 10 + (uid_t)(p[k] - '0');
-				}
-			}
+			return ret;
 		}
+		ret = ret * 10 + (uid_t)(p[i] - '0');
 	}
+	return 0;
 }
 char *get_username(uid_t uid)
 {
@@ -94,7 +94,7 @@ char *get_username(uid_t uid)
 	free(buf);
 	return NULL;
 }
-uid_t line_get_uid_lower(char *p)
+uid_t line_get_uid_lower(const char *p)
 {
 	uid_t ret = 0;
 	if (strchr(p, ':') == NULL) {
@@ -104,7 +104,7 @@ uid_t line_get_uid_lower(char *p)
 	if (strchr(p, ':') == NULL) {
 		return 0;
 	}
-	for (int i = 0;; i++) {
+	for (int i = 0; p[i] != '\0'; i++) {
 		if (p[i] == ':') {
 			return ret;
 		}
@@ -112,7 +112,7 @@ uid_t line_get_uid_lower(char *p)
 	}
 	return ret;
 }
-uid_t line_get_uid_count(char *p)
+uid_t line_get_uid_count(const char *p)
 {
 	uid_t ret = 0;
 	if (strchr(p, ':') == NULL) {
@@ -126,7 +126,10 @@ uid_t line_get_uid_count(char *p)
 	if (strchr(p, '\n') == NULL) {
 		return 0;
 	}
-	for (int i = 0; p[i] != '\n'; i++) {
+	for (int i = 0; p[i] != '\0'; i++) {
+		if (p[i] == '\n') {
+			return ret;
+		}
 		ret = ret * 10 + (uid_t)(p[i] - '0');
 	}
 	return ret;
@@ -165,7 +168,7 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	id_map->uid_count = line_get_uid_count(map);
 	free(buf);
 }
-gid_t line_get_gid_lower(char *p)
+gid_t line_get_gid_lower(const char *p)
 {
 	gid_t ret = 0;
 	if (strchr(p, ':') == NULL) {
@@ -175,12 +178,15 @@ gid_t line_get_gid_lower(char *p)
 	if (strchr(p, ':') == NULL) {
 		return 0;
 	}
-	for (int i = 0; p[i] != ':'; i++) {
+	for (int i = 0; p[i] != '\0'; i++) {
+		if (p[i] == ':') {
+			return ret;
+		}
 		ret = ret * 10 + (gid_t)(p[i] - '0');
 	}
 	return ret;
 }
-gid_t line_get_gid_count(char *p)
+gid_t line_get_gid_count(const char *p)
 {
 	gid_t ret = 0;
 	if (strchr(p, ':') == NULL) {
@@ -194,12 +200,15 @@ gid_t line_get_gid_count(char *p)
 	if (strchr(p, '\n') == NULL) {
 		return 0;
 	}
-	for (int i = 0; p[i] != '\n'; i++) {
+	for (int i = 0; p[i] != '\0'; i++) {
+		if (p[i] == '\n') {
+			return ret;
+		}
 		ret = ret * 10 + (gid_t)(p[i] - '0');
 	}
 	return ret;
 }
-static void get_gid_map(char *user, struct ID_MAP *id_map)
+static void get_gid_map(const char *user, struct ID_MAP *id_map)
 {
 	/*
 	 * Get gid_map.
