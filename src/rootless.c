@@ -28,127 +28,6 @@
  *
  */
 #include "include/ruri.h"
-struct __attribute__((aligned(32))) ID_MAP {
-	// For `newuidmap` and `newgidmap`.
-	uid_t uid;
-	uid_t uid_lower;
-	uid_t uid_count;
-	gid_t gid;
-	gid_t gid_lower;
-	gid_t gid_count;
-};
-
-static void get_uid_map(char *user, struct ID_MAP *id_map)
-{
-	/*
-	 * Get uid_map.
-	 */
-	id_map->uid_lower = 0;
-	id_map->uid_count = 0;
-	// /etc/subuid format:
-	//   foo:uid_lower:uid_count
-	//   bar:uid_lower:uid_count
-	int fd = open("/etc/subuid", O_RDONLY | O_CLOEXEC);
-	struct stat filestat;
-	fstat(fd, &filestat);
-	off_t size = filestat.st_size;
-	char *buf = malloc((size_t)size + 1);
-	read(fd, buf, (size_t)size);
-	close(fd);
-	// Find username in /etc/subuid.
-	char *map = strstr(buf, user);
-	if (map == NULL) {
-		// If username is not in /etc/subuid.
-		id_map->uid_lower = 0;
-		id_map->uid_count = 0;
-		return;
-	}
-	// Get uid_lower and uid_count.
-	// Looks shit? But this is really only O(n) nya~.
-	for (int i = 0;; i++) {
-		if (map[i] == ':') {
-			for (int j = i + 1;; j++) {
-				if (map[j] == ':') {
-					for (int k = j + 1;; k++) {
-						if (map[k] == '\n') {
-							break;
-						}
-						// Minus '0' to convert char to number.
-						id_map->uid_count = (id_map->uid_count) * 10 + (uid_t)(map[k] - '0');
-					}
-					break;
-				}
-				id_map->uid_lower = (id_map->uid_lower) * 10 + (uid_t)(map[j] - '0');
-			}
-			break;
-		}
-	}
-	free(buf);
-}
-static void get_gid_map(char *user, struct ID_MAP *id_map)
-{
-	/*
-	 * Get gid_map.
-	 */
-	id_map->gid_lower = 0;
-	id_map->gid_count = 0;
-	// /etc/subgid format:
-	//   foo:gid_lower:gid_count
-	//   bar:gid_lower:gid_count
-	int fd = open("/etc/subgid", O_RDONLY | O_CLOEXEC);
-	struct stat filestat;
-	fstat(fd, &filestat);
-	off_t size = filestat.st_size;
-	char *buf = malloc((size_t)size + 1);
-	read(fd, buf, (size_t)size);
-	close(fd);
-	char *map = strstr(buf, user);
-	if (map == NULL) {
-		id_map->gid_lower = 0;
-		id_map->gid_count = 0;
-		return;
-	}
-	for (int i = 0;; i++) {
-		if (map[i] == ':') {
-			for (int j = i + 1;; j++) {
-				if (map[j] == ':') {
-					for (int k = j + 1;; k++) {
-						if (map[k] == '\n') {
-							break;
-						}
-						id_map->gid_count = (id_map->gid_count) * 10 + (gid_t)(map[k] - '0');
-					}
-					break;
-				}
-				id_map->gid_lower = (id_map->gid_lower) * 10 + (gid_t)(map[j] - '0');
-			}
-			break;
-		}
-	}
-	free(buf);
-}
-static struct ID_MAP get_idmap(void)
-{
-	/*
-	 * Get uid_map and gid_map.
-	 * This function will return a ID_MAP struct for `newuidmap` and `newgidmap`.
-	 */
-	struct ID_MAP ret;
-	ret.uid = getuid();
-	ret.gid = getgid();
-	char *username = get_username(getuid());
-	if (username == NULL) {
-		ret.uid_lower = 0;
-		ret.uid_count = 0;
-		ret.gid_lower = 0;
-		ret.gid_count = 0;
-		return ret;
-	}
-	get_uid_map(username, &ret);
-	get_gid_map(username, &ret);
-	free(username);
-	return ret;
-}
 static int try_execvp(char *argv[])
 {
 	/*
@@ -165,39 +44,39 @@ static int try_execvp(char *argv[])
 	waitpid(pid, &status, 0);
 	return WEXITSTATUS(status);
 }
-static int try_setup_idmap(pid_t ppid)
+static int try_setup_idmap(pid_t ppid, uid_t uid, gid_t gid)
 {
 	/*
 	 * Try to use `uidmap` suid binary to setup uid and gid map.
 	 * If this function failed, we will use set_id_map() to setup the id map.
 	 */
-	struct ID_MAP id_map = get_idmap();
+	struct ID_MAP id_map = get_idmap(uid, gid);
 	// Failed to get /etc/subuid or /etc/subgid config for current user.
 	if (id_map.gid_lower == 0 || id_map.uid_lower == 0) {
 		return -1;
 	}
-	char pid[128] = { '\0' };
-	char uid[128] = { '\0' };
+	char ppid_text[128] = { '\0' };
+	char uid_text[128] = { '\0' };
 	char uid_lower[128] = { '\0' };
 	char uid_count[128] = { '\0' };
-	char gid[128] = { '\0' };
+	char gid_text[128] = { '\0' };
 	char gid_lower[128] = { '\0' };
 	char gid_count[128] = { '\0' };
-	sprintf(pid, "%d", ppid);
-	sprintf(uid, "%d", id_map.uid);
+	sprintf(ppid_text, "%d", ppid);
+	sprintf(uid_text, "%d", id_map.uid);
 	sprintf(uid_lower, "%d", id_map.uid_lower);
 	sprintf(uid_count, "%d", id_map.uid_count);
-	sprintf(gid, "%d", id_map.gid);
+	sprintf(gid_text, "%d", id_map.gid);
 	sprintf(gid_lower, "%d", id_map.gid_lower);
 	sprintf(gid_count, "%d", id_map.gid_count);
 	// In fact I don't know how it works, but it works.
 	// newuidmap pid 0 uid 1 1 uid_lower uid_count
-	char *newuidmap[] = { "newuidmap", pid, "0", uid, "1", "1", uid_lower, uid_count, NULL };
+	char *newuidmap[] = { "newuidmap", ppid_text, "0", uid_text, "1", "1", uid_lower, uid_count, NULL };
 	if (try_execvp(newuidmap) != 0) {
 		return -1;
 	}
 	// newgidmap pid 0 gid 1 1 gid_lower gid_count
-	char *newgidmap[] = { "newgidmap", pid, "0", gid, "1", "1", gid_lower, gid_count, NULL };
+	char *newgidmap[] = { "newgidmap", ppid_text, "0", gid_text, "1", "1", gid_lower, gid_count, NULL };
 	if (try_execvp(newgidmap) != 0) {
 		return -1;
 	}
@@ -327,7 +206,7 @@ void run_rootless_container(struct CONTAINER *container)
 	} else {
 		// To ensure that unshare(2) finished in parent process.
 		usleep(1000);
-		int stat = try_setup_idmap(ppid);
+		int stat = try_setup_idmap(ppid, uid, gid);
 		exit(stat);
 	}
 	// We need to own mount namespace.

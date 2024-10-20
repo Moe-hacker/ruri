@@ -110,7 +110,7 @@ default_cflag() {
   test_and_add_ldflag "-lpthread"
 }
 dev_cflag() {
-  test_and_add_cflag "-ggdb"
+  test_and_add_cflag "-g"
   test_and_add_cflag "-O0"
   test_and_add_cflag "-fno-omit-frame-pointer"
   test_and_add_cflag "-Wl,-z,norelro"
