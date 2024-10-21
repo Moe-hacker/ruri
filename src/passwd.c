@@ -28,9 +28,16 @@
  *
  */
 #include "include/ruri.h"
-char *line_get_username(const char *p)
+static char *line_get_username(const char *p)
 {
+	/*
+	 * Get username by line.
+	 */
 	char *ret = malloc(128);
+	ret[0] = '\0';
+	// /etc/passwd format:
+	// name:password:uid:gid:comment:home directory:login shell
+	// So we only need the string before the first colon.
 	for (int i = 0; p[i] != '\0'; i++) {
 		if (p[i] == ':') {
 			break;
@@ -40,16 +47,23 @@ char *line_get_username(const char *p)
 	}
 	return ret;
 }
-uid_t line_get_uid(const char *p)
+static uid_t line_get_uid(const char *p)
 {
+	/*
+	 * Get uid by line.
+	 */
 	uid_t ret = 0;
-	int j = 0;
-	for (int i = 0; i < 3; i++) {
+	// /etc/passwd format:
+	// name:password:uid:gid:comment:home directory:login shell
+	// So we need to skip 2 colons.
+	for (int i = 0; i < 2; i++) {
 		if (strchr(p, ':') == NULL) {
 			return 0;
 		}
 		p = strchr(p, ':') + 1;
 	}
+	// Now, after we skip 2 colons, we can get the uid.
+	// Read the uid until we meet the next colon.
 	for (int i = 0; p[i] != '\0'; i++) {
 		if (p[i] == ':') {
 			return ret;
@@ -58,7 +72,7 @@ uid_t line_get_uid(const char *p)
 	}
 	return 0;
 }
-char *get_username(uid_t uid)
+static char *get_username(uid_t uid)
 {
 	/*
 	 * Get username by uid.
@@ -77,6 +91,8 @@ char *get_username(uid_t uid)
 	char *p = buf;
 	uid_t tmpuid;
 	char *tmpusername;
+	// Every time, we get the username and uid by line.
+	// If the uid is equal to the uid we want, we return the username.
 	while (true) {
 		tmpusername = line_get_username(p);
 		tmpuid = line_get_uid(p);
@@ -94,16 +110,24 @@ char *get_username(uid_t uid)
 	free(buf);
 	return NULL;
 }
-uid_t line_get_uid_lower(const char *p)
+static uid_t line_get_uid_lower(const char *p)
 {
+	/*
+	 * Get uid_lower by line.
+	 */
 	uid_t ret = 0;
+	// /etc/subuid format:
+	//   foo:uid_lower:uid_count
+	// So we need to skip a colon.
 	if (strchr(p, ':') == NULL) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
+	// Check if there is still a colon.
 	if (strchr(p, ':') == NULL) {
 		return 0;
 	}
+	// Read the uid_lower until we meet the next colon.
 	for (int i = 0; p[i] != '\0'; i++) {
 		if (p[i] == ':') {
 			return ret;
@@ -112,9 +136,15 @@ uid_t line_get_uid_lower(const char *p)
 	}
 	return ret;
 }
-uid_t line_get_uid_count(const char *p)
+static uid_t line_get_uid_count(const char *p)
 {
+	/*
+	 * Get uid_count by line.
+	 */
 	uid_t ret = 0;
+	// /etc/subuid format:
+	//   foo:uid_lower:uid_count
+	// So we need to skip 2 colons.
 	if (strchr(p, ':') == NULL) {
 		return 0;
 	}
@@ -123,9 +153,11 @@ uid_t line_get_uid_count(const char *p)
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
+	// Check if there is a \n (newline).
 	if (strchr(p, '\n') == NULL) {
 		return 0;
 	}
+	// Read the uid_count until we meet the newline.
 	for (int i = 0; p[i] != '\0'; i++) {
 		if (p[i] == '\n') {
 			return ret;
@@ -141,9 +173,7 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	 */
 	id_map->uid_lower = 0;
 	id_map->uid_count = 0;
-	// /etc/subuid format:
-	//   foo:uid_lower:uid_count
-	//   bar:uid_lower:uid_count
+	// Read file to memory.
 	int fd = open("/etc/subuid", O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		return;
@@ -168,8 +198,11 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	id_map->uid_count = line_get_uid_count(map);
 	free(buf);
 }
-gid_t line_get_gid_lower(const char *p)
+static gid_t line_get_gid_lower(const char *p)
 {
+	/*
+	 * See comments in line_get_uid_lower().
+	 */
 	gid_t ret = 0;
 	if (strchr(p, ':') == NULL) {
 		return 0;
@@ -186,8 +219,11 @@ gid_t line_get_gid_lower(const char *p)
 	}
 	return ret;
 }
-gid_t line_get_gid_count(const char *p)
+static gid_t line_get_gid_count(const char *p)
 {
+	/*
+	 * See comments in line_get_uid_count().
+	 */
 	gid_t ret = 0;
 	if (strchr(p, ':') == NULL) {
 		return 0;
@@ -245,6 +281,7 @@ struct ID_MAP get_idmap(uid_t uid, gid_t gid)
 	/*
 	 * Get uid_map and gid_map.
 	 * This function will return a ID_MAP struct for `newuidmap` and `newgidmap`.
+	 * If there is any error, all the id_map will be 0.
 	 */
 	struct ID_MAP ret;
 	ret.uid = uid;

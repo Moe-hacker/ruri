@@ -191,7 +191,6 @@ int trymount(const char *source, const char *target, unsigned int mountflags);
 void umount_container(const char *container_dir);
 void read_config(struct CONTAINER *container, const char *path);
 void set_limit(const struct CONTAINER *container);
-char *get_username(uid_t uid);
 struct ID_MAP get_idmap(uid_t uid, gid_t gid);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
