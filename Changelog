@@ -67,7 +67,6 @@
   * General bug fixes.
 # v2.4:
   * Add `-r` option: run rootless container.
-  * Add an easter egg: `ruri AwA`.
   * Rewrite Makefile, you can `make -j$(nproc)` now.
   * General bug fixes.
 # v2.3:

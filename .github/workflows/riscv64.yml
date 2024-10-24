@@ -47,7 +47,7 @@ jobs:
               libseccomp-dev \
               libcap-dev \
               libc6-dev \
-              binutils&& cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri-riscv64 -lcap -lseccomp -lpthread&&strip ruri-riscv64
+              binutils&& cc -Wl,--gc-sections -static src/*.c -o ruri-riscv64 -lcap -lseccomp -lpthread&&strip ruri-riscv64
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
