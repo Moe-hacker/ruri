@@ -1,3 +1,5 @@
+# v3.7:
+  * WIP
 # v3.6:
   * Add `uidmap` suid binary support, to fix setgroup() failed in rootless container.
   * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.
