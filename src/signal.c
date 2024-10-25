@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Show some extra info when segfault.
-static void sighandle(int sig)
+static void panic(int sig)
 {
 	/*
 	 * This is very useful when bug reporting,
@@ -73,14 +73,14 @@ void register_signal(void)
 	 * Only SIGSEGV means segmentation fault,
 	 * but we catch all signals that might cause coredump.
 	 */
-	signal(SIGABRT, sighandle);
-	signal(SIGBUS, sighandle);
-	signal(SIGFPE, sighandle);
-	signal(SIGILL, sighandle);
-	signal(SIGQUIT, sighandle);
-	signal(SIGSEGV, sighandle);
-	signal(SIGSYS, sighandle);
-	signal(SIGTRAP, sighandle);
-	signal(SIGXCPU, sighandle);
-	signal(SIGXFSZ, sighandle);
+	signal(SIGABRT, panic);
+	signal(SIGBUS, panic);
+	signal(SIGFPE, panic);
+	signal(SIGILL, panic);
+	signal(SIGQUIT, panic);
+	signal(SIGSEGV, panic);
+	signal(SIGSYS, panic);
+	signal(SIGTRAP, panic);
+	signal(SIGXCPU, panic);
+	signal(SIGXFSZ, panic);
 }
