@@ -41,8 +41,8 @@ CLEAN_LOG = @printf ' $(CCCOLOR)CLEAN$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP = strip
 # Formater.
 FORMATER = clang-format -i
-SRC = src/*.c
-HEADER = src/include/*.h
+SRC = src/*.c src/easteregg/*.c
+HEADER = src/include/*.h src/easteregg/include/*.h
 # Checker.
 CHECKER = clang-tidy
 CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn
@@ -71,6 +71,7 @@ static :all
 static-bionic :all
 build_dir:
 	@mkdir -p $(O)
+	@mkdir -p $(O)/easteregg
 $(objects) :%.o:src/%.c $(build_dir)
 	@cd $(O)
 	@$(CC) $(CFLAGS) -c ../$< -o $@
