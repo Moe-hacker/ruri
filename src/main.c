@@ -151,6 +151,11 @@ static void parse_args(int argc, char **argv, struct CONTAINER *container)
 			exit(EXIT_SUCCESS);
 		}
 		/**** For other options ****/
+		// As an easter egg.
+		if (strcmp(argv[index], "AwA") == 0) {
+			AwA();
+			exit(EXIT_SUCCESS);
+		}
 		// Show version info.
 		if (strcmp(argv[index], "-v") == 0 || strcmp(argv[index], "--version") == 0) {
 			show_version_info();

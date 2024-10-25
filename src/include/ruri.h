@@ -172,6 +172,7 @@ void register_signal(void);
 void setup_seccomp(const struct CONTAINER *container);
 void show_version_info(void);
 void show_version_code(void);
+void AwA(void);
 void show_helps(void);
 void show_examples(void);
 void store_info(const struct CONTAINER *container);
