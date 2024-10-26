@@ -45,6 +45,7 @@ static void mount_cgroup_v1(void)
 	mkdir("/sys/fs/cgroup/cpuset", S_IRUSR | S_IWUSR);
 	mount("none", "/sys/fs/cgroup/memory", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "memory");
 	mount("none", "/sys/fs/cgroup/cpuset", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpuset");
+	log("{base}Tried to mount cgroup v1\n");
 }
 static bool is_cgroupv2_supported(void)
 {
@@ -89,9 +90,11 @@ static int mount_cgroup_v2(void)
 	}
 	// But if it's not suppored, umount the controller and back to v1.
 	if (!is_cgroupv2_supported()) {
+		log("{base}Cgroup v2 is not supported, back to v1\n");
 		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 		return -1;
 	}
+	log("{base}Tried to mount cgroup v2\n");
 	return 0;
 }
 static int mount_cgroup(void)

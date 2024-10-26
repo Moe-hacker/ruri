@@ -205,6 +205,7 @@ void __cprintf(const char *buf)
 	}
 	// We will always reset the color in the end.
 	printf("\033[0m");
+	fflush(stdout);
 }
 void __cfprintf(FILE *stream, const char *buf)
 {
@@ -225,6 +226,7 @@ void __cfprintf(FILE *stream, const char *buf)
 	}
 	// We will always reset the color in the end.
 	fprintf(stream, "\033[0m");
+	fflush(stream);
 }
 size_t cprintf_get_bufsize(const char *format, ...)
 {

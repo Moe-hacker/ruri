@@ -167,6 +167,20 @@ struct __attribute__((aligned(32))) ID_MAP {
 		cfprintf(stderr, "\033[4m{base}%s{clear}\n", "https://github.com/Moe-hacker/ruri/issues");   \
 		exit(EXIT_FAILURE);                                                                          \
 	}
+// Log system.
+#if defined(RURI_DEBUG)
+#define log(...)                                                                      \
+	{                                                                             \
+		struct timeval tv;                                                    \
+		gettimeofday(&tv, NULL);                                              \
+		cfprintf(stdout, "{green}[%ld.%06ld] in %s() in %s line %d:\n", tv.tv_sec, tv.tv_usec,__func__,__FILE__,__LINE__); \
+		cfprintf(stdout, ##__VA_ARGS__)                                       \
+	}
+#else
+#define log(...) \
+	{        \
+	}
+#endif
 // Shared functions.
 void register_signal(void);
 void setup_seccomp(const struct CONTAINER *container);

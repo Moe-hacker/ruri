@@ -124,6 +124,7 @@ static char *build_container_info(const struct CONTAINER *container)
 	}
 	ret = k2v_add_comment(ret, "Environment variable.");
 	ret = k2v_add_config(char_array, ret, "env", container->env, len);
+	log("{base}Container config in /.rurienv:{cyan}\n%s", ret);
 	return ret;
 }
 // Store container info.
@@ -202,6 +203,7 @@ struct CONTAINER *read_info(struct CONTAINER *container, const char *container_d
 	close(fd);
 	// Read .rurienv file.
 	char *buf = k2v_open_file(file, (size_t)size);
+	log("{base}Container config in /.rurienv:{cyan}\n%s", buf);
 	// Only umount_container() will give a NULL struct.
 	if (container == NULL) {
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));

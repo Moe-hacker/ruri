@@ -287,6 +287,7 @@ struct ID_MAP get_idmap(uid_t uid, gid_t gid)
 	ret.uid = uid;
 	ret.gid = gid;
 	char *username = get_username(uid);
+	log("{base}Username: {cyan}%s\n", username);
 	if (username == NULL) {
 		ret.uid_lower = 0;
 		ret.uid_count = 0;
@@ -296,6 +297,12 @@ struct ID_MAP get_idmap(uid_t uid, gid_t gid)
 	}
 	get_uid_map(username, &ret);
 	get_gid_map(username, &ret);
+	log("{base}uid: {cyan}%d\n", ret.uid);
+	log("{base}gid: {cyan}%d\n", ret.gid);
+	log("{base}uid_lower: {cyan}%d\n", ret.uid_lower);
+	log("{base}uid_count: {cyan}%d\n", ret.uid_count);
+	log("{base}gid_lower: {cyan}%d\n", ret.gid_lower);
+	log("{base}gid_count: {cyan}%d\n", ret.gid_count);
 	free(username);
 	return ret;
 }

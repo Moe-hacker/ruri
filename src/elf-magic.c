@@ -321,5 +321,8 @@ struct MAGIC *get_magic(const char *cross_arch)
 		free(ret);
 		return NULL;
 	}
+	log("Cross architecture: {cyan}%s\n", cross_arch);
+	log("ELF magic: {cyan}%s\n", ret->magic);
+	log("ELF mask: {cyan}%s\n", ret->mask);
 	return ret;
 }

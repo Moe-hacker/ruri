@@ -50,6 +50,7 @@ void umount_container(const char *container_dir)
 	}
 	free(test);
 	struct CONTAINER *container = read_info(NULL, container_dir);
+	log("{base}Umounting container...\n");
 	char infofile[PATH_MAX] = { '\0' };
 	sprintf(infofile, "%s/.rurienv", container_dir);
 	int fd = open(infofile, O_RDONLY | O_CLOEXEC);
@@ -80,6 +81,7 @@ void umount_container(const char *container_dir)
 			if (container->extra_mountpoint[i] != NULL) {
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_mountpoint[i]);
+				log("{base}Umounting %s\n", to_umountpoint);
 				for (int j = 0; j < 10; j++) {
 					umount2(to_umountpoint, MNT_DETACH);
 					umount(to_umountpoint);
@@ -100,6 +102,7 @@ void umount_container(const char *container_dir)
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_ro_mountpoint[i]);
 				for (int j = 0; j < 10; j++) {
+					log("{base}Umounting %s\n", to_umountpoint);
 					umount2(to_umountpoint, MNT_DETACH);
 					umount(to_umountpoint);
 					usleep(20000);
@@ -117,6 +120,10 @@ void umount_container(const char *container_dir)
 	}
 	// Force umount system runtime directories for 10 times.
 	// Not necessary, but I think it's more secure.
+	log("{base}Umounting %s\n", sys_dir);
+	log("{base}Umounting %s\n", proc_dir);
+	log("{base}Umounting %s\n", dev_dir);
+	log("{base}Umounting %s\n", container_dir);
 	for (int i = 1; i < 10; i++) {
 		umount2(sys_dir, MNT_DETACH | MNT_FORCE);
 		usleep(20000);

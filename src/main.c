@@ -467,6 +467,10 @@ int main(int argc, char **argv)
 	check_container(container);
 	// unset $LD_PRELOAD.
 	unsetenv("LD_PRELOAD");
+	// Log.
+	char *info=container_info_to_k2v(container);
+	log("{base}Container config:{cyan}\n%s", info);
+	free(info);
 	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
 		// Unshare container.

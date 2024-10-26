@@ -127,6 +127,7 @@ dev_cflag() {
   test_and_add_cflag "-ffunction-sections"
   test_and_add_cflag "-fdata-sections"
   test_and_add_cflag "-Wl,--gc-sections"
+  test_and_add_cflag "-DRURI_DEBUG"
   if [ $STATIC_COMPILE ]; then
     test_and_add_cflag "-static"
   fi
