@@ -192,7 +192,7 @@ void read_config(struct CONTAINER *container, const char *path)
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	free(buf);
-	buf=container_info_to_k2v(container);
+	buf = container_info_to_k2v(container);
 	log("{base}Container config in %s:{cyan}\n%s", path, buf);
 	free(buf);
 }

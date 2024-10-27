@@ -46,21 +46,21 @@ size_t cprintf_get_bufsize(const char *format, ...);
  */
 #define cprintf(format, ...)                                                 \
 	{                                                                    \
-		char *__cprintf_buf = NULL;                                            \
+		char *__cprintf_buf = NULL;                                  \
 		size_t bufsize = cprintf_get_bufsize(format, ##__VA_ARGS__); \
-		__cprintf_buf = malloc(bufsize);                                       \
-		sprintf(__cprintf_buf, format, ##__VA_ARGS__);                         \
-		__cprintf(__cprintf_buf);                                              \
-		free(__cprintf_buf);                                                   \
+		__cprintf_buf = malloc(bufsize);                             \
+		sprintf(__cprintf_buf, format, ##__VA_ARGS__);               \
+		__cprintf(__cprintf_buf);                                    \
+		free(__cprintf_buf);                                         \
 	}
 #define cfprintf(stream, format, ...)                                        \
 	{                                                                    \
-		char *__cprintf_buf = NULL;                                            \
+		char *__cprintf_buf = NULL;                                  \
 		size_t bufsize = cprintf_get_bufsize(format, ##__VA_ARGS__); \
-		__cprintf_buf = malloc(bufsize);                                       \
-		sprintf(__cprintf_buf, format, ##__VA_ARGS__);                         \
-		__cfprintf(stream, __cprintf_buf);                                     \
-		free(__cprintf_buf);                                                   \
+		__cprintf_buf = malloc(bufsize);                             \
+		sprintf(__cprintf_buf, format, ##__VA_ARGS__);               \
+		__cfprintf(stream, __cprintf_buf);                           \
+		free(__cprintf_buf);                                         \
 	}
 #define CPRINTF_MAJOR 1
 #define CPRINTF_MINOR 0

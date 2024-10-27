@@ -468,7 +468,7 @@ int main(int argc, char **argv)
 	// unset $LD_PRELOAD.
 	unsetenv("LD_PRELOAD");
 	// Log.
-	char *info=container_info_to_k2v(container);
+	char *info = container_info_to_k2v(container);
 	log("{base}Container config:{cyan}\n%s", info);
 	free(info);
 	// Run container.

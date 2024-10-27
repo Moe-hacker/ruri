@@ -48,20 +48,10 @@ static void check_binary(const struct CONTAINER *container)
 	/*
 	 * Check for binaries we need for starting the container.
 	 */
-	// Check if command binary exists and is not a directory.
-	char init_binary[PATH_MAX];
-	strcpy(init_binary, container->container_dir);
-	strcat(init_binary, container->command[0]);
-	struct stat init_binary_stat;
-	// lstat(3) will return -1 while the init_binary does not exist.
-	if (lstat(init_binary, &init_binary_stat) != 0) {
-		umount_container(container->container_dir);
-		error("{red}Please check if CONTAINER_DIRECTORY and [COMMAND [ARG]...] are correct QwQ\n");
-	}
-	if (S_ISDIR(init_binary_stat.st_mode)) {
-		umount_container(container->container_dir);
-		error("{red}COMMAND can not be a directory QwQ\n");
-	}
+	/*
+	 * Since ruri use execvp() instead of execv(),
+	 * we will not check for init binary here now.
+	 */
 	// Check QEMU path.
 	if (container->cross_arch != NULL) {
 		if (container->qemu_path == NULL) {
@@ -430,7 +420,7 @@ void run_chroot_container(struct CONTAINER *container)
 	cprintf("{clear}");
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.
-	if (execv(container->command[0], container->command) == -1) {
+	if (execvp(container->command[0], container->command) == -1) {
 		// Catch exceptions.
 		error("{red}Failed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this{clear}\n", container->command[0], errno, strerror(errno));
 	}
@@ -508,7 +498,7 @@ void run_rootless_chroot_container(struct CONTAINER *container)
 	cprintf("{clear}");
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.
-	if (execv(container->command[0], container->command) == -1) {
+	if (execvp(container->command[0], container->command) == -1) {
 		// Catch exceptions.
 		error("{red}Failed to execute `%s`\nexecv() returned: %d\nerror reason: %s\nNote: unset $LD_PRELOAD before running ruri might fix this{clear}\n", container->command[0], errno, strerror(errno));
 	}
