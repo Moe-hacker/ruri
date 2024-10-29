@@ -1,4 +1,4 @@
-name: Build ruri arm64 binary
+name: AARCH64
 
 on:
   push:
@@ -7,30 +7,30 @@ on:
     branches: [ "main" ]
 
 jobs:
-  check_ruri_update:
-    name: Check Ruri update
+  check_update:
+    name: Check update
     runs-on: ubuntu-latest
     steps:
-      - name: Check Ruri version
-        id: check_ruri_version
+      - name: Check version
+        id: check_version
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
-          remote_version=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .tag_name)
+          remote_version=$(curl -L https://api.github.com/repos/Moe-sushi/ruri/releases/latest | jq -r .tag_name)
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
-      local_version: ${{ steps.check_ruri_version.outputs.local_version }}
-      remote_version: ${{ steps.check_ruri_version.outputs.remote_version }}
+      local_version: ${{ steps.check_version.outputs.local_version }}
+      remote_version: ${{ steps.check_version.outputs.remote_version }}
   build:
-    name: Build Ruri
-    needs: check_ruri_update
+    name: Build
+    needs: check_update
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Set env
         run: |
-          echo ruri_remote_version=${{ needs.check_ruri_update.outputs.remote_version }} | tee -a $GITHUB_ENV
+          echo remote_version=${{ needs.check_update.outputs.remote_version }} | tee -a $GITHUB_ENV
           echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
       - uses: actions/checkout@v4
       - uses: uraimo/run-on-arch-action@v2
@@ -38,23 +38,16 @@ jobs:
         id: runcmd
         with:
           arch: aarch64
-          distro: bookworm
+          distro: ubuntu_latest
           run: |
-            apt update
-            apt install -y \
-              make \
-              clang \
-              libseccomp-dev \
-              libcap-dev \
-              libc6-dev \
-              binutils&& ./configure -s&&make&&mv ruri ruri-arm64
+           cd build
+           bash chroot-alpine.sh
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.ruri_remote_version }}
+          tag_name: ${{ env.remote_version }}
           body: |
-            This is ruri binary release.
             Build time: ${{ env.build_time }}
           prerelease: false
           files: |
-            /home/runner/work/ruri/ruri/ruri-arm64
+            /home/runner/work/ruri/ruri/aarch64.tar
