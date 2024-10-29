@@ -41,7 +41,6 @@
 #include <linux/limits.h>
 #include <linux/sched.h>
 #include <linux/securebits.h>
-#include <linux/stat.h>
 #include <linux/version.h>
 #include <linux/loop.h>
 #include <sys/mount.h>
