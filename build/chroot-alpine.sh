@@ -16,7 +16,6 @@ git clone https://github.com/moe-hacker/ruri
 cd ruri
 cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
 cd ..
-sudo cp file.c alpine/file.c
 sudo cp build.sh alpine/build.sh
 sudo chmod +x alpine/build.sh
 sudo ./ruri/ruri ./alpine /bin/sh /build.sh

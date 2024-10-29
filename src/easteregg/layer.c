@@ -117,7 +117,7 @@ static void print_layer(struct LAYER *layer)
 	spin_unlock(&lock);
 	usleep(10000);
 }
-void play_action(struct ACTION *action, __useconds_t inr, unsigned int keep)
+void play_action(struct ACTION *action, useconds_t inr, unsigned int keep)
 {
 	struct ACTION **p = &action;
 	while ((*p) != NULL) {
@@ -130,7 +130,7 @@ void play_action(struct ACTION *action, __useconds_t inr, unsigned int keep)
 		p = &((*p)->next);
 	}
 }
-void playback_action(struct ACTION *action, __useconds_t inr, unsigned int keep)
+void playback_action(struct ACTION *action, useconds_t inr, unsigned int keep)
 {
 	struct ACTION **p = &action;
 	while ((*p)->next != NULL) {

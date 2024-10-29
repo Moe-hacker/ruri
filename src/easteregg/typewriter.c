@@ -100,7 +100,7 @@ static int get_lines(char *buf)
 	}
 	return j;
 }
-void typewrite_layer(struct LAYER *layer, __useconds_t inr, bool blink)
+void typewrite_layer(struct LAYER *layer, useconds_t inr, bool blink)
 {
 	int y_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
@@ -159,7 +159,7 @@ void typewrite_layer(struct LAYER *layer, __useconds_t inr, bool blink)
 		}
 	}
 }
-void clear_typewrite_layer(struct LAYER *layer, __useconds_t inr)
+void clear_typewrite_layer(struct LAYER *layer, useconds_t inr)
 {
 	int y_offset = get_lines(layer->layer);
 	char *buf = strdup(layer->layer);

@@ -4,7 +4,6 @@ FULL_URL="$BASE_URL/$ROOTFS_URL"
 wget "$FULL_URL"
 mkdir x86
 tar -xvf "$ROOTFS_URL" -C x86
-sudo cp file.c x86/file.c
 sudo cp build.sh x86/build.sh
 sudo chmod +x x86/build.sh
 sudo ./ruri/ruri ./x86 /bin/sh /build.sh
