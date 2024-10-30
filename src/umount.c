@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Umount container.
-void umount_container(const char *container_dir)
+void umount_container(const char *_Nonnull container_dir)
 {
 	/*
 	 * Read /.rurienv file and umount all mountpoints,

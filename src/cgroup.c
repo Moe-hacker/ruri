@@ -112,7 +112,7 @@ static int mount_cgroup(void)
 	// Note that if even v1 is not supported, we will go ahead, but cgroup will not work.
 	return 1;
 }
-static void set_cgroup_v1(const struct CONTAINER *container)
+static void set_cgroup_v1(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * We creat a new cgroup name as the same of container_id,
@@ -179,7 +179,7 @@ static void set_cgroup_v1(const struct CONTAINER *container)
 	// Do not keep the apifs mounted.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 }
-static void set_cgroup_v2(const struct CONTAINER *container)
+static void set_cgroup_v2(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * See comment of set_cgroup_v1().
@@ -222,7 +222,7 @@ static void set_cgroup_v2(const struct CONTAINER *container)
 	// Do not keep the apifs mounted.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 }
-void set_limit(const struct CONTAINER *container)
+void set_limit(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Mount cgroup controller and set limit.

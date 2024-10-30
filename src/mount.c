@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Return the same value as mkdir().
-static int mkdirs(const char *dir, mode_t mode)
+static int mkdirs(const char *_Nonnull dir, mode_t mode)
 {
 	/*
 	 * A very simple implementation of mkdir -p.
@@ -60,7 +60,7 @@ static int mkdirs(const char *dir, mode_t mode)
 	return ret;
 }
 // Mount disk device.
-static int mount_device(const char *source, const char *target, unsigned long mountflags)
+static int mount_device(const char *_Nonnull source, const char *_Nonnull target, unsigned long mountflags)
 {
 	/*
 	 * /proc/filesystems format just like:
@@ -125,7 +125,7 @@ static int mount_device(const char *source, const char *target, unsigned long mo
 	return ret;
 }
 // Same as `losetup` command.
-static char *losetup(const char *img)
+static char *losetup(const char *_Nonnull img)
 {
 	/*
 	 * We return the loopfile we get for losetup,
@@ -160,7 +160,7 @@ static char *losetup(const char *img)
 	log("{base}losetup {cyan}%s{base} ==> {cyan}%s{base}\n", img, loopfile);
 	return loopfile;
 }
-static int mk_mountpoint_dir(const char *target)
+static int mk_mountpoint_dir(const char *_Nonnull target)
 {
 	/*
 	 * Just to mkdir(target).
@@ -180,7 +180,7 @@ static int mk_mountpoint_dir(const char *target)
 	}
 	return 0;
 }
-static int touch_mountpoint_file(const char *target)
+static int touch_mountpoint_file(const char *_Nonnull target)
 {
 	/*
 	 * Create a common file at target.
@@ -204,7 +204,7 @@ static int touch_mountpoint_file(const char *target)
 	return 0;
 }
 // Mount dev/dir/img to target.
-int trymount(const char *source, const char *target, unsigned int mountflags)
+int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags)
 {
 	/*
 	 * This function is designed to mount a device/dir/image/file to target.

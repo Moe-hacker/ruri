@@ -66,7 +66,7 @@ static bool is_ruri_pid(pid_t pid)
 	return false;
 }
 // Format container info as k2v.
-static char *build_container_info(const struct CONTAINER *container)
+static char *build_container_info(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Format container runtime info to k2v format,
@@ -128,7 +128,7 @@ static char *build_container_info(const struct CONTAINER *container)
 	return ret;
 }
 // Store container info.
-void store_info(const struct CONTAINER *container)
+void store_info(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Format the runtime info of container to k2v format.
@@ -182,7 +182,7 @@ void store_info(const struct CONTAINER *container)
 	free(info);
 }
 // Read .rurienv file.
-struct CONTAINER *read_info(struct CONTAINER *container, const char *container_dir)
+struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_Nonnull container_dir)
 {
 	/*
 	 * Get runtime info of container.

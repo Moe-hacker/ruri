@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-static int try_execvp(char *argv[])
+static int try_execvp(char *_Nonnull argv[])
 {
 	/*
 	 * fork(2) and then execvp(3).
@@ -92,7 +92,7 @@ static void try_unshare(int flags)
 		error("{red}Your device does not support some namespaces needed!\n");
 	}
 }
-static void init_rootless_container(struct CONTAINER *container)
+static void init_rootless_container(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * For rootless container, the way to create/mount runtime dir/files is different.
@@ -181,7 +181,7 @@ static void set_id_map(uid_t uid, gid_t gid)
 	write(setgroups_fd, "allow", 5);
 	close(setgroups_fd);
 }
-void run_rootless_container(struct CONTAINER *container)
+void run_rootless_container(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Setup namespaces and run rootless container.

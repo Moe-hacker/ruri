@@ -44,7 +44,7 @@
 bool k2v_stop_at_warning = false;
 bool k2v_show_warning = true;
 // Get file size.
-size_t k2v_get_filesize(const char *path)
+size_t k2v_get_filesize(const char *_Nonnull path)
 {
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
@@ -62,7 +62,7 @@ size_t k2v_get_filesize(const char *path)
 	// To avoid overflow.
 	return (size_t)ret + 3;
 }
-static char *cuts(const char *str, char start, char end)
+static char *cuts(const char *_Nonnull str, char start, char end)
 {
 	/*
 	 * Cut the string from start to end.
@@ -138,7 +138,7 @@ static char *cuts(const char *str, char start, char end)
 	// Return the string we get.
 	return ret;
 }
-static char *get_first_line(const char *buf)
+static char *get_first_line(const char *_Nonnull buf)
 {
 	/*
 	 * Get the first line in `buf`.
@@ -164,7 +164,7 @@ static char *get_first_line(const char *buf)
 	free(line);
 	return ret;
 }
-static char *goto_next_line(const char *buf)
+static char *goto_next_line(const char *_Nonnull buf)
 {
 	// Remove null line.
 	const char *ptr = buf;
@@ -177,7 +177,7 @@ static char *goto_next_line(const char *buf)
 	// NULL will returned here if no `\n` found.
 	return (strchr(ptr, '\n'));
 }
-static bool is_null_val(const char *buf)
+static bool is_null_val(const char *_Nonnull buf)
 {
 	/*
 	 * Check if the right value is null.
@@ -201,7 +201,7 @@ static bool is_null_val(const char *buf)
 	// For other string, we think it's not null, at least.
 	return false;
 }
-static void do_basic_check(const char *buf)
+static void do_basic_check(const char *_Nonnull buf)
 {
 	/*
 	 * Do some basic checks when reading the config file.
@@ -253,7 +253,7 @@ _continue:
 		ptr = &ptr[1];
 	}
 }
-static char *key_get_right(const char *key, const char *buf)
+static char *key_get_right(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	/*
 	 * Get the right value of `=` for the `key`.
@@ -295,7 +295,7 @@ static char *key_get_right(const char *key, const char *buf)
 	}
 	return ret;
 }
-bool have_key(const char *key, const char *buf)
+bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	/*
 	 * Check if we have the `key` in `buf`.
@@ -346,7 +346,7 @@ bool have_key(const char *key, const char *buf)
 	}
 	return ret;
 }
-char *key_get_char(const char *key, const char *buf)
+char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	// Default return value: NULL.
 	if (key == NULL || buf == NULL) {
@@ -361,7 +361,7 @@ char *key_get_char(const char *key, const char *buf)
 	free(tmp);
 	return ret;
 }
-int key_get_int(const char *key, const char *buf)
+int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	// Default return value: 0.
 	// NULL check.
@@ -380,7 +380,7 @@ int key_get_int(const char *key, const char *buf)
 	ret = atoi(val);
 	return ret;
 }
-float key_get_float(const char *key, const char *buf)
+float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	// Default return value: 0.
 	// NULL check
@@ -399,7 +399,7 @@ float key_get_float(const char *key, const char *buf)
 	ret = (float)atof(val);
 	return ret;
 }
-bool key_get_bool(const char *key, const char *buf)
+bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	// Default return value: false.
 	// NULL check.
@@ -422,7 +422,7 @@ bool key_get_bool(const char *key, const char *buf)
 	free(val);
 	return false;
 }
-static int char_to_int_array(const char *buf, int *array)
+static int char_to_int_array(const char *_Nonnull buf, int *_Nonnull array)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -454,7 +454,7 @@ static int char_to_int_array(const char *buf, int *array)
 	}
 	return ret;
 }
-static int char_to_float_array(const char *buf, float *array)
+static int char_to_float_array(const char *_Nonnull buf, float *_Nonnull array)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -486,7 +486,7 @@ static int char_to_float_array(const char *buf, float *array)
 	}
 	return ret;
 }
-static int char_to_char_array(const char *buf, char *array[])
+static int char_to_char_array(const char *_Nonnull buf, char *_Nonnull array[])
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -519,7 +519,7 @@ static int char_to_char_array(const char *buf, char *array[])
 	}
 	return ret;
 }
-int key_get_int_array(const char *key, const char *buf, int *array)
+int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -536,7 +536,7 @@ int key_get_int_array(const char *key, const char *buf, int *array)
 	free(tmp);
 	return ret;
 }
-int key_get_char_array(const char *key, const char *buf, char *array[])
+int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[])
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -553,7 +553,7 @@ int key_get_char_array(const char *key, const char *buf, char *array[])
 	free(tmp);
 	return ret;
 }
-int key_get_float_array(const char *key, const char *buf, float *array)
+int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -570,7 +570,7 @@ int key_get_float_array(const char *key, const char *buf, float *array)
 	free(tmp);
 	return ret;
 }
-char *k2v_open_file(const char *path, size_t bufsize)
+char *k2v_open_file(const char *_Nonnull path, size_t bufsize)
 {
 	/*
 	 * It will automatically call malloc(2),
@@ -595,7 +595,7 @@ char *k2v_open_file(const char *path, size_t bufsize)
 	close(fd);
 	return ret;
 }
-static void print_shell_array(const char *buf)
+static void print_shell_array(const char *_Nonnull buf)
 {
 	// NULL check.
 	if (buf == NULL) {
@@ -617,7 +617,7 @@ static void print_shell_array(const char *buf)
 	}
 	printf(")\n");
 }
-static void print_key_to_shell(const char *key, const char *buf)
+static void print_key_to_shell(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	// NULL check.
 	if (key == NULL || buf == NULL) {
@@ -645,7 +645,7 @@ static void print_key_to_shell(const char *key, const char *buf)
 	}
 	free(right);
 }
-void k2v_to_shell(const char *buf)
+void k2v_to_shell(const char *_Nonnull buf)
 {
 	// NULL check.
 	if (buf == NULL) {
@@ -671,7 +671,7 @@ void k2v_to_shell(const char *buf)
 		ptr = &ptr[1];
 	}
 }
-char *char_to_k2v(const char *key, const char *val)
+char *char_to_k2v(const char *_Nonnull key, const char *_Nonnull val)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -687,7 +687,7 @@ char *char_to_k2v(const char *key, const char *val)
 	}
 	return ret;
 }
-char *int_to_k2v(const char *key, int val)
+char *int_to_k2v(const char *_Nonnull key, int val)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -697,7 +697,7 @@ char *int_to_k2v(const char *key, int val)
 	sprintf(ret, "%s=\"%d\"\n", key, val);
 	return ret;
 }
-char *bool_to_k2v(const char *key, bool val)
+char *bool_to_k2v(const char *_Nonnull key, bool val)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -707,7 +707,7 @@ char *bool_to_k2v(const char *key, bool val)
 	sprintf(ret, "%s=\"%s\"\n", key, val ? "true" : "false");
 	return ret;
 }
-char *float_to_k2v(const char *key, float val)
+char *float_to_k2v(const char *_Nonnull key, float val)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -719,7 +719,7 @@ char *float_to_k2v(const char *key, float val)
 	free(buf);
 	return ret;
 }
-char *char_array_to_k2v(const char *key, char *const *val, int len)
+char *char_array_to_k2v(const char *_Nonnull key, char *const *_Nonnull val, int len)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -753,7 +753,7 @@ char *char_array_to_k2v(const char *key, char *const *val, int len)
 	free(buf);
 	return ret;
 }
-char *int_array_to_k2v(const char *key, int *val, int len)
+char *int_array_to_k2v(const char *_Nonnull key, int *_Nonnull val, int len)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -783,7 +783,7 @@ char *int_array_to_k2v(const char *key, int *val, int len)
 	free(tmp);
 	return ret;
 }
-char *float_array_to_k2v(const char *key, float *val, int len)
+char *float_array_to_k2v(const char *_Nonnull key, float *_Nonnull val, int len)
 {
 	// NULL check.
 	if (key == NULL) {
@@ -813,7 +813,7 @@ char *float_array_to_k2v(const char *key, float *val, int len)
 	free(tmp);
 	return ret;
 }
-char *k2v_add_comment(char *buf, char *comment)
+char *k2v_add_comment(char *_Nonnull buf, char *_Nonnull comment)
 {
 	size_t size = 0;
 	if (buf != NULL) {

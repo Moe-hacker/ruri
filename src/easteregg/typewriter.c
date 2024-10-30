@@ -46,7 +46,7 @@
  * and I am too lazy to read the code.
  *
  */
-static int get_last_line_size(char *buf)
+static int get_last_line_size(char *_Nonnull buf)
 {
 	if (buf == NULL) {
 		return 0;
@@ -75,7 +75,7 @@ static int get_last_line_size(char *buf)
 	free(tmp);
 	return ret;
 }
-static char *del_last_line(char *buf)
+static char *del_last_line(char *_Nonnull buf)
 {
 	if (buf == NULL) {
 		return NULL;
@@ -90,7 +90,7 @@ static char *del_last_line(char *buf)
 	free(buf);
 	return tmp;
 }
-static int get_lines(char *buf)
+static int get_lines(char *_Nonnull buf)
 {
 	int j = 0;
 	for (size_t i = 0; i < strlen(buf); i++) {
@@ -100,7 +100,7 @@ static int get_lines(char *buf)
 	}
 	return j;
 }
-void typewrite_layer(struct LAYER *layer, useconds_t inr, bool blink)
+void typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
 {
 	int y_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
@@ -159,7 +159,7 @@ void typewrite_layer(struct LAYER *layer, useconds_t inr, bool blink)
 		}
 	}
 }
-void clear_typewrite_layer(struct LAYER *layer, useconds_t inr)
+void clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr)
 {
 	int y_offset = get_lines(layer->layer);
 	char *buf = strdup(layer->layer);

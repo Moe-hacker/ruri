@@ -37,13 +37,13 @@ int x;
 int y;
 atomic_flag lock = ATOMIC_FLAG_INIT;
 // The spin lock.
-void spin_lock(atomic_flag *lock)
+void spin_lock(atomic_flag *_Nonnull lock)
 {
 	while (atomic_flag_test_and_set(lock)) {
 	}
 }
 // The spin unlock.
-void spin_unlock(atomic_flag *lock)
+void spin_unlock(atomic_flag *_Nonnull lock)
 {
 	atomic_flag_clear(lock);
 }

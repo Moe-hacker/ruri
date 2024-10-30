@@ -33,9 +33,15 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
-void __cprintf(const char *buf);
-void __cfprintf(FILE *stream, const char *buf);
-size_t cprintf_get_bufsize(const char *format, ...);
+#ifndef _Nullable
+#define _Nullable
+#endif
+#ifndef _Nonnull
+#define _Nonnull
+#endif
+void __cprintf(const char *_Nonnull buf);
+void __cfprintf(FILE *_Nonnull stream, const char *_Nonnull buf);
+size_t cprintf_get_bufsize(const char *_Nonnull format, ...);
 // The `base` color.
 #define CPRINTF_BASE_COLOR "\033[1;38;2;254;228;208m"
 /*

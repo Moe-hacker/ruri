@@ -64,6 +64,12 @@
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
+#ifndef _Nullable
+#define _Nullable
+#endif
+#ifndef _Nonnull
+#define _Nonnull
+#endif
 // We redefine CAP_LAST_CAP to 114,
 // because for kernel in the fulture, there may be more capabilities than today.
 #undef CAP_LAST_CAP
@@ -93,17 +99,17 @@
 // Info of a container to create.
 struct __attribute__((aligned(128))) CONTAINER {
 	// Container directory.
-	char *container_dir;
+	char *_Nonnull container_dir;
 	// Capabilities to drop.
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
 	// Command for exec(2).
-	char *command[MAX_COMMANDS];
+	char *_Nullable command[MAX_COMMANDS];
 	// Extra mountpoints.
-	char *extra_mountpoint[MAX_MOUNTPOINTS];
+	char *_Nullable extra_mountpoint[MAX_MOUNTPOINTS];
 	// Extra read-only mountpoints.
-	char *extra_ro_mountpoint[MAX_MOUNTPOINTS];
+	char *_Nullable extra_ro_mountpoint[MAX_MOUNTPOINTS];
 	// Environment variables.
-	char *env[MAX_ENVS];
+	char *_Nullable env[MAX_ENVS];
 	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
 	// Enable built-in seccomp profile.
@@ -119,17 +125,17 @@ struct __attribute__((aligned(128))) CONTAINER {
 	// Container pid for setns(2).
 	pid_t ns_pid;
 	// Arch of multi-architecture container.
-	char *cross_arch;
+	char *_Nullable cross_arch;
 	// Path of QEMU binary.
-	char *qemu_path;
+	char *_Nullable qemu_path;
 	// Do not store .rurienv file.
 	bool use_rurienv;
 	// Mount / as read-only.
 	bool ro_root;
 	// Cpuset.
-	char *cpuset;
+	char *_Nullable cpuset;
 	// Memory.
-	char *memory;
+	char *_Nullable memory;
 	// A number based on the time when creating container.
 	int container_id;
 };
@@ -137,8 +143,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 #define magicof(x) (x##_magic)
 #define maskof(x) (x##_mask)
 struct __attribute__((aligned(16))) MAGIC {
-	char *magic;
-	char *mask;
+	char *_Nonnull magic;
+	char *_Nonnull mask;
 };
 // For get_idmap().
 struct __attribute__((aligned(32))) ID_MAP {
@@ -182,28 +188,28 @@ struct __attribute__((aligned(32))) ID_MAP {
 #endif
 // Shared functions.
 void register_signal(void);
-void setup_seccomp(const struct CONTAINER *container);
+void setup_seccomp(const struct CONTAINER *_Nonnull container);
 void show_version_info(void);
 void show_version_code(void);
 void AwA(void);
 void show_helps(void);
 void show_examples(void);
-void store_info(const struct CONTAINER *container);
-struct CONTAINER *read_info(struct CONTAINER *container, const char *container_dir);
-void add_to_caplist(cap_value_t *list, cap_value_t cap);
-bool is_in_caplist(const cap_value_t *list, cap_value_t cap);
-void del_from_caplist(cap_value_t *list, cap_value_t cap);
+void store_info(const struct CONTAINER *_Nonnull container);
+struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_Nonnull container_dir);
+void add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap);
+bool is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap);
+void del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap);
 void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[]);
-struct MAGIC *get_magic(const char *cross_arch);
-void run_unshare_container(struct CONTAINER *container);
-char *container_info_to_k2v(const struct CONTAINER *container);
-void run_chroot_container(struct CONTAINER *container);
-void run_rootless_container(struct CONTAINER *container);
-void run_rootless_chroot_container(struct CONTAINER *container);
-int trymount(const char *source, const char *target, unsigned int mountflags);
-void umount_container(const char *container_dir);
-void read_config(struct CONTAINER *container, const char *path);
-void set_limit(const struct CONTAINER *container);
+struct MAGIC *get_magic(const char *_Nonnull cross_arch);
+void run_unshare_container(struct CONTAINER *_Nonnull container);
+char *container_info_to_k2v(const struct CONTAINER *_Nonnull container);
+void run_chroot_container(struct CONTAINER *_Nonnull container);
+void run_rootless_container(struct CONTAINER *_Nonnull container);
+void run_rootless_chroot_container(struct CONTAINER *_Nonnull container);
+int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags);
+void umount_container(const char *_Nonnull container_dir);
+void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path);
+void set_limit(const struct CONTAINER *_Nonnull container);
 struct ID_MAP get_idmap(uid_t uid, gid_t gid);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝

@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-static bool su_biany_exist(char *container_dir)
+static bool su_biany_exist(char *_Nonnull container_dir)
 {
 	/*
 	 * Check if /bin/su exists in container.
@@ -43,7 +43,7 @@ static bool su_biany_exist(char *container_dir)
 	close(fd);
 	return true;
 }
-static void check_binary(const struct CONTAINER *container)
+static void check_binary(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Check for binaries we need for starting the container.
@@ -151,7 +151,7 @@ static void init_container(void)
 	}
 }
 // Run before chroot(2), so that init_container() will not take effect.
-static void mount_host_runtime(const struct CONTAINER *container)
+static void mount_host_runtime(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * It's unsafe to mount /dev, /proc and /sys from the host.
@@ -189,7 +189,7 @@ static void mount_host_runtime(const struct CONTAINER *container)
 }
 // Drop capabilities.
 // Use libcap.
-static void drop_caps(const struct CONTAINER *container)
+static void drop_caps(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Drop CapBnd and CapAmb as the config in container->drop_caplist[].
@@ -232,7 +232,7 @@ static void drop_caps(const struct CONTAINER *container)
 #endif
 }
 // Set envs.
-static void set_envs(const struct CONTAINER *container)
+static void set_envs(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * A very useless feature, I hope it works as expected.
@@ -252,7 +252,7 @@ static void set_envs(const struct CONTAINER *container)
 	}
 }
 // Run after init_container().
-static void setup_binfmt_misc(const struct CONTAINER *container)
+static void setup_binfmt_misc(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * For running multi-arch container.
@@ -282,7 +282,7 @@ static void setup_binfmt_misc(const struct CONTAINER *container)
 }
 // Mount other mountpoints.
 // Run before chroot(2).
-static void mount_mountpoints(const struct CONTAINER *container)
+static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Mount extra_mountpoint and extra_ro_mountpoint.
@@ -319,7 +319,7 @@ static void mount_mountpoints(const struct CONTAINER *container)
 	}
 }
 // Run chroot container.
-void run_chroot_container(struct CONTAINER *container)
+void run_chroot_container(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * It's called by main() and run_unshare_container().
@@ -426,7 +426,7 @@ void run_chroot_container(struct CONTAINER *container)
 	}
 }
 // Run chroot container.
-void run_rootless_chroot_container(struct CONTAINER *container)
+void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * It's called by run_rootless_container().

@@ -41,6 +41,12 @@
 #define false ((_Bool) + 0u)
 #endif
 #endif
+#ifndef _Nullable
+#define _Nullable
+#endif
+#ifndef _Nonnull
+#define _Nonnull
+#endif
 // Version info.
 #define LIBK2V_MAJOR 1
 #define LIBK2V_MINOR 0
@@ -48,24 +54,24 @@
 extern bool k2v_stop_at_warning;
 extern bool k2v_show_warning;
 // Functions.
-char *key_get_char(const char *key, const char *buf);
-int key_get_int(const char *key, const char *buf);
-float key_get_float(const char *key, const char *buf);
-bool key_get_bool(const char *key, const char *buf);
-int key_get_int_array(const char *key, const char *buf, int *array);
-int key_get_char_array(const char *key, const char *buf, char *array[]);
-int key_get_float_array(const char *key, const char *buf, float *array);
-bool have_key(const char *key, const char *buf);
-char *k2v_open_file(const char *path, size_t bufsize);
-void k2v_to_shell(const char *buf);
-char *char_to_k2v(const char *key, const char *val);
-char *int_to_k2v(const char *key, int val);
-char *bool_to_k2v(const char *key, bool val);
-char *float_to_k2v(const char *key, float val);
-char *char_array_to_k2v(const char *key, char *const *val, int len);
-char *int_array_to_k2v(const char *key, int *val, int len);
-char *float_array_to_k2v(const char *key, float *val, int len);
-size_t k2v_get_filesize(const char *path);
+char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf);
+int key_get_int(const char *_Nonnull key, const char *_Nonnull buf);
+float key_get_float(const char *_Nonnull key, const char *_Nonnull buf);
+bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf);
+int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array);
+int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[]);
+int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array);
+bool have_key(const char *_Nonnull key, const char *_Nonnull buf);
+char *k2v_open_file(const char *_Nonnull path, size_t bufsize);
+void k2v_to_shell(const char *_Nonnull buf);
+char *char_to_k2v(const char *_Nonnull key, const char *val);
+char *int_to_k2v(const char *_Nonnull key, int val);
+char *bool_to_k2v(const char *_Nonnull key, bool val);
+char *float_to_k2v(const char *_Nonnull key, float val);
+char *char_array_to_k2v(const char *_Nonnull key, char *const *_Nonnull val, int len);
+char *int_array_to_k2v(const char *_Nonnull key, int *_Nonnull val, int len);
+char *float_array_to_k2v(const char *_Nonnull key, float *_Nonnull val, int len);
+size_t k2v_get_filesize(const char *_Nonnull path);
 #define k2v_get_key(type, ...) key_get_##type(__VA_ARGS__)
 #define k2v_add_config(type, __k2v_buf, ...)                              \
 	({                                                                \
@@ -85,4 +91,4 @@ size_t k2v_get_filesize(const char *path);
 		free(__k2v_tmp);                                          \
 		__k2v_ret;                                                \
 	})
-char *k2v_add_comment(char *buf, char *comment);
+char *k2v_add_comment(char *_Nullable buf, char *_Nonnull comment);

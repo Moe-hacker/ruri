@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-static char *line_get_username(const char *p)
+static char *line_get_username(const char *_Nonnull p)
 {
 	/*
 	 * Get username by line.
@@ -47,7 +47,7 @@ static char *line_get_username(const char *p)
 	}
 	return ret;
 }
-static uid_t line_get_uid(const char *p)
+static uid_t line_get_uid(const char *_Nonnull p)
 {
 	/*
 	 * Get uid by line.
@@ -110,7 +110,7 @@ static char *get_username(uid_t uid)
 	free(buf);
 	return NULL;
 }
-static uid_t line_get_uid_lower(const char *p)
+static uid_t line_get_uid_lower(const char *_Nonnull p)
 {
 	/*
 	 * Get uid_lower by line.
@@ -136,7 +136,7 @@ static uid_t line_get_uid_lower(const char *p)
 	}
 	return ret;
 }
-static uid_t line_get_uid_count(const char *p)
+static uid_t line_get_uid_count(const char *_Nonnull p)
 {
 	/*
 	 * Get uid_count by line.
@@ -166,7 +166,7 @@ static uid_t line_get_uid_count(const char *p)
 	}
 	return ret;
 }
-static void get_uid_map(char *user, struct ID_MAP *id_map)
+static void get_uid_map(char *_Nonnull user, struct ID_MAP *_Nonnull id_map)
 {
 	/*
 	 * Get uid_map.
@@ -198,7 +198,7 @@ static void get_uid_map(char *user, struct ID_MAP *id_map)
 	id_map->uid_count = line_get_uid_count(map);
 	free(buf);
 }
-static gid_t line_get_gid_lower(const char *p)
+static gid_t line_get_gid_lower(const char *_Nonnull p)
 {
 	/*
 	 * See comments in line_get_uid_lower().
@@ -219,7 +219,7 @@ static gid_t line_get_gid_lower(const char *p)
 	}
 	return ret;
 }
-static gid_t line_get_gid_count(const char *p)
+static gid_t line_get_gid_count(const char *_Nonnull p)
 {
 	/*
 	 * See comments in line_get_uid_count().
@@ -244,7 +244,7 @@ static gid_t line_get_gid_count(const char *p)
 	}
 	return ret;
 }
-static void get_gid_map(const char *user, struct ID_MAP *id_map)
+static void get_gid_map(const char *_Nonnull user, struct ID_MAP *_Nonnull id_map)
 {
 	/*
 	 * Get gid_map.

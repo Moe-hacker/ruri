@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // For run_unshare_container().
-static pid_t init_unshare_container(struct CONTAINER *container)
+static pid_t init_unshare_container(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Use unshare(2) to create new namespaces and fork(2) to join them.
@@ -86,7 +86,7 @@ static pid_t init_unshare_container(struct CONTAINER *container)
 	return unshare_pid;
 }
 // For run_unshare_container().
-static pid_t join_ns(struct CONTAINER *container)
+static pid_t join_ns(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Use setns(2) to enter existing namespaces.
@@ -169,7 +169,7 @@ static pid_t join_ns(struct CONTAINER *container)
 	return unshare_pid;
 }
 // Run unshare container.
-void run_unshare_container(struct CONTAINER *container)
+void run_unshare_container(struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * We first read /.rurienv file to get container config.

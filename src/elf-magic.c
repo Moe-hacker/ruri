@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Get ELF magic number and mask for cross_arch specified.
-struct MAGIC *get_magic(const char *cross_arch)
+struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 {
 	/*
 	 * I know that this seems to be a little bit stupid,

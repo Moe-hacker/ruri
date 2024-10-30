@@ -33,7 +33,7 @@
 #define true ((_Bool) + 1u)
 #define false ((_Bool) + 0u)
 #endif
-static void print_rgb_color(const char *color)
+static void print_rgb_color(const char *_Nonnull color)
 {
 	/*
 	 * print \033[1;38;2;R;G;Bm format color.
@@ -45,7 +45,7 @@ static void print_rgb_color(const char *color)
 	}
 	printf("\033[1;38;2;%sm", buf);
 }
-static void fprint_rgb_color(FILE *stream, const char *color)
+static void fprint_rgb_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
 	/*
 	 * print \033[1;38;2;R;G;Bm format color.
@@ -57,7 +57,7 @@ static void fprint_rgb_color(FILE *stream, const char *color)
 	}
 	fprintf(stream, "\033[1;38;2;%sm", buf);
 }
-static bool is_rgb_color(const char *color)
+static bool is_rgb_color(const char *_Nonnull color)
 {
 	/*
 	 * Check if color is an R;G;B format color.
@@ -90,7 +90,7 @@ static bool is_rgb_color(const char *color)
 	}
 	return true;
 }
-static const char *cfprintf_print_color(FILE *stream, const char *buf)
+static const char *cfprintf_print_color(FILE *_Nonnull stream, const char *_Nonnull buf)
 {
 	/*
 	 * Only valid {color} will be recognized,
@@ -138,7 +138,7 @@ static const char *cfprintf_print_color(FILE *stream, const char *buf)
 	}
 	return ret;
 }
-static const char *cprintf_print_color(const char *buf)
+static const char *cprintf_print_color(const char *_Nonnull buf)
 {
 	/*
 	 * Only valid {color} will be recognized,
@@ -186,7 +186,7 @@ static const char *cprintf_print_color(const char *buf)
 	}
 	return ret;
 }
-void __cprintf(const char *buf)
+void __cprintf(const char *_Nonnull buf)
 {
 	const char *p = NULL;
 	p = buf;
@@ -207,7 +207,7 @@ void __cprintf(const char *buf)
 	printf("\033[0m");
 	fflush(stdout);
 }
-void __cfprintf(FILE *stream, const char *buf)
+void __cfprintf(FILE *_Nonnull stream, const char *_Nonnull buf)
 {
 	const char *p = NULL;
 	p = buf;
@@ -228,7 +228,7 @@ void __cfprintf(FILE *stream, const char *buf)
 	fprintf(stream, "\033[0m");
 	fflush(stream);
 }
-size_t cprintf_get_bufsize(const char *format, ...)
+size_t cprintf_get_bufsize(const char *_Nonnull format, ...)
 {
 	/*
 	 * Get the size we need to malloc() for the string buffer.

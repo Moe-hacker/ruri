@@ -47,7 +47,7 @@
  * and I am too lazy to read the code.
  *
  */
-static void clear_layer(struct LAYER *layer)
+static void clear_layer(struct LAYER *_Nonnull layer)
 {
 	spin_lock(&lock);
 	int y_offset = 0;
@@ -88,7 +88,7 @@ static void clear_layer(struct LAYER *layer)
 	spin_unlock(&lock);
 	usleep(10000);
 }
-static void print_layer(struct LAYER *layer)
+static void print_layer(struct LAYER *_Nonnull layer)
 {
 	spin_lock(&lock);
 	int y_offset = 0;
@@ -117,7 +117,7 @@ static void print_layer(struct LAYER *layer)
 	spin_unlock(&lock);
 	usleep(10000);
 }
-void play_action(struct ACTION *action, useconds_t inr, unsigned int keep)
+void play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
 {
 	struct ACTION **p = &action;
 	while ((*p) != NULL) {
@@ -130,7 +130,7 @@ void play_action(struct ACTION *action, useconds_t inr, unsigned int keep)
 		p = &((*p)->next);
 	}
 }
-void playback_action(struct ACTION *action, useconds_t inr, unsigned int keep)
+void playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
 {
 	struct ACTION **p = &action;
 	while ((*p)->next != NULL) {
@@ -146,7 +146,7 @@ void playback_action(struct ACTION *action, useconds_t inr, unsigned int keep)
 		p = &((*p)->prior);
 	}
 }
-void free_action(struct ACTION *action)
+void free_action(struct ACTION *_Nonnull action)
 {
 	struct ACTION *p = action;
 	while (p != NULL) {
@@ -157,7 +157,7 @@ void free_action(struct ACTION *action)
 		free(t);
 	}
 }
-struct ACTION *add_action(struct ACTION *action, int x_offset, int y_offset, char *layer)
+struct ACTION *add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char *_Nonnull layer)
 {
 	struct ACTION **p = &action;
 	struct ACTION *prior = action;

@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Do some checks before chroot(2),called by main().
-static void check_container(const struct CONTAINER *container)
+static void check_container(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * It's called by main() to check if container config is correct.
@@ -54,7 +54,7 @@ static void check_container(const struct CONTAINER *container)
 		error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
 	}
 }
-static void parse_cgroup_settings(const char *str, struct CONTAINER *container)
+static void parse_cgroup_settings(const char *_Nonnull str, struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Parse and set cgroup limit.
@@ -84,7 +84,7 @@ static void parse_cgroup_settings(const char *str, struct CONTAINER *container)
 		error("{red}Unknown cgroup option %s\n", str);
 	}
 }
-static void parse_args(int argc, char **argv, struct CONTAINER *container)
+static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * 100% shit-code here.

@@ -42,6 +42,12 @@
 #include <stdatomic.h>
 // This program should be compiled with -lpthread.
 #include <pthread.h>
+#ifndef _Nullable
+#define _Nullable
+#endif
+#ifndef _Nonnull
+#define _Nonnull
+#endif
 // WARNING: magic number! Do not change!
 #define X_SIZE 36
 #define Y_SIZE 2
@@ -78,17 +84,17 @@ extern int y;
 // This lock is used for print_layer() and clear_layer().
 extern atomic_flag lock;
 // Function list.
-void spin_lock(atomic_flag *lock);
-void spin_unlock(atomic_flag *lock);
-void play_action(struct ACTION *action, useconds_t inr, unsigned int keep);
-void playback_action(struct ACTION *action, useconds_t inr, unsigned int keep);
-void free_action(struct ACTION *action);
-struct ACTION *add_action(struct ACTION *action, int x_offset, int y_offset, char *layer);
+void spin_lock(atomic_flag *_Nonnull lock);
+void spin_unlock(atomic_flag *_Nonnull lock);
+void play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
+void playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
+void free_action(struct ACTION *_Nonnull action);
+struct ACTION *add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char *_Nonnull layer);
 void face(useconds_t inr, unsigned int keep);
 void mouth(useconds_t inr, unsigned int keep);
 void ahoge(useconds_t inr, unsigned int keep);
 void blink_lefteye(useconds_t inr, unsigned int keep);
 void blink_righteye(useconds_t inr, unsigned int keep);
 void close_and_open_righteye(useconds_t inr, unsigned int keep);
-void typewrite_layer(struct LAYER *layer, useconds_t inr, bool blink);
-void clear_typewrite_layer(struct LAYER *layer, useconds_t inr);
+void typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink);
+void clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr);

@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-char *container_info_to_k2v(const struct CONTAINER *container)
+char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 {
 	/*
 	 * Format container info to k2v format.
@@ -128,7 +128,7 @@ char *container_info_to_k2v(const struct CONTAINER *container)
 	ret = k2v_add_config(char, ret, "container_dir", container->container_dir);
 	return ret;
 }
-void read_config(struct CONTAINER *container, const char *path)
+void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path)
 {
 	/*
 	 * Read k2v format config file,
