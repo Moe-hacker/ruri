@@ -216,7 +216,7 @@ void run_rootless_container(struct CONTAINER *_Nonnull container)
 	// fork(2) into new namespaces we created.
 	pid_t pid = fork();
 	if (pid > 0) {
-		if (!set_id_map_succeed) {
+		if (!set_id_map_succeed && !container->no_warnings) {
 			warning("{yellow}Check if uidmap is installed on your host, command like su will run failed without uidmap.\n");
 			set_id_map(uid, gid);
 		}

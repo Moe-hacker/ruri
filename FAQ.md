@@ -1,3 +1,10 @@
+# Network issue:
+You might have `temporary failure resolving xxxxx` or `bad address xxxxx`.      
+Try:       
+```
+rm /etc/resolv.conf
+echo nameserver 1.1.1.1 > /etc/resolv.conf
+```
 # About container environment:      
 For safety, ruri container is like default docker container, it will mask some directory in /sys and /proc, drop unneed capabilities, and you are not able to run command like mknod or mount by default.      
 # About capability:      
