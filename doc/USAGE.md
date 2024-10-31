@@ -68,7 +68,7 @@ But remember that do not use this feature to simulate host architecture.
 ```
 -u, --unshare ...............................: Enable unshare feature
 ```
-ruri supports unshare container, but NET and PID namespace is not supported.        
+ruri supports unshare container, but NET and USER namespace is not supported.        
 *****************************************
 ```
 -n, --no-new-privs ..........................: Set NO_NEW_PRIVS flag

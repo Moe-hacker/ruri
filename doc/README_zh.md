@@ -3,48 +3,7 @@ ruri试图为`内核配置不完整`或`内存容量不充足`的设备提供更
 # 安装：
 您可以直接去[Release](https://github.com/Moe-hacker/ruri/releases/)下载ruri的静态二进制版本，或者您可以自行编译。      
 # 用法：
-```
-Usage:
-  ruri [选项]...
-  ruri [参数]... [容器目录]... [命令 [参数]...]
-
-OPTIONS:
-  -v, --version ...............................: 显示版本信息
-  -V, --version-code ..........................: 显示版本号
-  -h, --help ..................................: 显示帮助
-  -H, --show-examples .........................: 显示命令行示例
-  -U, --umount [容器目录] ......................: 解除容器挂载
-
-ARGS:
-  -D, --dump-config ...........................: 转储配置
-  -o, --output [config file] ..................: 设置配置转储路径
-  -c, --config [config file] ..................: 使用配置文件运行容器
-  -a, --arch [arch] ...........................: 使用binfmt_misc/QEMU模拟架构 (*)
-  -q, --qemu-path [path] ......................: 设置QEMU路径
-  -u, --unshare ...............................: 开启unshare
-  -n, --no-new-privs ..........................: 设置NO_NEW_PRIVS标志
-  -N, --no-rurienv ............................: 不使用.rurienv文件
-  -s, --enable-seccomp ........................: 开启内置Seccomp配置
-  -p, --privileged ............................: 运行特权容器
-  -r, --rootless ..............................: 运行rootless容器
-  -k, --keep [cap] ............................: 保留指定的capability(**)
-  -d, --drop [cap] ............................: 移除指定的capability
-  -e, --env [env] [value] .....................: 设置环境变量 (***)
-  -m, --mount [dir/dev/file] [target] .........: 挂载文件夹/块设备/镜像文件到挂载点 (****)
-  -M, --ro-mount [dir/dev/img/file] [target] ..: 挂载文件夹/块设备/镜像文件为只读
-  -S, --host-runtime ..........................: 从主机挂载 /dev/, /sys/ and /proc/
-  -R, --read-only .............................: 挂载 / 为只读
-  -l, --limit [cpuset=cpu/memory=mem] .........: 设置cpuset/memory限制(*****)
-  -w, --no-warnings ...........................: 关闭警告
-
-Note:
-(*)    : `-a` 和 `-q` 参数需要同时设置
-(**)   : cap 可以是capability的名称或值（e.g. cap_chown == 0）
-(***)  : 在 [命令 [参数]...] 为`/bin/su -`等时无法生效
-(****) : 您可以使用`-m [source] /`挂载块设备为根
-(*****): 每个 `-l` 参数仅可设置一条 cpuset/memory 限制
-        示例: `ruri -l memory=1M -l cpuset=1 /test`
-```
+See [USAGE](USAGE_zh.md)   
 # 使用：
 首先你需要一个rootfs，这是基础。
 去[lxc-mirror](https://mirrors.bfsu.edu.cn/lxc-images/images/)选一个，下载下来。      
@@ -68,13 +27,26 @@ sudo ruri -p ./test
 sudo ruri -u ./test
 ```
 基本使用篇完，只是简单用用的话，就这么简单。      
+# 网络问题：
+您可能会遇到像`temporary failure resolving xxxxx`或`bad address xxxxx`的错误。      
+可以尝试：  
+```
+rm /etc/resolv.conf
+echo nameserver 1.1.1.1 > /etc/resolv.conf
+```
+或者对于Android，您可尝试在容器中运行 https://github.com/Moe-hacker/daijin/raw/refs/heads/main/src/share/fixup.sh      
+# 关于rootless容器：
+如果在容器中遇到 `Couldn't create temporary file /tmp/apt.conf.sIKx3J for passing config to apt-key` 这样的错误，请 `chmod 777 /tmp`。  
+您需要在宿主机上安装 uidmap。  
+您可能需要在宿主机上配置/etc/subuid和/etc/subgid。      
 # 关于运行时目录：
 为了安全性，ruri会在chroot()后再创建/dev, /proc和/sys目录以及里面的文件，你可以使用-S选项来挂载宿主机上的运行时目录而非由ruri创建。      
 # 安全选项：
 ## 关于Capability：
 从Linux 2.2开始，内核将进程root特权分割为可独立控制的部分，称之为capability，capability是线程属性，可从父进程继承。      
 通常所说的root权限其实是拥有相关capability，如chroot(2)其实需要的是CAP_SYS_CHROOT而非完整的root特权。      
-ruri支持通过`-d`来移除capability，`-k`来保留。      
+ruri支持通过`-d`来移除capability，`-k`来保留。  
+未来可能会有新的权限被添加到内核中，如果您使用旧版本，可能无法识别它们的名称。您可以使用权限的值（使用 `capsh --explain=[cap]` 来获取值）来删除它，例如，使用 `-d 114` 来删除权限 114（咱也不知道这个权限具体是什么，也许可以让拥有这个权限的用户变成homo（大嘘））。     
 如果你并不知道capability配置意味着什么，请保持默认。      
 ## 其它安全选项：
 ruri内置了一份seccomp profile，可通过`-s`选项开启。      

@@ -11,7 +11,7 @@ Feel free to discuss at https://t.me/ruri_daijin_support
 # Download:    
 You can get ruri binary (statically linked) for arm64, armv7, riscv64, i386 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 # 中文文档
-[中文文档](/README_zh.md)      
+[中文文档](doc/README_zh.md)      
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -52,7 +52,7 @@ Usage: ./configure [OPTION]...
 ```
 
 # Usage:    
-See [USAGE](USAGE.md)      
+See [USAGE](doc/USAGE.md)      
 # Quick start(with rootfstool):
 ## Download and unpack a rootfs:
 ```
@@ -94,7 +94,7 @@ For command line examples, please see `ruri -H`.
   sudo ruri -U /tmp/alpine
 ```
 # FAQ:   
-[FAQ](FAQ.md)      
+[FAQ](doc/FAQ.md)      
 # License:
 License of code:      
 - Licensed under the MIT License      
