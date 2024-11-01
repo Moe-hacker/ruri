@@ -5,6 +5,7 @@
 
 <p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021122.svg)](https://doi.org/10.5281/zenodo.14021122)
 -----------------     
 # Get support:      
 Feel free to discuss at https://t.me/ruri_daijin_support     
