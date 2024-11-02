@@ -46,6 +46,7 @@ static bool is_ruri_pid(pid_t pid)
 	char buf[4096] = { '\0' };
 	char name[1024] = { '\0' };
 	read(fd, buf, sizeof(buf));
+	log("{base}Process stat:{cyan}\n%s", buf);
 	close(fd);
 	// Get the process name wrapped by `()`.
 	for (int i = 0; true; i++) {
@@ -223,6 +224,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	// Check if ns_pid is a ruri process.
 	// If not, that means the container is not running.
 	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
+		log("{base}pid %d is not a ruri process.", k2v_get_key(int, "ns_pid", buf));
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);
 		int attr = 0;
@@ -253,6 +255,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	// Get ns_pid.
 	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
+	log("{base}ns_pid: %d", container->ns_pid);
 	// Get container_id.
 	container->container_id = k2v_get_key(int, "container_id", buf);
 	// Get env.

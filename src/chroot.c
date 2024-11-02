@@ -318,6 +318,29 @@ static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 		free(mountpoint_dir);
 	}
 }
+// Try to use pivot_root(2).
+static int try_pivot_root(const struct CONTAINER *_Nonnull container)
+{
+	/*
+	 * Try to use pivot_root(2) to change the root directory.
+	 * If pivot_root(2) is not available, return -1.
+	 */
+	log("{base}ns pid: %d", container->ns_pid);
+	if (container->ns_pid > 0) {
+		log("{base}Using setns(2) to change root directory.");
+		chdir("/");
+		return 0;
+	}
+	chdir(container->container_dir);
+	if (syscall(SYS_pivot_root, ".", ".") == -1) {
+		log("{base}pivot_root(2) failed, using chroot(2) instead.");
+		return -1;
+	}
+	chdir("/");
+	umount2(".", MNT_DETACH);
+	log("{base}pivot_root(2) success.");
+	return 0;
+}
 // Run chroot container.
 void run_chroot_container(struct CONTAINER *_Nonnull container)
 {
@@ -377,9 +400,17 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	// Check binary used.
 	check_binary(container);
 	// chroot(2) into container.
-	chdir(container->container_dir);
-	chroot(".");
-	chdir("/");
+	if (!container->enable_unshare) {
+		chdir(container->container_dir);
+		chroot(".");
+		chdir("/");
+	} else {
+		if (try_pivot_root(container) == -1) {
+			chdir(container->container_dir);
+			chroot(".");
+			chdir("/");
+		}
+	}
 	// Mount/create system runtime dir/files.
 	init_container();
 	// Fix /etc/mtab.
@@ -460,9 +491,11 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	// Check binary used.
 	check_binary(container);
 	// chroot(2) into container.
-	chdir(container->container_dir);
-	chroot(".");
-	chdir("/");
+	if (try_pivot_root(container) == -1) {
+		chdir(container->container_dir);
+		chroot(".");
+		chdir("/");
+	}
 	// Fix /etc/mtab.
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
