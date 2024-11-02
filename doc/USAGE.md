@@ -9,6 +9,7 @@ ruri [ARGS]... [CONTAINER_DIRECTORY]... [COMMAND [ARGS]...]
 -V, --version-code ..........................: Show version code
 -h, --help ..................................: Show helps
 -H, --show-examples .........................: Show commandline examples
+-P, --ps [container_dir] ....................: Show process status of the container
 ```
 These four options will show the info.
 ********************************************

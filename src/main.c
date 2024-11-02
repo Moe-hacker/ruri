@@ -187,6 +187,16 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			}
 			exit(EXIT_FAILURE);
 		}
+		// Show process status of a container.
+		if (strcmp(argv[index], "-P") == 0 || strcmp(argv[index], "--ps") == 0) {
+			index += 1;
+			if (argv[index] != NULL) {
+				char *container_dir = realpath(argv[index], NULL);
+				container_ps(container_dir);
+				exit(EXIT_SUCCESS);
+			}
+			exit(EXIT_FAILURE);
+		}
 		/**** For running a container ****/
 		// Just make clang-tidy happy.
 		if (argv[index] == NULL) {

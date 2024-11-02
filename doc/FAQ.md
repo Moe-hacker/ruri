@@ -1,3 +1,7 @@
+# ``-P` option cannot show the process:
+Since ruri use pivot_root() for unshare container for better security,      
+if your device does not support PID ns,      
+we cannot get process info by reading the link /proc/$PID/root, because after pivot_root, it will always be `/`            
 # Network issue:
 You might have `temporary failure resolving xxxxx` or `bad address xxxxx`.      
 Try:       

@@ -58,10 +58,10 @@ static void init()
 	x = size.ws_col / 2 - X_SIZE / 2;
 	y = size.ws_row / 2 - Y_SIZE / 2;
 }
-static int tids[6] = { -114 };
+static long tids[6] = { -114 };
 static void update_tids(void)
 {
-	int tid = syscall(SYS_gettid);
+	long tid = syscall(SYS_gettid);
 	spin_lock(&lock2);
 	for (int i = 0; i < 6; i++) {
 		if (tids[i] < 0) {
@@ -135,7 +135,6 @@ void AwA()
 		printf("\033c");
 		for (int i = 0; i < 6; i++) {
 			if (tids[i] > 0) {
-				printf("%d\n", tids[i]);
 				syscall(SYS_tgkill, getpid(), tids[i], SIGKILL);
 			} else {
 				break;

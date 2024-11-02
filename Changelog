@@ -1,6 +1,7 @@
 # v3.7:
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
   * Add `-f` option: fork() before exec the command in container.
+  * Add `-P` option: show process info.
   * Fix unshare container joining ns.
   * Use pivot_root(2) instead of chroot(2) in unshare and rootless container.
   * Update easter egg: `ruri AwA`

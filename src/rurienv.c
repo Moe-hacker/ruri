@@ -188,14 +188,21 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	/*
 	 * Get runtime info of container.
 	 * And return the container struct back.
-	 * For umount_container(), it will accept a NULL struct,
+	 * For umount_container() and container_ps(), it will accept a NULL struct,
 	 * and return a struct with malloced memory.
 	 */
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container_dir);
 	int fd = open(file, O_RDONLY | O_CLOEXEC);
-	// If .rurienv file does not exist, just return.
+	// If .rurienv file does not exist.
 	if (fd < 0) {
+		// Return a malloced struct for umount_container() and container_ps().
+		if (container == NULL) {
+			container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+			container->extra_mountpoint[0] = NULL;
+			container->extra_ro_mountpoint[0] = NULL;
+			container->ns_pid = INIT_VALUE;
+		}
 		return container;
 	}
 	struct stat filestat;
@@ -207,6 +214,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	log("{base}Container config in /.rurienv:{cyan}\n%s", buf);
 	// Only umount_container() will give a NULL struct.
 	if (container == NULL) {
+		// For umount_container().
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
 		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
 		container->extra_mountpoint[mlen] = NULL;
@@ -214,6 +222,12 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
+		// For container_ps().
+		if (is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
+			container->ns_pid = k2v_get_key(int, "ns_pid", buf);
+		} else {
+			container->ns_pid = INIT_VALUE;
+		}
 		close(fd);
 		free(buf);
 		return container;
