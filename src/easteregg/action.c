@@ -116,33 +116,33 @@ void ahoge(useconds_t inr, unsigned int keep)
 void blink_lefteye(useconds_t inr, unsigned int keep)
 {
 	struct ACTION *action = NULL;
-	action = add_action(action, 1, 3,
+	action = add_action(action, 1, 2,
 			    "  ██████ \n"
 			    "██      ██\n"
 			    "  ██████\n"
 			    "  ██  ██\n"
 			    "  ██████\n");
-	action = add_action(action, 1, 3,
+	action = add_action(action, 1, 2,
 			    "\n"
 			    "  ██████ \n"
 			    "██      ██\n"
 			    "  ██  ██\n"
 			    "  ██████\n");
-	action = add_action(action, 1, 3,
+	action = add_action(action, 1, 2,
 			    "\n\n"
 			    "  ██████ \n"
 			    "██      ██\n"
 			    "  ██████\n");
-	action = add_action(action, 1, 3,
+	action = add_action(action, 1, 2,
 			    "\n\n\n"
 			    "  ██████ \n"
 			    "██████████\n");
-	action = add_action(action, 1, 3,
+	action = add_action(action, 1, 2,
 			    "\n\n"
 			    "   ████\n"
 			    "       ██\n"
 			    "  █████\n");
-	action = add_action(action, 1, 3,
+	action = add_action(action, 1, 2,
 			    "\n"
 			    "  ████\n"
 			    "      ██\n"
@@ -154,33 +154,33 @@ void blink_lefteye(useconds_t inr, unsigned int keep)
 void blink_righteye(useconds_t inr, unsigned int keep)
 {
 	struct ACTION *action = NULL;
-	action = add_action(action, 16, 3,
+	action = add_action(action, 16, 2,
 			    "  ██████ \n"
 			    "██      ██\n"
 			    "  \033[31m██  ██\n"
 			    "    ██  \n"
 			    "  ██  ██\n");
-	action = add_action(action, 16, 3,
+	action = add_action(action, 16, 2,
 			    "\n"
 			    "  ██████ \n"
 			    "██\033[31m██  ██\033[0m██\n"
 			    "    \033[31m██\n"
 			    "  ██  ██\n");
-	action = add_action(action, 16, 3,
+	action = add_action(action, 16, 2,
 			    "\n\n"
 			    "  ██████ \n"
 			    "██  \033[31m██\033[0m  ██\n"
 			    "  \033[31m██  ██\n");
-	action = add_action(action, 16, 3,
+	action = add_action(action, 16, 2,
 			    "\n\n\n"
 			    "  ██████  \n"
 			    "██\033[31m██  ██\033[0m██ \n");
-	action = add_action(action, 16, 3,
+	action = add_action(action, 16, 2,
 			    "\n\n"
 			    "  ████\n"
 			    "██\n"
 			    "  █████\n");
-	action = add_action(action, 16, 3,
+	action = add_action(action, 16, 2,
 			    "\n"
 			    "    ████\n"
 			    "  ██\n"

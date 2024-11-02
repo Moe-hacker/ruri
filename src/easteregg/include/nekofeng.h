@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdatomic.h>
+#include <sys/syscall.h>
 // This program should be compiled with -lpthread.
 #include <pthread.h>
 #ifndef _Nullable

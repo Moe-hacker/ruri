@@ -36,16 +36,17 @@
 int x;
 int y;
 atomic_flag lock = ATOMIC_FLAG_INIT;
+atomic_flag lock2 = ATOMIC_FLAG_INIT;
 // The spin lock.
-void spin_lock(atomic_flag *_Nonnull lock)
+void spin_lock(atomic_flag *_Nonnull l)
 {
-	while (atomic_flag_test_and_set(lock)) {
+	while (atomic_flag_test_and_set(l)) {
 	}
 }
 // The spin unlock.
-void spin_unlock(atomic_flag *_Nonnull lock)
+void spin_unlock(atomic_flag *_Nonnull l)
 {
-	atomic_flag_clear(lock);
+	atomic_flag_clear(l);
 }
 // init() function for getting window size.
 static void init()
@@ -57,30 +58,48 @@ static void init()
 	x = size.ws_col / 2 - X_SIZE / 2;
 	y = size.ws_row / 2 - Y_SIZE / 2;
 }
-// TODO: WIP.
+static int tids[6] = { -114 };
+static void update_tids(void)
+{
+	int tid = syscall(SYS_gettid);
+	spin_lock(&lock2);
+	for (int i = 0; i < 6; i++) {
+		if (tids[i] < 0) {
+			tids[i] = tid;
+			tids[i + 1] = -114;
+			spin_unlock(&lock2);
+			return;
+		}
+	}
+}
 void *test0(void *arg)
 {
-	face(100000, 5);
+	update_tids();
+	face(100000, 7);
 	return arg;
 }
 void *test1(void *arg)
 {
-	blink_lefteye(200000, 5);
+	update_tids();
+	blink_lefteye(200000, 7);
 	return arg;
 }
 void *test2(void *arg)
 {
-	blink_righteye(200000, 5);
+	update_tids();
+	blink_righteye(200000, 7);
 	return arg;
 }
 void *test3(void *arg)
 {
-	mouth(200000, 5);
+	update_tids();
+	mouth(200000, 7);
 	return arg;
 }
 void *test4(void *arg)
 {
-	for (int i = 0; i < 8; i++) {
+	update_tids();
+	for (int i = 0; i < 11; i++) {
 		ahoge(300000, 0);
 	}
 	return arg;
@@ -102,19 +121,38 @@ void AwA()
 	typewrite_layer(&layer, 50000, true);
 	sleep(2);
 	clear_typewrite_layer(&layer, 50000);
-	pthread_t t0, t1, t2, t3, t4;
-	pthread_create(&t0, NULL, test0, NULL);
-	pthread_create(&t3, NULL, test3, NULL);
-	pthread_create(&t1, NULL, test1, NULL);
-	pthread_create(&t2, NULL, test2, NULL);
-	pthread_create(&t4, NULL, test4, NULL);
-	sleep(5);
+	pid_t pid = fork();
+	if (pid > 0) {
+		wait(NULL);
+	} else {
+		pthread_t t0, t1, t2, t3, t4;
+		pthread_create(&t0, NULL, test0, NULL);
+		pthread_create(&t3, NULL, test3, NULL);
+		pthread_create(&t1, NULL, test1, NULL);
+		pthread_create(&t2, NULL, test2, NULL);
+		pthread_create(&t4, NULL, test4, NULL);
+		sleep(7);
+		printf("\033c");
+		for (int i = 0; i < 6; i++) {
+			if (tids[i] > 0) {
+				printf("%d\n", tids[i]);
+				syscall(SYS_tgkill, getpid(), tids[i], SIGKILL);
+			} else {
+				break;
+			}
+		}
+	}
 	printf("\033c");
-	kill(t0, 9);
-	kill(t1, 9);
-	kill(t2, 9);
-	kill(t3, 9);
-	kill(t4, 9);
+	layer.layer = "\033[1;38;2;254;228;208m\n"
+		      "●   ●  ●●●  ●●●●●       ●   ●   ●    ●●●  ●●●●● ●●●●  \n"
+		      "●● ●● ●   ● ●           ●   ●  ● ●  ●   ● ●     ●   ● \n"
+		      "● ● ● ●   ● ●●●●  ●●●●● ●●●●● ●●●●● ●     ●●●●  ●●●●● \n"
+		      "●   ● ●   ● ●           ●   ● ●   ● ●   ● ●     ●  ●  \n"
+		      "●   ●  ●●●  ●●●●●       ●   ● ●   ●  ●●●  ●●●●● ●   ● \n";
+	layer.x_offset = -10;
+	layer.y_offset = -2;
+	typewrite_layer(&layer, 5000, false);
+	sleep(4);
 	printf("\033c");
 	printf("\n\033[?25h");
 }
