@@ -7,8 +7,6 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
-# Get support:      
-Feel free to discuss at https://t.me/ruri_daijin_support     
 # Download:    
 You can get ruri binary (statically linked) for arm64, armv7, riscv64, i386 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 # 中文文档
