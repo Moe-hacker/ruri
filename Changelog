@@ -1,6 +1,8 @@
 # v3.7:
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
   * Add `-f` option: fork() before exec the command in container.
+  * Fix unshare container joining ns.
+  * Use pivot_root(2) instead of chroot(2) in unshare and rootless container.
 # v3.6:
   * Add `uidmap` suid binary support, to fix setgroup() failed in rootless container.
   * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.
