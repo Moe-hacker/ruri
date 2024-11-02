@@ -150,4 +150,13 @@ ruri -l memory=1M -l cpuset=1 /test
 ```
 -w, --no-warnings ...........................: Disable warnings
 ```
-There might be some warnings when running ruri, if you don't like, use `-w` option to disable them.    
+There might be some warnings when running ruri, if you don't like, use `-w` option to disable them.       
+****************************************************
+```
+-f, --fork ..................................: fork() before exec the command
+```
+ruri will set its process name to `ruri`,     
+but after exec(), this name will be changed.     
+unshare and rootless container will always fork() before running commands in container,      
+you can use this option to make common chroot container have the same behaiver,      
+so you can find all running container by finding the process name `ruri` in `ps` command.      

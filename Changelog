@@ -1,5 +1,6 @@
 # v3.7:
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
+  * Add `-f` option: fork() before exec the command in container.
 # v3.6:
   * Add `uidmap` suid binary support, to fix setgroup() failed in rootless container.
   * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.

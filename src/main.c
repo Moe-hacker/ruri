@@ -100,6 +100,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		exit(EXIT_FAILURE);
 	}
 	// Init configs.
+	bool fork_exec = false;
 	bool dump_config = false;
 	char *output_path = NULL;
 	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
@@ -211,6 +212,10 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				error("{red}Please specify the output file\n{clear}");
 			}
 			output_path = argv[index];
+		}
+		// Fork to exec.
+		else if (strcmp(argv[index], "-f") == 0 || strcmp(argv[index], "--fork") == 0) {
+			fork_exec = true;
 		}
 		// Set no_new_privs bit.
 		else if (strcmp(argv[index], "-n") == 0 || strcmp(argv[index], "--no-new-privs") == 0) {
@@ -445,6 +450,15 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		free(config);
 		close(fd);
 		exit(EXIT_SUCCESS);
+	}
+	// Fork before running chroot container.
+	// So the chroot container can have a parent process called ruri.
+	if (fork_exec && !container->enable_unshare && !container->rootless) {
+		pid_t pid = fork();
+		if (pid > 0) {
+			waitpid(pid, NULL, 0);
+			exit(EXIT_SUCCESS);
+		}
 	}
 }
 // It works on my machine!!!

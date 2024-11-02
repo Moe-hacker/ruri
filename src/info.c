@@ -114,14 +114,16 @@ void show_helps(void)
 	cprintf("{base}  -R, --read-only .............................: Mount / as read-only\n");
 	cprintf("{base}  -l, --limit [cpuset=cpu/memory=mem] .........: Set cpuset/memory limit(*****)\n");
 	cprintf("{base}  -w, --no-warnings ...........................: Disable warnings\n");
+	cprintf("{base}  -f, --fork ..................................: fork() before exec the command(******)\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
-	cprintf("{base}(*)    : `-a` option also need `-q` is set\n");
-	cprintf("{base}(**)   : cap can both be value or name (e.j. cap_chown == 0)\n");
-	cprintf("{base}(***)  : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
-	cprintf("{base}(****) : You can use `-m [source] /` to mount a block device as root\n");
-	cprintf("{base}(*****): Each `-l` option can only set one of the cpuset/memory limits\n");
-	cprintf("{base}         for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
+	cprintf("{base}(*)     : `-a` option also need `-q` is set\n");
+	cprintf("{base}(**)    : cap can both be value or name (e.j. cap_chown == 0)\n");
+	cprintf("{base}(***)   : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
+	cprintf("{base}(****)  : You can use `-m [source] /` to mount a block device as root\n");
+	cprintf("{base}(*****) : Each `-l` option can only set one of the cpuset/memory limits\n");
+	cprintf("{base}          for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
+	cprintf("{base}(******): This option is for getting ruri process status with `ps` command\n");
 	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.
