@@ -95,6 +95,5 @@ void mouth(useconds_t inr, unsigned int keep);
 void ahoge(useconds_t inr, unsigned int keep);
 void blink_lefteye(useconds_t inr, unsigned int keep);
 void blink_righteye(useconds_t inr, unsigned int keep);
-void close_and_open_righteye(useconds_t inr, unsigned int keep);
 void typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink);
 void clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr);
