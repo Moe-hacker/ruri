@@ -15,3 +15,8 @@ a.out
 t.c
 config.mk
 *.pyc
+debian/ruri
+debian/source
+debian/.debhelper
+debian/debhelper-build-stamp
+debian/files
