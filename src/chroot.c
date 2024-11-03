@@ -477,6 +477,10 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	if (container->use_rurienv) {
 		store_info(container);
 	}
+	// If `-R` option is set, make / read-only.
+	if (container->ro_root) {
+		mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
+	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
 		if (su_biany_exist(container->container_dir)) {
