@@ -9,6 +9,12 @@
 -----------------     
 # Download:    
 You can get ruri binary (statically linked) for arm64, armv7, riscv64, i386 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
+Or you can run the following command to download ruri automatically:      
+```sh
+wget https://github.com/Moe-hacker/ruri/raw/refs/heads/main/getruri.sh
+bash getruri.sh -s
+```
+This will automatically download ruri binary to `./ruri`.      
 # 中文文档
 [中文文档](doc/README_zh.md)      
 # WARNING:      
@@ -51,9 +57,13 @@ Usage: ./configure [OPTION]...
     -s, --static        compile static binary
     -d, --dev           compile dev version
 ```
-
+# Integration:
+ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
+See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    
 # Usage:    
 See [USAGE](doc/USAGE.md)      
+# FAQ:   
+[FAQ](doc/FAQ.md)      
 # Quick start(with rootfstool):
 ## Download and unpack a rootfs:
 ```
@@ -94,8 +104,6 @@ For command line examples, please see `ruri -H`.
 # Umount the container:
   sudo ruri -U /tmp/alpine
 ```
-# FAQ:   
-[FAQ](doc/FAQ.md)      
 # License:
 License of code:      
 - Licensed under the MIT License      
