@@ -142,10 +142,15 @@ static void init_container(void)
 		mount("/dev/null", "/proc/timer_list", "", MS_BIND, NULL);
 		mount("/dev/null", "/proc/timer_stats", "", MS_BIND, NULL);
 		mount("/dev/null", "/proc/sched_debug", "", MS_BIND, NULL);
+		mount("/dev/null", "/proc/sysrq-trigger", "", MS_BIND, NULL);
 		mount("tmpfs", "/proc/scsi", "tmpfs", MS_RDONLY, NULL);
 		mount("tmpfs", "/sys/firmware", "tmpfs", MS_RDONLY, NULL);
 		mount("tmpfs", "/sys/devices/virtual/powercap", "tmpfs", MS_RDONLY, NULL);
 		mount("tmpfs", "/sys/block", "tmpfs", MS_RDONLY, NULL);
+		mount("tmpfs", "/sys/kernel/debug", "tmpfs", MS_RDONLY, NULL);
+		mount("tmpfs", "/sys/module", "tmpfs", MS_RDONLY, NULL);
+		mount("tmpfs", "/sys/class/net", "tmpfs", MS_RDONLY, NULL);
+		mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_RDONLY, NULL);
 	} else {
 		free(test);
 	}
