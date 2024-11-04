@@ -27,6 +27,8 @@ If this profile does not fit your needs, you can edit src/seccomp.c and write yo
 Ruri supports enable no_new_privs bit by `-n` option, after enabling this, command like `sudo` will be unavailable for common user.      
 ### Mount / as read-only:
 Ruri supports mounting the rootfs of container as read-only by using `-R` option, this will make all the container read-only.      
+### Do not create runtime dirs:
+/dev, /proc and /sys will not be mounted if you enable `-j` option.      
 # Other built-in protections:
 ## Devices in /dev.
 For /dev, ruri will only create necessary devices on it,  so that block devices will always be unavailable in container, and as cap_mknod and cap_sys_admin is dropped by default, you can not escape from ruri container by modifying disk partitions.      

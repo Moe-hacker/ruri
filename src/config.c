@@ -87,6 +87,9 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	// memory.
 	ret = k2v_add_comment(ret, "Cgroup memory limit.");
 	ret = k2v_add_config(char, ret, "memory", container->memory);
+	// just_chroot.
+	ret = k2v_add_comment(ret, "Just chroot, do not create runtime dirs.");
+	ret = k2v_add_config(bool, ret, "just_chroot", container->just_chroot);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -179,6 +182,8 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	container->cpuset = k2v_get_key(char, "cpuset", buf);
 	// Get memory.
 	container->memory = k2v_get_key(char, "memory", buf);
+	// Get just_chroot.
+	container->just_chroot = k2v_get_key(bool, "just_chroot", buf);
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env);
 	container->env[envlen] = NULL;

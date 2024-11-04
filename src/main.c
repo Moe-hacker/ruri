@@ -279,6 +279,10 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		else if (strcmp(argv[index], "-w") == 0 || strcmp(argv[index], "--no-warnings") == 0) {
 			container->no_warnings = true;
 		}
+		// Just chroot.
+		else if (strcmp(argv[index], "-j") == 0 || strcmp(argv[index], "--just-chroot") == 0) {
+			container->just_chroot = true;
+		}
 		// Force bind-mount host /dev/, /sys/ and /proc/.
 		else if (strcmp(argv[index], "-S") == 0 || strcmp(argv[index], "--host-runtime") == 0) {
 			container->mount_host_runtime = true;

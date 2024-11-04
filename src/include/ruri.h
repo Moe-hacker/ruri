@@ -138,6 +138,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *_Nullable memory;
 	// A number based on the time when creating container.
 	int container_id;
+	// Do not create runtime directory.
+	bool just_chroot;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

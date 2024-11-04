@@ -232,7 +232,9 @@ void run_rootless_container(struct CONTAINER *_Nonnull container)
 		error("{red}Fork error QwQ?\n");
 	} else {
 		// Init rootless container.
-		init_rootless_container(container);
+		if (!container->just_chroot) {
+			init_rootless_container(container);
+		}
 		run_rootless_chroot_container(container);
 	}
 }

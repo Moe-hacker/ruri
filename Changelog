@@ -2,6 +2,7 @@
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
   * Add `-f` option: fork() before exec the command in container.
   * Add `-P` option: show process info.
+  * Add `-j` option: just chroot, do not create /dev, /proc and /sys.
   * Fix unshare container joining ns.
   * Use pivot_root(2) instead of chroot(2) in unshare and rootless container.
   * Update masked dirs/files.

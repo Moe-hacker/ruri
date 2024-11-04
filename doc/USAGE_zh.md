@@ -160,3 +160,7 @@ ruri -l memory=1M -l cpuset=1 /test
 ruri会设置进程名为ruri，但在exec()后此进程名可能失效。      
 unshare容器和rootless容器会始终在执行命令前fork()自身一次，     
 使用此选项使普通chroot容器拥有相同行为，然后您可通过父进程ruri检索容器进程。     
+```
+-j, --just-chroot ...........................: 仅chroot，不创建/dev，/sys和/proc
+```
+使用此选项避免ruri创建/dev，/sys和/proc。

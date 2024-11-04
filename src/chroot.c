@@ -379,7 +379,7 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 			mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
 		}
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
-		if (container->mount_host_runtime) {
+		if (container->mount_host_runtime && !container->just_chroot) {
 			mount_host_runtime(container);
 		}
 	}
@@ -417,7 +417,9 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 		}
 	}
 	// Mount/create system runtime dir/files.
-	init_container();
+	if (!container->just_chroot) {
+		init_container();
+	}
 	// Fix /etc/mtab.
 	remove("/etc/mtab");
 	unlink("/etc/mtab");

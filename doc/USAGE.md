@@ -161,3 +161,7 @@ but after exec(), this name will be changed.
 unshare and rootless container will always fork() before running commands in container,      
 you can use this option to make common chroot container have the same behaiver,      
 so you can find all running container by finding the process name `ruri` in `ps` command.      
+```
+-j, --just-chroot ...........................: Just chroot, do not create the runtime dirs
+```
+If you enable this option, ruri will not create runtime dirs(/dev, proc and /sys) in container.       
