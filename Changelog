@@ -4,7 +4,10 @@
   * Add `-P` option: show process info.
   * Fix unshare container joining ns.
   * Use pivot_root(2) instead of chroot(2) in unshare and rootless container.
-  * Update easter egg: `ruri AwA`
+  * Update masked dirs/files.
+  * Update easter egg: `ruri AwA`.
+  * Add debian packege info.
+  * General bug fixes.
 # v3.6:
   * Add `uidmap` suid binary support, to fix setgroup() failed in rootless container.
   * ruri can now recognize CONTAINER_DIR path start without `.` or `/`.
