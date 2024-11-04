@@ -57,6 +57,15 @@ Usage: ./configure [OPTION]...
     -s, --static        compile static binary
     -d, --dev           compile dev version
 ```
+## Build Debian package: 
+Debian do not like static binary, so in debian package, ruri is dynamically linked.      
+You can run:       
+```sh
+apt update
+apt build-dep . -y
+dpkg-buildpackage -b -us -uc -d
+```
+This will bulid the debian package.      
 # Integration:
 ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
 See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    
