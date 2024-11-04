@@ -26,6 +26,10 @@ This will automatically download ruri binary to `./ruri`.
 * You do it at your own risk and take the responsibility upon yourself.
 * This program has no Super Cow Powers.
 ```
+# Security alert:
+If your device do not have PID NS support or if you didn't enable unshare feature,      
+It might be easy to eascape from the container by `chroot /proc/1/root`.      
+Even if you drop cap_sys_chroot, it might be easy to eascape from the container by modifying files in /proc/1/root (The / of host).       
 # Bug reporting:
 > “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
 > --Torvalds

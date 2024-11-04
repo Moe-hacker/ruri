@@ -13,6 +13,9 @@ Ruri supports memory cgroup, you can use `-l` option to set the limit of memory 
 ### Enable unshare:
 Ruri supports unshare, it's recommended to enable this feature for better security.      
 Unshare container will use pivot_root(2) instead chroot(2), so it's more secure.      
+If your device do not have PID NS support or if you didn't enable unshare feature,      
+It might be easy to eascape from the container by `chroot /proc/1/root`.      
+Even if you drop cap_sys_chroot, it might be easy to eascape from the container by modifying files in /proc/1/root (The / of host).       
 ### Mount other mountpoints as read-only:
 Ruri supports using `-m` option to mount other device/img/dir into container, if you only need read access to the mountpoint, try using `-M` option to make them read-only.      
 ## Geek:
