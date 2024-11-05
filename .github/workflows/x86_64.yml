@@ -48,3 +48,5 @@ jobs:
           files: |
             /home/runner/work/ruri/ruri/x86_64.tar
             /home/runner/work/ruri/ruri/i386.tar
+            /home/runner/work/ruri/ruri/s390x.tar
+            /home/runner/work/ruri/ruri/ppc64le.tar

@@ -22,4 +22,6 @@ sudo ./ruri/ruri ./alpine /bin/sh /build.sh
 cp alpine/$(uname -m).tar ../
 if [[ $(uname -m) == "amd64" ]]||[[ $(uname -m) == "x86_64" ]]; then
   bash build-x86.sh
+  bash build-ppc64le.sh
+  bash build-s390x.sh
 fi
