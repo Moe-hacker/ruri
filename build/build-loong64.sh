@@ -1,4 +1,9 @@
-sudo apt install qemu-user-static qemu-system-misc binfmt-support
+sudo apt install qemu-user-static qemu-system-misc binfmt-support debootstrap
+git clone https://github.com/qemu/qemu.git
+cd qemu
+./configure --static --disable-system --target-list=loongarch64-linux-user
+make -j$(nproc)
+cp build/loongarch64-linux-user/qemu-loongarch64 /usr/bin/qemu-loongarch64-static
 sudo debootstrap --foreign --arch=loong64 --variant=buildd --include=debian-ports-archive-keyring --verbose --components=main --resolve-deps --extra-suites=unreleased unstable ./debian http://ftp.ports.debian.org/debian-ports
 sudo cp /usr/bin/qemu-loongarch64-static debian/usr/bin/
 sudo chroot ./debian /debootstrap/debootstrap --second-stage
