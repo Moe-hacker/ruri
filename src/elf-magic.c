@@ -81,7 +81,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	}
 #endif
 #if defined(__i386__)
-	if (strcmp(cross_arch, "i386") == 0) {
+	if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
 		free(ret);
 		return NULL;
 	}
@@ -245,7 +245,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	} else if (strcmp(cross_arch, "hppa") == 0) {
 		ret->magic = magicof(hppa);
 		ret->mask = maskof(hppa);
-	} else if (strcmp(cross_arch, "i386") == 0) {
+	} else if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
 		ret->magic = magicof(i386);
 		ret->mask = maskof(i386);
 	} else if (strcmp(cross_arch, "loongarch64") == 0) {
