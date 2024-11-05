@@ -50,4 +50,4 @@ jobs:
             /home/runner/work/ruri/ruri/i386.tar
             /home/runner/work/ruri/ruri/s390x.tar
             /home/runner/work/ruri/ruri/ppc64le.tar
-            /home/runner/work/ruri/ruri/loong64.tar
+            /home/runner/work/ruri/ruri/loongarch64.tar

@@ -248,7 +248,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	} else if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
 		ret->magic = magicof(i386);
 		ret->mask = maskof(i386);
-	} else if (strcmp(cross_arch, "loongarch64") == 0) {
+	} else if (strcmp(cross_arch, "loongarch64") == 0|| strcmp(cross_arch, "loong64") == 0||strcmp(cross_arch, "loongarch") == 0) {
 		ret->magic = magicof(loongarch64);
 		ret->mask = maskof(loongarch64);
 	} else if (strcmp(cross_arch, "m68k") == 0) {

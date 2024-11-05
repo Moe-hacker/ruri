@@ -15,4 +15,4 @@ tar -cvf ../loong64.tar ./ruri ./LICENSE
 EOF
 sudo chmod +x ./debian/build.sh
 sudo ./ruri/ruri -a loong64 -q qemu-loongarch64-static ./debian /bin/sh /build.sh
-cp ./debian/loong64.tar ../loong64.tar
+cp ./debian/loong64.tar ../loongarch64.tar
