@@ -51,7 +51,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	}
 #endif
 #if defined(__arm__)
-	if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "armel") == 0) {
+	if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "armel") == 0 || strcmp(cross_arch, "armv7") == 0) {
 		free(ret);
 		return NULL;
 	}
@@ -230,7 +230,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	} else if (strcmp(cross_arch, "alpha") == 0) {
 		ret->magic = magicof(alpha);
 		ret->mask = maskof(alpha);
-	} else if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armel") == 0) {
+	} else if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armel") == 0 || strcmp(cross_arch, "armv7") == 0) {
 		ret->magic = magicof(arm);
 		ret->mask = maskof(arm);
 	} else if (strcmp(cross_arch, "armeb") == 0) {
@@ -248,7 +248,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	} else if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
 		ret->magic = magicof(i386);
 		ret->mask = maskof(i386);
-	} else if (strcmp(cross_arch, "loongarch64") == 0|| strcmp(cross_arch, "loong64") == 0||strcmp(cross_arch, "loongarch") == 0) {
+	} else if (strcmp(cross_arch, "loongarch64") == 0 || strcmp(cross_arch, "loong64") == 0 || strcmp(cross_arch, "loongarch") == 0) {
 		ret->magic = magicof(loongarch64);
 		ret->mask = maskof(loongarch64);
 	} else if (strcmp(cross_arch, "m68k") == 0) {
