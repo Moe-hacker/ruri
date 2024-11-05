@@ -1,4 +1,4 @@
-sudo apt install qemu-user-static qemu-system-misc binfmt-support debootstrap
+sudo apt install qemu-user-static qemu-system-misc binfmt-support debootstrap ninja-build
 git clone https://github.com/qemu/qemu.git
 cd qemu
 ./configure --static --disable-system --target-list=loongarch64-linux-user

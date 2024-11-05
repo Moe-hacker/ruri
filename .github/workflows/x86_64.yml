@@ -51,3 +51,6 @@ jobs:
             /home/runner/work/ruri/ruri/s390x.tar
             /home/runner/work/ruri/ruri/ppc64le.tar
             /home/runner/work/ruri/ruri/loongarch64.tar
+            /home/runner/work/ruri/ruri/armv7.tar
+            /home/runner/work/ruri/ruri/armhf.tar
+            /home/runner/work/ruri/ruri/aarch64.tar
