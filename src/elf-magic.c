@@ -87,7 +87,7 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	}
 #endif
 #if defined(__loongarch64__)
-	if (strcmp(cross_arch, "loongarch64") == 0) {
+	if (strcmp(cross_arch, "loongarch64") == 0 || strcmp(cross_arch, "loong64") == 0 || strcmp(cross_arch, "loongarch") == 0) {
 		free(ret);
 		return NULL;
 	}
