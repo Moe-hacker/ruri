@@ -28,18 +28,21 @@
 #
 UNAME_ARCH=$(uname -m)
 case ${UNAME_ARCH} in
-armv7* | armv8l) CPU_ARCH="armv7" ;;
+armv7* | armv8l) CPU_ARCH="armhf" ;;
 armv[1-6]*) CPU_ARCH="armv7" ;;
 aarch64 | armv8* | arm64 | arm*) CPU_ARCH="aarch64" ;;
 x86_64 | amd64) CPU_ARCH="x86_64" ;;
 i*86 | x86) CPU_ARCH="i386" ;;
 risc*) CPU_ARCH="riscv64" ;;
+s390*) ARCH_TYPE="s390x" ;;
+ppc*) ARCH_TYPE="ppc64le" ;;
+loong*) ARCH_TYPE="loongarch64" ;;
 *) CPU_ARCH=${UNAME_ARCH} ;;
 esac
 if [ -z "${CPU_ARCH}" ]; then
   if [[ $1 == "-s" ]]; then
     echo "Cannot detect CPU architecture"
-    echo "Supported CPU architectures: armv7, aarch64, x86_64, i386, riscv64"
+    echo "Supported CPU architectures: arm64, armv7, armhf, riscv64, i386, loongarch64, s390x, ppc64le and x86_64"
     rm getruri.sh
     exit 1
   fi
