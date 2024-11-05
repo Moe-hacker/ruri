@@ -8,7 +8,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
 # Download:    
-You can get ruri binary (statically linked) for arm64, armv7, riscv64, i386 and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
+You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 Or you can run the following command to download ruri automatically:      
 ```sh
 wget https://github.com/Moe-hacker/ruri/raw/refs/heads/main/getruri.sh
@@ -26,14 +26,6 @@ This will automatically download ruri binary to `./ruri`.
 * You do it at your own risk and take the responsibility upon yourself.
 * This program has no Super Cow Powers.
 ```
-# Security alert:
-If your device do not have PID NS support or if you didn't enable unshare feature,      
-It might be easy to eascape from the container by `chroot /proc/1/root`.      
-Even if you drop cap_sys_chroot, it might be easy to eascape from the container by modifying files in /proc/1/root (The / of host).       
-A possiable solution is use `-j` option to avoid mounting /proc, /sys and /dev, but this option might cause several bugs in container.      
-WSL1 has this bug, I don't know if it affects some version of real Linux kernel.       
-## NOTE:
-Tested on WSL2, this bug has already been fixed. But still take in mind to check if your device has this bug.      
 # Bug reporting:
 > “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
 > --Torvalds
@@ -47,7 +39,8 @@ The basic usage is very very simple, you can use it just like the command `chroo
 - Secure:      
 Ruri focus on security, with many built-in protections.
 - Run Everywhere:      
-The binary is very small, only about 1M, and you can also use `upx` to make it less than 500k, so it can be run anywhere even if the storage is tight.
+ruri officially supports multipe platforms: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.         
+The ruri binary is very small, only about 1M, and you can also use `upx` to make it less than 500k, so it can be run anywhere even if the storage is tight.                
 # Container Security:  
 See [Enhance Container Security](doc/Security.md).      
 # Build:      

@@ -54,3 +54,4 @@ jobs:
             /home/runner/work/ruri/ruri/armv7.tar
             /home/runner/work/ruri/ruri/armhf.tar
             /home/runner/work/ruri/ruri/aarch64.tar
+            /home/runner/work/ruri/ruri/riscv64.tar
