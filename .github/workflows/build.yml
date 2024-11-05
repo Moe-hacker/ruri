@@ -1,4 +1,4 @@
-name: X86_64
+name: Build release
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           echo remote_version=${{ needs.check_update.outputs.remote_version }} | tee -a $GITHUB_ENV
           echo build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M') | tee -a $GITHUB_ENV
       - uses: actions/checkout@v4
-      - name: Install packages
+      - name: Build-Release
         run: |
           cd build
           sudo bash chroot-alpine.sh
