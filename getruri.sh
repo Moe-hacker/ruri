@@ -68,9 +68,15 @@ if [[ $1 == "-s" ]]; then
   rm getruri.sh
   exit 0
 fi
-read -p "Do you want to install ruri to /usr/bin? [y/n]: " INSTALL
+read -p "Do you want to install ruri to $PREFIX/bin? [y/n]: " INSTALL
 if [[ ${INSTALL} == "y" ]]; then
-  sudo mv ruri /usr/bin/
-  echo "ruri has been installed to /usr/bin"
+  sudo mv ruri $PREFIX/bin/ 2>&1 >/dev/null || mv ruri $PREFIX/bin/
+  if [[ $? != 0 ]]; then
+    echo "Failed to install ruri"
+    echo "Please check your permission"
+    rm getruri.sh
+    exit 1
+  fi
+  echo "ruri has been installed to $PREFIX/bin"
 fi
 rm getruri.sh
