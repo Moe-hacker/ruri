@@ -1,5 +1,5 @@
 BASE_URL="https://dl-cdn.alpinelinux.org/alpine/edge/releases/armhf"
-ROOTFS_URL=$(curl -s -L "$BASE_URL/latest-releases.yaml" | grep "alpine-minirootfs"|grep "armhf.tar.gz"  | head -n 1|awk '{print $2}')
+ROOTFS_URL=$(curl -s -L "$BASE_URL/latest-releases.yaml" | grep "alpine-minirootfs" | grep "armhf.tar.gz" | head -n 1 | awk '{print $2}')
 FULL_URL="$BASE_URL/$ROOTFS_URL"
 wget "$FULL_URL"
 mkdir armhf

@@ -36,7 +36,7 @@ jobs:
       - name: Build-Release
         run: |
           cd build
-          sudo bash chroot-alpine.sh
+          sudo bash build-all.sh
       - name: Release
         uses: softprops/action-gh-release@v2
         with:

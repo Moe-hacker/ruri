@@ -1,0 +1,10 @@
+bash setup.sh
+bash build-amd64.sh
+bash build-loong64.sh
+bash build-riscv64.sh
+bash build-arm64.sh
+bash build-armhf.sh
+bash build-armv7.sh
+bash build-x86.sh
+bash build-ppc64le.sh
+bash build-s390x.sh
