@@ -290,6 +290,8 @@ static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 	if (!container->rootless) {
 		// '/' should be a mountpoint in container.
 		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
+		// Remount `/` with suid.
+		mount(container->container_dir, container->container_dir, NULL, MS_REMOUNT, "suid");
 	}
 	char *mountpoint_dir = NULL;
 	// Mount extra_mountpoint.

@@ -1,6 +1,7 @@
 # v3.8:
   * Support more platforms, currently supports: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.
   * Fix crash on capget().
+  * Mount `/` with suid.
 # v3.7:
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
   * Add `-f` option: fork() before exec the command in container.
