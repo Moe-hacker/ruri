@@ -378,6 +378,8 @@ int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
 		return 0;
 	}
 	ret = atoi(val);
+	free(tmp);
+	free(val);
 	return ret;
 }
 float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)

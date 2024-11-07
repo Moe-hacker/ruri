@@ -134,4 +134,5 @@ void umount_container(const char *_Nonnull container_dir)
 		umount2(container_dir, MNT_DETACH | MNT_FORCE);
 		usleep(20000);
 	}
+	exit(0);
 }

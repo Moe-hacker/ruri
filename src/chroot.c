@@ -227,14 +227,7 @@ static void drop_caps(const struct CONTAINER *_Nonnull container)
 	capget(hrdp, datap);
 	datap->inheritable = 0;
 	capset(hrdp, datap);
-// free(2) hrdp and datap here might cause ASAN error.
-// I think it's because the kernel will write to the memory directly,
-// but I don't know the behavior of ASAN to allocate memory, maybe after this,
-// ASAN can not recognize the memory is allocated by it.
-#ifndef RURI_DEBUG
-	free(hrdp);
-	free(datap);
-#endif
+	// free(2) hrdp and datap here might cause error.
 }
 // Set envs.
 static void set_envs(const struct CONTAINER *_Nonnull container)
