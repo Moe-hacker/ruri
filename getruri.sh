@@ -70,7 +70,7 @@ if [[ $1 == "-s" ]]; then
 fi
 read -p "Do you want to install ruri to $PREFIX/bin? [y/n]: " INSTALL
 if [[ ${INSTALL} == "y" ]]; then
-  sudo mv ruri $PREFIX/bin/ 2>&1 >/dev/null || mv ruri $PREFIX/bin/
+  sudo mv ruri $PREFIX/bin/ || mv ruri $PREFIX/bin/
   if [[ $? != 0 ]]; then
     echo "Failed to install ruri"
     echo "Please check your permission"
