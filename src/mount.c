@@ -176,7 +176,7 @@ static int mk_mountpoint_dir(const char *_Nonnull target)
 		}
 	} else {
 		free(test);
-		return -1;
+		return 0;
 	}
 	return 0;
 }
