@@ -221,13 +221,14 @@ static void drop_caps(const struct CONTAINER *_Nonnull container)
 	// Clear CapInh.
 	// hrdp and datap are two pointers, so we malloc() to apply the memory for it first.
 	cap_user_header_t hrdp = (cap_user_header_t)malloc(sizeof(typeof(*hrdp)));
-	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof(typeof(*datap)));
+	cap_user_data_t datap = (cap_user_data_t)malloc(sizeof(typeof(*datap)) * 10);
 	hrdp->pid = getpid();
 	hrdp->version = _LINUX_CAPABILITY_VERSION_3;
 	capget(hrdp, datap);
 	datap->inheritable = 0;
 	capset(hrdp, datap);
-	// free(2) hrdp and datap here might cause error.
+	free(hrdp);
+	free(datap);
 }
 // Set envs.
 static void set_envs(const struct CONTAINER *_Nonnull container)
