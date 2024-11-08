@@ -22,6 +22,7 @@ chmod +x test/test.sh
 ./ruri -e x xxxx ./test /test.sh
 check_if_succeed $?
 echo -e "${BASE}==> Environment variable test \$x=xxxx passed!${CLEAR}\n"
+./ruri -U ./test
 pass_subtest
 
 export SUBTEST_NO=2
@@ -42,6 +43,7 @@ chmod +x test/test.sh
 ./ruri -e x xxxx -e y xxxx ./test /test.sh
 check_if_succeed $?
 echo -e "${BASE}==> Environment variable test \$x=xxxx \$y=xxxx passed!${CLEAR}\n"
+./ruri -U ./test
 pass_subtest
 
 pass_test
