@@ -64,6 +64,7 @@
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
+// Nullability attributes.
 #ifndef _Nullable
 #define _Nullable
 #endif

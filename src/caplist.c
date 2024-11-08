@@ -126,7 +126,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 	// Del keep_caplist_extra[] from caplist.
 	if (keep_caplist_extra[0] != INIT_VALUE) {
 		for (int i = 0; true; i++) {
-			if (keep_caplist_extra[i] != INIT_VALUE) {
+			if (keep_caplist_extra[i] == INIT_VALUE) {
 				break;
 			}
 			del_from_caplist(caplist, keep_caplist_extra[i]);
