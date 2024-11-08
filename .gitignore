@@ -20,3 +20,4 @@ debian/source
 debian/.debhelper
 debian/debhelper-build-stamp
 debian/files
+tmpdir*

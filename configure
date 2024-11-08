@@ -127,7 +127,9 @@ dev_cflag() {
   test_and_add_cflag "-ffunction-sections"
   test_and_add_cflag "-fdata-sections"
   test_and_add_cflag "-Wl,--gc-sections"
-  test_and_add_cflag "-DRURI_DEBUG"
+  if [ $DEBUG_BUILD ]; then
+    test_and_add_cflag "-DRURI_DEBUG"
+  fi
   if [ $STATIC_COMPILE ]; then
     test_and_add_cflag "-static"
   fi
@@ -150,12 +152,14 @@ show_help() {
   echo "    -h, --help          show help"
   echo "    -s, --static        compile static binary"
   echo "    -d, --dev           compile dev version"
+  echo "    -D, --debug         compile with debug log"
 }
 while [ $1 ]; do
   case $1 in
   "-h" | "--help") show_help && exit ;;
   "-s" | "--static") export STATIC_COMPILE=true ;;
   "-d" | "--dev") export DEV_BUILD=true ;;
+  "-D" | "--debug") export DEBUG_BUILD=true ;;
   esac
   shift
 done
@@ -168,7 +172,7 @@ else
 fi
 printf "create config.mk... "
 if command -v git >/dev/null; then
-  CFLAGS="$CFLAGS -DRURI_COMMIT_ID=\\\"`git rev-parse --short HEAD`\\\""
+  CFLAGS="$CFLAGS -DRURI_COMMIT_ID=\\\"$(git rev-parse --short HEAD)\\\""
 fi
 echo "CFLAGS = $CFLAGS" >config.mk
 echo "LD_FLAGS = $LD_FLAGS" >>config.mk

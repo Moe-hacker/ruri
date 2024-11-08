@@ -97,7 +97,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	if (argc <= 1) {
 		cfprintf(stderr, "{red}Error: too few arguments QwQ{clear}\n");
 		show_helps();
-		exit(EXIT_FAILURE);
+		exit(114);
 	}
 	// Init configs.
 	bool fork_exec = false;
@@ -185,7 +185,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				umount_container(container_dir);
 				exit(EXIT_SUCCESS);
 			}
-			exit(EXIT_FAILURE);
+			exit(114);
 		}
 		// Show process status of a container.
 		if (strcmp(argv[index], "-P") == 0 || strcmp(argv[index], "--ps") == 0) {
@@ -195,7 +195,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				container_ps(container_dir);
 				exit(EXIT_SUCCESS);
 			}
-			exit(EXIT_FAILURE);
+			exit(114);
 		}
 		/**** For running a container ****/
 		// Just make clang-tidy happy.

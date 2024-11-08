@@ -173,7 +173,7 @@ struct __attribute__((aligned(32))) ID_MAP {
 		cfprintf(stderr, "{base}%s{clear}\n", "RURI ERROR MESSAGE");                                 \
 		cfprintf(stderr, "{base}%s{clear}\n", "If you think something is wrong, please report at:"); \
 		cfprintf(stderr, "\033[4m{base}%s{clear}\n", "https://github.com/Moe-hacker/ruri/issues");   \
-		exit(EXIT_FAILURE);                                                                          \
+		exit(114);                                                                                   \
 	}
 // Log system.
 #if defined(RURI_DEBUG)

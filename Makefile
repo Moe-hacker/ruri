@@ -53,6 +53,7 @@ O = out
 BIN_TARGET = ruri
 .NOTPARALLEL:
 .ONESHELL:
+.PHONY :all dev static static-bionic build_dir check format clean upk2v upcprintf help test
 all :build_dir $(objects)
 	@cd $(O)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
@@ -85,6 +86,9 @@ check :
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
 	$(FORMATER) $(SRC) $(HEADER)
+	shfmt -i 2 -w test/*.sh
+	shfmt -i 2 -w configure
+	shfmt -i 2 -w getruri.sh
 clean :
 	$(CLEAN_LOG) $(BIN_TARGET)
 	@rm -f $(BIN_TARGET)||true
@@ -106,3 +110,5 @@ help :
 	@echo "Only for developers:"
 	@echo "  make check          run clang-tidy"
 	@echo "  make format         format code"
+test :
+	cd test && $(MAKE)
