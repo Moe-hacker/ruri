@@ -19,6 +19,7 @@ check_if_succeed $?
 cd ${TEST_ROOT}
 i=1
 while true; do
+  cd ${TEST_ROOT}
   if [[ $(ls root/$i-*.sh 2>/dev/null) == "" ]]; then
     break
   fi
