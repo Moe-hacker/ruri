@@ -62,6 +62,8 @@ void umount_container(const char *_Nonnull container_dir)
 		ioctl(fd, FS_IOC_SETFLAGS, &attr);
 		remove(infofile);
 		close(fd);
+	} else {
+		warning("{yellow}Warning: .rurienv does not exist\n");
 	}
 	// Get path to umount.
 	char sys_dir[PATH_MAX];
@@ -126,13 +128,13 @@ void umount_container(const char *_Nonnull container_dir)
 	log("{base}Umounting %s\n", container_dir);
 	for (int i = 1; i < 10; i++) {
 		umount2(sys_dir, MNT_DETACH | MNT_FORCE);
-		usleep(20000);
+		usleep(2000);
 		umount2(dev_dir, MNT_DETACH | MNT_FORCE);
-		usleep(20000);
+		usleep(2000);
 		umount2(proc_dir, MNT_DETACH | MNT_FORCE);
-		usleep(20000);
+		usleep(2000);
 		umount2(container_dir, MNT_DETACH | MNT_FORCE);
-		usleep(20000);
+		usleep(2000);
 	}
 	exit(0);
 }

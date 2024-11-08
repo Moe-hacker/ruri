@@ -324,20 +324,20 @@ static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 	 * Try to use pivot_root(2) to change the root directory.
 	 * If pivot_root(2) is not available, return -1.
 	 */
-	log("{base}ns pid: %d", container->ns_pid);
+	log("{base}ns pid: %d\n", container->ns_pid);
 	if (container->ns_pid > 0) {
-		log("{base}Using setns(2) to change root directory.");
+		log("{base}Using setns(2) to change root directory.\n");
 		chdir("/");
 		return 0;
 	}
 	chdir(container->container_dir);
 	if (syscall(SYS_pivot_root, ".", ".") == -1) {
-		log("{base}pivot_root(2) failed, using chroot(2) instead.");
+		log("{base}pivot_root(2) failed, using chroot(2) instead.\n");
 		return -1;
 	}
 	chdir("/");
 	umount2(".", MNT_DETACH);
-	log("{base}pivot_root(2) success.");
+	log("{base}pivot_root(2) success.\n");
 	return 0;
 }
 // Run chroot container.
@@ -359,7 +359,8 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	// container_dir shoud bind-mount before chroot(2),
 	// mount_host_runtime() and store_info() will be called here.
 	char buf[PATH_MAX] = { '\0' };
-	sprintf(buf, "%s/sys/class/input", container->container_dir);
+	// I used to check /sys/class/input, but in WSL1, /sys/class/input is not exist.
+	sprintf(buf, "%s/proc/1", container->container_dir);
 	char *test = realpath(buf, NULL);
 	if (test == NULL) {
 		// Mount mountpoints.

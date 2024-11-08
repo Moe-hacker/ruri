@@ -399,6 +399,8 @@ float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 		return 0;
 	}
 	ret = (float)atof(val);
+	free(tmp);
+	free(val);
 	return ret;
 }
 bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)

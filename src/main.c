@@ -49,7 +49,7 @@ static void check_container(const struct CONTAINER *_Nonnull container)
 	if (getuid() != 0 && !(container->rootless)) {
 		error("{red}Error: this program should be run with root privileges QwQ\n");
 	}
-	// --arch and --qemu-path should be set at the same time.
+	// `--arch` and `--qemu-path` should be set at the same time.
 	if ((container->cross_arch == NULL) ^ (container->qemu_path == NULL)) {
 		error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
 	}
@@ -429,7 +429,13 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		char target[PATH_MAX] = { '\0' };
 		sprintf(target, "%s/qemu-ruri", container->container_dir);
 		int sourcefd = open(qemu_path, O_RDONLY | O_CLOEXEC);
+		if (sourcefd < 0) {
+			error("{red}Error: failed to open qemu binary QwQ\n");
+		}
 		int targetfd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, S_IRGRP | S_IXGRP | S_IWGRP | S_IWUSR | S_IRUSR | S_IXUSR | S_IWOTH | S_IXOTH | S_IROTH);
+		if (targetfd < 0) {
+			error("{red}Error: failed to create qemu binary in container QwQ\n");
+		}
 		struct stat stat_buf;
 		fstat(sourcefd, &stat_buf);
 		off_t offset = 0;
@@ -460,6 +466,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		unlink(output_path);
 		remove(output_path);
 		int fd = open(output_path, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
+		if (fd < 0) {
+			error("{red}Error: failed to open output file QwQ\n");
+		}
 		write(fd, config, strlen(config));
 		free(config);
 		close(fd);

@@ -186,7 +186,7 @@ void run_unshare_container(struct CONTAINER *_Nonnull container)
 	} else {
 		unshare_pid = join_ns(container);
 	}
-	log("{base}ns pid: %d", container->ns_pid);
+	log("{base}ns pid: %d\n", container->ns_pid);
 	// Check if we have joined the container's namespaces.
 	if (unshare_pid == 0) {
 		run_chroot_container(container);

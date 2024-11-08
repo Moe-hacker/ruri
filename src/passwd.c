@@ -89,8 +89,8 @@ static char *get_username(uid_t uid)
 	buf[size] = '\0';
 	close(fd);
 	char *p = buf;
-	uid_t tmpuid;
-	char *tmpusername;
+	uid_t tmpuid = 0;
+	char *tmpusername = " ";
 	// Every time, we get the username and uid by line.
 	// If the uid is equal to the uid we want, we return the username.
 	while (true) {

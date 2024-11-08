@@ -168,15 +168,24 @@ static void set_id_map(uid_t uid, gid_t gid)
 	char uid_map[32] = { "\0" };
 	sprintf(uid_map, "0 %d 1\n", uid);
 	int uidmap_fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
+	if (uidmap_fd < 0) {
+		error("{red}Failed to open /proc/self/uid_map\n");
+	}
 	write(uidmap_fd, uid_map, strlen(uid_map));
 	close(uidmap_fd);
 	// Set gid map.
 	int setgroups_fd = open("/proc/self/setgroups", O_RDWR | O_CLOEXEC);
+	if (setgroups_fd < 0) {
+		error("{red}Failed to open /proc/self/setgroups\n");
+	}
 	write(setgroups_fd, "deny", 5);
 	close(setgroups_fd);
 	char gid_map[32] = { "\0" };
 	sprintf(gid_map, "0 %d 1\n", gid);
 	int gidmap_fd = open("/proc/self/gid_map", O_RDWR | O_CLOEXEC);
+	if (gidmap_fd < 0) {
+		error("{red}Failed to open /proc/self/gid_map\n");
+	}
 	write(gidmap_fd, gid_map, strlen(gid_map));
 	close(gidmap_fd);
 	// Maybe needless.

@@ -215,7 +215,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	// Read .rurienv file.
 	char *buf = k2v_open_file(file, (size_t)size);
 	log("{base}Container config in /.rurienv:{cyan}\n%s", buf);
-	// Only umount_container() will give a NULL struct.
+	// We only need to get part of container info when container is NULL.
 	if (container == NULL) {
 		// For umount_container().
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
@@ -225,7 +225,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
-		// For container_ps().
+		// For container_ps() and umount_container().
 		if (is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 			container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 		} else {
@@ -241,9 +241,12 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	// Check if ns_pid is a ruri process.
 	// If not, that means the container is not running.
 	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
-		log("{base}pid %d is not a ruri process.", k2v_get_key(int, "ns_pid", buf));
+		log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);
+		if (fd < 0) {
+			warning("{yellow}Open .rurienv failed{clear}\n");
+		}
 		int attr = 0;
 		ioctl(fd, FS_IOC_GETFLAGS, &attr);
 		attr &= ~FS_IMMUTABLE_FL;
@@ -272,7 +275,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	// Get ns_pid.
 	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
-	log("{base}ns_pid: %d", container->ns_pid);
+	log("{base}ns_pid: %d\n", container->ns_pid);
 	// Get container_id.
 	container->container_id = k2v_get_key(int, "container_id", buf);
 	// Get just_chroot.
