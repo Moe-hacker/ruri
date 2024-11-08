@@ -13,7 +13,7 @@ sleep 1
 # This will set $TMPDIR
 cd ${TEST_ROOT}
 source init-root-test.sh
-check_return_value $?
+check_if_succeed $?
 
 # Do all tests
 cd ${TEST_ROOT}

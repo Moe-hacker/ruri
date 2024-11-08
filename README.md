@@ -13,10 +13,6 @@ Or you can run the following command to download ruri automatically:
 ```sh
 wget -O - https://github.com/Moe-hacker/ruri/raw/refs/heads/main/get-ruri.sh | bash -s -- -s
 ```
-or
-```sh
-curl -sSL https://github.com/Moe-hacker/ruri/raw/refs/heads/main/get-ruri.sh | bash -s -- -s
-```
 This will automatically download ruri binary to `./ruri`.      
 # 中文文档
 [中文文档](doc/README_zh.md)      
@@ -54,12 +50,15 @@ cd ruri
 make
 sudo cp ruri /usr/bin/ruri
 ```
+# NOTE:
+The test script has a part that must be run with `sudo`, `DO NOT` run `make test` on your devices!!!!      
 # Build options:
 ```
 Usage: ./configure [OPTION]...
     -h, --help          show help
     -s, --static        compile static binary
     -d, --dev           compile dev version
+    -d, --debug         compile with debug log
 ```
 ## Build Debian package: 
 Debian do not like static binary, so in debian package, ruri is dynamically linked.      

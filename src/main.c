@@ -374,6 +374,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 					add_to_caplist(keep_caplist_extra, atoi(argv[index]));
 				} else if (cap_from_name(argv[index], &cap) == 0) {
 					add_to_caplist(keep_caplist_extra, cap);
+					log("{base}Keep capability: %s\n", argv[index]);
 				} else {
 					error("{red}or: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
 				}

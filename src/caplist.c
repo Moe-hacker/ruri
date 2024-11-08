@@ -97,7 +97,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 	 * and del keep_caplist_extra[] from the list.
 	 */
 	// Based on docker's default capability set.
-	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_MKNOD, CAP_NET_RAW, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, INIT_VALUE };
+	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_NET_RAW, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, INIT_VALUE };
 	// Set default caplist to drop.
 	caplist[0] = INIT_VALUE;
 	if (!privileged) {
