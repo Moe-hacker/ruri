@@ -1,9 +1,11 @@
 cd ${TEST_ROOT}
 source global.sh
 
+
 export TEST_NO=2
 export DESCRIPTION="Test if /proc, /sys and /dev works properly"
 show_test_description
+
 
 export SUBTEST_NO=1
 export SUBTEST_DESCRIPTION="/dev/zero"
@@ -25,6 +27,7 @@ echo -e "${BASE}==> /dev/zero works properly"
 ./ruri -U ./test
 pass_subtest
 
+
 export SUBTEST_NO=2
 export SUBTEST_DESCRIPTION="/dev/urandom"
 show_subtest_description
@@ -45,6 +48,7 @@ echo -e "${BASE}==> /dev/urandom works properly"
 ./ruri -U ./test
 pass_subtest
 
+
 export SUBTEST_NO=3
 export SUBTEST_DESCRIPTION="/dev/null"
 show_subtest_description
@@ -61,6 +65,7 @@ check_if_succeed $?
 echo -e "${BASE}==> /dev/null works properly"
 ./ruri -U ./test
 pass_subtest
+
 
 export SUBTEST_NO=4
 export SUBTEST_DESCRIPTION="/dev/stdout"
@@ -79,6 +84,7 @@ echo -e "${BASE}==> /dev/stdout works properly"
 ./ruri -U ./test
 pass_subtest
 
+
 export SUBTEST_NO=5
 export SUBTEST_DESCRIPTION="/proc/self/status"
 show_subtest_description
@@ -89,6 +95,7 @@ echo -e "${BASE}==> /proc/self/status works properly"
 ./ruri -U ./test
 pass_subtest
 
+
 export SUBTEST_NO=6
 export SUBTEST_DESCRIPTION="/proc/$$/status"
 show_subtest_description
@@ -98,6 +105,7 @@ check_if_succeed $?
 echo -e "${BASE}==> /proc/$$/status works properly"
 ./ruri -U ./test
 pass_subtest
+
 
 export SUBTEST_NO=7
 export SUBTEST_DESCRIPTION="masked dirs, in privileged container"

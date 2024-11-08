@@ -41,7 +41,7 @@ check_if_succeed $?
 pass_subtest
 
 export SUBTEST_NO=4
-export SUBTEST_DESCRIPTION="Create test.img"
+export SUBTEST_DESCRIPTION="Create test.img as rootfs"
 show_subtest_description
 if [[ -e /tmp/test ]]; then
   rm /tmp/test
@@ -67,7 +67,7 @@ check_if_succeed $?
 pass_subtest
 
 export SUBTEST_NO=5
-export SUBTEST_DESCRIPTION="Create test2.img"
+export SUBTEST_DESCRIPTION="Create test2.img as extra mountpoint"
 show_subtest_description
 dd if=/dev/zero of=test2.img bs=1M count=256
 check_if_succeed $?
@@ -79,7 +79,7 @@ mount ${LOOPFILE} /tmp/test
 check_if_succeed $?
 touch /tmp/test/test.txt
 check_if_succeed $?
-echo "xxxxxxxxxxxx" >/tmp/test/test.txt
+echo "x" >/tmp/test/test.txt
 check_if_succeed $?
 umount -lvf /tmp/test
 check_if_succeed $?

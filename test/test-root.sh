@@ -29,3 +29,5 @@ done
 
 cd ${TEST_ROOT}
 source clean.sh
+
+echo -e "${BASE}Passed all root tests!${CLEAR}"

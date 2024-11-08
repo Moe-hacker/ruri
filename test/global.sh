@@ -40,7 +40,7 @@ function show_test_description() {
   sleep 2
 }
 function show_subtest_description() {
-  echo -e "${BASE}\nRunning subtest ${GREEN}#${SUBTEST_NO}"
+  echo -e "${BASE}\nRunning subtest ${GREEN}#${SUBTEST_NO} ${BASE}of test ${GREEN}#${TEST_NO}"
   echo -e "${BASE}Subtest Description:\n${CYAN} ${SUBTEST_DESCRIPTION}"
   printf "${CLEAR}\n"
   sleep 2
@@ -50,6 +50,6 @@ function pass_test() {
   printf "${CLEAR}\n"
 }
 function pass_subtest() {
-  echo -e "${BASE}\nPassed subtest${GREEN} #${SUBTEST_NO}"
+  echo -e "${BASE}\nPassed subtest${GREEN} #${SUBTEST_NO} ${BASE}of test ${GREEN}#${TEST_NO}"
   printf "${CLEAR}\n"
 }

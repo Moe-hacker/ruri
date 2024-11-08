@@ -2,8 +2,9 @@ cd ${TEST_ROOT}
 source global.sh
 
 export TEST_NO=1
-export DESCRIPTION="This is ruri basic function test."
+export DESCRIPTION="This is ruri basic test"
 show_test_description
+
 
 export SUBTEST_NO=1
 export SUBTEST_DESCRIPTION="Chroot container with no args"
@@ -15,6 +16,7 @@ if ! mountpoint -q ./test/sys;then
     error "Seems that container did not mounted properly!"
 fi
 pass_subtest
+
 
 export SUBTEST_NO=2
 export SUBTEST_DESCRIPTION="Umount container"
@@ -37,6 +39,7 @@ fi
 echo -e "${BASE}==> Container unmounted successfully"
 pass_subtest
 
+
 export SUBTEST_NO=3
 export SUBTEST_DESCRIPTION="Chroot container with -m option"
 show_subtest_description
@@ -48,6 +51,7 @@ if ! mountpoint -q ./test/tm;then
 fi
 echo -e "${BASE}==> /tmp mount to /tm successfully"
 pass_subtest
+
 
 export SUBTEST_NO=4
 export SUBTEST_DESCRIPTION="Umount container with extra mountpoint /tm"

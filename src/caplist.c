@@ -36,6 +36,9 @@ void add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 	 * list[] is initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
 	 */
 	// Add cap to caplist.
+	if (!CAP_IS_SUPPORTED(cap)) {
+		return;
+	}
 	if (!is_in_caplist(list, cap)) {
 		for (int k = 0; true; k++) {
 			if (list[k] == INIT_VALUE) {

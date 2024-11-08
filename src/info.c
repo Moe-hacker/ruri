@@ -124,6 +124,8 @@ void show_helps(void)
 	cprintf("{base}(***)    : cap can both be value or name (e.j. cap_chown == 0)\n");
 	cprintf("{base}(****)   : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
 	cprintf("{base}(*****)  : You can use `-m [source] /` to mount a block device as root\n");
+	cprintf("{base}          But remember this option should be the first mountpoint option,\n");
+	cprintf("{base}          or mountpoints before it will not work\n");
 	cprintf("{base}(******) : Each `-l` option can only set one of the cpuset/memory limits\n");
 	cprintf("{base}          for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
 	cprintf("{base}(*******): This option is for getting ruri process status with `ps` command\n");
