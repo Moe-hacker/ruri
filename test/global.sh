@@ -23,7 +23,7 @@ function check_return_value() {
   elif [[ $1 == "114" ]]; then
     error "ruri panic signal found!"
   else
-    error "failed"
+    error "failed!"
   fi
 }
 function show_test_description() {
