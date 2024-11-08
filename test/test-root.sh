@@ -23,6 +23,7 @@ for i in $(ls root/*.sh); do
   check_if_succeed $?
 done
 
+
 # Clean up
 cd ${TEST_ROOT}
 source clean.sh
