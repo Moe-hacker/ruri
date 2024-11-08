@@ -13,6 +13,6 @@ make
 tar -cvf ../loong64.tar ./ruri ./LICENSE
 EOF
 sudo chmod +x ./debian/build.sh
-./ruri/ruri -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /debootstrap/debootstrap --second-stage
-sudo ./ruri/ruri -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /bin/sh /build.sh
+./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /debootstrap/debootstrap --second-stage
+sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /bin/sh /build.sh
 cp ./debian/loong64.tar ../loongarch64.tar
