@@ -88,7 +88,10 @@ format :
 	$(FORMATER) $(SRC) $(HEADER)
 	shfmt -i 2 -w test/*.sh
 	shfmt -i 2 -w configure
-	shfmt -i 2 -w getruri.sh
+	shfmt -i 2 -w get-ruri.sh
+	chmod 777 test/*.sh
+	chmod 777 test/root/*
+	chmod 777 test/rootless/*
 clean :
 	$(CLEAN_LOG) $(BIN_TARGET)
 	@rm -f $(BIN_TARGET)||true

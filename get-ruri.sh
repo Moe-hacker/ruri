@@ -49,9 +49,9 @@ if [ -z "${CPU_ARCH}" ]; then
   echo "Supported CPU architectures: armv7, aarch64, x86_64, i386, riscv64"
   read -p "please input CPU architecture: " CPU_ARCH
 fi
-if ! command -v wget &> /dev/null; then
-    echo "wget is not installed"
-    exit 1
+if ! command -v wget &>/dev/null; then
+  echo "wget is not installed"
+  exit 1
 fi
 rm ${CPU_ARCH}.tar >/dev/null 2>&1
 wget https://github.com/Moe-hacker/ruri/releases/latest/download/${CPU_ARCH}.tar

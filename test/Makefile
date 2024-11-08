@@ -1,2 +1,2 @@
 all :
-	bash test-all.sh
+	sudo bash test-root.sh
