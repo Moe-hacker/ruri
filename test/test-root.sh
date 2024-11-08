@@ -27,6 +27,7 @@ while true; do
   i=$((i + 1))
 done
 
+# Clean up
 cd ${TEST_ROOT}
 source clean.sh
 
