@@ -17,15 +17,10 @@ check_if_succeed $?
 
 # Do all tests
 cd ${TEST_ROOT}
-i=1
-while true; do
+for i in $(ls root/*.sh); do
   cd ${TEST_ROOT}
-  if [[ $(ls root/$i-*.sh 2>/dev/null) == "" ]]; then
-    break
-  fi
-  source root/$i-*.sh
-  cd ${TEST_ROOT}
-  i=$((i + 1))
+  source $i
+  check_if_succeed $?
 done
 
 # Clean up
