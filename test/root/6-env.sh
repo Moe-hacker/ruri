@@ -11,7 +11,7 @@ show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
 #!/bin/sh
-if [[ "\$x" == "xxxx" ]];then
+if [ "\$x" == "xxxx" ];then
     exit 0
 else
     exit 1
@@ -30,10 +30,10 @@ show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
 #!/bin/sh
-if [[ "\$x" != "xxxx" ]];then
+if [ "\$x" != "xxxx" ];then
     exit 1
 fi
-if [[ "\$y" != "xxxx" ]];then
+if [ "\$y" != "xxxx" ];then
     exit 1
 fi
 exit 0
