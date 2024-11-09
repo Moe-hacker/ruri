@@ -37,7 +37,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <time.h>
 #include <linux/limits.h>
 #include <linux/sched.h>
 #include <linux/securebits.h>
@@ -55,7 +54,8 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
-#include <linux/signal.h>
+#include <time.h>
+#include <signal.h>
 #include <unistd.h>
 #include <sched.h>
 #include <stdio.h>
