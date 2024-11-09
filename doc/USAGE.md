@@ -70,6 +70,7 @@ But remember that do not use this feature to simulate host architecture.
 -u, --unshare ...............................: Enable unshare feature
 ```
 ruri supports unshare container, but NET and USER namespace is not supported.        
+Note: when PID 1 died in PID NS, the ns will be cleared, so all process in it will die.      
 *****************************************
 ```
 -n, --no-new-privs ..........................: Set NO_NEW_PRIVS flag
@@ -156,11 +157,8 @@ There might be some warnings when running ruri, if you don't like, use `-w` opti
 ```
 -f, --fork ..................................: fork() before exec the command
 ```
-ruri will set its process name to `ruri`,     
-but after exec(), this name will be changed.     
 unshare and rootless container will always fork() before running commands in container,      
-you can use this option to make common chroot container have the same behaiver,      
-so you can find all running container by finding the process name `ruri` in `ps` command.      
+you can use this option to make common chroot container have the same behaiver,         
 ```
 -j, --just-chroot ...........................: Just chroot, do not create the runtime dirs
 ```
