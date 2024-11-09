@@ -92,7 +92,6 @@ format :
 	shfmt -i 4 -w get-ruri.sh
 	chmod 777 test/*.sh
 	chmod 777 test/root/*
-	chmod 777 test/rootless/*
 clean :
 	$(CLEAN_LOG) $(BIN_TARGET)
 	@rm -f $(BIN_TARGET)||true

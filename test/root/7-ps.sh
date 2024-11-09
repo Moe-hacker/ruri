@@ -26,7 +26,7 @@ echo -e "${BASE}==> -P for common chroot container passed!${CLEAR}\n"
 pass_subtest
 
 cd ${TMPDIR}
-./ruri -P ./test | awk '{print $1}'| xargs kill -9
+./ruri -P ./test | awk '{print $1}' | xargs kill -9
 
 export SUBTEST_NO=2
 export SUBTEST_DESCRIPTION="-P with stopped container"

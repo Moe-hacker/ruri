@@ -97,7 +97,7 @@ export SUBTEST_DESCRIPTION="Create ./aarch64 as aarch64 rootfs"
 show_subtest_description
 mkdir aarch64
 check_if_succeed $?
-rm rootfs.tar.xz||true
+rm rootfs.tar.xz || true
 rootfstool/rootfstool d -d alpine -v edge -a arm64
 check_if_succeed $?
 tar -xf rootfs.tar.xz -C aarch64
@@ -109,7 +109,7 @@ export SUBTEST_DESCRIPTION="Create ./armhf as armhf rootfs"
 show_subtest_description
 mkdir armhf
 check_if_succeed $?
-rm rootfs.tar.xz||true
+rm rootfs.tar.xz || true
 rootfstool/rootfstool d -d alpine -v edge -a armhf
 check_if_succeed $?
 tar -xf rootfs.tar.xz -C armhf
