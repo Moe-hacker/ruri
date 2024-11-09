@@ -278,6 +278,8 @@ static void setup_binfmt_misc(const struct CONTAINER *_Nonnull container)
 	// Set binfmt_misc config.
 	write(register_fd, buf, strlen(buf));
 	close(register_fd);
+	// Umount the apifs.
+	umount2("/proc/sys/fs/binfmt_misc", MNT_DETACH | MNT_FORCE);
 }
 // Mount other mountpoints.
 // Run before chroot(2).
@@ -315,6 +317,49 @@ static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 		strcat(mountpoint_dir, container->extra_ro_mountpoint[i + 1]);
 		trymount(container->extra_ro_mountpoint[i], mountpoint_dir, MS_RDONLY);
 		free(mountpoint_dir);
+	}
+}
+// Copy qemu static binary.
+static void copy_qemu_binary(struct CONTAINER *container)
+{
+	/*
+	 * Copy qemu binary into container.
+	 */
+	// If -q is not set, return.
+	if (container->qemu_path == NULL) {
+		return;
+	}
+	// Check if qemu binary is the path on the host.
+	char *qemu_path = realpath(container->qemu_path, NULL);
+	// Copy qemu binary into container.
+	if (qemu_path != NULL) {
+		char target[PATH_MAX] = { '\0' };
+		sprintf(target, "%s/qemu-ruri", container->container_dir);
+		unlink(target);
+		remove(target);
+		rmdir(target);
+		int sourcefd = open(qemu_path, O_RDONLY | O_CLOEXEC);
+		if (sourcefd < 0) {
+			error("{red}Error: failed to open qemu binary QwQ\n");
+		}
+		int targetfd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, S_IRGRP | S_IXGRP | S_IWGRP | S_IWUSR | S_IRUSR | S_IXUSR | S_IWOTH | S_IXOTH | S_IROTH);
+		if (targetfd < 0) {
+			error("{red}Error: failed to create qemu binary in container QwQ\nIf your / is mounted read-only, please copy qemu to /path/to/container/qemu-ruri and use -q /qemu-ruri to start!\n");
+		}
+		struct stat stat_buf;
+		fstat(sourcefd, &stat_buf);
+		off_t offset = 0;
+		// In linux, I think it's more safe to use sendfile(2) to copy files,
+		// because it does not need a buffer.
+		// !NOTE: Linux version under 2.6.33 does not support sendfile(2) for copying files.
+		sendfile(targetfd, sourcefd, &offset, (size_t)stat_buf.st_size);
+		close(targetfd);
+		close(sourcefd);
+		free(qemu_path);
+		// Correct the qemu-path.
+		free(container->qemu_path);
+		container->qemu_path = strdup("/qemu-ruri");
+		usleep(200000);
 	}
 }
 // Try to use pivot_root(2).
@@ -365,6 +410,8 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	if (test == NULL) {
 		// Mount mountpoints.
 		mount_mountpoints(container);
+		// Copy qemu binary into container.
+		copy_qemu_binary(container);
 		// Store container info.
 		if (!container->enable_unshare && container->use_rurienv) {
 			store_info(container);
@@ -419,6 +466,10 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
 	symlink("/proc/mounts", "/etc/mtab");
+	// Setup binfmt_misc.
+	if (container->cross_arch != NULL) {
+		setup_binfmt_misc(container);
+	}
 	// Set up cgroup limit.
 	set_limit(container);
 	// Set up Seccomp BPF.
@@ -444,10 +495,6 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	// NOTE: this might cause unknown issues.
 	for (int i = 3; i <= 10; i++) {
 		close(i);
-	}
-	// Setup binfmt_misc.
-	if (container->cross_arch != NULL) {
-		setup_binfmt_misc(container);
 	}
 	// Fix console color.
 	cprintf("{clear}");
@@ -475,6 +522,8 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	sigprocmask(SIG_BLOCK, &sigs, 0);
 	// Mount mountpoints.
 	mount_mountpoints(container);
+	// Copy qemu binary into container.
+	copy_qemu_binary(container);
 	// Store container info.
 	if (container->use_rurienv) {
 		store_info(container);
@@ -506,6 +555,10 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
 	symlink("/proc/mounts", "/etc/mtab");
+	// Setup binfmt_misc.
+	if (container->cross_arch != NULL) {
+		setup_binfmt_misc(container);
+	}
 	// Set up Seccomp BPF.
 	if (container->enable_seccomp) {
 		setup_seccomp(container);
@@ -528,10 +581,6 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	// So we close the other fds to avoid security issues.
 	for (int i = 3; i <= 10; i++) {
 		close(i);
-	}
-	// Setup binfmt_misc.
-	if (container->cross_arch != NULL) {
-		setup_binfmt_misc(container);
 	}
 	// Fix console color.
 	cprintf("{clear}");

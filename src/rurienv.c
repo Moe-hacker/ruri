@@ -292,5 +292,10 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
+	// Qemu will only be set when initializing container.
+	free(container->cross_arch);
+	free(container->qemu_path);
+	container->qemu_path = NULL;
+	container->cross_arch = NULL;
 	return container;
 }
