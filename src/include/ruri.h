@@ -55,6 +55,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+#include <linux/signal.h>
 #include <unistd.h>
 #include <sched.h>
 #include <stdio.h>

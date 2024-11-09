@@ -136,4 +136,9 @@ void umount_container(const char *_Nonnull container_dir)
 		umount2(container_dir, MNT_DETACH | MNT_FORCE);
 		usleep(2000);
 	}
+	// Kill ns_pid.
+	if (container->ns_pid > 0) {
+		log("Kill ns pid: %d\n", container->ns_pid);
+		kill(container->ns_pid, SIGKILL);
+	}
 }
