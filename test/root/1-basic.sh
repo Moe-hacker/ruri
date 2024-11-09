@@ -61,4 +61,18 @@ fi
 echo -e "${BASE}==> umount /tm successfully"
 pass_subtest
 
+export SUBTEST_NO=5
+export SUBTEST_DESCRIPTION="Test unshare container"
+show_subtest_description
+cd ${TMPDIR}
+./ruri -u ./test dd if=/dev/zero of=/nullfile bs=1M count=1
+if [[ ! -e test/nullfile ]]; then
+    error "File /nullfile does not exist!"
+fi
+if [[ $(stat -c %s test/nullfile) -ne 1048576 ]]; then
+    error "File /nullfile size is not 1M!"
+fi
+echo -e "${BASE}==> unshare container create /nullfile in container successfully"
+pass_subtest
+
 pass_test

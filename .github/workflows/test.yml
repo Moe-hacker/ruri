@@ -52,5 +52,5 @@ jobs:
           libseccomp-dev \
           libcap-dev \
           libc6-dev \
-          binutils
+          binutils qemu-user-static uidmap
           make test

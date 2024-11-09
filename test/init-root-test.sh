@@ -36,8 +36,6 @@ git clone https://github.com/moe-hacker/rootfstool
 check_if_succeed $?
 rootfstool/rootfstool d -d alpine -v edge
 check_if_succeed $?
-rm -rf rootfstool
-check_if_succeed $?
 pass_subtest
 
 export SUBTEST_NO=4
@@ -93,4 +91,29 @@ check_if_succeed $?
 tar -xf rootfs.tar.xz -C test
 check_if_succeed $?
 pass_subtest
+
+export SUBTEST_NO=7
+export SUBTEST_DESCRIPTION="Create ./aarch64 as aarch64 rootfs"
+show_subtest_description
+mkdir aarch64
+check_if_succeed $?
+rm rootfs.tar.xz||true
+rootfstool/rootfstool d -d alpine -v edge -a arm64
+check_if_succeed $?
+tar -xf rootfs.tar.xz -C aarch64
+check_if_succeed $?
+pass_subtest
+
+export SUBTEST_NO=8
+export SUBTEST_DESCRIPTION="Create ./armhf as armhf rootfs"
+show_subtest_description
+mkdir armhf
+check_if_succeed $?
+rm rootfs.tar.xz||true
+rootfstool/rootfstool d -d alpine -v edge -a armhf
+check_if_succeed $?
+tar -xf rootfs.tar.xz -C armhf
+check_if_succeed $?
+pass_subtest
+
 pass_test
