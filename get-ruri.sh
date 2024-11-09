@@ -40,26 +40,26 @@ loong*) ARCH_TYPE="loongarch64" ;;
 *) CPU_ARCH=${UNAME_ARCH} ;;
 esac
 if [ -z "${CPU_ARCH}" ]; then
-  if [[ $1 == "-s" ]]; then
+    if [[ $1 == "-s" ]]; then
+        echo "Cannot detect CPU architecture"
+        echo "Supported CPU architectures: arm64, armv7, armhf, riscv64, i386, loongarch64, s390x, ppc64le and x86_64"
+        exit 1
+    fi
     echo "Cannot detect CPU architecture"
-    echo "Supported CPU architectures: arm64, armv7, armhf, riscv64, i386, loongarch64, s390x, ppc64le and x86_64"
-    exit 1
-  fi
-  echo "Cannot detect CPU architecture"
-  echo "Supported CPU architectures: armv7, aarch64, x86_64, i386, riscv64"
-  read -p "please input CPU architecture: " CPU_ARCH
+    echo "Supported CPU architectures: armv7, aarch64, x86_64, i386, riscv64"
+    read -p "please input CPU architecture: " CPU_ARCH
 fi
 if ! command -v wget &>/dev/null; then
-  echo "wget is not installed"
-  exit 1
+    echo "wget is not installed"
+    exit 1
 fi
 rm ${CPU_ARCH}.tar >/dev/null 2>&1
 wget https://github.com/Moe-hacker/ruri/releases/latest/download/${CPU_ARCH}.tar
 if [[ $? != 0 ]]; then
-  echo "Failed to download ruri"
-  echo "Please check your network or download ruri manually"
-  echo "If ruri has a new release, please wait for build completion"
-  exit 1
+    echo "Failed to download ruri"
+    echo "Please check your network or download ruri manually"
+    echo "If ruri has a new release, please wait for build completion"
+    exit 1
 fi
 tar -xf ${CPU_ARCH}.tar >/dev/null 2>&1
 rm -f ${CPU_ARCH}.tar
@@ -67,15 +67,15 @@ rm -f LICENSE
 chmod +x ruri
 echo "ruri has been downloaded successfully"
 if [[ $1 == "-s" ]]; then
-  exit 0
+    exit 0
 fi
 read -p "Do you want to install ruri to $PREFIX/bin? [y/n]: " INSTALL
 if [[ ${INSTALL} == "y" ]]; then
-  sudo mv ruri $PREFIX/bin/ || mv ruri $PREFIX/bin/
-  if [[ $? != 0 ]]; then
-    echo "Failed to install ruri"
-    echo "Please check your permission"
-    exit 1
-  fi
-  echo "ruri has been installed to $PREFIX/bin"
+    sudo mv ruri $PREFIX/bin/ || mv ruri $PREFIX/bin/
+    if [[ $? != 0 ]]; then
+        echo "Failed to install ruri"
+        echo "Please check your permission"
+        exit 1
+    fi
+    echo "ruri has been installed to $PREFIX/bin"
 fi

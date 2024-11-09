@@ -18,10 +18,12 @@ check_if_succeed $?
 # Do all tests
 cd ${TEST_ROOT}
 for i in $(ls root/*.sh); do
-  cd ${TEST_ROOT}
-  source $i
-  check_if_succeed $?
+    cd ${TEST_ROOT}
+    source $i
+    check_if_succeed $?
 done
+
+
 
 # Clean up
 cd ${TEST_ROOT}

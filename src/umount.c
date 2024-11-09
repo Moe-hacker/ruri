@@ -118,7 +118,6 @@ void umount_container(const char *_Nonnull container_dir)
 				break;
 			}
 		}
-		free(container);
 	}
 	// Force umount system runtime directories for 10 times.
 	// Not necessary, but I think it's more secure.
@@ -141,4 +140,6 @@ void umount_container(const char *_Nonnull container_dir)
 		log("Kill ns pid: %d\n", container->ns_pid);
 		kill(container->ns_pid, SIGKILL);
 	}
+	// Make Asan happy.
+	free(container);
 }

@@ -1,7 +1,6 @@
 cd ${TEST_ROOT}
 source global.sh
 
-
 export TEST_NO=5
 export DESCRIPTION="Test if -e option works properly"
 show_test_description
@@ -10,7 +9,7 @@ export SUBTEST_NO=1
 export SUBTEST_DESCRIPTION="Environment variable test"
 show_subtest_description
 cd ${TMPDIR}
-cat <<EOF > test/test.sh
+cat <<EOF >test/test.sh
 #!/bin/sh
 if [[ "\$x" == "xxxx" ]];then
     exit 0
@@ -29,7 +28,7 @@ export SUBTEST_NO=2
 export SUBTEST_DESCRIPTION="Environment variable test"
 show_subtest_description
 cd ${TMPDIR}
-cat <<EOF > test/test.sh
+cat <<EOF >test/test.sh
 #!/bin/sh
 if [[ "\$x" != "xxxx" ]];then
     exit 1

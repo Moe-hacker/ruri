@@ -86,9 +86,10 @@ check :
 	@printf ' \033[1;38;2;254;228;208mDONE.\n'
 format :
 	$(FORMATER) $(SRC) $(HEADER)
-	shfmt -i 2 -w test/*.sh
-	shfmt -i 2 -w configure
-	shfmt -i 2 -w get-ruri.sh
+	shfmt -i 4 -w test/*.sh
+	shfmt -i 4 -w test/root/*.sh
+	shfmt -i 4 -w configure
+	shfmt -i 4 -w get-ruri.sh
 	chmod 777 test/*.sh
 	chmod 777 test/root/*
 	chmod 777 test/rootless/*

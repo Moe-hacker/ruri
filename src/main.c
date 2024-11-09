@@ -177,6 +177,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			index += 1;
 			if (argv[index] != NULL) {
 				char *container_dir = realpath(argv[index], NULL);
+				if (container_dir == NULL) {
+					error("{red}Container directory does not exist QwQ\n");
+				}
 				umount_container(container_dir);
 				exit(EXIT_SUCCESS);
 			}
@@ -187,6 +190,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			index += 1;
 			if (argv[index] != NULL) {
 				char *container_dir = realpath(argv[index], NULL);
+				if (container_dir == NULL) {
+					error("{red}Container directory does not exist QwQ\n");
+				}
 				container_ps(container_dir);
 				exit(EXIT_SUCCESS);
 			}
@@ -315,6 +321,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
 					if (container->extra_mountpoint[i] == NULL) {
 						container->extra_mountpoint[i] = realpath(argv[index], NULL);
+						if (container->extra_mountpoint[i] == NULL) {
+							error("{red}mountpoint does not exist QwQ\n");
+						}
 						index++;
 						container->extra_mountpoint[i + 1] = strdup(argv[index]);
 						container->extra_mountpoint[i + 2] = NULL;
@@ -336,6 +345,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
 					if (container->extra_ro_mountpoint[i] == NULL) {
 						container->extra_ro_mountpoint[i] = realpath(argv[index], NULL);
+						if (container->extra_ro_mountpoint[i] == NULL) {
+							error("{red}mountpoint does not exist QwQ\n");
+						}
 						index++;
 						container->extra_ro_mountpoint[i + 1] = strdup(argv[index]);
 						container->extra_ro_mountpoint[i + 2] = NULL;

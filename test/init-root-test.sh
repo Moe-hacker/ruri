@@ -15,7 +15,7 @@ check_if_succeed $?
 export TMPDIR=$(realpath ${TMPDIR})
 ./configure -d
 check_if_succeed $?
-make
+make dev
 check_if_succeed $?
 mv ruri ${TMPDIR}
 check_if_succeed $?
@@ -44,11 +44,11 @@ export SUBTEST_NO=4
 export SUBTEST_DESCRIPTION="Create test.img as rootfs"
 show_subtest_description
 if [[ -e /tmp/test ]]; then
-  rm /tmp/test
+    rm /tmp/test
 fi
 if [[ -d /tmp/test ]]; then
-  ./ruri -U /tmp/test
-  rm -rf /tmp/test
+    ./ruri -U /tmp/test
+    rm -rf /tmp/test
 fi
 dd if=/dev/zero of=test.img bs=1M count=256
 check_if_succeed $?
