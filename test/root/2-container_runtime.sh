@@ -13,7 +13,7 @@ cat <<EOF >test/test.sh
 dd if=/dev/zero of=/nullfile bs=1M count=1
 EOF
 chmod 777 test/test.sh
-./ruri ./test /test.sh
+./ruri ./test /bin/sh /test.sh
 check_if_succeed $?
 if [[ ! -e test/nullfile ]]; then
     error "File /nullfile does not exist!"
@@ -33,7 +33,7 @@ cat <<EOF >test/test.sh
 dd if=/dev/urandom of=/randomfile bs=1M count=1
 EOF
 chmod 777 test/test.sh
-./ruri ./test /test.sh
+./ruri ./test /bin/sh /test.sh
 check_if_succeed $?
 if [[ ! -e test/randomfile ]]; then
     error "File /randomfile does not exist!"
@@ -56,7 +56,7 @@ fi
 exit 0
 EOF
 chmod 777 test/test.sh
-./ruri ./test /test.sh
+./ruri ./test /bin/sh /test.sh
 check_if_succeed $?
 echo -e "${BASE}==> /dev/null works properly"
 ./ruri -U ./test
@@ -73,7 +73,7 @@ fi
 exit 0
 EOF
 chmod 777 test/test.sh
-./ruri ./test /test.sh
+./ruri ./test /bin/sh /test.sh
 check_if_succeed $?
 echo -e "${BASE}==> /dev/stdout works properly"
 ./ruri -U ./test
@@ -107,7 +107,7 @@ cat <<EOF >test/test.sh
 echo 1048576 > /proc/sys/fs/pipe-max-size
 EOF
 chmod 777 test/test.sh
-./ruri -p ./test /test.sh
+./ruri -p ./test /bin/sh /test.sh
 check_if_failed $?
 echo -e "${BASE}==> /proc/sys/fs/pipe-max-size is masked"
 ./ruri -U ./test

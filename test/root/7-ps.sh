@@ -14,7 +14,7 @@ cat <<EOF >test/test.sh
 sleep 100
 EOF
 chmod +x test/test.sh
-./ruri ./test /test.sh &
+./ruri ./test /bin/sh /test.sh &
 check_if_succeed $?
 sleep 1
 if [[ "$(./ruri -P ./test)" == "" ]]; then

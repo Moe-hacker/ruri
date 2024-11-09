@@ -1,7 +1,7 @@
 cd ${TEST_ROOT}
 source global.sh
 
-export TEST_NO=5
+export TEST_NO=6
 export DESCRIPTION="Test if -e option works properly"
 show_test_description
 
@@ -18,7 +18,7 @@ else
 fi
 EOF
 chmod +x test/test.sh
-./ruri -e x xxxx ./test /test.sh
+./ruri -e x xxxx ./test /bin/sh /test.sh
 check_if_succeed $?
 echo -e "${BASE}==> Environment variable test \$x=xxxx passed!${CLEAR}\n"
 ./ruri -U ./test
@@ -39,7 +39,7 @@ fi
 exit 0
 EOF
 chmod +x test/test.sh
-./ruri -e x xxxx -e y xxxx ./test /test.sh
+./ruri -e x xxxx -e y xxxx ./test /bin/sh /test.sh
 check_if_succeed $?
 echo -e "${BASE}==> Environment variable test \$x=xxxx \$y=xxxx passed!${CLEAR}\n"
 ./ruri -U ./test

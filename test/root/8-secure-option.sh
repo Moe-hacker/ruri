@@ -13,7 +13,7 @@ cat <<EOF >test/test.sh
 cat /proc/self/status | grep NoNewPrivs| awk '{print \$2}' > /priv
 EOF
 chmod 777 test/test.sh
-./ruri -n ./test /test.sh
+./ruri -n ./test /bin/sh /test.sh
 check_if_succeed $?
 if [[ "$(cat test/priv)" != "1" ]]; then
     error "Cannot set no_new_privs!"
@@ -30,7 +30,7 @@ cat <<EOF >test/test.sh
 cat /proc/self/status | grep Seccomp| awk '{print \$2}' > /seccomp
 EOF
 chmod 777 test/test.sh
-./ruri -n ./test /test.sh
+./ruri -n ./test /bin/sh /test.sh
 check_if_succeed $?
 if [[ "$(cat test/seccomp)" == "0" ]]; then
     error "Cannot set Seccomp!"
@@ -47,7 +47,7 @@ cat <<EOF >test/test.sh
 cat /proc/self/status
 EOF
 chmod 777 test/test.sh
-./ruri -j ./test /test.sh
+./ruri -j ./test /bin/sh /test.sh
 check_if_failed $?
 echo -e "${BASE}==> Just chroot works properly"
 ./ruri -U ./test
@@ -61,7 +61,7 @@ cat <<EOF >test/test.sh
 cat /.rurienv
 EOF
 chmod 777 test/test.sh
-./ruri -N ./test /test.sh
+./ruri -N ./test /bin/sh /test.sh
 check_if_failed $?
 echo -e "${BASE}==> No rurienv works properly"
 ./ruri -U ./test
@@ -75,7 +75,7 @@ cat <<EOF >test/test.sh
 cat /proc/mounts | grep /proc/block
 EOF
 chmod 777 test/test.sh
-./ruri -S ./test /test.sh
+./ruri -S ./test /bin/sh /test.sh
 check_if_failed $?
 echo -e "${BASE}==> Mount host runtime works properly"
 ./ruri -U ./test
