@@ -91,8 +91,8 @@
 #define INIT_VALUE (-114)
 // Limitations.
 #define MAX_COMMANDS (1024)
-#define MAX_ENVS (128 * 2)
-#define MAX_MOUNTPOINTS (128 * 2)
+#define MAX_ENVS (512 * 2)
+#define MAX_MOUNTPOINTS (512 * 2)
 // Include other headers.
 #include "elf-magic.h"
 #include "version.h"

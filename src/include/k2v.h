@@ -49,7 +49,7 @@
 #endif
 // Version info.
 #define LIBK2V_MAJOR 1
-#define LIBK2V_MINOR 0
+#define LIBK2V_MINOR 1
 // Warning.
 extern bool k2v_stop_at_warning;
 extern bool k2v_show_warning;
@@ -58,9 +58,9 @@ char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf);
 int key_get_int(const char *_Nonnull key, const char *_Nonnull buf);
 float key_get_float(const char *_Nonnull key, const char *_Nonnull buf);
 bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf);
-int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array);
-int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[]);
-int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array);
+int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array, int limit);
+int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[], int limit);
+int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array, int limit);
 bool have_key(const char *_Nonnull key, const char *_Nonnull buf);
 char *k2v_open_file(const char *_Nonnull path, size_t bufsize);
 void k2v_to_shell(const char *_Nonnull buf);

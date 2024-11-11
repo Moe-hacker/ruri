@@ -219,10 +219,10 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	if (container == NULL) {
 		// For umount_container().
 		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
-		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
+		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
 		container->extra_mountpoint[mlen] = NULL;
 		container->extra_mountpoint[mlen + 1] = NULL;
-		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
 		// For container_ps() and umount_container().
@@ -258,7 +258,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	}
 	// Get capabilities to drop.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist);
+	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, CAP_LAST_CAP);
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
@@ -281,15 +281,15 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	// Get just_chroot.
 	container->just_chroot = k2v_get_key(bool, "just_chroot", buf);
 	// Get env.
-	int envlen = k2v_get_key(char_array, "env", buf, container->env);
+	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
-	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
+	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
-	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	// Qemu will only be set when initializing container.

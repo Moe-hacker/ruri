@@ -148,7 +148,7 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Get drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist);
+	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, CAP_LAST_CAP);
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
@@ -185,15 +185,15 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	// Get just_chroot.
 	container->just_chroot = k2v_get_key(bool, "just_chroot", buf);
 	// Get env.
-	int envlen = k2v_get_key(char_array, "env", buf, container->env);
+	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
-	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint);
+	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
-	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint);
+	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	free(buf);

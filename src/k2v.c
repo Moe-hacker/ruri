@@ -426,7 +426,7 @@ bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
 	free(val);
 	return false;
 }
-static int char_to_int_array(const char *_Nonnull buf, int *_Nonnull array)
+static int char_to_int_array(const char *_Nonnull buf, int *_Nonnull array, int limit)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -447,6 +447,10 @@ static int char_to_int_array(const char *_Nonnull buf, int *_Nonnull array)
 		}
 		array[ret] = atoi(tmp);
 		ret++;
+		if (ret > limit - 1) {
+			free(tmp);
+			break;
+		}
 		ptr = strchr(ptr, ',');
 		if (ptr == NULL) {
 			free(tmp);
@@ -458,7 +462,7 @@ static int char_to_int_array(const char *_Nonnull buf, int *_Nonnull array)
 	}
 	return ret;
 }
-static int char_to_float_array(const char *_Nonnull buf, float *_Nonnull array)
+static int char_to_float_array(const char *_Nonnull buf, float *_Nonnull array, int limit)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -479,6 +483,10 @@ static int char_to_float_array(const char *_Nonnull buf, float *_Nonnull array)
 		}
 		array[ret] = (float)atof(tmp);
 		ret++;
+		if (ret > limit - 1) {
+			free(tmp);
+			break;
+		}
 		ptr = strchr(ptr, ',');
 		if (ptr == NULL) {
 			free(tmp);
@@ -490,7 +498,7 @@ static int char_to_float_array(const char *_Nonnull buf, float *_Nonnull array)
 	}
 	return ret;
 }
-static int char_to_char_array(const char *_Nonnull buf, char *_Nonnull array[])
+static int char_to_char_array(const char *_Nonnull buf, char *_Nonnull array[], int limit)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -513,6 +521,10 @@ static int char_to_char_array(const char *_Nonnull buf, char *_Nonnull array[])
 		array[ret] = strdup(tmp);
 		array[ret + 1] = NULL;
 		ret++;
+		if (ret > limit - 1) {
+			free(tmp);
+			break;
+		}
 		ptr = strchr(ptr, ',');
 		if (ptr == NULL) {
 			free(tmp);
@@ -523,7 +535,7 @@ static int char_to_char_array(const char *_Nonnull buf, char *_Nonnull array[])
 	}
 	return ret;
 }
-int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array)
+int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array, int limit)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -536,11 +548,11 @@ int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_
 	if (tmp == NULL) {
 		return 0;
 	}
-	ret = char_to_int_array(tmp, array);
+	ret = char_to_int_array(tmp, array, limit);
 	free(tmp);
 	return ret;
 }
-int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[])
+int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[], int limit)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -553,11 +565,11 @@ int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char 
 	if (tmp == NULL) {
 		return 0;
 	}
-	ret = char_to_char_array(tmp, array);
+	ret = char_to_char_array(tmp, array, limit);
 	free(tmp);
 	return ret;
 }
-int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array)
+int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array, int limit)
 {
 	// Return lenth of the array we get.
 	// Default return value: 0.
@@ -570,7 +582,7 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 	if (tmp == NULL) {
 		return 0;
 	}
-	ret = char_to_float_array(tmp, array);
+	ret = char_to_float_array(tmp, array, limit);
 	free(tmp);
 	return ret;
 }
