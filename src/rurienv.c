@@ -104,6 +104,9 @@ static char *build_container_info(const struct CONTAINER *_Nonnull container)
 	// work_dir.
 	ret = k2v_add_comment(ret, "Work directory.");
 	ret = k2v_add_config(char, ret, "work_dir", container->work_dir);
+	// no_warnings
+	ret = k2v_add_comment(ret, "Do not show warnings.");
+	ret = k2v_add_config(bool, ret, "no_warnings", container->no_warnings);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -247,7 +250,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 		log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);
-		if (fd < 0) {
+		if (fd < 0 && !container->no_warnings) {
 			warning("{yellow}Open .rurienv failed{clear}\n");
 		}
 		int attr = 0;
@@ -285,6 +288,8 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	container->just_chroot = k2v_get_key(bool, "just_chroot", buf);
 	// Get work_dir.
 	container->work_dir = k2v_get_key(char, "work_dir", buf);
+	// Get no_warnings.
+	container->no_warnings = k2v_get_key(bool, "no_warnings", buf);
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;
