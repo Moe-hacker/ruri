@@ -6,6 +6,8 @@
   * Fix qemu path when we pre-mount the rootfs from other source.
   * Add autotest.
   * Fix memory issues.
+  * libk2v: Add lenth check for array to avoid overflow.
+  * cprintf: Correct the way to get buffer size, avoid overflow.
   * General bug fixes.
 # v3.7:
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
