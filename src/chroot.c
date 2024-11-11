@@ -244,7 +244,7 @@ static void set_envs(const struct CONTAINER *_Nonnull container)
 	setenv("TMPDIR", "/tmp", 1);
 	// Set other envs.
 	for (int i = 0; true; i += 2) {
-		if (container->env[i] == NULL) {
+		if (container->env[i] == NULL || container->env[i + 1] == NULL) {
 			break;
 		}
 		setenv(container->env[i], container->env[i + 1], 1);
@@ -296,7 +296,7 @@ static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 	char *mountpoint_dir = NULL;
 	// Mount extra_mountpoint.
 	for (int i = 0; true; i += 2) {
-		if (container->extra_mountpoint[i] == NULL) {
+		if (container->extra_mountpoint[i] == NULL || container->extra_mountpoint[i + 1] == NULL) {
 			break;
 		}
 		// Set the mountpoint to mount.
@@ -308,7 +308,7 @@ static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 	}
 	// Mount extra_ro_mountpoint as read-only.
 	for (int i = 0; true; i += 2) {
-		if (container->extra_ro_mountpoint[i] == NULL) {
+		if (container->extra_ro_mountpoint[i] == NULL || container->extra_ro_mountpoint[i + 1] == NULL) {
 			break;
 		}
 		// Set the mountpoint to mount.
