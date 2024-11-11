@@ -105,13 +105,13 @@ struct __attribute__((aligned(128))) CONTAINER {
 	// Capabilities to drop.
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
 	// Command for exec(2).
-	char *_Nullable command[MAX_COMMANDS];
+	char *_Nullable command[MAX_COMMANDS + 1];
 	// Extra mountpoints.
-	char *_Nullable extra_mountpoint[MAX_MOUNTPOINTS];
+	char *_Nullable extra_mountpoint[MAX_MOUNTPOINTS + 2];
 	// Extra read-only mountpoints.
-	char *_Nullable extra_ro_mountpoint[MAX_MOUNTPOINTS];
+	char *_Nullable extra_ro_mountpoint[MAX_MOUNTPOINTS + 2];
 	// Environment variables.
-	char *_Nullable env[MAX_ENVS];
+	char *_Nullable env[MAX_ENVS + 2];
 	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
 	// Enable built-in seccomp profile.
