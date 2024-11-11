@@ -54,6 +54,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
