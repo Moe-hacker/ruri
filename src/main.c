@@ -316,7 +316,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 						container->env[i + 2] = NULL;
 						break;
 					}
-					// Max 128 envs.
+					// Max 512 envs.
 					if (i == (MAX_ENVS - 1)) {
 						error("{red}Too many envs QwQ\n");
 					}
@@ -340,7 +340,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 						container->extra_mountpoint[i + 2] = NULL;
 						break;
 					}
-					// Max 128 mountpoints.
+					// Max 512 mountpoints.
 					if (i == (MAX_MOUNTPOINTS - 1)) {
 						error("{red}Too many mountpoints QwQ\n");
 					}
@@ -364,7 +364,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 						container->extra_ro_mountpoint[i + 2] = NULL;
 						break;
 					}
-					// Max 128 mountpoints.
+					// Max 512 mountpoints.
 					if (i == (MAX_MOUNTPOINTS - 1)) {
 						error("{red}Too many mountpoints QwQ\n");
 					}
