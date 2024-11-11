@@ -69,4 +69,4 @@ size_t cprintf_get_bufsize(const char *_Nonnull format, ...);
 		free(__cprintf_buf);                                         \
 	}
 #define CPRINTF_MAJOR 1
-#define CPRINTF_MINOR 0
+#define CPRINTF_MINOR 1
