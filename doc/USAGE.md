@@ -158,8 +158,14 @@ There might be some warnings when running ruri, if you don't like, use `-w` opti
 -f, --fork ..................................: fork() before exec the command
 ```
 unshare and rootless container will always fork() before running commands in container,      
-you can use this option to make common chroot container have the same behaiver,         
+you can use this option to make common chroot container have the same behaiver,  
+******************************************************       
 ```
 -j, --just-chroot ...........................: Just chroot, do not create the runtime dirs
 ```
 If you enable this option, ruri will not create runtime dirs(/dev, proc and /sys) in container.       
+****************************************************
+```
+-W, --work-dir [dir]..........................: Change work directory in container.
+```
+default work directory is `/`, you can use this option to change it to other dirs.       

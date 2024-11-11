@@ -90,6 +90,9 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	// just_chroot.
 	ret = k2v_add_comment(ret, "Just chroot, do not create runtime dirs.");
 	ret = k2v_add_config(bool, ret, "just_chroot", container->just_chroot);
+	// work_dir.
+	ret = k2v_add_comment(ret, "Work directory.");
+	ret = k2v_add_config(char, ret, "work_dir", container->work_dir);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -184,6 +187,8 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	container->memory = k2v_get_key(char, "memory", buf);
 	// Get just_chroot.
 	container->just_chroot = k2v_get_key(bool, "just_chroot", buf);
+	// Get work_dir.
+	container->work_dir = k2v_get_key(char, "work_dir", buf);
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;

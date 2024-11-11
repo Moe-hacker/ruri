@@ -117,6 +117,7 @@ void show_helps(void)
 	cprintf("{base}  -w, --no-warnings ...........................: Disable warnings\n");
 	cprintf("{base}  -f, --fork ..................................: fork() before exec the command(*******)\n");
 	cprintf("{base}  -j, --just-chroot ...........................: Just chroot, do not create the runtime dirs\n");
+	cprintf("{base}  -W, --work-dir [dir] ........................: Set the work directory in container\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*)      : Will not work for unshare container without PID ns support\n");

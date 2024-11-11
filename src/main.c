@@ -124,6 +124,8 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	container->ro_root = false;
 	container->cpuset = NULL;
 	container->memory = NULL;
+	container->work_dir = NULL;
+	container->just_chroot = false;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -291,6 +293,15 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				parse_cgroup_settings(argv[index], container);
 			} else {
 				error("{red}Unknown cgroup option\n");
+			}
+		}
+		// Work dir.
+		else if (strcmp(argv[index], "-W") == 0 || strcmp(argv[index], "--work-dir") == 0) {
+			index++;
+			if (index < argc) {
+				container->work_dir = strdup(argv[index]);
+			} else {
+				error("{red}Unknown work directory\n");
 			}
 		}
 		// Set extra env.

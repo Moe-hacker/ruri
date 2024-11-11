@@ -142,6 +142,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	int container_id;
 	// Do not create runtime directory.
 	bool just_chroot;
+	// Work directory.
+	char *_Nullable work_dir;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

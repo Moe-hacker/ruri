@@ -458,6 +458,12 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 			chdir("/");
 		}
 	}
+	// Change to the work dir.
+	if (container->work_dir != NULL) {
+		if (chdir(container->work_dir) == -1 && !container->no_warnings) {
+			warning("{yellow}Warning: Failed to change to work dir `%s`\n", container->work_dir);
+		}
+	}
 	// Mount/create system runtime dir/files.
 	if (!container->just_chroot) {
 		init_container();
@@ -550,6 +556,12 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 		chdir(container->container_dir);
 		chroot(".");
 		chdir("/");
+	}
+	// Change to the work dir.
+	if (container->work_dir != NULL) {
+		if (chdir(container->work_dir) == -1 && !container->no_warnings) {
+			warning("{yellow}Warning: Failed to change to work dir `%s`\n", container->work_dir);
+		}
 	}
 	// Fix /etc/mtab.
 	remove("/etc/mtab");

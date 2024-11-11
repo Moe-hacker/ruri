@@ -1,6 +1,10 @@
 # v3.8:
   * Support more platforms, currently supports: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.
+  * Add `-W` option: `--work-dir`.
   * Fix crash on capget().
+  * Fix qemu path when we pre-mount the rootfs from other source.
+  * Add autotest.
+  * Fix memory issues.
   * General bug fixes.
 # v3.7:
   * Ruri can now recognize [COMMAND [ARGS]...] without absolute path.
