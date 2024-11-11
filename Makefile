@@ -53,7 +53,7 @@ O = out
 BIN_TARGET = ruri
 .NOTPARALLEL:
 .ONESHELL:
-.PHONY :all dev static static-bionic build_dir check format clean upk2v upcprintf help test
+.PHONY :all dev static static-bionic build_dir check format clean upk2v upcprintf help test config dbg_config dev_config static_config
 all :build_dir $(objects)
 	@cd $(O)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
@@ -115,3 +115,11 @@ help :
 	@echo "  make format         format code"
 test :
 	cd test && $(MAKE)
+config :
+	@./configure
+dbg_config :
+	@./configure -d -D
+dev_config :
+	@./configure -d
+static_config :
+	@./configure -s

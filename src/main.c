@@ -485,6 +485,10 @@ int main(int argc, char **argv)
 	prctl(PR_SET_NAME, "ruri");
 	// Catch coredump signal.
 	register_signal();
+// Warning for dev/debug build.
+#ifdef RURI_DEBUG
+	cprintf("{red}Warning: this is a dev/debug build, do not use it in production{clear}\n");
+#endif
 	// Info of container to run.
 	struct CONTAINER *container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
 	// Parse arguments.

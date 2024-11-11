@@ -39,6 +39,7 @@ init() {
     if ! command -v strip; then
         error "not found"
     fi
+    export STRIP=$(realpath $(command -v strip))
     printf "checking for compiler... "
     if [ ! $CC ]; then
         if [ ! $(command -v cc) ]; then
@@ -130,12 +131,14 @@ dev_cflag() {
     if [ $DEBUG_BUILD ]; then
         test_and_add_cflag "-DRURI_DEBUG"
     fi
+    test_and_add_cflag "-DRURI_DEV"
     if [ $STATIC_COMPILE ]; then
         test_and_add_cflag "-static"
     fi
     test_and_add_ldflag "-lcap"
     test_and_add_ldflag "-lseccomp"
     test_and_add_ldflag "-lpthread"
+    export STRIP=true
 }
 check_headers_and_libs() {
     # Check system headers.
@@ -177,4 +180,5 @@ fi
 echo "CFLAGS = $CFLAGS" >config.mk
 echo "LD_FLAGS = $LD_FLAGS" >>config.mk
 echo "CC = $CC" >>config.mk
+echo "STRIP = $STRIP" >>config.mk
 printf "ok\n"
