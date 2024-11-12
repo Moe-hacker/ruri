@@ -432,7 +432,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		// For unknown arguments, yeah I didn't forgot it...
 		else {
 			show_helps();
-			error("{red}Error: unknown option `%s`{clear}\n", argv[index]);
+			error("{red}Error: unknown option `%s`\nNote that only existing directory can be detected as CONTAINER_DIR\n", argv[index]);
 		}
 	}
 	// Build the caplist to drop.
