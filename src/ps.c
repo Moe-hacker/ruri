@@ -213,3 +213,64 @@ void container_ps(char *_Nonnull container_dir)
 	__container_ps(container_dir, in_pid_ns);
 	free(container);
 }
+static bool is_container_process(pid_t pid, const char *_Nonnull container_dir)
+{
+	/*
+	 * Check if the process is in the container.
+	 */
+	char path[PATH_MAX];
+	sprintf(path, "%s%d%s", "/proc/", pid, "/root");
+	char buf[PATH_MAX];
+	buf[0] = '\0';
+	realpath(path, buf);
+	if (strcmp(buf, "/") == 0) {
+		return false;
+	}
+	if (strcmp(buf, container_dir) == 0) {
+		return true;
+	}
+	return false;
+}
+void kill_container(const char *_Nonnull container_dir)
+{
+	/*
+	 * Check all the processes in /proc,
+	 * If the process is in the container, kill it.
+	 * We check for /proc/pid/root to determine if the process is in the container.
+	 *
+	 */
+	DIR *proc_dir = opendir("/proc");
+	struct dirent *file = NULL;
+	int len = 0;
+	while ((file = readdir(proc_dir)) != NULL) {
+		if (file->d_type == DT_DIR) {
+			len++;
+		}
+	}
+	seekdir(proc_dir, 0);
+	int pids[len + 11];
+	// For passing clang-tidy.
+	memset(pids, 0, sizeof(pids));
+	int i = 0;
+	while ((file = readdir(proc_dir)) != NULL) {
+		if (file->d_type == DT_DIR) {
+			if (atoi(file->d_name) > 0) {
+				pids[i] = atoi(file->d_name);
+				pids[i + 1] = INIT_VALUE;
+				i++;
+			}
+		}
+	}
+	for (int j = 0; j < len; j++) {
+		if (pids[j] != INIT_VALUE) {
+			log("{base}Checking pid: {cyan}%d\n", pids[j]);
+			if (is_container_process(pids[j], container_dir)) {
+				log("{base}Killing pid: {cyan}%d\n", pids[j]);
+				kill(pids[j], SIGKILL);
+			}
+		} else {
+			break;
+		}
+	}
+	closedir(proc_dir);
+}

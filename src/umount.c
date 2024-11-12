@@ -140,6 +140,8 @@ void umount_container(const char *_Nonnull container_dir)
 		log("Kill ns pid: %d\n", container->ns_pid);
 		kill(container->ns_pid, SIGKILL);
 	}
+	// Kill all processes in container.
+	kill_container(container_dir);
 	// Make Asan happy.
 	free(container);
 }

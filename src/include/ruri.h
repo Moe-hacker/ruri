@@ -219,6 +219,7 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 void set_limit(const struct CONTAINER *_Nonnull container);
 struct ID_MAP get_idmap(uid_t uid, gid_t gid);
 void container_ps(char *_Nonnull container_dir);
+void kill_container(const char *_Nonnull container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
