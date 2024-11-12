@@ -76,16 +76,29 @@ static char *build_container_info(const struct CONTAINER *_Nonnull container)
 	char *ret = NULL;
 	// drop_caplist.
 	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
+	char *cap_tmp = NULL;
 	int len = 0;
 	for (int i = 0; true; i++) {
 		if (container->drop_caplist[i] == INIT_VALUE) {
 			len = i;
 			break;
 		}
-		drop_caplist[i] = cap_to_name(container->drop_caplist[i]);
+		cap_tmp = cap_to_name(container->drop_caplist[i]);
+		if (cap_tmp == NULL) {
+			drop_caplist[i] = malloc(114);
+			sprintf(drop_caplist[i], "%d", container->drop_caplist[i]);
+		} else {
+			drop_caplist[i] = strdup(cap_tmp);
+			cap_free(cap_tmp);
+			cap_tmp = NULL;
+		}
 	}
 	ret = k2v_add_comment(ret, "The capabilty to drop.");
 	ret = k2v_add_config(char_array, ret, "drop_caplist", drop_caplist, len);
+	// Make ASAN happy.
+	for (int i = 0; i < len; i++) {
+		free(drop_caplist[i]);
+	}
 	// no_new_privs.
 	ret = k2v_add_comment(ret, "Set NO_NEW_PRIVS bit.");
 	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
@@ -271,7 +284,11 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 			container->drop_caplist[i] = INIT_VALUE;
 			break;
 		}
-		cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
+		if (atoi(drop_caplist[i]) > 0) {
+			container->drop_caplist[i] = atoi(drop_caplist[i]);
+		} else {
+			cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
+		}
 		free(drop_caplist[i]);
 		container->drop_caplist[i + 1] = INIT_VALUE;
 	}
