@@ -50,7 +50,7 @@ static void check_container(const struct CONTAINER *_Nonnull container)
 		error("{red}Error: this program should be run with root privileges QwQ\n");
 	}
 	// `--arch` and `--qemu-path` should be set at the same time.
-	if ((container->cross_arch == NULL) ^ (container->qemu_path == NULL)) {
+	if ((container->cross_arch == NULL) != (container->qemu_path == NULL)) {
 		error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
 	}
 }
