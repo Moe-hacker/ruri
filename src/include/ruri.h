@@ -167,6 +167,7 @@ struct __attribute__((aligned(32))) ID_MAP {
 // Show error msg and exit.
 #define error(...)                                                                                           \
 	{                                                                                                    \
+		cfprintf(stderr, "{red}In %s() in %s line %d:\n", __func__, __FILE__, __LINE__);             \
 		cfprintf(stderr, ##__VA_ARGS__);                                                             \
 		cfprintf(stderr, "{base}%s{clear}\n", "  .^.   .^.");                                        \
 		cfprintf(stderr, "{base}%s{clear}\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
