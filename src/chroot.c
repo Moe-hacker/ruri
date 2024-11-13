@@ -234,7 +234,7 @@ static void drop_caps(const struct CONTAINER *_Nonnull container)
 static void set_envs(const struct CONTAINER *_Nonnull container)
 {
 	/*
-	 * A very useless feature, I hope it works as expected.
+	 * Set environment variables.
 	 * $PATH and $TMPDIR will also be set here.
 	 */
 	// Set $PATH to the common value in GNU/Linux,
@@ -242,6 +242,8 @@ static void set_envs(const struct CONTAINER *_Nonnull container)
 	setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 1);
 	// Set $TMPDIR.
 	setenv("TMPDIR", "/tmp", 1);
+	// Set $SHELL to sh.
+	setenv("SHELL", "sh", 1);
 	// Set other envs.
 	for (int i = 0; true; i += 2) {
 		if (container->env[i] == NULL || container->env[i + 1] == NULL) {
