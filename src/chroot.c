@@ -91,7 +91,7 @@ static void init_container(void)
 		mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
 		// Continue mounting some other directories in /dev.
 		mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-		mount("devpts", "/dev/pts", "devpts", 0, "gid=4,mode=620");
+		mount("devpts", "/dev/pts", "devpts", 0, "mode=620,ptmxmode=666");
 		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
 		// Protect some system runtime directories by mounting themselves as read-only.
@@ -185,7 +185,7 @@ static void mount_host_runtime(const struct CONTAINER *_Nonnull container)
 	memset(buf, '\0', sizeof(buf));
 	sprintf(buf, "%s/dev/pts", container->container_dir);
 	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("devpts", buf, "devpts", 0, NULL);
+	mount("devpts", buf, "devpts", 0, "mode=600,ptmxmode=666");
 	// Mount devshm.
 	memset(buf, '\0', sizeof(buf));
 	sprintf(buf, "%s/dev/shm", container->container_dir);

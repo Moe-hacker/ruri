@@ -126,7 +126,7 @@ static void init_rootless_container(struct CONTAINER *_Nonnull container)
 	symlink("/proc/self/fd/2", "./dev/stderr");
 	symlink("/dev/null", "./dev/tty0");
 	mkdir("./dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("devpts", "./dev/pts", "devpts", 0, "gid=4,mode=620");
+	mount("devpts", "./dev/pts", "devpts", 0, "mode=620,ptmxmode=666");
 	mkdir("./dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("tmpfs", "./dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
 	mount("./proc/bus", "./proc/bus", NULL, MS_BIND | MS_REC, NULL);
