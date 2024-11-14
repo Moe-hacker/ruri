@@ -145,6 +145,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	bool just_chroot;
 	// Work directory.
 	char *_Nullable work_dir;
+	// Rootfs of container will be mount first.
+	char *_Nullable rootfs_source;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

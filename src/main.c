@@ -126,6 +126,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	container->memory = NULL;
 	container->work_dir = NULL;
 	container->just_chroot = false;
+	container->rootfs_source = NULL;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -329,6 +330,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		else if (strcmp(argv[index], "-m") == 0 || strcmp(argv[index], "--mount") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
+				if (strcmp(argv[index], "/") == 0) {
+					error("{red}/ is not allowed to use as a mountpoint QwQ\n");
+				}
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
 					if (container->extra_mountpoint[i] == NULL) {
 						container->extra_mountpoint[i] = realpath(argv[index], NULL);
@@ -337,6 +341,17 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 						}
 						index++;
 						container->extra_mountpoint[i + 1] = strdup(argv[index]);
+						if (strcmp(argv[index], "/") == 0) {
+							free(container->extra_mountpoint[i]);
+							free(container->extra_mountpoint[i + 1]);
+							container->extra_mountpoint[i] = NULL;
+							container->extra_mountpoint[i + 1] = NULL;
+							if (container->rootfs_source == NULL) {
+								container->rootfs_source = strdup(argv[index]);
+							} else {
+								error("{red}You can only mount one source to / QwQ\n");
+							}
+						}
 						container->extra_mountpoint[i + 2] = NULL;
 						break;
 					}
@@ -362,6 +377,18 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 						index++;
 						container->extra_ro_mountpoint[i + 1] = strdup(argv[index]);
 						container->extra_ro_mountpoint[i + 2] = NULL;
+						if (strcmp(argv[index], "/") == 0) {
+							free(container->extra_ro_mountpoint[i]);
+							free(container->extra_ro_mountpoint[i + 1]);
+							container->extra_ro_mountpoint[i] = NULL;
+							container->extra_ro_mountpoint[i + 1] = NULL;
+							if (container->rootfs_source == NULL) {
+								container->rootfs_source = strdup(argv[index]);
+								container->ro_root = true;
+							} else {
+								error("{red}You can only mount one source to / QwQ\n");
+							}
+						}
 						break;
 					}
 					// Max 512 mountpoints.

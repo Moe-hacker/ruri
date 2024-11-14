@@ -283,6 +283,20 @@ static void setup_binfmt_misc(const struct CONTAINER *_Nonnull container)
 	// Umount the apifs.
 	umount2("/proc/sys/fs/binfmt_misc", MNT_DETACH | MNT_FORCE);
 }
+static void mount_rootfs(const struct CONTAINER *_Nonnull container)
+{
+	/*
+	 * Mount rootfs of container.
+	 * It will be called before chroot(2).
+	 * Rootfs (/) is the first mountpoint.
+	 */
+	// Mount rootfs.
+	if (container->rootfs_source != NULL) {
+		if (trymount(container->rootfs_source, container->container_dir, 0) != 0) {
+			error("{red}Error: failed to mount rootfs QwQ\n");
+		}
+	}
+}
 // Mount other mountpoints.
 // Run before chroot(2).
 static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
@@ -291,7 +305,7 @@ static void mount_mountpoints(const struct CONTAINER *_Nonnull container)
 	 * Mount extra_mountpoint and extra_ro_mountpoint.
 	 * It will be called before chroot(2).
 	 */
-	if (!container->rootless) {
+	if (!container->rootless && (container->rootfs_source == NULL)) {
 		// '/' should be a mountpoint in container.
 		mount(container->container_dir, container->container_dir, NULL, MS_BIND, NULL);
 	}
@@ -411,6 +425,7 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	char *test = realpath(buf, NULL);
 	if (test == NULL) {
 		// Mount mountpoints.
+		mount_rootfs(container);
 		mount_mountpoints(container);
 		// Copy qemu binary into container.
 		copy_qemu_binary(container);
@@ -418,13 +433,13 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 		if (!container->enable_unshare && container->use_rurienv) {
 			store_info(container);
 		}
-		// If `-R` option is set, make / read-only.
-		if (container->ro_root) {
-			mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
-		}
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
 		if (container->mount_host_runtime && !container->just_chroot) {
 			mount_host_runtime(container);
+		}
+		// If `-R` option is set, make / read-only.
+		if (container->ro_root) {
+			mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
 		}
 	}
 	// If container already mounted, sync the config.
@@ -529,6 +544,7 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	sigaddset(&sigs, SIGTTOU);
 	sigprocmask(SIG_BLOCK, &sigs, 0);
 	// Mount mountpoints.
+	mount_rootfs(container);
 	mount_mountpoints(container);
 	// Copy qemu binary into container.
 	copy_qemu_binary(container);
