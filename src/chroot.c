@@ -92,8 +92,17 @@ static void init_container(struct CONTAINER *_Nonnull container)
 		// Continue mounting some other directories in /dev.
 		mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mount("devpts", "/dev/pts", "devpts", 0, "mode=620,ptmxmode=666");
+		char *devshm_options = NULL;
+		if (container->memory == NULL) {
+			devshm_options = strdup("mode=1777");
+		} else {
+			devshm_options = malloc(strlen(container->memory) + strlen("mode=755") + 114);
+			sprintf(devshm_options, "size=%s,mode=1777", container->memory);
+		}
 		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
+		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
+		usleep(100000);
+		free(devshm_options);
 		// Mount binfmt_misc.
 		mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
 		// Create system runtime files in /dev and then fix permissions.
@@ -189,10 +198,19 @@ static void mount_host_runtime(const struct CONTAINER *_Nonnull container)
 	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("devpts", buf, "devpts", 0, "mode=600,ptmxmode=666");
 	// Mount devshm.
+	char *devshm_options = NULL;
+	if (container->memory == NULL) {
+		devshm_options = strdup("mode=1777");
+	} else {
+		devshm_options = malloc(strlen(container->memory) + strlen("mode=755") + 114);
+		sprintf(devshm_options, "size=%s,mode=1777", container->memory);
+	}
 	memset(buf, '\0', sizeof(buf));
 	sprintf(buf, "%s/dev/shm", container->container_dir);
 	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("tmpfs", buf, "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
+	mount("tmpfs", buf, "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
+	usleep(100000);
+	free(devshm_options);
 }
 // Drop capabilities.
 // Use libcap.

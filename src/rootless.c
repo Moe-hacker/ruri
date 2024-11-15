@@ -127,8 +127,17 @@ static void init_rootless_container(struct CONTAINER *_Nonnull container)
 	symlink("/dev/null", "./dev/tty0");
 	mkdir("./dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("devpts", "./dev/pts", "devpts", 0, "mode=620,ptmxmode=666");
+	char *devshm_options = NULL;
+	if (container->memory == NULL) {
+		devshm_options = strdup("mode=1777");
+	} else {
+		devshm_options = malloc(strlen(container->memory) + strlen("mode=755") + 114);
+		sprintf(devshm_options, "size=%s,mode=1777", container->memory);
+	}
 	mkdir("./dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("tmpfs", "./dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=1777");
+	mount("tmpfs", "./dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
+	usleep(100000);
+	free(devshm_options);
 	if (!container->unmask_dirs) {
 		// Protect some dirs in /proc and /sys.
 		mount("./proc/bus", "./proc/bus", NULL, MS_BIND | MS_REC, NULL);
