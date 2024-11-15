@@ -96,7 +96,7 @@ static void init_container(struct CONTAINER *_Nonnull container)
 		if (container->memory == NULL) {
 			devshm_options = strdup("mode=1777");
 		} else {
-			devshm_options = malloc(strlen(container->memory) + strlen("mode=755") + 114);
+			devshm_options = malloc(strlen(container->memory) + strlen("mode=1777") + 114);
 			sprintf(devshm_options, "size=%s,mode=1777", container->memory);
 		}
 		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
@@ -202,7 +202,7 @@ static void mount_host_runtime(const struct CONTAINER *_Nonnull container)
 	if (container->memory == NULL) {
 		devshm_options = strdup("mode=1777");
 	} else {
-		devshm_options = malloc(strlen(container->memory) + strlen("mode=755") + 114);
+		devshm_options = malloc(strlen(container->memory) + strlen("mode=1777") + 114);
 		sprintf(devshm_options, "size=%s,mode=1777", container->memory);
 	}
 	memset(buf, '\0', sizeof(buf));
