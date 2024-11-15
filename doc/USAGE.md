@@ -174,3 +174,8 @@ default work directory is `/`, you can use this option to change it to other dir
 -A, --unmask-dirs ............................: Unmask dirs in /proc and /sys
 ```
 ruri will protect some files/dirs in /proc and /sys by default, use -A to disable this.      
+********************
+```
+-E, --user ...................................: Set the user to run command in the container.
+```
+You can use this option to switch to a common user before exec(3).       

@@ -108,6 +108,9 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	// unmask_dirs.
 	ret = k2v_add_comment(ret, "Unmask dirs in /proc and /sys.");
 	ret = k2v_add_config(bool, ret, "unmask_dirs", container->unmask_dirs);
+	// user.
+	ret = k2v_add_comment(ret, "The user to run command in the container.");
+	ret = k2v_add_config(char, ret, "user", container->user);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -212,6 +215,10 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	container->rootfs_source = k2v_get_key(char, "rootfs_source", buf);
 	// Get unmask_dirs.
 	container->unmask_dirs = k2v_get_key(bool, "unmask_dirs", buf);
+	// Get user.
+	if (container->user == NULL) {
+		container->user = k2v_get_key(char, "user", buf);
+	}
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;

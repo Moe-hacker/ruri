@@ -72,6 +72,31 @@ static uid_t line_get_uid(const char *_Nonnull p)
 	}
 	return 0;
 }
+static gid_t line_get_gid(const char *_Nonnull p)
+{
+	/*
+	 * Get gid by line.
+	 */
+	uid_t ret = 0;
+	// /etc/passwd format:
+	// name:password:uid:gid:comment:home directory:login shell
+	// So we need to skip 3 colons.
+	for (int i = 0; i < 3; i++) {
+		if (strchr(p, ':') == NULL) {
+			return 0;
+		}
+		p = strchr(p, ':') + 1;
+	}
+	// Now, after we skip 3 colons, we can get the gid.
+	// Read the uid until we meet the next colon.
+	for (int i = 0; p[i] != '\0'; i++) {
+		if (p[i] == ':') {
+			return ret;
+		}
+		ret = ret * 10 + (uid_t)(p[i] - '0');
+	}
+	return 0;
+}
 static char *get_username(uid_t uid)
 {
 	/*
@@ -305,4 +330,113 @@ struct ID_MAP get_idmap(uid_t uid, gid_t gid)
 	log("{base}gid_count: {cyan}%d\n", ret.gid_count);
 	free(username);
 	return ret;
+}
+bool user_exist(const char *_Nonnull username)
+{
+	/*
+	 * Check if the user exists.
+	 */
+	int fd = open("/etc/passwd", O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
+		return false;
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	char *buf = malloc((size_t)size + 1);
+	read(fd, buf, (size_t)size);
+	buf[size] = '\0';
+	close(fd);
+	char *p = buf;
+	char *tmpusername = " ";
+	while (true) {
+		tmpusername = line_get_username(p);
+		if (strcmp(tmpusername, username) == 0) {
+			free(buf);
+			free(tmpusername);
+			return true;
+		}
+		free(tmpusername);
+		p = strchr(p, '\n');
+		if (p == NULL) {
+			break;
+		}
+		p = p + 1;
+	}
+	free(buf);
+	return false;
+}
+uid_t get_user_uid(const char *_Nonnull username)
+{
+	/*
+	 * Get uid by username.
+	 */
+	int fd = open("/etc/passwd", O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
+		return 0;
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	char *buf = malloc((size_t)size + 1);
+	read(fd, buf, (size_t)size);
+	buf[size] = '\0';
+	close(fd);
+	char *p = buf;
+	uid_t tmpuid = 0;
+	char *tmpusername = " ";
+	while (true) {
+		tmpusername = line_get_username(p);
+		tmpuid = line_get_uid(p);
+		if (strcmp(tmpusername, username) == 0) {
+			free(buf);
+			free(tmpusername);
+			return tmpuid;
+		}
+		free(tmpusername);
+		p = strchr(p, '\n');
+		if (p == NULL) {
+			break;
+		}
+		p = p + 1;
+	}
+	free(buf);
+	return 0;
+}
+gid_t get_user_gid(const char *_Nonnull username)
+{
+	/*
+	 * Get gid by username.
+	 */
+	int fd = open("/etc/passwd", O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
+		return 0;
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	char *buf = malloc((size_t)size + 1);
+	read(fd, buf, (size_t)size);
+	buf[size] = '\0';
+	close(fd);
+	char *p = buf;
+	gid_t tmpgid = 0;
+	char *tmpusername = " ";
+	while (true) {
+		tmpusername = line_get_username(p);
+		tmpgid = line_get_gid(p);
+		if (strcmp(tmpusername, username) == 0) {
+			free(buf);
+			free(tmpusername);
+			return tmpgid;
+		}
+		free(tmpusername);
+		p = strchr(p, '\n');
+		if (p == NULL) {
+			break;
+		}
+		p = p + 1;
+	}
+	free(buf);
+	return 0;
 }

@@ -149,6 +149,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *_Nullable rootfs_source;
 	// Unmask dirs in /proc and /sys.
 	bool unmask_dirs;
+	// User.
+	char *_Nullable user;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)
@@ -225,6 +227,9 @@ void set_limit(const struct CONTAINER *_Nonnull container);
 struct ID_MAP get_idmap(uid_t uid, gid_t gid);
 void container_ps(char *_Nonnull container_dir);
 void kill_container(const char *_Nonnull container_dir);
+bool user_exist(const char *_Nonnull username);
+uid_t get_user_uid(const char *_Nonnull username);
+gid_t get_user_gid(const char *_Nonnull username);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

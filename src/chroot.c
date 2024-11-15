@@ -421,6 +421,27 @@ static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 	log("{base}pivot_root(2) success.\n");
 	return 0;
 }
+// Set uid and gid.
+static void change_user(const struct CONTAINER *_Nonnull container)
+{
+	/*
+	 * Change uid and gid.
+	 * It will be called before exec(3).
+	 */
+	if (container->user != NULL) {
+		if (atoi(container->user) > 0) {
+			setgid((gid_t)atoi(container->user));
+			setuid((uid_t)atoi(container->user));
+		} else {
+			if (!user_exist(container->user)) {
+				error("{red}Error: user `%s` does not exist QwQ\n", container->user);
+			} else {
+				setgid(get_user_gid(container->user));
+				setuid(get_user_uid(container->user));
+			}
+		}
+	}
+}
 // Run chroot container.
 void run_chroot_container(struct CONTAINER *_Nonnull container)
 {
@@ -472,7 +493,7 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
-		if (su_biany_exist(container->container_dir)) {
+		if (su_biany_exist(container->container_dir) && container->user == NULL) {
 			container->command[0] = "/bin/su";
 			container->command[1] = "-";
 			container->command[2] = NULL;
@@ -543,6 +564,8 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	}
 	// Fix console color.
 	cprintf("{clear}");
+	// Change uid and gid.
+	change_user(container);
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.
 	if (execvp(container->command[0], container->command) == -1) {
@@ -580,7 +603,7 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	}
 	// Set default command for exec().
 	if (container->command[0] == NULL) {
-		if (su_biany_exist(container->container_dir)) {
+		if (su_biany_exist(container->container_dir) && container->user == NULL) {
 			container->command[0] = "/bin/su";
 			container->command[1] = "-";
 			container->command[2] = NULL;
@@ -636,6 +659,8 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	}
 	// Fix console color.
 	cprintf("{clear}");
+	// Change uid and gid.
+	change_user(container);
 	// Execute command in container.
 	// Use exec(3) function because system(3) may be unavailable now.
 	if (execvp(container->command[0], container->command) == -1) {

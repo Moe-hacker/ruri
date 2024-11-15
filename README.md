@@ -78,6 +78,8 @@ ruri is ready to integrate into other projects, with the MIT License, it is comp
 See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    
 # Usage:    
 See [USAGE](doc/USAGE.md)      
+# Behavior of rurienv:
+After initing the container, ruri will create a file /.rurienv by default, this config can unify container config, but it will also cover some of the command-line args, you can use `--no-rurienv` to disable it, or see [rurienv.md](doc/rurienv.md) to see its behavior.     
 # FAQ:   
 [FAQ](doc/FAQ.md)      
 # Quick start(with rootfstool):
