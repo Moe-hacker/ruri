@@ -276,6 +276,10 @@ void set_limit(const struct CONTAINER *_Nonnull container)
 	 * Mount cgroup controller and set limit.
 	 * Nothing to return, only warnings to show if cgroup is not supported.
 	 */
+	// Umount the mask of /sys/fs
+	if (!container->unmask_dirs) {
+		umount2("/sys/fs", MNT_DETACH | MNT_FORCE);
+	}
 	// Mount cgroup controller and get the type of cgroup.
 	int cgtype = mount_cgroup();
 	// For cgroup v1.
@@ -285,5 +289,9 @@ void set_limit(const struct CONTAINER *_Nonnull container)
 	// For cgroup v2.
 	else {
 		set_cgroup_v2(container);
+	}
+	// Mask /sys/fs again.
+	if (!container->unmask_dirs) {
+		mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_RDONLY, NULL);
 	}
 }
