@@ -147,6 +147,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *_Nullable work_dir;
 	// Rootfs of container will be mount first.
 	char *_Nullable rootfs_source;
+	// Unmask dirs in /proc and /sys.
+	bool unmask_dirs;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

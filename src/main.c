@@ -127,6 +127,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	container->work_dir = NULL;
 	container->just_chroot = false;
 	container->rootfs_source = NULL;
+	container->unmask_dirs = false;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -238,6 +239,10 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		// Do not store .rurienv file.
 		else if (strcmp(argv[index], "-N") == 0 || strcmp(argv[index], "--no-rurienv") == 0) {
 			container->use_rurienv = false;
+		}
+		// Unmask dirs in /proc and /sys.
+		else if (strcmp(argv[index], "-A") == 0 || strcmp(argv[index], "--unmask-dirs") == 0) {
+			container->unmask_dirs = true;
 		}
 		// Simulate architecture.
 		else if (strcmp(argv[index], "-a") == 0 || strcmp(argv[index], "--arch") == 0) {

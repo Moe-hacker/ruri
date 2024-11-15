@@ -1,6 +1,7 @@
 # v3.8:
   * Support more platforms, currently supports: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.
   * Add `-W` option: `--work-dir`.
+  * Add `-A` option: `--unmask-dirs`.
   * Change MAX_MOUNTPOINTS AND MAX_ENVS from 128*2 to 512*2.
   * Auto kill all processes in container when umounting container.
   * We will always mount / as the first mountpoint.

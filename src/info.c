@@ -118,6 +118,7 @@ void show_helps(void)
 	cprintf("{base}  -f, --fork ..................................: fork() before exec the command(*******)\n");
 	cprintf("{base}  -j, --just-chroot ...........................: Just chroot, do not create the runtime dirs\n");
 	cprintf("{base}  -W, --work-dir [dir] ........................: Set the work directory in container\n");
+	cprintf("{base}  -A, --unmask-dirs ...........................: Unmask dirs in /proc and /sys\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*)      : Will not work for unshare container without PID ns support\n");

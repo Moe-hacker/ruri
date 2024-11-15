@@ -105,6 +105,9 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	// rootfs_source.
 	ret = k2v_add_comment(ret, "Rootfs source, will be mount to / as first mountpoint.");
 	ret = k2v_add_config(char, ret, "rootfs_source", container->rootfs_source);
+	// unmask_dirs.
+	ret = k2v_add_comment(ret, "Unmask dirs in /proc and /sys.");
+	ret = k2v_add_config(bool, ret, "unmask_dirs", container->unmask_dirs);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -207,6 +210,8 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	container->work_dir = k2v_get_key(char, "work_dir", buf);
 	// Get rootfs_source.
 	container->rootfs_source = k2v_get_key(char, "rootfs_source", buf);
+	// Get unmask_dirs.
+	container->unmask_dirs = k2v_get_key(bool, "unmask_dirs", buf);
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;

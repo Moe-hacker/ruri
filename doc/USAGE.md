@@ -169,3 +169,8 @@ If you enable this option, ruri will not create runtime dirs(/dev, proc and /sys
 -W, --work-dir [dir]..........................: Change work directory in container.
 ```
 default work directory is `/`, you can use this option to change it to other dirs.       
+*********************************
+```
+-A, --unmask-dirs ............................: Unmask dirs in /proc and /sys
+```
+ruri will protect some files/dirs in /proc and /sys by default, use -A to disable this.      
