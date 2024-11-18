@@ -382,6 +382,15 @@ static char *line_get_left(const char *_Nonnull line)
 		ret[i] = line[i];
 		ret[i + 1] = '\0';
 	}
+	// Skip space.
+	for(size_t i = strlen(ret) - 1; i > 0; i--) {
+		if (ret[i] == ' ') {
+			continue;
+		} else {
+			ret[i + 1] = '\0';
+			break;
+		}
+	}
 	return ret;
 }
 static char *line_get_right(const char *_Nonnull line)
@@ -492,10 +501,6 @@ static int __k2v_basic_lint(const char *_Nonnull line)
 		}
 		if (line[i] == '=') {
 			break;
-		}
-		if (line[i] == ' ') {
-			warning("Key should not contain space: %s\n", line);
-			return -1;
 		}
 		if (line[i] == '"') {
 			warning("Key should not contain \": %s\n", line);
