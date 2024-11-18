@@ -49,8 +49,8 @@
 #define _Nonnull
 #endif
 // Version info.
-#define LIBK2V_MAJOR 1
-#define LIBK2V_MINOR 1
+#define LIBK2V_MAJOR 2
+#define LIBK2V_MINOR 0
 // Warning.
 extern bool k2v_stop_at_warning;
 extern bool k2v_show_warning;

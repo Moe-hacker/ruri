@@ -12,6 +12,7 @@
   * Add autotest.
   * Fix memory issues.
   * libk2v: Add lenth check for array to avoid overflow.
+  * libk2v: rewrite deserialization part.
   * cprintf: Correct the way to get buffer size, avoid overflow.
   * General bug fixes.
 # v3.7:

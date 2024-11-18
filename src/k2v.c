@@ -29,20 +29,63 @@
  */
 #include "include/k2v.h"
 // Warnings && stop at warning.
-#define warning(...)                                                                              \
-	{                                                                                         \
-		if (k2v_show_warning) {                                                           \
-			fprintf(stderr, ##__VA_ARGS__);                                           \
-		}                                                                                 \
-		if (k2v_stop_at_warning) {                                                        \
-			fprintf(stderr, "\033[31mlibk2v stop_at_warning set, exit now\n\033[0m"); \
-			exit(114);                                                                \
-		}                                                                                 \
+#define warning(...)                                                                                   \
+	{                                                                                              \
+		if (k2v_show_warning) {                                                                \
+			fprintf(stderr, "\033[31mAt %s at %d at %s:\n", __FILE__, __LINE__, __func__); \
+			fprintf(stderr, ##__VA_ARGS__);                                                \
+			fprintf(stderr, "\033[0m");                                                    \
+		}                                                                                      \
+		if (k2v_stop_at_warning) {                                                             \
+			fprintf(stderr, "\033[31mlibk2v stop_at_warning set, exit now\n\033[0m");      \
+			exit(114);                                                                     \
+		}                                                                                      \
 	}
+static void __k2v_lint(const char *_Nonnull buf);
 // For warning() macro.
 // We use global variables here, because we need it to be simple for developers.
 bool k2v_stop_at_warning = false;
 bool k2v_show_warning = true;
+// Get the first line in buffer.
+static char *get_current_line(const char *_Nonnull buf)
+{
+	/*
+	 * Warning: free() after use.
+	 */
+	// NULL check.
+	if (buf == NULL) {
+		return NULL;
+	}
+	char *ret = strdup(buf);
+	if (strchr(ret, '\n') == NULL) {
+		return ret;
+	} else {
+		*strchr(ret, '\n') = '\0';
+	}
+	// ret will be larger than the line we got.
+	// But never mind, '\0' is the end of string.
+	return ret;
+}
+// Goto next line.
+static char *goto_next_line(const char *_Nonnull buf)
+{
+	/*
+	 * Warning: do not free() it.
+	 */
+	// NULL check.
+	if (buf == NULL) {
+		return NULL;
+	}
+	char *ret = strchr(buf, '\n');
+	if (ret == NULL) {
+		return NULL;
+	}
+	if (ret[1] == '\0') {
+		return NULL;
+	}
+	// Skip '\n'.
+	return ret + 1;
+}
 // Get file size.
 size_t k2v_get_filesize(const char *_Nonnull path)
 {
@@ -62,530 +105,7 @@ size_t k2v_get_filesize(const char *_Nonnull path)
 	// To avoid overflow.
 	return (size_t)ret + 3;
 }
-static char *cuts(const char *_Nonnull str, char start, char end)
-{
-	/*
-	 * Cut the string from start to end.
-	 * Set start or end to 0 to skip check for it.
-	 * The return value will not contain the start or end.
-	 *
-	 * Example for return value:
-	 *
-	 * char *str = "+111-";
-	 *
-	 * cuts(str, '+', '-') = "111"
-	 * cuts(str,  0,  '-') = "+111"
-	 * cuts(str, '+',  0) = "111-"
-	 *
-	 */
-	// If both start and end is 0, return NULL.
-	if (start == 0 && end == 0) {
-		return NULL;
-	}
-	// NULL string.
-	if (str == NULL || str[0] == '\0') {
-		return NULL;
-	}
-	char *buf = NULL;
-	char *ret = NULL;
-	// Search for start char.
-	if (start != 0) {
-		for (size_t i = 0; i < strlen(str); i++) {
-			if (str[i] == start) {
-				// Get the string after `start`.
-				// '\0' means nothing left after `start`, so just return NULL.
-				if (str[i + 1] != '\0') {
-					buf = (strdup(&str[i + 1]));
-				} else {
-					return NULL;
-				}
-				break;
-			}
-		}
-	} else {
-		buf = strdup(str);
-	}
-	// Check if we still have a non-null buf.
-	// It works, do not change.
-	if (buf == NULL) {
-		return NULL;
-	}
-	// Search for end char.
-	if (end != 0) {
-		for (size_t i = 0; i < strlen(buf); i++) {
-			if (buf[i] == end) {
-				// Check if we have character before `end`.
-				if (i > 0) {
-					// Set end to '\0'.
-					// String after `end` will be ignored by strdup(2).
-					buf[i] = '\0';
-					ret = strdup(buf);
-					break;
-				}
-				// If `end` is the start of `buf`, just return NULL.
-				ret = NULL;
-				break;
-			}
-			// If we reach the end of buf, just return NULL.
-			if (i == strlen(buf)) {
-				ret = NULL;
-			}
-		}
-	} else {
-		ret = strdup(buf);
-	}
-	free(buf);
-	// Return the string we get.
-	return ret;
-}
-static char *get_first_line(const char *_Nonnull buf)
-{
-	/*
-	 * Get the first line in `buf`.
-	 * It will automatically remove spaces at the start of the line.
-	 */
-	const char *ptr = buf;
-	// Remove null line and space.
-	for (size_t i = 0; i < strlen(buf) - 1; i++) {
-		if (ptr[i] != '\n' && ptr[i] != ' ') {
-			break;
-		}
-		ptr = &ptr[i + 1];
-	}
-	char *line = cuts(ptr, 0, '\n');
-	char *ret = NULL;
-	// Check if we have a line to read.
-	if (line == NULL) {
-		return NULL;
-	}
-	// Seems stupid...
-	// It works, do not change.
-	ret = strdup(line);
-	free(line);
-	return ret;
-}
-static char *goto_next_line(const char *_Nonnull buf)
-{
-	// Remove null line.
-	const char *ptr = buf;
-	for (size_t i = 0; i < strlen(buf) - 1; i++) {
-		if (ptr[i] != '\n' && ptr[i] != ' ') {
-			break;
-		}
-		ptr = &ptr[i + 1];
-	}
-	// NULL will returned here if no `\n` found.
-	return (strchr(ptr, '\n'));
-}
-static bool is_null_val(const char *_Nonnull buf)
-{
-	/*
-	 * Check if the right value is null.
-	 * It's used for do_basic_check().
-	 */
-	if (buf == NULL) {
-		return false;
-	}
-	// "" is a null value.
-	if (strcmp(buf, "\"\"") == 0) {
-		return true;
-	}
-	// [] is a null array.
-	if (strcmp(buf, "[]") == 0) {
-		return true;
-	}
-	// [""] is also a null array.
-	if (strcmp(buf, "[\"\"]") == 0) {
-		return true;
-	}
-	// For other string, we think it's not null, at least.
-	return false;
-}
-static void do_basic_check(const char *_Nonnull buf)
-{
-	/*
-	 * Do some basic checks when reading the config file.
-	 * It can not make any changes of config file, just show warning.
-	 * But the warning() macro will exit if k2v_stop_at_warning is set.
-	 */
-	const char *ptr = buf;
-	char *line = NULL;
-	char *tmp = NULL;
-	while (true) {
-		free(line);
-		line = get_first_line(ptr);
-		// Reached the end of buf.
-		if (line == NULL) {
-			return;
-		}
-		// Check if this is a comment line.
-		if (line[0] != '#') {
-			// Check if we have a valid left value.
-			tmp = cuts(line, 0, '=');
-			if (tmp == NULL) {
-				warning("\033[31mlibk2v warning: unrecognized line: %s\n\033[0m", line);
-				goto _continue;
-			}
-			free(tmp);
-			// Check if we have a valid right value.
-			tmp = cuts(line, '=', 0);
-			if (tmp == NULL) {
-				warning("\033[31mlibk2v warning: unrecognized line: %s\n\033[0m", line);
-				goto _continue;
-			}
-			if (!is_null_val(tmp)) {
-				free(tmp);
-				// Right value only have two valid formats: "val" or ["val1","val2"].
-				tmp = cuts(line, '[', ']');
-				if (tmp == NULL) {
-					tmp = cuts(line, '"', '"');
-					if (tmp == NULL) {
-						warning("\033[31mlibk2v warning: unrecognized line: %s\n\033[0m", line);
-						goto _continue;
-					}
-				}
-			}
-			free(tmp);
-		}
-_continue:
-		// Goto the next line.
-		ptr = goto_next_line(ptr);
-		ptr = &ptr[1];
-	}
-}
-static char *key_get_right(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	/*
-	 * Get the right value of `=` for the `key`.
-	 * The value returned will be used in other functions.
-	 */
-	// NULL check.
-	if (key == NULL || buf == NULL) {
-		return NULL;
-	}
-	const char *ptr = buf;
-	char *ret = NULL;
-	char *line = NULL;
-	char *tmp = NULL;
-	while (true) {
-		free(line);
-		// Goto the first valid line.
-		line = get_first_line(ptr);
-		// We reached the end but there is no `key` found.
-		if (line == NULL) {
-			return NULL;
-		}
-		// Skip comment line.
-		if (line[0] != '#') {
-			tmp = cuts(line, 0, '=');
-			// Check if `left` matchs the `key` given.
-			if (tmp != NULL) {
-				if (strcmp(tmp, key) == 0) {
-					free(tmp);
-					ret = cuts(line, '=', 0);
-					free(line);
-					break;
-				}
-				free(tmp);
-			}
-		}
-		// Goto the next line.
-		ptr = goto_next_line(ptr);
-		ptr = &ptr[1];
-	}
-	return ret;
-}
-bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	/*
-	 * Check if we have the `key` in `buf`.
-	 * Since I never used this function, it might have bugs.
-	 */
-	// NULL check.
-	if (key == NULL || buf == NULL) {
-		return false;
-	}
-	const char *ptr = buf;
-	bool ret = false;
-	char *line = NULL;
-	char *tmp = NULL;
-	while (true) {
-		free(line);
-		line = get_first_line(ptr);
-		if (line == NULL) {
-			break;
-		}
-		if (line[0] != '#') {
-			tmp = cuts(line, 0, '=');
-			if (tmp != NULL) {
-				if (strcmp(tmp, key) == 0) {
-					free(tmp);
-					tmp = cuts(line, '=', 0);
-					if (!is_null_val(tmp)) {
-						free(tmp);
-						// Right value only have two valid formats: "val" or ["val1","val2"].
-						tmp = cuts(line, '[', ']');
-						if (tmp == NULL) {
-							tmp = cuts(line, '"', '"');
-							if (tmp == NULL) {
-								free(line);
-								return false;
-							}
-						}
-					}
-					ret = true;
-					free(tmp);
-					free(line);
-					break;
-				}
-				free(tmp);
-			}
-		}
-		ptr = goto_next_line(ptr);
-		ptr = &ptr[1];
-	}
-	return ret;
-}
-char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	// Default return value: NULL.
-	if (key == NULL || buf == NULL) {
-		return NULL;
-	}
-	char *ret = NULL;
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return NULL;
-	}
-	ret = cuts(tmp, '"', '"');
-	free(tmp);
-	return ret;
-}
-int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	// Default return value: 0.
-	// NULL check.
-	if (key == NULL || buf == NULL) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return 0;
-	}
-	char *val = cuts(tmp, '"', '"');
-	if (val == NULL) {
-		return 0;
-	}
-	ret = atoi(val);
-	free(tmp);
-	free(val);
-	return ret;
-}
-float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	// Default return value: 0.
-	// NULL check
-	if (key == NULL || buf == NULL) {
-		return 0;
-	}
-	float ret = 0;
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return 0;
-	}
-	char *val = cuts(tmp, '"', '"');
-	if (val == NULL) {
-		return 0;
-	}
-	ret = (float)atof(val);
-	free(tmp);
-	free(val);
-	return ret;
-}
-bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	// Default return value: false.
-	// NULL check.
-	if (key == NULL || buf == NULL) {
-		return false;
-	}
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return false;
-	}
-	char *val = cuts(tmp, '"', '"');
-	free(tmp);
-	if (val == NULL) {
-		return false;
-	}
-	if (strcmp(val, "true") == 0) {
-		free(val);
-		return true;
-	}
-	free(val);
-	return false;
-}
-static int char_to_int_array(const char *_Nonnull buf, int *_Nonnull array, int limit)
-{
-	// Return lenth of the array we get.
-	// Default return value: 0.
-	if (buf == NULL) {
-		return 0;
-	}
-	if (is_null_val(buf)) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = NULL;
-	const char *ptr = buf;
-	while (true) {
-		tmp = cuts(ptr, '"', '"');
-		// Invalid format.
-		if (tmp == NULL) {
-			return 0;
-		}
-		array[ret] = atoi(tmp);
-		ret++;
-		if (ret > limit - 1) {
-			free(tmp);
-			break;
-		}
-		ptr = strchr(ptr, ',');
-		if (ptr == NULL) {
-			free(tmp);
-			break;
-		}
-		// Goto next value.
-		ptr = &ptr[1];
-		free(tmp);
-	}
-	return ret;
-}
-static int char_to_float_array(const char *_Nonnull buf, float *_Nonnull array, int limit)
-{
-	// Return lenth of the array we get.
-	// Default return value: 0.
-	if (buf == NULL) {
-		return 0;
-	}
-	if (is_null_val(buf)) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = NULL;
-	const char *ptr = buf;
-	while (true) {
-		tmp = cuts(ptr, '"', '"');
-		// Invalid format.
-		if (tmp == NULL) {
-			return 0;
-		}
-		array[ret] = (float)atof(tmp);
-		ret++;
-		if (ret > limit - 1) {
-			free(tmp);
-			break;
-		}
-		ptr = strchr(ptr, ',');
-		if (ptr == NULL) {
-			free(tmp);
-			break;
-		}
-		// Goto next value.
-		ptr = &ptr[1];
-		free(tmp);
-	}
-	return ret;
-}
-static int char_to_char_array(const char *_Nonnull buf, char *_Nonnull array[], int limit)
-{
-	// Return lenth of the array we get.
-	// Default return value: 0.
-	// We will not alloc memory for `array`.
-	if (buf == NULL || array == NULL) {
-		return 0;
-	}
-	if (is_null_val(buf)) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = NULL;
-	const char *ptr = buf;
-	while (true) {
-		tmp = cuts(ptr, '"', '"');
-		// Invalid format.
-		if (tmp == NULL) {
-			return 0;
-		}
-		array[ret] = strdup(tmp);
-		array[ret + 1] = NULL;
-		ret++;
-		if (ret > limit - 1) {
-			free(tmp);
-			break;
-		}
-		ptr = strchr(ptr, ',');
-		if (ptr == NULL) {
-			free(tmp);
-			break;
-		}
-		ptr = &ptr[1];
-		free(tmp);
-	}
-	return ret;
-}
-int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array, int limit)
-{
-	// Return lenth of the array we get.
-	// Default return value: 0.
-	// NULL check, we will not alloc memory for array.
-	if (key == NULL || buf == NULL || array == NULL) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return 0;
-	}
-	ret = char_to_int_array(tmp, array, limit);
-	free(tmp);
-	return ret;
-}
-int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[], int limit)
-{
-	// Return lenth of the array we get.
-	// Default return value: 0.
-	// NULL check, we will not alloc memory for array.
-	if (key == NULL || buf == NULL || array == NULL) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return 0;
-	}
-	ret = char_to_char_array(tmp, array, limit);
-	free(tmp);
-	return ret;
-}
-int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array, int limit)
-{
-	// Return lenth of the array we get.
-	// Default return value: 0.
-	// NULL check, we will not alloc memory for array.
-	if (key == NULL || buf == NULL || array == NULL) {
-		return 0;
-	}
-	int ret = 0;
-	char *tmp = key_get_right(key, buf);
-	if (tmp == NULL) {
-		return 0;
-	}
-	ret = char_to_float_array(tmp, array, limit);
-	free(tmp);
-	return ret;
-}
+
 char *k2v_open_file(const char *_Nonnull path, size_t bufsize)
 {
 	/*
@@ -598,94 +118,19 @@ char *k2v_open_file(const char *_Nonnull path, size_t bufsize)
 	if (path == NULL) {
 		return NULL;
 	}
-	// bufsize+1 might avoid overflow(I hope).
-	char *ret = (char *)malloc(bufsize + 1);
+	// bufsize+2 might avoid overflow(I hope).
+	char *ret = (char *)malloc(bufsize + 2);
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		free(ret);
 		return NULL;
 	}
 	ssize_t len = read(fd, ret, bufsize);
-	ret[len] = '\0';
-	do_basic_check(ret);
+	ret[len] = '\n';
+	ret[len + 1] = '\0';
+	__k2v_lint(ret);
 	close(fd);
 	return ret;
-}
-static void print_shell_array(const char *_Nonnull buf)
-{
-	// NULL check.
-	if (buf == NULL) {
-		return;
-	}
-	printf("(");
-	for (size_t i = 0; i < strlen(buf); i++) {
-		if (buf[i] == '"') {
-			printf("%c", buf[i]);
-			i++;
-			if (buf[i] == ',') {
-				printf(" ");
-			} else {
-				printf("%c", buf[i]);
-			}
-		} else {
-			printf("%c", buf[i]);
-		}
-	}
-	printf(")\n");
-}
-static void print_key_to_shell(const char *_Nonnull key, const char *_Nonnull buf)
-{
-	// NULL check.
-	if (key == NULL || buf == NULL) {
-		return;
-	}
-	char *right = key_get_right(key, buf);
-	char *test = NULL;
-	if (right == NULL) {
-		return;
-	}
-	if (!is_null_val(right)) {
-		test = cuts(right, '[', ']');
-		if (test == NULL) {
-			test = cuts(right, '"', '"');
-			if (test != NULL) {
-				printf("%s=\"%s\"\n", key, test);
-				free(test);
-			}
-		} else {
-			printf("%s=", key);
-			print_shell_array(test);
-		}
-	} else {
-		printf("%s=\"\"\n", key);
-	}
-	free(right);
-}
-void k2v_to_shell(const char *_Nonnull buf)
-{
-	// NULL check.
-	if (buf == NULL) {
-		return;
-	}
-	const char *ptr = buf;
-	char *line = NULL;
-	char *key = NULL;
-	while (true) {
-		free(line);
-		line = get_first_line(ptr);
-		if (line == NULL) {
-			return;
-		}
-		if (line[0] != '#') {
-			key = cuts(line, 0, '=');
-			if (key != NULL) {
-				print_key_to_shell(key, buf);
-				free(key);
-			}
-		}
-		ptr = goto_next_line(ptr);
-		ptr = &ptr[1];
-	}
 }
 char *char_to_k2v(const char *_Nonnull key, const char *_Nonnull val)
 {
@@ -848,4 +293,862 @@ char *k2v_add_comment(char *_Nonnull buf, char *_Nonnull comment)
 	free(ret);
 	ret = tmp;
 	return ret;
+}
+static bool is_coment_line(const char *_Nonnull buf)
+{
+	// NULL check.
+	if (buf == NULL) {
+		// It is not a comment line.
+		// But, we return true, so it will be skipped.
+		return true;
+	}
+	// It is an empty line.
+	if (strlen(buf) == 0) {
+		return true;
+	}
+	for (size_t i = 0; i < strlen(buf); i++) {
+		if (buf[i] == ' ') {
+			continue;
+		}
+		if (buf[i] == '\0') {
+			// It is not a comment line.
+			// But, it is a empty line.
+			return true;
+		}
+		if (buf[i] == '#') {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return false;
+}
+static char *remove_comment(const char *_Nonnull buf)
+{
+	// NULL check.
+	if (buf == NULL) {
+		return NULL;
+	}
+	char *ret = NULL;
+	const char *p = buf;
+	char *line = NULL;
+	while (p != NULL) {
+		line = get_current_line(p);
+		p = goto_next_line(p);
+		if (is_coment_line(line)) {
+			free(line);
+			continue;
+		} else {
+			if (ret == NULL) {
+				ret = strdup(line);
+				free(line);
+			} else {
+				ret = realloc(ret, strlen(ret) + strlen(line) + 2);
+				strcat(ret, "\n");
+				strcat(ret, line);
+				free(line);
+			}
+		}
+	}
+	return ret;
+}
+static char *line_get_left(const char *_Nonnull line)
+{
+	// Skip space.
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == ' ') {
+			continue;
+		} else {
+			line = &line[i];
+			break;
+		}
+	}
+	char *ret = malloc(strlen(line) + 1);
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == '\\') {
+			if (i < strlen(line) - 2) {
+				ret[i] = line[i];
+				i++;
+				ret[i] = line[i];
+				continue;
+			} else {
+				ret[i] = line[i];
+			}
+		}
+		if (line[i] == '=') {
+			ret[i] = '\0';
+			break;
+		}
+		ret[i] = line[i];
+		ret[i + 1] = '\0';
+	}
+	return ret;
+}
+static char *line_get_right(const char *_Nonnull line)
+{
+	// Skip space.
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == ' ') {
+			continue;
+		} else {
+			line = &line[i];
+			break;
+		}
+	}
+	// Goto value.
+	for (size_t i = 0; i < strlen(line); i++) {
+		// We allow to use \ in key.
+		if (line[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (line[i] == '=') {
+			line = &line[i + 1];
+			break;
+		}
+	}
+	// Skip space.
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == ' ') {
+			continue;
+		} else {
+			line = &line[i];
+			break;
+		}
+	}
+	char *ret = strdup(line);
+	for (size_t i = strlen(ret) - 1; i > 0; i--) {
+		if (ret[i] == ' ') {
+			continue;
+		} else {
+			ret[i + 1] = '\0';
+			break;
+		}
+	}
+	return ret;
+}
+static bool __k2v_is_array(const char *_Nonnull line)
+{
+	// NULL check.
+	if (line == NULL) {
+		return false;
+	}
+	const char *p = line;
+	// Goto value.
+	for (size_t i = 0; i < strlen(line); i++) {
+		// We allow to use \ in key.
+		if (line[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (line[i] == '=') {
+			p = &line[i + 1];
+			break;
+		}
+	}
+	// Check if the start of value is '['.
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == ' ') {
+			continue;
+		}
+		if (p[i] == '[') {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return false;
+}
+static int __k2v_basic_lint(const char *_Nonnull line)
+{
+	// We need a = to split key and value.
+	// `"` should not appear in key, except `\"`.
+	// We need a key without space.
+	// We need a value, with "" or [].
+	// So:
+	// Skip space.
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == ' ') {
+			continue;
+		} else {
+			line = &line[i];
+			break;
+		}
+	}
+	// Check key.
+	// Check if we have key.
+	if (strchr(line, '=') == NULL) {
+		warning("No key found: %s\n", line);
+		return -1;
+	}
+	if (strchr(line, '=') == line) {
+		warning("Key should not be empty: %s\n", line);
+		return -1;
+	}
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (line[i] == '=') {
+			break;
+		}
+		if (line[i] == ' ') {
+			warning("Key should not contain space: %s\n", line);
+			return -1;
+		}
+		if (line[i] == '"') {
+			warning("Key should not contain \": %s\n", line);
+			return -1;
+		}
+	}
+	// Goto value.
+	char *p = NULL;
+	for (size_t i = 0; i < strlen(line); i++) {
+		// We allow to use \ in key.
+		if (line[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (line[i] == '=') {
+			p = &line[i + 1];
+			break;
+		}
+	}
+	// Check if we have key.
+	if (p == NULL) {
+		warning("No key found: %s\n", line);
+		return -1;
+	}
+	// Check if value is empty.
+	if (strlen(p) == 0) {
+		warning("Value should not be empty: %s\n", line);
+		return -1;
+	}
+	// Skip space.
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == ' ') {
+			continue;
+		} else {
+			p = &p[i];
+			break;
+		}
+	}
+	// Check if value start with `"` or `[`, and end with `"` or `]`.
+	if (p[0] == '"') {
+		for (size_t i = strlen(p) - 1; i > 0; i--) {
+			if (p[i] == ' ') {
+				continue;
+			}
+			if (p[i] == '"') {
+				break;
+			} else {
+				warning("Value should end with \": %s\n", line);
+				return -1;
+			}
+		}
+	} else if (p[0] == '[') {
+		for (size_t i = strlen(p) - 1; i > 0; i--) {
+			if (p[i] == ' ') {
+				continue;
+			}
+			if (p[i] == ']') {
+				break;
+			} else {
+				warning("Value should end with ]: %s\n", line);
+				return -1;
+			}
+		}
+	} else {
+		warning("Value should start with \" or [: %s\n", line);
+		return -1;
+	}
+	return 0;
+}
+static int __k2v_array_lint(const char *_Nonnull line)
+{
+	const char *p = line;
+	// Goto value.
+	for (size_t i = 0; i < strlen(line); i++) {
+		// We allow to use \ in key.
+		if (line[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (line[i] == '=') {
+			p = &line[i + 1];
+			break;
+		}
+	}
+	// Skip space.
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == ' ') {
+			continue;
+		} else {
+			p = &p[i];
+			break;
+		}
+	}
+	// Check for `[]`.
+	int bracket = 0;
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (p[i] == '[') {
+			bracket++;
+		} else if (p[i] == ']') {
+			bracket++;
+		}
+	}
+	if (bracket != 2) {
+		warning("Value should be in [], and you can not nest [] in array: %s\n", line);
+		return -1;
+	}
+	// Check for `"`.
+	int quote = 0;
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (p[i] == '"') {
+			quote++;
+		}
+	}
+	if (quote % 2 != 0) {
+		warning("Value should be quoted properly, and do not include `\"` in quote: %s\n", line);
+		return -1;
+	}
+	// We do not force empty array have a `""`.
+	if (quote == 0) {
+		quote = 2;
+	}
+	// Check value number.
+	int count = 0;
+	bool in_quote = false;
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (p[i] == '"') {
+			in_quote = !in_quote;
+		}
+		if (p[i] == ',' && !in_quote) {
+			count++;
+		}
+	}
+	if (count != quote / 2 - 1) {
+		warning("Value should be quoted by `"
+			"`, separated by `,`, and the last value should not have a `,`: %s\n",
+			line);
+		return -1;
+	}
+	in_quote = false;
+	size_t last = 0;
+	// Check for null value.
+	// If quote is 2, we do not need to check.
+	if (quote == 2) {
+		return 0;
+	}
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (p[i] == '"') {
+			in_quote = !in_quote;
+			if (in_quote) {
+				last = i;
+			}
+		}
+		if (!in_quote) {
+			if (last == i - 1) {
+				warning("Value in array should not be empty: %s\n", line);
+				return -1;
+			}
+		}
+	}
+	return 0;
+}
+static int __k2v_scalar_lint(const char *_Nonnull line)
+{
+	const char *p = line;
+	// Goto value.
+	for (size_t i = 0; i < strlen(line); i++) {
+		// We allow to use \ in key.
+		if (line[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (line[i] == '=') {
+			p = &line[i + 1];
+			break;
+		}
+	}
+	// Skip space.
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == ' ') {
+			continue;
+		} else {
+			p = &p[i];
+			break;
+		}
+	}
+	// Check for `"`.
+	int quote = 0;
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (p[i] == '"') {
+			quote++;
+		}
+	}
+	if (quote != 2) {
+		warning("Value should be quoted properly, and do not include `\"` in quote: %s\n", line);
+		return -1;
+	}
+	return 0;
+}
+static char *k2v_auto_tidy(const char *_Nonnull buf)
+{
+	// NULL check.
+	if (buf == NULL) {
+		return NULL;
+	}
+	char *ret = NULL;
+	char *tmp = remove_comment(buf);
+	char *p = tmp;
+	char *line = NULL;
+	while (p != NULL) {
+		line = get_current_line(p);
+		p = goto_next_line(p);
+		if (__k2v_basic_lint(line) != 0) {
+			free(line);
+			continue;
+		}
+		if (__k2v_is_array(line)) {
+			if (__k2v_array_lint(line) == 0) {
+				if (ret == NULL) {
+					ret = strdup(line);
+				} else {
+					ret = realloc(ret, strlen(ret) + strlen(line) + 3);
+					strcat(ret, "\n");
+					strcat(ret, line);
+				}
+			}
+		} else {
+			if (__k2v_scalar_lint(line) == 0) {
+				if (ret == NULL) {
+					ret = strdup(line);
+				} else {
+					ret = realloc(ret, strlen(ret) + strlen(line) + 3);
+					strcat(ret, "\n");
+					strcat(ret, line);
+				}
+			}
+		}
+		free(line);
+	}
+	free(tmp);
+	return ret;
+}
+static void __k2v_check_singularity(const char *_Nonnull buf)
+{
+	char **keys = NULL;
+	char *p = buf;
+	char *line = NULL;
+	int count = 0;
+	while (p != NULL) {
+		line = get_current_line(p);
+		p = goto_next_line(p);
+		char *key = line_get_left(line);
+		if (keys == NULL) {
+			keys = malloc(sizeof(char *) * 3);
+			keys[0] = key;
+			keys[1] = NULL;
+			count++;
+		} else {
+			for (int i = 0; keys[i] != NULL; i++) {
+				if (strcmp(keys[i], key) == 0) {
+					warning("Key should be unique: %s\n", line);
+				}
+			}
+			keys = realloc(keys, sizeof(char *) * (count + 2));
+			keys[count] = key;
+			keys[count + 1] = NULL;
+			count++;
+		}
+		free(line);
+	}
+	for (int i = 0; keys[i] != NULL; i++) {
+		free(keys[i]);
+	}
+	free(keys);
+}
+static void __k2v_lint(const char *_Nonnull buf)
+{
+	if (buf == NULL) {
+		warning("NULL buf");
+		return;
+	}
+	char *tmp = remove_comment(buf);
+	char *p = tmp;
+	char *line = NULL;
+	while (p != NULL) {
+		line = get_current_line(p);
+		p = goto_next_line(p);
+		if (__k2v_basic_lint(line) != 0) {
+			warning("\033[31mLint error: %s\n", line);
+			free(line);
+			continue;
+		}
+		if (__k2v_is_array(line)) {
+			if (__k2v_array_lint(line) != 0) {
+				warning("\033[31mLint error: %s\n", line);
+			}
+		} else {
+			if (__k2v_scalar_lint(line) != 0) {
+				warning("\033[31mLint error: %s\n", line);
+			}
+		}
+		free(line);
+	}
+	char *tmp2 = k2v_auto_tidy(tmp);
+	__k2v_check_singularity(tmp2);
+	free(tmp2);
+	free(tmp);
+}
+static char *key_get_line(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	char *p = buf;
+	char *line = NULL;
+	char *left = NULL;
+	while (p != NULL) {
+		line = get_current_line(p);
+		p = goto_next_line(p);
+		left = line_get_left(line);
+		if (strcmp(left, key) == 0) {
+			free(left);
+			return line;
+		}
+		free(line);
+		free(left);
+	}
+	return NULL;
+}
+char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	if (buf == NULL || key == NULL) {
+		return NULL;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		return NULL;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char *p = strdup(&tmp[1]);
+	free(tmp);
+	p[strlen(p) - 1] = '\0';
+	char *ret = strdup(p);
+	if (strlen(ret) == 0) {
+		free(p);
+		free(ret);
+		free(buf);
+		return NULL;
+	}
+	free(p);
+	free(buf);
+	return ret;
+}
+int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	if (buf == NULL || key == NULL) {
+		return 0;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		return 0;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char *p = strdup(&tmp[1]);
+	free(tmp);
+	p[strlen(p) - 1] = '\0';
+	int ret = atoi(p);
+	free(p);
+	free(buf);
+	return ret;
+}
+float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	if (buf == NULL || key == NULL) {
+		return 0;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		return 0;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char *p = strdup(&tmp[1]);
+	free(tmp);
+	p[strlen(p) - 1] = '\0';
+	float ret = atof(p);
+	free(p);
+	free(buf);
+	return ret;
+}
+bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	if (buf == NULL || key == NULL) {
+		return false;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		return false;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char *p = strdup(&tmp[1]);
+	free(tmp);
+	p[strlen(p) - 1] = '\0';
+	bool ret = false;
+	if (strcmp(p, "true") == 0) {
+		ret = true;
+	}
+	free(p);
+	free(buf);
+	return ret;
+}
+static char *__goto_next_val(const char *_Nonnull p)
+{
+	/*
+	 * Need not free().
+	 */
+	int quote = 0;
+	char *ret = NULL;
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == '\\') {
+			i++;
+			continue;
+		}
+		if (p[i] == '"') {
+			quote++;
+		}
+		if (quote == 2) {
+			if (strchr(&p[i], ',') == NULL) {
+				return &p[i];
+			}
+			ret = strchr(&p[i], ',') + 1;
+		}
+	}
+	return ret;
+}
+static char *__current_val(const char *_Nonnull p)
+{
+	/*
+	 * free() after use.
+	 */
+	if (p == NULL) {
+		return NULL;
+	}
+	char *tmp = malloc(strlen(p));
+	if (strchr(p, '"') == NULL) {
+		return NULL;
+	}
+	char *q = strchr(p, '"') + 1;
+	size_t j = 0;
+	for (size_t i = 0; i < strlen(q); i++) {
+		if (q[i] == '\\') {
+			if (i < strlen(q) - 2) {
+				tmp[j] = q[i];
+				i++;
+				j++;
+				tmp[j] = q[i];
+				tmp[j + 1] = '\0';
+				continue;
+			} else {
+				tmp[j] = q[i];
+				tmp[j + 1] = '\0';
+				break;
+			}
+		}
+		if (q[i] == '"') {
+			tmp[j] = '\0';
+			break;
+		}
+		tmp[j] = q[i];
+		tmp[j + 1] = '\0';
+		j++;
+	}
+	char *ret = strdup(tmp);
+	if (strchr(ret, ']') == ret) {
+		free(ret);
+		free(tmp);
+		return NULL;
+	}
+	free(tmp);
+	return ret;
+}
+static char **array_to_str_array(const char *_Nonnull array)
+{
+	char **ret = malloc(sizeof(char *) + 1);
+	ret[0] = NULL;
+	if (strcmp(array, "[]") == 0 || strcmp(array, "[\"\"]") == 0) {
+		return ret;
+	}
+	int count = 0;
+	char *val = NULL;
+	char *p = &array[1];
+	while (p != NULL) {
+		val = __current_val(p);
+		if (val == NULL) {
+			break;
+		}
+		p = __goto_next_val(p);
+		if (ret[0] == NULL) {
+			free(ret);
+			ret = malloc(sizeof(char *) * 3);
+			ret[0] = val;
+			ret[1] = NULL;
+			count++;
+		} else {
+			ret = realloc(ret, sizeof(char *) * (count + 2));
+			ret[count] = val;
+			ret[count + 1] = NULL;
+			count++;
+		}
+	}
+	return ret;
+}
+int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array, int limit)
+{
+	if (buf == NULL || key == NULL || array == NULL || limit == 0) {
+		return 0;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	int ret = 0;
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		array[0] = 0;
+		return 0;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char **str_array = array_to_str_array(tmp);
+	for (int i = 0; i < limit; i++) {
+		if (str_array[i] == NULL) {
+			break;
+		}
+		if (i >= limit) {
+			break;
+		}
+		array[i] = atoi(str_array[i]);
+		ret++;
+	}
+	for (int i = 0; str_array[i] != NULL; i++) {
+		free(str_array[i]);
+	}
+	free(str_array);
+	free(tmp);
+	free(buf);
+	return ret;
+}
+int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[], int limit)
+{
+	if (buf == NULL || key == NULL || array == NULL || limit == 0) {
+		return 0;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	int ret = 0;
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		array[0] = 0;
+		return 0;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char **str_array = array_to_str_array(tmp);
+	for (int i = 0; i < limit; i++) {
+		if (str_array[i] == NULL) {
+			break;
+		}
+		if (i >= limit) {
+			break;
+		}
+		array[i] = str_array[i];
+		ret++;
+	}
+	free(str_array);
+	free(tmp);
+	free(buf);
+	return ret;
+}
+int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array, int limit)
+{
+	if (buf == NULL || key == NULL || array == NULL || limit == 0) {
+		return 0;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	int ret = 0;
+	char *line = key_get_line(key, buf);
+	if (line == NULL) {
+		array[0] = 0;
+		return 0;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char **str_array = array_to_str_array(tmp);
+	for (int i = 0; i < limit; i++) {
+		if (str_array[i] == NULL) {
+			break;
+		}
+		if (i >= limit) {
+			break;
+		}
+		array[i] = atof(str_array[i]);
+		ret++;
+	}
+	for (int i = 0; str_array[i] != NULL; i++) {
+		free(str_array[i]);
+	}
+	free(str_array);
+	free(tmp);
+	free(buf);
+	return ret;
+}
+bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	if (buf == NULL || key == NULL) {
+		return false;
+	}
+	__k2v_lint(buf);
+	buf = k2v_auto_tidy(buf);
+	char *tmp = key_get_line(key, buf);
+	if (tmp == NULL) {
+		free(buf);
+		return false;
+	} else {
+		free(tmp);
+		free(buf);
+		return true;
+	}
+	return false;
 }
