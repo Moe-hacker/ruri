@@ -180,3 +180,8 @@ unshare容器和rootless容器会始终在执行命令前fork()自身一次，
 -E, --user [user/uid] .......................: 使用user在容器中执行命令而非root
 ```
 你可以使用此选项在exec(3)前切换到指定用户以降低权限。      
+*************
+```
+-t, --hostname [hostname] ...................: Set hostname
+```
+Set hostname, only for unshare container.      

@@ -442,6 +442,21 @@ static void change_user(const struct CONTAINER *_Nonnull container)
 		}
 	}
 }
+static void set_hostname(struct CONTAINER *_Nonnull container)
+{
+	/*
+	 * Set hostname.
+	 */
+	if (container->hostname != NULL) {
+		if(container->enable_unshare){
+			ssize_t len = strlen(container->hostname);
+			if (len > HOST_NAME_MAX) {
+				error("{red}Error: hostname is too long QwQ\n");
+			}
+			syscall(SYS_sethostname, container->hostname, len);
+		}
+	}
+}
 // Run chroot container.
 void run_chroot_container(struct CONTAINER *_Nonnull container)
 {
@@ -449,6 +464,8 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	 * It's called by main() and run_unshare_container().
 	 * It will run container as the config in CONTAINER struct.
 	 */
+	// Set hostname.
+	set_hostname(container);
 	// Ignore SIGTTIN, if we are running in the background, SIGTTIN may kill this process.
 	// This code is wrote when ruri had a daemon process,
 	// now even the daemon mode is removed, I still keep this code here.

@@ -151,6 +151,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	bool unmask_dirs;
 	// User.
 	char *_Nullable user;
+	// Hostname.
+	char *_Nullable hostname;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

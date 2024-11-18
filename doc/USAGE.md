@@ -179,3 +179,8 @@ ruri will protect some files/dirs in /proc and /sys by default, use -A to disabl
 -E, --user ...................................: Set the user to run command in the container.
 ```
 You can use this option to switch to a common user before exec(3).       
+*************
+```
+-t, --hostname [hostname] ....................: Set hostname
+```
+Set hostname, only for unshare container.      

@@ -129,6 +129,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	container->rootfs_source = NULL;
 	container->unmask_dirs = false;
 	container->user = NULL;
+	container->hostname = NULL;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -140,11 +141,6 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		/**** Deprecated options. ****/
 		if (strcmp(argv[index], "-K") == 0) {
 			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
-			exit(EXIT_SUCCESS);
-		}
-		if (strcmp(argv[index], "-t") == 0) {
-			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
-			index++;
 			exit(EXIT_SUCCESS);
 		}
 		if (strcmp(argv[index], "-T") == 0) {
@@ -232,6 +228,14 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		// Fork to exec.
 		else if (strcmp(argv[index], "-f") == 0 || strcmp(argv[index], "--fork") == 0) {
 			fork_exec = true;
+		}
+		// Set hostname.
+		else if(strcmp(argv[index],"-t")==0||strcmp(argv[index],"--hostname")==0){
+			if(index==argc-1){
+				error("{red}Please specify the hostname !\n{clear}");
+			}
+			index++;
+			container->hostname=strdup(argv[index]);
 		}
 		// Set no_new_privs bit.
 		else if (strcmp(argv[index], "-n") == 0 || strcmp(argv[index], "--no-new-privs") == 0) {
