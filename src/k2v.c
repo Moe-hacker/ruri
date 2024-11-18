@@ -847,8 +847,8 @@ char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf)
 		return NULL;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
-	char *line = key_get_line(key, buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		return NULL;
 	}
@@ -861,11 +861,11 @@ char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf)
 	if (strlen(ret) == 0) {
 		free(p);
 		free(ret);
-		free(buf);
+		free(buf_to_read);
 		return NULL;
 	}
 	free(p);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
@@ -874,8 +874,8 @@ int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
 		return 0;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
-	char *line = key_get_line(key, buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		return 0;
 	}
@@ -886,7 +886,7 @@ int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
 	p[strlen(p) - 1] = '\0';
 	int ret = atoi(p);
 	free(p);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
@@ -895,8 +895,8 @@ float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 		return 0;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
-	char *line = key_get_line(key, buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		return 0;
 	}
@@ -907,7 +907,7 @@ float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 	p[strlen(p) - 1] = '\0';
 	float ret = atof(p);
 	free(p);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
@@ -916,8 +916,8 @@ bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
 		return false;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
-	char *line = key_get_line(key, buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		return false;
 	}
@@ -931,7 +931,7 @@ bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
 		ret = true;
 	}
 	free(p);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 static char *__goto_next_val(const char *_Nonnull p)
@@ -1041,9 +1041,9 @@ int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_
 		return 0;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
 	int ret = 0;
-	char *line = key_get_line(key, buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		array[0] = 0;
 		return 0;
@@ -1066,7 +1066,7 @@ int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_
 	}
 	free(str_array);
 	free(tmp);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char *_Nonnull array[], int limit)
@@ -1075,9 +1075,9 @@ int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char 
 		return 0;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
 	int ret = 0;
-	char *line = key_get_line(key, buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		array[0] = 0;
 		return 0;
@@ -1097,7 +1097,7 @@ int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char 
 	}
 	free(str_array);
 	free(tmp);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, float *_Nonnull array, int limit)
@@ -1106,9 +1106,9 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 		return 0;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
 	int ret = 0;
-	char *line = key_get_line(key, buf);
+	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
 		array[0] = 0;
 		return 0;
@@ -1131,7 +1131,7 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 	}
 	free(str_array);
 	free(tmp);
-	free(buf);
+	free(buf_to_read);
 	return ret;
 }
 bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
@@ -1140,14 +1140,14 @@ bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
 		return false;
 	}
 	__k2v_lint(buf);
-	buf = k2v_auto_tidy(buf);
-	char *tmp = key_get_line(key, buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
+	char *tmp = key_get_line(key, buf_to_read);
 	if (tmp == NULL) {
-		free(buf);
+		free(buf_to_read);
 		return false;
 	} else {
 		free(tmp);
-		free(buf);
+		free(buf_to_read);
 		return true;
 	}
 	return false;
