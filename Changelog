@@ -12,6 +12,7 @@
   * Fix crash on capget().
   * Fix pivot_root does not work.
   * Fix unshare container when pivot_root failed.
+  * Enable unshare if detected ns_pid is ruri.
   * Fix qemu path when we pre-mount the rootfs from other source.
   * Add autotest.
   * Fix memory issues.

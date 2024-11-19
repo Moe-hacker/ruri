@@ -66,6 +66,40 @@ static bool is_ruri_pid(pid_t pid)
 	}
 	return false;
 }
+// Get ns_pid.
+pid_t get_ns_pid(const char *_Nonnull container_dir)
+{
+	/*
+	 * Read .rurienv,
+	 * and get the ns_pid.
+	 * If the ns_pid is a ruri process,
+	 * return the ns_pid.
+	 * If not, return INIT_VALUE.
+	 * If .rurienv does not exist, return INIT_VALUE.
+	 */
+	char file[PATH_MAX] = { '\0' };
+	sprintf(file, "%s/.rurienv", container_dir);
+	int fd = open(file, O_RDONLY | O_CLOEXEC);
+	// If .rurienv file does not exist.
+	if (fd < 0) {
+		return INIT_VALUE;
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	close(fd);
+	// Read .rurienv file.
+	char *buf = k2v_open_file(file, (size_t)size);
+	pid_t ret = k2v_get_key(int, "ns_pid", buf);
+	free(buf);
+	if (ret <= 0) {
+		return INIT_VALUE;
+	}
+	if (is_ruri_pid(ret)) {
+		return ret;
+	}
+	return INIT_VALUE;
+}
 // Format container info as k2v.
 static char *build_container_info(const struct CONTAINER *_Nonnull container)
 {

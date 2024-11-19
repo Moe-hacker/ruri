@@ -514,6 +514,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		close(fd);
 		exit(EXIT_SUCCESS);
 	}
+	// Enable unshare automatically if we got a ns_pid.
+	pid_t ns_pid = get_ns_pid(container->container_dir);
+	if (ns_pid > 0) {
+		container->enable_unshare = true;
+	}
 	// Fork before running chroot container.
 	// So the chroot container can have a parent process called ruri.
 	if (fork_exec && !container->enable_unshare && !container->rootless) {

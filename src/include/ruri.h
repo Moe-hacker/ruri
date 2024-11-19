@@ -234,6 +234,7 @@ void kill_container(const char *_Nonnull container_dir);
 bool user_exist(const char *_Nonnull username);
 uid_t get_user_uid(const char *_Nonnull username);
 gid_t get_user_gid(const char *_Nonnull username);
+pid_t get_ns_pid(const char *_Nonnull container_dir);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
