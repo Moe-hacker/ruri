@@ -416,7 +416,7 @@ static bool pivot_root_succeed(const char *_Nonnull container_dir)
 	if (S_ISCHR(dev_null_stat.st_mode)) {
 		return false;
 	}
-	return false;
+	return true;
 }
 // Try to use pivot_root(2).
 static int try_pivot_root(const struct CONTAINER *_Nonnull container)
