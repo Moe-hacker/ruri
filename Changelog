@@ -4,6 +4,7 @@
   * Add `-A` option: `--unmask-dirs`.
   * Add `-E` option: `--user`.
   * Add `-t` option: `--hostname`.
+  * Add `-F` option: `--ruri-fetch`.
   * Rewrite cgroup support, add cpupercent limit support.
   * Change MAX_MOUNTPOINTS AND MAX_ENVS from 128*2 to 512*2.
   * Auto kill all processes in container when umounting container.
