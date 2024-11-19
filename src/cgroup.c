@@ -93,13 +93,13 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 	if (stat != 0) {
 		return false;
 	}
-	usleep(2000);
+	usleep(200);
 	int subtree_control_fd = open("/sys/fs/cgroup/cgroup.subtree_control", O_RDWR | O_CLOEXEC);
 	write(subtree_control_fd, "+memory\n", strlen("+memory\n"));
 	write(subtree_control_fd, "+cpu\n", strlen("+cpu\n"));
 	write(subtree_control_fd, "+cpuset\n", strlen("+cpuset\n"));
 	close(subtree_control_fd);
-	usleep(2000);
+	usleep(200);
 	// Check if we have a controlable cgroup for cpuset and memory.
 	int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
@@ -138,7 +138,7 @@ static void set_cgroup_v1_memory(const struct CONTAINER *_Nonnull container)
 	char memory_cgroup_path[PATH_MAX] = { '\0' };
 	sprintf(memory_cgroup_path, "/sys/fs/cgroup/memory/%d", container->container_id);
 	mkdir(memory_cgroup_path, S_IRUSR | S_IWUSR);
-	usleep(2000);
+	usleep(200);
 	int fd = -1;
 	if (container->memory != NULL) {
 		// Set memory limit.
@@ -177,7 +177,7 @@ static void set_cgroup_v1_cpu(const struct CONTAINER *_Nonnull container)
 	mkdir(cpu_cgroup_path, S_IRUSR | S_IWUSR);
 	pid_t pid = getpid();
 	char buf[128] = { '\0' };
-	usleep(2000);
+	usleep(200);
 	int fd = -1;
 	if (container->cpupercent > 0) {
 		// Set memory limit.
@@ -286,7 +286,7 @@ static void set_cgroup_v2_memory(const struct CONTAINER *_Nonnull container)
 	char cgroup_path[PATH_MAX] = { '\0' };
 	sprintf(cgroup_path, "/sys/fs/cgroup/%d", container->container_id);
 	mkdir(cgroup_path, S_IRUSR | S_IWUSR);
-	usleep(2000);
+	usleep(200);
 	char cgroup_procs_path[PATH_MAX] = { '\0' };
 	sprintf(cgroup_procs_path, "/sys/fs/cgroup/%d/cgroup.procs", container->container_id);
 	// Add pid to container_id cgroup.
@@ -332,7 +332,7 @@ static void set_cgroup_v2_cpuset(const struct CONTAINER *_Nonnull container)
 	char cgroup_path[PATH_MAX] = { '\0' };
 	sprintf(cgroup_path, "/sys/fs/cgroup/%d", container->container_id);
 	mkdir(cgroup_path, S_IRUSR | S_IWUSR);
-	usleep(2000);
+	usleep(200);
 	char cgroup_procs_path[PATH_MAX] = { '\0' };
 	sprintf(cgroup_procs_path, "/sys/fs/cgroup/%d/cgroup.procs", container->container_id);
 	// Add pid to container_id cgroup.
@@ -381,7 +381,7 @@ static void set_cgroup_v2_cpu(const struct CONTAINER *_Nonnull container)
 	char cgroup_path[PATH_MAX] = { '\0' };
 	sprintf(cgroup_path, "/sys/fs/cgroup/%d", container->container_id);
 	mkdir(cgroup_path, S_IRUSR | S_IWUSR);
-	usleep(2000);
+	usleep(200);
 	char cgroup_procs_path[PATH_MAX] = { '\0' };
 	sprintf(cgroup_procs_path, "/sys/fs/cgroup/%d/cgroup.procs", container->container_id);
 	// Add pid to container_id cgroup.

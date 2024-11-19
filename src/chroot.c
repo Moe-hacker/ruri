@@ -101,7 +101,7 @@ static void init_container(struct CONTAINER *_Nonnull container)
 		}
 		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
-		usleep(100000);
+		usleep(10000);
 		free(devshm_options);
 		// Mount binfmt_misc.
 		mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
@@ -209,7 +209,7 @@ static void mount_host_runtime(const struct CONTAINER *_Nonnull container)
 	sprintf(buf, "%s/dev/shm", container->container_dir);
 	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("tmpfs", buf, "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
-	usleep(100000);
+	usleep(10000);
 	free(devshm_options);
 }
 // Drop capabilities.
@@ -395,7 +395,7 @@ static void copy_qemu_binary(struct CONTAINER *container)
 		// Correct the qemu-path.
 		free(container->qemu_path);
 		container->qemu_path = strdup("/qemu-ruri");
-		usleep(200000);
+		usleep(20000);
 	}
 }
 static bool pivot_root_succeed(const char *_Nonnull container_dir)
@@ -432,6 +432,8 @@ static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 		return 0;
 	}
 	chdir(container->container_dir);
+	mount(".", ".", NULL, MS_BIND | MS_REC, NULL);
+	usleep(200);
 	if (syscall(SYS_pivot_root, ".", ".") == -1) {
 		log("{base}pivot_root(2) failed, using chroot(2) instead.\n");
 		return -1;
@@ -584,7 +586,7 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	// Set envs.
 	set_envs(container);
 	// Fix a bug that the terminal is frozen.
-	usleep(200000);
+	usleep(20000);
 	// Set NO_NEW_PRIVS Flag.
 	// It requires Linux3.5 or later.
 	// It will make sudo unavailable in container.
@@ -680,7 +682,7 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	// Set envs.
 	set_envs(container);
 	// Fix a bug that the terminal is frozen.
-	usleep(200000);
+	usleep(20000);
 	// Set NO_NEW_PRIVS Flag.
 	// It requires Linux3.5 or later.
 	// It will make sudo unavailable in container.
