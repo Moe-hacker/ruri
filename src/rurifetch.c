@@ -85,30 +85,30 @@ void ruri_fetch(void)
 	ruri_info[6] = compiler_info;
 	char build_date[128] = { '\0' };
 	sprintf(build_date, "{91;207;250}Build date{white}: %s", __DATE__);
-	ruri_info[6] = build_date;
+	ruri_info[7] = build_date;
 	char cprintf_version[128] = { '\0' };
 	sprintf(cprintf_version, "{91;207;250}cprintf{white}: %d.%d", CPRINTF_MAJOR, CPRINTF_MINOR);
-	ruri_info[7] = cprintf_version;
+	ruri_info[8] = cprintf_version;
 	char libk2v_version[128] = { '\0' };
 	sprintf(libk2v_version, "{91;207;250}libk2v{white}: %d.%d", LIBK2V_MAJOR, LIBK2V_MINOR);
-	ruri_info[8] = libk2v_version;
+	ruri_info[9] = libk2v_version;
 #if !defined(LIBCAP_MAJOR) || !defined(LIBCAP_MINOR)
-	ruri_info[9] = "{91;207;250}libcap{white}: unknown";
+	ruri_info[10] = "{91;207;250}libcap{white}: unknown";
 #else
 	char libcap_version[128] = { '\0' };
 	sprintf(libcap_version, "{91;207;250}libcap{white}: %d.%d", LIBCAP_MAJOR, LIBCAP_MINOR);
-	ruri_info[9] = libcap_version;
+	ruri_info[10] = libcap_version;
 #endif
 #if !defined(SCMP_VER_MAJOR) || !defined(SCMP_VER_MINOR) || !defined(SCMP_VER_MICRO)
-	ruri_info[10] = "{91;207;250}libseccomp{white}: unknown";
+	ruri_info[11] = "{91;207;250}libseccomp{white}: unknown";
 #else
 	char libseccomp_version[128] = { '\0' };
 	sprintf(libseccomp_version, "{91;207;250}libseccomp{white}: %d.%d.%d", SCMP_VER_MAJOR, SCMP_VER_MINOR, SCMP_VER_MICRO);
-	ruri_info[10] = libseccomp_version;
+	ruri_info[11] = libseccomp_version;
 #endif
-	ruri_info[11] = " ";
-	ruri_info[12] = "[black]   [red]   [green]   [yellow]   [blue]   [purple]   [cyan]   [white]   [clear]";
-	ruri_info[13] = "\033[48;5;243m   \033[48;5;196m   \033[48;5;46m   \033[48;5;226m   \033[48;5;33m   \033[48;5;201m   \033[48;5;51m   \033[48;5;15m   \033[0m";
-	ruri_info[14] = NULL;
+	ruri_info[12] = " ";
+	ruri_info[13] = "[black]   [red]   [green]   [yellow]   [blue]   [purple]   [cyan]   [white]   [clear]";
+	ruri_info[14] = "\033[48;5;243m   \033[48;5;196m   \033[48;5;46m   \033[48;5;226m   \033[48;5;33m   \033[48;5;201m   \033[48;5;51m   \033[48;5;15m   \033[0m";
+	ruri_info[15] = NULL;
 	__ruri_fetch(ruri_logo, ruri_info);
 }
