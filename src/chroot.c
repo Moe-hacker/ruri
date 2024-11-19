@@ -398,6 +398,26 @@ static void copy_qemu_binary(struct CONTAINER *container)
 		usleep(200000);
 	}
 }
+static bool pivot_root_succeed(const char *_Nonnull container_dir)
+{
+	/*
+	 * Check if pivot_root(2) succeed.
+	 */
+	// Check if /dev/null is a character device.
+	struct stat dev_null_stat;
+	char dev_null[PATH_MAX] = { '\0' };
+	if (chdir(container_dir) != 0) {
+		return true;
+	}
+	sprintf(dev_null, "./dev/null", container_dir);
+	if (stat(dev_null, &dev_null_stat) != 0) {
+		return true;
+	}
+	if (S_ISCHR(dev_null_stat.st_mode)) {
+		return false;
+	}
+	return false;
+}
 // Try to use pivot_root(2).
 static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 {
@@ -406,7 +426,7 @@ static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 	 * If pivot_root(2) is not available, return -1.
 	 */
 	log("{base}ns pid: %d\n", container->ns_pid);
-	if (container->ns_pid > 0) {
+	if (container->ns_pid > 0 && pivot_root_succeed(container->container_dir)) {
 		log("{base}Using setns(2) to change root directory.\n");
 		chdir("/");
 		return 0;
@@ -448,7 +468,7 @@ static void set_hostname(struct CONTAINER *_Nonnull container)
 	 * Set hostname.
 	 */
 	if (container->hostname != NULL) {
-		if(container->enable_unshare){
+		if (container->enable_unshare) {
 			ssize_t len = strlen(container->hostname);
 			if (len > HOST_NAME_MAX) {
 				error("{red}Error: hostname is too long QwQ\n");
