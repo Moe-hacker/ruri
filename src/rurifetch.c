@@ -32,7 +32,7 @@ static void __ruri_fetch(char **logo, char **info)
 {
 	int j = 0;
 	for (int i = 0; logo[i] != NULL; i++) {
-		j = i - 3;
+		j = i - 2;
 		if (j >= 0 && info[j] != NULL) {
 			cprintf("%s%s\n", logo[i], info[j]);
 			j++;

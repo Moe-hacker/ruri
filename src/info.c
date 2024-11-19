@@ -93,7 +93,6 @@ void show_helps(void)
 	cprintf("{base}  -H, --show-examples .........................: Show commandline examples\n");
 	cprintf("{base}  -U, --umount [container_dir] ................: Umount a container\n");
 	cprintf("{base}  -P, --ps [container_dir] ....................: Show process status of the container(*)\n");
-	cprintf("{base}  -F, --ruri-fetch ............................: Show neofetch style ruri version info\n");
 	cprintf("\n");
 	cprintf("{base}ARGS:\n");
 	cprintf("{base}  -D, --dump-config ...........................: Dump the config\n");
