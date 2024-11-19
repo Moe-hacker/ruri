@@ -113,7 +113,7 @@ void show_helps(void)
 	cprintf("{base}  -M, --ro-mount [dir/dev/img/file] [target] ..: Mount dir/block-device/image/file as read-only\n");
 	cprintf("{base}  -S, --host-runtime ..........................: Bind-mount /dev/, /sys/ and /proc/ from host\n");
 	cprintf("{base}  -R, --read-only .............................: Mount / as read-only\n");
-	cprintf("{base}  -l, --limit [cpuset=cpu/memory=mem] .........: Set cpuset/memory limit(******)\n");
+	cprintf("{base}  -l, --limit [limit=lin] .....................: Set cpuset/memory limit(******)\n");
 	cprintf("{base}  -w, --no-warnings ...........................: Disable warnings\n");
 	cprintf("{base}  -f, --fork ..................................: fork() before exec the command(*******)\n");
 	cprintf("{base}  -j, --just-chroot ...........................: Just chroot, do not create the runtime dirs\n");
@@ -128,8 +128,8 @@ void show_helps(void)
 	cprintf("{base}(***)      : cap can both be value or name (e.j. cap_chown == 0)\n");
 	cprintf("{base}(****)     : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
 	cprintf("{base}(*****)    : You can use `-m/-M [source] /` to mount other source as root\n");
-	cprintf("{base}(******)   : Each `-l` option can only set one of the cpuset/memory limits\n");
-	cprintf("{base}           for example: `ruri -l memory=1M -l cpuset=1 /test`\n");
+	cprintf("{base}(******)   : Each `-l` option can only set one of the cpuset/memory/cpupercent limits\n");
+	cprintf("{base}             for example: `ruri -l memory=1M -l cpupercent=60 -l cpuset=1 /test`\n");
 	cprintf("{base}(*******)  : This option is totally useless\n");
 	cprintf("{base}(********) : If you use username, please make sure it's in /etc/passwd in container\n");
 	cprintf("{base}(*********): This option is only for unshare container.\n");

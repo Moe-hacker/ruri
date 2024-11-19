@@ -93,6 +93,9 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	// cpuset.
 	ret = k2v_add_comment(ret, "Cgroup cpuset limit.");
 	ret = k2v_add_config(char, ret, "cpuset", container->cpuset);
+	// cpupercent.
+	ret = k2v_add_comment(ret, "Cgroup cpu limit.");
+	ret = k2v_add_config(int, ret, "cpupercent", container->cpupercent);
 	// memory.
 	ret = k2v_add_comment(ret, "Cgroup memory limit.");
 	ret = k2v_add_config(char, ret, "memory", container->memory);
@@ -210,6 +213,8 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	container->cpuset = k2v_get_key(char, "cpuset", buf);
 	// Get memory.
 	container->memory = k2v_get_key(char, "memory", buf);
+	// Get cpupercent.
+	container->cpupercent = k2v_get_key(int, "cpupercent", buf);
 	// Get just_chroot.
 	container->just_chroot = k2v_get_key(bool, "just_chroot", buf);
 	// Get work_dir.

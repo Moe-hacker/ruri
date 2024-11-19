@@ -383,7 +383,7 @@ static char *line_get_left(const char *_Nonnull line)
 		ret[i + 1] = '\0';
 	}
 	// Skip space.
-	for(size_t i = strlen(ret) - 1; i > 0; i--) {
+	for (size_t i = strlen(ret) - 1; i > 0; i--) {
 		if (ret[i] == ' ') {
 			continue;
 		} else {

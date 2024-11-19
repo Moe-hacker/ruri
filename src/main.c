@@ -80,6 +80,11 @@ static void parse_cgroup_settings(const char *_Nonnull str, struct CONTAINER *_N
 		container->cpuset = limit;
 	} else if (strcmp("memory", buf) == 0) {
 		container->memory = limit;
+	} else if (strcmp("cpupercent", buf) == 0) {
+		container->cpupercent = atoi(limit);
+		if (container->cpupercent < 1 || container->cpupercent > 100) {
+			error("{red}Error: cpupercent should be in range 1-100\n");
+		}
 	} else {
 		error("{red}Unknown cgroup option %s\n", str);
 	}
@@ -130,6 +135,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	container->unmask_dirs = false;
 	container->user = NULL;
 	container->hostname = NULL;
+	container->cpupercent = INIT_VALUE;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -230,12 +236,12 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			fork_exec = true;
 		}
 		// Set hostname.
-		else if(strcmp(argv[index],"-t")==0||strcmp(argv[index],"--hostname")==0){
-			if(index==argc-1){
+		else if (strcmp(argv[index], "-t") == 0 || strcmp(argv[index], "--hostname") == 0) {
+			if (index == argc - 1) {
 				error("{red}Please specify the hostname !\n{clear}");
 			}
 			index++;
-			container->hostname=strdup(argv[index]);
+			container->hostname = strdup(argv[index]);
 		}
 		// Set no_new_privs bit.
 		else if (strcmp(argv[index], "-n") == 0 || strcmp(argv[index], "--no-new-privs") == 0) {

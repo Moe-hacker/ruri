@@ -28,10 +28,10 @@
  *
  */
 #include "include/ruri.h"
-static void mount_cgroup_v1(void)
+static void mount_cgroup_v1_memory(void)
 {
 	/*
-	 * Mount Cgroup v1 memory and cpuset controller.
+	 * Mount Cgroup v1 memory controller.
 	 * Nothing to return because if this function run failed,
 	 * that means cgroup is fully not supported on the device.
 	 */
@@ -40,101 +40,103 @@ static void mount_cgroup_v1(void)
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 	// Mount /sys/fs/cgroup as tmpfs.
 	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
-	// We only need cpuset and memory cgroup.
+	// Mount memory controller.
 	mkdir("/sys/fs/cgroup/memory", S_IRUSR | S_IWUSR);
-	mkdir("/sys/fs/cgroup/cpuset", S_IRUSR | S_IWUSR);
 	mount("none", "/sys/fs/cgroup/memory", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "memory");
-	mount("none", "/sys/fs/cgroup/cpuset", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpuset");
-	log("{base}Tried to mount cgroup v1\n");
+	log("{base}Tried to mount cgroup v1 memory\n");
 }
-static bool is_cgroupv2_supported(void)
+static void mount_cgroup_v1_cpu(void)
 {
 	/*
-	 * Check if cgroup v2 supports cpuset and memory controller.
-	 * Return true if cgroup.controllers contains "cpuset" and "memory".
+	 * Mount Cgroup v1 cpu controller.
+	 * Nothing to return because if this function run failed,
+	 * that means cgroup is fully not supported on the device.
 	 */
-	bool found_cpuset = false;
-	bool found_memory = false;
-	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
-	// Check if we have a controlable cgroup for cpuset and memory.
-	int fd = open("/sys/fs/cgroup/ruri/cgroup.controllers", O_RDONLY | O_CLOEXEC);
-	if (fd < 0) {
-		return false;
-	}
-	char buf[128] = { '\0' };
-	ssize_t len = read(fd, buf, sizeof(buf));
-	buf[len] = '\0';
-	if (strstr(buf, "cpuset") != NULL) {
-		found_cpuset = true;
-	}
-	if (strstr(buf, "memory") != NULL) {
-		found_memory = true;
-	}
-	close(fd);
-	if (found_cpuset && found_memory) {
-		return true;
-	}
-	return false;
+	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	// Mount /sys/fs/cgroup as tmpfs.
+	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
+	// Mount cpu controller.
+	mkdir("/sys/fs/cgroup/cpu", S_IRUSR | S_IWUSR);
+	mount("none", "/sys/fs/cgroup/cpu", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpu");
+	log("{base}Tried to mount cgroup v1 cpu\n");
 }
-static int mount_cgroup_v2(void)
+static void mount_cgroup_v1_cpuset(void)
 {
 	/*
-	 * We will mount cgroup2 cpuset and memory controller.
-	 * If the device does not support, return -1,
-	 * or we just return 0.
+	 * Mount Cgroup v1 cpuset controller.
+	 * Nothing to return because if this function run failed,
+	 * that means cgroup is fully not supported on the device.
+	 */
+	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	// Mount /sys/fs/cgroup as tmpfs.
+	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
+	// Mount cpuset controller.
+	mkdir("/sys/fs/cgroup/cpuset", S_IRUSR | S_IWUSR);
+	mount("none", "/sys/fs/cgroup/cpuset", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpuset");
+	log("{base}Tried to mount cgroup v1 cpuset\n");
+}
+static bool is_cgroupv2_support(const char *_Nonnull type)
+{
+	/*
+	 * Check if cgroup v2 supports type controller.
+	 * Return true if cgroup.controllers contains type.
 	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 	// I love cgroup2, because it's easy to mount and control.
-	int ret = mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
-	if (ret != 0) {
-		return ret;
+	int stat = mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
+	if (stat != 0) {
+		return false;
 	}
-	// But if it's not suppored, umount the controller and back to v1.
-	if (!is_cgroupv2_supported()) {
-		log("{base}Cgroup v2 is not supported, back to v1\n");
+	usleep(2000);
+	int subtree_control_fd = open("/sys/fs/cgroup/cgroup.subtree_control", O_RDWR | O_CLOEXEC);
+	write(subtree_control_fd, "+memory\n", strlen("+memory\n"));
+	write(subtree_control_fd, "+cpu\n", strlen("+cpu\n"));
+	write(subtree_control_fd, "+cpuset\n", strlen("+cpuset\n"));
+	close(subtree_control_fd);
+	usleep(2000);
+	// Check if we have a controlable cgroup for cpuset and memory.
+	int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
 		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
-		return -1;
+		log("{base}Cgroup v2 does not support %s\n", type);
+		log("{base}cgroup.controllers does not exist\n");
+		return false;
 	}
-	log("{base}Tried to mount cgroup v2\n");
-	return 0;
-}
-static int mount_cgroup(void)
-{
-	/*
-	 * Return the type of cgroup (1/2).
-	 * Use cgroupv2 by default if supported.
-	 */
-	// It's better to use cgroupv2.
-	if (mount_cgroup_v2() == 0) {
-		return 2;
+	char buf[256] = { '\0' };
+	ssize_t len = read(fd, buf, 255);
+	if (len <= 0) {
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		log("{base}Cgroup v2 does not support %s\n", type);
+		log("{base}cgroup.controllers read failed\n");
+		return false;
 	}
-	// But on some devices, we have to use v1, as v2 is not supported.
-	mount_cgroup_v1();
-	// Note that if even v1 is not supported, we will go ahead, but cgroup will not work.
-	return 1;
+	buf[len] = '\0';
+	char str_to_find[32] = { '\0' };
+	log("{base}cgroup.controllers: %s\n", buf);
+	sprintf(str_to_find, "%s ", type);
+	log("{base}str_to_find: %s\n", str_to_find);
+	if (strstr(buf, str_to_find) != NULL) {
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		log("{base}Cgroup v2 supports %s\n", type);
+		return true;
+	}
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	log("{base}Cgroup v2 does not support %s\n", type);
+	return false;
 }
-static void set_cgroup_v1(const struct CONTAINER *_Nonnull container)
+static void set_cgroup_v1_memory(const struct CONTAINER *_Nonnull container)
 {
-	/*
-	 * We creat a new cgroup name as the same of container_id,
-	 * add pid to the cgroup, and set limit.
-	 * We will do this even if cpu and memory limit are both NULL,
-	 * because this function will only set the limit when we init the container,
-	 * but if the container is still running, we need to join its cgroup,
-	 * which is already created.
-	 * If the container is running, after read_info(), container_id will be unified,
-	 * and container->memory/container->cpuset will be cleared, because it should only
-	 * be set when init the container.
-	 */
+	mount_cgroup_v1_memory();
 	pid_t pid = getpid();
 	char buf[128] = { '\0' };
-	char cpuset_cgroup_path[PATH_MAX] = { '\0' };
 	char memory_cgroup_path[PATH_MAX] = { '\0' };
-	sprintf(cpuset_cgroup_path, "/sys/fs/cgroup/cpuset/%d", container->container_id);
 	sprintf(memory_cgroup_path, "/sys/fs/cgroup/memory/%d", container->container_id);
-	mkdir(cpuset_cgroup_path, S_IRUSR | S_IWUSR);
 	mkdir(memory_cgroup_path, S_IRUSR | S_IWUSR);
 	usleep(2000);
 	int fd = -1;
@@ -145,7 +147,8 @@ static void set_cgroup_v1(const struct CONTAINER *_Nonnull container)
 		fd = open(memory_cgroup_limit_path, O_RDWR | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
 			warning("{yellow}Set memory limit failed{clear}\n");
-			goto cpuset;
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
 		}
 		sprintf(buf, "%s\n", container->memory);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
@@ -157,14 +160,76 @@ static void set_cgroup_v1(const struct CONTAINER *_Nonnull container)
 	sprintf(memory_cgroup_procs_path, "/sys/fs/cgroup/memory/%d/cgroup.procs", container->container_id);
 	// Add pid to container_id memory cgroup.
 	fd = open(memory_cgroup_procs_path, O_RDWR | O_CLOEXEC);
-	if (fd < 0 && !container->no_warnings) {
-		warning("{yellow}Set memory limit failed{clear}\n");
-		goto cpuset;
+	if (fd < 0) {
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		return;
 	}
 	sprintf(buf, "%d\n", pid);
 	write(fd, buf, strlen(buf));
 	close(fd);
-cpuset:
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+}
+static void set_cgroup_v1_cpu(const struct CONTAINER *_Nonnull container)
+{
+	mount_cgroup_v1_cpu();
+	char cpu_cgroup_path[PATH_MAX] = { '\0' };
+	sprintf(cpu_cgroup_path, "/sys/fs/cgroup/cpu/%d", container->container_id);
+	mkdir(cpu_cgroup_path, S_IRUSR | S_IWUSR);
+	pid_t pid = getpid();
+	char buf[128] = { '\0' };
+	usleep(2000);
+	int fd = -1;
+	if (container->cpupercent > 0) {
+		// Set memory limit.
+		char cpu_cgroup_quota_path[PATH_MAX] = { '\0' };
+		sprintf(cpu_cgroup_quota_path, "/sys/fs/cgroup/cpu/%d/cpu.cfs_quota_us", container->container_id);
+		fd = open(cpu_cgroup_quota_path, O_RDWR | O_CLOEXEC);
+		if (fd < 0 && !container->no_warnings) {
+			warning("{yellow}Set memory limit failed{clear}\n");
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
+		}
+		sprintf(buf, "%d\n", container->cpupercent * 1000);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("{yellow}Set cpupercent limit failed{clear}\n");
+		}
+		close(fd);
+		char cpu_cgroup_period_path[PATH_MAX] = { '\0' };
+		sprintf(cpu_cgroup_period_path, "/sys/fs/cgroup/cpu/%d/cpu.cfs_period_us", container->container_id);
+		fd = open(cpu_cgroup_period_path, O_RDWR | O_CLOEXEC);
+		if (fd < 0 && !container->no_warnings) {
+			warning("{yellow}Set cpupercent limit failed{clear}\n");
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
+		}
+		sprintf(buf, "%d\n", 100000);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("{yellow}Set cpupercent limit failed{clear}\n");
+		}
+		close(fd);
+	}
+	char cpu_cgroup_procs_path[PATH_MAX] = { '\0' };
+	sprintf(cpu_cgroup_procs_path, "/sys/fs/cgroup/cpu/%d/cgroup.procs", container->container_id);
+	// Add pid to container_id cpupercent cgroup.
+	fd = open(cpu_cgroup_procs_path, O_RDWR | O_CLOEXEC);
+	if (fd < 0) {
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		return;
+	}
+	sprintf(buf, "%d\n", pid);
+	write(fd, buf, strlen(buf));
+	close(fd);
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+}
+static void set_cgroup_v1_cpuset(const struct CONTAINER *_Nonnull container)
+{
+	mount_cgroup_v1_cpuset();
+	char cpuset_cgroup_path[PATH_MAX] = { '\0' };
+	sprintf(cpuset_cgroup_path, "/sys/fs/cgroup/cpuset/%d", container->container_id);
+	mkdir(cpuset_cgroup_path, S_IRUSR | S_IWUSR);
+	pid_t pid = getpid();
+	char buf[128] = { '\0' };
+	int fd = -1;
 	if (container->cpuset != NULL) {
 		// Set cpuset limit.
 		char cpuset_cgroup_mems_path[PATH_MAX] = { '\0' };
@@ -197,8 +262,7 @@ cpuset:
 	sprintf(cpuset_cgroup_procs_path, "/sys/fs/cgroup/cpuset/%d/cgroup.procs", container->container_id);
 	// Add pid to container_id cpuset cgroup.
 	fd = open(cpuset_cgroup_procs_path, O_RDWR | O_CLOEXEC);
-	if (fd < 0 && !container->no_warnings) {
-		warning("{yellow}Set cpuset limit failed{clear}\n");
+	if (fd < 0) {
 		// Do not keep the apifs mounted.
 		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 		return;
@@ -209,11 +273,14 @@ cpuset:
 	// Do not keep the apifs mounted.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 }
-static void set_cgroup_v2(const struct CONTAINER *_Nonnull container)
+static void set_cgroup_v2_memory(const struct CONTAINER *_Nonnull container)
 {
-	/*
-	 * See comment of set_cgroup_v1().
-	 */
+	// Mount cgroup v2.
+	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	// Mount /sys/fs/cgroup as cgroup2.
+	mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 	pid_t pid = getpid();
 	char buf[128] = { '\0' };
 	char cgroup_path[PATH_MAX] = { '\0' };
@@ -250,20 +317,100 @@ static void set_cgroup_v2(const struct CONTAINER *_Nonnull container)
 		}
 		close(fd);
 	}
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+}
+static void set_cgroup_v2_cpuset(const struct CONTAINER *_Nonnull container)
+{
+	// Mount cgroup v2.
+	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	// Mount /sys/fs/cgroup as cgroup2.
+	mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
+	pid_t pid = getpid();
+	char buf[128] = { '\0' };
+	char cgroup_path[PATH_MAX] = { '\0' };
+	sprintf(cgroup_path, "/sys/fs/cgroup/%d", container->container_id);
+	mkdir(cgroup_path, S_IRUSR | S_IWUSR);
+	usleep(2000);
+	char cgroup_procs_path[PATH_MAX] = { '\0' };
+	sprintf(cgroup_procs_path, "/sys/fs/cgroup/%d/cgroup.procs", container->container_id);
+	// Add pid to container_id cgroup.
+	int fd = open(cgroup_procs_path, O_RDWR | O_CLOEXEC);
+	if (fd < 0 && !container->no_warnings) {
+		warning("{yellow}Set cgroup.procs failed{clear}\n");
+		// Do not keep the apifs mounted.
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		return;
+	}
+	sprintf(buf, "%d\n", pid);
+	if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+		warning("{yellow}Set cgroup.procs failed{clear}\n");
+	}
+	close(fd);
 	if (container->cpuset != NULL) {
 		// Set cpuset limit.
 		char cgroup_cpuset_path[PATH_MAX] = { '\0' };
 		sprintf(cgroup_cpuset_path, "/sys/fs/cgroup/%d/cpuset.cpus", container->container_id);
 		fd = open(cgroup_cpuset_path, O_RDWR | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
-			warning("{yellow}Set cpu limit failed{clear}\n");
+			warning("{yellow}Set cpuset limit failed{clear}\n");
 			// Do not keep the apifs mounted.
 			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 			return;
 		}
 		sprintf(buf, "%s\n", container->cpuset);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
-			warning("{yellow}Set cpu limit failed{clear}\n");
+			warning("{yellow}Set cpuset limit failed{clear}\n");
+		}
+		close(fd);
+	}
+	// Do not keep the apifs mounted.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+}
+static void set_cgroup_v2_cpu(const struct CONTAINER *_Nonnull container)
+{
+	// Mount cgroup v2.
+	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	// Mount /sys/fs/cgroup as cgroup2.
+	mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
+	pid_t pid = getpid();
+	char buf[128] = { '\0' };
+	char cgroup_path[PATH_MAX] = { '\0' };
+	sprintf(cgroup_path, "/sys/fs/cgroup/%d", container->container_id);
+	mkdir(cgroup_path, S_IRUSR | S_IWUSR);
+	usleep(2000);
+	char cgroup_procs_path[PATH_MAX] = { '\0' };
+	sprintf(cgroup_procs_path, "/sys/fs/cgroup/%d/cgroup.procs", container->container_id);
+	// Add pid to container_id cgroup.
+	int fd = open(cgroup_procs_path, O_RDWR | O_CLOEXEC);
+	if (fd < 0 && !container->no_warnings) {
+		warning("{yellow}Set cgroup.procs failed{clear}\n");
+		// Do not keep the apifs mounted.
+		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+		return;
+	}
+	sprintf(buf, "%d\n", pid);
+	if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+		warning("{yellow}Set cgroup.procs failed{clear}\n");
+	}
+	close(fd);
+	if (container->cpupercent > 0) {
+		// Set cpuset limit.
+		char cgroup_cpu_path[PATH_MAX] = { '\0' };
+		sprintf(cgroup_cpu_path, "/sys/fs/cgroup/%d/cpu.max", container->container_id);
+		fd = open(cgroup_cpu_path, O_RDWR | O_CLOEXEC);
+		if (fd < 0 && !container->no_warnings) {
+			warning("{yellow}Set cpupercent limit failed{clear}\n");
+			// Do not keep the apifs mounted.
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
+		}
+		sprintf(buf, "%d 100000\n", container->cpupercent * 1000);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			warning("{yellow}Set cpupercent limit failed{clear}\n");
 		}
 		close(fd);
 	}
@@ -280,18 +427,29 @@ void set_limit(const struct CONTAINER *_Nonnull container)
 	if (!container->unmask_dirs) {
 		umount2("/sys/fs", MNT_DETACH | MNT_FORCE);
 	}
-	// Mount cgroup controller and get the type of cgroup.
-	int cgtype = mount_cgroup();
-	// For cgroup v1.
-	if (cgtype == 1) {
-		set_cgroup_v1(container);
+	if (is_cgroupv2_support("memory")) {
+		set_cgroup_v2_memory(container);
+	} else {
+		set_cgroup_v1_memory(container);
 	}
-	// For cgroup v2.
-	else {
-		set_cgroup_v2(container);
+	if (is_cgroupv2_support("cpu")) {
+		set_cgroup_v2_cpu(container);
+	} else {
+		set_cgroup_v1_cpu(container);
+	}
+	if (is_cgroupv2_support("cpuset")) {
+		set_cgroup_v2_cpuset(container);
+	} else {
+		set_cgroup_v1_cpuset(container);
 	}
 	// Mask /sys/fs again.
 	if (!container->unmask_dirs) {
-		mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_RDONLY, NULL);
+		// mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_RDONLY, NULL);
 	}
+	// Mount cgroup v2.
+	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
+	// Maybe needless.
+	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+	// Mount /sys/fs/cgroup as cgroup2.
+	mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 }

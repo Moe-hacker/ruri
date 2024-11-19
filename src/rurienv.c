@@ -257,6 +257,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	// Unset cgroup limits because it's already set.
 	container->cpuset = NULL;
 	container->memory = NULL;
+	container->cpupercent = INIT_VALUE;
 	// Check if ns_pid is a ruri process.
 	// If not, that means the container is not running.
 	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {

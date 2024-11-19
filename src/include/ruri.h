@@ -139,6 +139,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *_Nullable cpuset;
 	// Memory.
 	char *_Nullable memory;
+	// Cpulimit.
+	int cpupercent;
 	// A number based on the time when creating container.
 	int container_id;
 	// Do not create runtime directory.
