@@ -111,42 +111,60 @@ static pid_t join_ns(struct CONTAINER *_Nonnull container)
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that pid namespace is not supported on this device QwQ{clear}\n");
 	} else {
-		setns(ns_fd, 0);
+		usleep(1000);
+		if(setns(ns_fd, CLONE_NEWPID) == -1) {
+			error("{red}Failed to setns pid namespace QwQ\n");
+		}
 		close(ns_fd);
 	}
 	ns_fd = open(time_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that time namespace is not supported on this device QwQ{clear}\n");
 	} else {
-		setns(ns_fd, 0);
+		usleep(1000);
+		if(setns(ns_fd, CLONE_NEWTIME) == -1) {
+			error("{red}Failed to setns time namespace QwQ\n");
+		}
 		close(ns_fd);
 	}
 	ns_fd = open(uts_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that uts namespace is not supported on this device QwQ{clear}\n");
 	} else {
-		setns(ns_fd, 0);
+		usleep(1000);
+		if(setns(ns_fd, CLONE_NEWUTS) == -1) {
+			error("{red}Failed to setns uts namespace QwQ\n");
+		}
 		close(ns_fd);
 	}
 	ns_fd = open(cgroup_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that cgroup namespace is not supported on this device QwQ{clear}\n");
 	} else {
-		setns(ns_fd, 0);
+		usleep(1000);
+		if(setns(ns_fd, CLONE_NEWCGROUP) == -1) {
+			error("{red}Failed to setns cgroup namespace QwQ\n");
+		}
 		close(ns_fd);
 	}
 	ns_fd = open(ipc_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that ipc namespace is not supported on this device QwQ{clear}\n");
 	} else {
-		setns(ns_fd, 0);
+		usleep(1000);
+		if(setns(ns_fd, CLONE_NEWIPC) == -1) {
+			error("{red}Failed to setns ipc namespace QwQ\n");
+		}
 		close(ns_fd);
 	}
 	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that mount namespace is not supported on this device QwQ{clear}\n");
 	} else {
-		setns(ns_fd, 0);
+		usleep(1000);
+		if(setns(ns_fd, CLONE_NEWNS) == -1) {
+			error("{red}Failed to setns mount namespace QwQ\n");
+		}
 		close(ns_fd);
 	}
 	// Close fds after fork().
