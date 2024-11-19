@@ -432,10 +432,14 @@ static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 		return 0;
 	}
 	chdir(container->container_dir);
-	mount(".", ".", NULL, MS_BIND | MS_REC, NULL);
+	mount(NULL, ".", NULL, MS_PRIVATE, NULL);
+	chdir(container->container_dir);
 	usleep(200);
 	if (syscall(SYS_pivot_root, ".", ".") == -1) {
 		log("{base}pivot_root(2) failed, using chroot(2) instead.\n");
+		if (!container->no_warnings) {
+			warning("{yellow}Warning: pivot_root(2) failed, using chroot(2) instead QwQ\n");
+		}
 		return -1;
 	}
 	chdir("/");
