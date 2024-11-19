@@ -436,14 +436,11 @@ static int try_pivot_root(const struct CONTAINER *_Nonnull container)
 		.attr_set = 0,
 		.attr_clr = 0,
 		.propagation = MS_PRIVATE,
-		.userns_fd = 0,
 	};
 	int fd_tree = syscall(SYS_open_tree, AT_FDCWD, container->container_dir, OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH);
-	syscall(SYS_mount_setattr, fd_tree, "", AT_EMPTY_PATH, &attr, sizeof(attr));
 	syscall(SYS_move_mount, fd_tree, "", AT_FDCWD, container->container_dir, MOVE_MOUNT_F_EMPTY_PATH);
+	syscall(SYS_mount_setattr, fd_tree, "", AT_EMPTY_PATH, &attr, sizeof(attr));
 	close(fd_tree);
-	chdir(".");
-	chdir(container->container_dir);
 	usleep(2000);
 	if (syscall(SYS_pivot_root, ".", ".") == -1) {
 		log("{base}pivot_root(2) failed, using chroot(2) instead.\n");
