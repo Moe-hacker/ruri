@@ -73,7 +73,7 @@ static pid_t init_unshare_container(struct CONTAINER *_Nonnull container)
 	if (unshare_pid > 0) {
 		// Store container info.
 		if (container->use_rurienv) {
-			container->ns_pid = getpid();
+			container->ns_pid = unshare_pid;
 			store_info(container);
 		}
 		// Fix `can't access tty` issue.

@@ -32,39 +32,36 @@
 static bool is_ruri_pid(pid_t pid)
 {
 	/*
-	 * /proc/pid/stat example:
-	 * 24320 (bash) S 24317 24320 7406 34816 24392 4194560 365 262 0 0 0 0 0 0 10 -10 1 0 13729015 4689920 920 18446744073709551615 389493096448 389494178872 549307347392 0 0 0 3211264 3686404 1266761467 1 0 0 17 1 0 0 0 0 0 389494244512 389494276064 390520700928 549307350901 549307350907 549307350907 549307351022 0
-	 * So we just get the process name wrapped by `()`,
-	 * and check if it is `ruri`.
+	 * We check if /proc/pid/ns/mnt is same of /proc/self/ns/mnt.
+	 * If it is, we think the pid is not a ruri process,
+	 * because ruri will unshare the mount namespace.
+	 * If not, we think the pid is a ruri process.
 	 */
-	char stat_path[PATH_MAX] = { '\0' };
-	sprintf(stat_path, "/proc/%d/stat", pid);
-	int fd = open(stat_path, O_RDONLY | O_CLOEXEC);
-	if (fd < 0) {
+	char pid_ns_mnt[PATH_MAX] = { '\0' };
+	sprintf(pid_ns_mnt, "/proc/%d/ns/mnt", pid);
+	char *pid_ns_mnt_realpath = malloc(PATH_MAX);
+	ssize_t len = readlink(pid_ns_mnt, pid_ns_mnt_realpath, PATH_MAX);
+	if (len <= 0) {
+		free(pid_ns_mnt_realpath);
 		return false;
 	}
-	char buf[4096] = { '\0' };
-	char name[1024] = { '\0' };
-	read(fd, buf, sizeof(buf));
-	log("{base}Process stat:{cyan}\n%s", buf);
-	close(fd);
-	// Get the process name wrapped by `()`.
-	for (int i = 0; true; i++) {
-		if (buf[i] == '(') {
-			for (int j = 1; true; j++) {
-				if (buf[i + j] == ')') {
-					break;
-				}
-				name[j - 1] = buf[i + j];
-				name[j] = '\0';
-			}
-			break;
-		}
+	pid_ns_mnt_realpath[len] = '\0';
+	char *self_ns_mnt_realpath = malloc(PATH_MAX);
+	len = readlink("/proc/self/ns/mnt", self_ns_mnt_realpath, PATH_MAX);
+	if (len <= 0) {
+		free(self_ns_mnt_realpath);
+		free(pid_ns_mnt_realpath);
+		return false;
 	}
-	if (strcmp(name, "ruri") == 0) {
-		return true;
+	self_ns_mnt_realpath[len] = '\0';
+	if (strcmp(pid_ns_mnt_realpath, self_ns_mnt_realpath) == 0) {
+		free(self_ns_mnt_realpath);
+		free(pid_ns_mnt_realpath);
+		return false;
 	}
-	return false;
+	free(self_ns_mnt_realpath);
+	free(pid_ns_mnt_realpath);
+	return true;
 }
 // Get ns_pid.
 pid_t get_ns_pid(const char *_Nonnull container_dir)
