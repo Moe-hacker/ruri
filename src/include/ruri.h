@@ -246,6 +246,7 @@ uid_t get_user_uid(const char *_Nonnull username);
 gid_t get_user_gid(const char *_Nonnull username);
 pid_t get_ns_pid(const char *_Nonnull container_dir);
 void ruri_fetch(void);
+void correct_config(const char *_Nonnull path);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

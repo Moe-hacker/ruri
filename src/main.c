@@ -213,6 +213,15 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			}
 			exit(114);
 		}
+		// Correct a container config.
+		if (strcmp(argv[index], "-C") == 0 || strcmp(argv[index], "--correct-config") == 0) {
+			index += 1;
+			if (argv[index] != NULL) {
+				correct_config(argv[index]);
+				exit(EXIT_SUCCESS);
+			}
+			exit(114);
+		}
 		/**** For running a container ****/
 		// Just make clang-tidy happy.
 		if (argv[index] == NULL) {

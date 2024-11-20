@@ -20,6 +20,11 @@ When running a container, ruri needs to mount some directories on it.
 And after running the container, you can use `-U` option to umount a container.          
 This option needs to be run with root(sudo).      
 WARNING: Always do `sudo ruri -U /path/to/container` before you removing the container.      
+***********************************
+```
+-C, --correct-config .................: Correct config.
+```
+Try to correct an incomplete config file.        
 ## Arguments:
 Common ruri container should be run with sudo, but you can also use `-r` option to run rootless container if you want.      
 *****************************************
