@@ -66,6 +66,10 @@
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
 #include <sys/capability.h>
+// Fix definition of HOST_NAME_MAX
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 64
+#endif
 // Nullability attributes.
 #ifndef _Nullable
 #define _Nullable
