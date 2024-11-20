@@ -33,7 +33,7 @@ static char *line_get_username(const char *_Nonnull p)
 	/*
 	 * Get username by line.
 	 */
-	char *ret = malloc(128);
+	char *ret = malloc(LOGIN_NAME_MAX * 4);
 	ret[0] = '\0';
 	// /etc/passwd format:
 	// name:password:uid:gid:comment:home directory:login shell

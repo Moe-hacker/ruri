@@ -70,6 +70,10 @@
 #ifndef HOST_NAME_MAX
 #define HOST_NAME_MAX 64
 #endif
+// Fix definition of LOGIN_NAME_MAX
+#ifndef LOGIN_NAME_MAX
+#define LOGIN_NAME_MAX 256
+#endif
 // Nullability attributes.
 #ifndef _Nullable
 #define _Nullable
