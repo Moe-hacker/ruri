@@ -876,10 +876,10 @@ static void __k2v_lint(const char *_Nonnull buf)
 				warning("\033[31mLint error: %s\n", line);
 			}
 		}
+		free(line);
 		if (goto_next_line(p) == NULL) {
 			break;
 		}
-		free(line);
 		p = goto_next_line(p);
 		if (p == NULL) {
 			break;
