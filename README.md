@@ -33,7 +33,10 @@
   - Built-in rootless mode support.      
 - Simple for Beginner
   - You can just use ruri as an instead of `chroot` command, and ruri will do all things for you.      
-  - Ruri empowers you with the freedom to configure everything, but that do not means you need to learn every option to use it.      
+  - Ruri empowers you with the freedom to configure everything, but that do not means you need to learn every option to use it.    
+  
+<img src="https://github.com/Moe-hacker/ruri/raw/main/logo/rurifetch.png" alt="" style="width:50%;">
+
 # Get ruri:    
 You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 Or you can run the following command to download ruri automatically:      
