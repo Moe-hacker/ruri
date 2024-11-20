@@ -154,7 +154,7 @@ char *int_to_k2v(const char *_Nonnull key, int val)
 	if (key == NULL) {
 		return NULL;
 	}
-	char *ret = malloc(strlen(key) + 12 + 8);
+	char *ret = malloc(strlen(key) + 18 + 8);
 	sprintf(ret, "%s=\"%d\"\n", key, val);
 	return ret;
 }
@@ -220,7 +220,7 @@ char *int_array_to_k2v(const char *_Nonnull key, int *_Nonnull val, int len)
 	if (key == NULL) {
 		return NULL;
 	}
-	char *buf = malloc(strlen(key) + 12 * (size_t)len + 8);
+	char *buf = malloc(strlen(key) + 18 * ((size_t)len + 8));
 	if (len == 0) {
 		sprintf(buf, "%s=[]\n", key);
 		char *ret = strdup(buf);
@@ -228,7 +228,7 @@ char *int_array_to_k2v(const char *_Nonnull key, int *_Nonnull val, int len)
 		return ret;
 	}
 	sprintf(buf, "%s=[", key);
-	char *tmp = malloc(12);
+	char *tmp = malloc(18);
 	for (int i = 0; i < len; i++) {
 		sprintf(tmp, "\"%d\"", val[i]);
 		strcat(buf, tmp);
