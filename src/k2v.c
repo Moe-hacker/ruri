@@ -508,7 +508,7 @@ static int __k2v_basic_lint(const char *_Nonnull line)
 		}
 	}
 	// Goto value.
-	char *p = NULL;
+	const char *p = NULL;
 	for (size_t i = 0; i < strlen(line); i++) {
 		// We allow to use \ in key.
 		if (line[i] == '\\') {
@@ -765,9 +765,9 @@ static char *k2v_auto_tidy(const char *_Nonnull buf)
 static void __k2v_check_singularity(const char *_Nonnull buf)
 {
 	char **keys = NULL;
-	char *p = buf;
+	const char *p = buf;
 	char *line = NULL;
-	int count = 0;
+	size_t count = 0;
 	while (p != NULL) {
 		line = get_current_line(p);
 		p = goto_next_line(p);
@@ -830,7 +830,7 @@ static void __k2v_lint(const char *_Nonnull buf)
 }
 static char *key_get_line(const char *_Nonnull key, const char *_Nonnull buf)
 {
-	char *p = buf;
+	const char *p = buf;
 	char *line = NULL;
 	char *left = NULL;
 	while (p != NULL) {
@@ -849,6 +849,9 @@ static char *key_get_line(const char *_Nonnull key, const char *_Nonnull buf)
 char *key_get_char(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	if (buf == NULL || key == NULL) {
+		return NULL;
+	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
 		return NULL;
 	}
 	__k2v_lint(buf);
@@ -878,6 +881,9 @@ int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
 	if (buf == NULL || key == NULL) {
 		return 0;
 	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
+		return 0;
+	}
 	__k2v_lint(buf);
 	char *buf_to_read = k2v_auto_tidy(buf);
 	char *line = key_get_line(key, buf_to_read);
@@ -899,6 +905,9 @@ float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 	if (buf == NULL || key == NULL) {
 		return 0;
 	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
+		return 0;
+	}
 	__k2v_lint(buf);
 	char *buf_to_read = k2v_auto_tidy(buf);
 	char *line = key_get_line(key, buf_to_read);
@@ -910,7 +919,7 @@ float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 	char *p = strdup(&tmp[1]);
 	free(tmp);
 	p[strlen(p) - 1] = '\0';
-	float ret = atof(p);
+	float ret = strtof(p, NULL);
 	free(p);
 	free(buf_to_read);
 	return ret;
@@ -918,6 +927,9 @@ float key_get_float(const char *_Nonnull key, const char *_Nonnull buf)
 bool key_get_bool(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	if (buf == NULL || key == NULL) {
+		return false;
+	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
 		return false;
 	}
 	__k2v_lint(buf);
@@ -946,6 +958,21 @@ static char *__goto_next_val(const char *_Nonnull p)
 	 */
 	int quote = 0;
 	char *ret = NULL;
+	// Check if we reached the end.
+	if (p == NULL) {
+		return NULL;
+	}
+	for (size_t i = 0; i < strlen(p); i++) {
+		if (p[i] == ' ') {
+			i++;
+			continue;
+		}
+		if (p[i] == ']') {
+			return NULL;
+		} else {
+			break;
+		}
+	}
 	for (size_t i = 0; i < strlen(p); i++) {
 		if (p[i] == '\\') {
 			i++;
@@ -956,22 +983,22 @@ static char *__goto_next_val(const char *_Nonnull p)
 		}
 		if (quote == 2) {
 			if (strchr(&p[i], ',') == NULL) {
-				return &p[i];
+				return (char *)&p[i];
 			}
 			ret = strchr(&p[i], ',') + 1;
 		}
 	}
-	return ret;
+	return (char *)ret;
 }
 static char *__current_val(const char *_Nonnull p)
 {
 	/*
 	 * free() after use.
 	 */
-	if (p == NULL) {
+	if (p == NULL || strlen(p) == 0) {
 		return NULL;
 	}
-	char *tmp = malloc(strlen(p));
+	char *tmp = malloc(strlen(p) + 8);
 	if (strchr(p, '"') == NULL) {
 		return NULL;
 	}
@@ -1011,14 +1038,14 @@ static char *__current_val(const char *_Nonnull p)
 }
 static char **array_to_str_array(const char *_Nonnull array)
 {
-	char **ret = malloc(sizeof(char *) + 1);
+	char **ret = malloc(sizeof(char *) * 2);
 	ret[0] = NULL;
 	if (strcmp(array, "[]") == 0 || strcmp(array, "[\"\"]") == 0) {
 		return ret;
 	}
-	int count = 0;
+	size_t count = 0;
 	char *val = NULL;
-	char *p = &array[1];
+	const char *p = &array[1];
 	while (p != NULL) {
 		val = __current_val(p);
 		if (val == NULL) {
@@ -1043,6 +1070,9 @@ static char **array_to_str_array(const char *_Nonnull array)
 int key_get_int_array(const char *_Nonnull key, const char *_Nonnull buf, int *_Nonnull array, int limit)
 {
 	if (buf == NULL || key == NULL || array == NULL || limit == 0) {
+		return 0;
+	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
 		return 0;
 	}
 	__k2v_lint(buf);
@@ -1079,6 +1109,9 @@ int key_get_char_array(const char *_Nonnull key, const char *_Nonnull buf, char 
 	if (buf == NULL || key == NULL || array == NULL || limit == 0) {
 		return 0;
 	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
+		return 0;
+	}
 	__k2v_lint(buf);
 	char *buf_to_read = k2v_auto_tidy(buf);
 	int ret = 0;
@@ -1110,6 +1143,9 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 	if (buf == NULL || key == NULL || array == NULL || limit == 0) {
 		return 0;
 	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
+		return 0;
+	}
 	__k2v_lint(buf);
 	char *buf_to_read = k2v_auto_tidy(buf);
 	int ret = 0;
@@ -1128,7 +1164,7 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 		if (i >= limit) {
 			break;
 		}
-		array[i] = atof(str_array[i]);
+		array[i] = strtof(str_array[i], NULL);
 		ret++;
 	}
 	for (int i = 0; str_array[i] != NULL; i++) {
@@ -1142,6 +1178,9 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
 {
 	if (buf == NULL || key == NULL) {
+		return false;
+	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
 		return false;
 	}
 	__k2v_lint(buf);
