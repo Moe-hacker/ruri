@@ -3,7 +3,7 @@
 
 -----
 
-<p align="center">「 须臾水面明月出，沧江万顷瑠璃寒 」</p>
+<p align="center">「 须臾水面明月出，沧江万顷琉璃寒 」</p>
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
@@ -31,7 +31,7 @@ This will automatically download ruri binary to `./ruri`.
 
 If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
 # About:         
-&emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃` in Chinese or Japanese as well.       
+&emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃/琉璃` in Chinese or Japanese as well.       
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
 - Simple:      
 The basic usage is very very simple, you can use it just like the command `chroot`.
