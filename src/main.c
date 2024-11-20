@@ -76,6 +76,9 @@ static void parse_cgroup_settings(const char *_Nonnull str, struct CONTAINER *_N
 		buf[i] = str[i];
 		buf[i + 1] = '\0';
 	}
+	if (limit == NULL) {
+		error("{red}Error: cgroup limit should be like `cpuset=1` or `memory=1M`\n");
+	}
 	if (strcmp("cpuset", buf) == 0) {
 		container->cpuset = limit;
 	} else if (strcmp("memory", buf) == 0) {

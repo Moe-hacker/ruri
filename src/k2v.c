@@ -449,10 +449,9 @@ static char *line_get_right(const char *_Nonnull line)
 	for (size_t i = 0; i < strlen(line); i++) {
 		if (line[i] == ' ') {
 			continue;
-		} else {
-			line = &line[i];
-			break;
 		}
+		line = &line[i];
+		break;
 	}
 	char *ret = strdup(line);
 	for (size_t i = strlen(ret) - 1; i > 0; i--) {
@@ -490,9 +489,8 @@ static bool __k2v_is_array(const char *_Nonnull line)
 		}
 		if (p[i] == '[') {
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 	return false;
 }
@@ -562,10 +560,9 @@ static int __k2v_basic_lint(const char *_Nonnull line)
 	for (size_t i = 0; i < strlen(p); i++) {
 		if (p[i] == ' ') {
 			continue;
-		} else {
-			p = &p[i];
-			break;
 		}
+		p = &p[i];
+		break;
 	}
 	// Check if value start with `"` or `[`, and end with `"` or `]`.
 	if (p[0] == '"') {
@@ -626,9 +623,7 @@ static int __k2v_array_lint(const char *_Nonnull line)
 			i++;
 			continue;
 		}
-		if (p[i] == '[') {
-			bracket++;
-		} else if (p[i] == ']') {
+		if (p[i] == '[' || p[i] == ']') {
 			bracket++;
 		}
 	}
@@ -834,6 +829,9 @@ static void __k2v_check_singularity(const char *_Nonnull buf)
 		if (p == NULL) {
 			break;
 		}
+	}
+	if (keys == NULL) {
+		return;
 	}
 	for (int i = 0; keys[i] != NULL; i++) {
 		free(keys[i]);
@@ -1041,9 +1039,8 @@ static char *__goto_next_val(const char *_Nonnull p)
 		}
 		if (p[i] == ']') {
 			return NULL;
-		} else {
-			break;
 		}
+		break;
 	}
 	for (size_t i = 0; i < strlen(p); i++) {
 		if (p[i] == '\\') {
@@ -1072,6 +1069,7 @@ static char *__current_val(const char *_Nonnull p)
 	}
 	char *tmp = malloc(strlen(p) + 8);
 	if (strchr(p, '"') == NULL) {
+		free(tmp);
 		return NULL;
 	}
 	char *q = strchr(p, '"') + 1;
@@ -1085,11 +1083,10 @@ static char *__current_val(const char *_Nonnull p)
 				tmp[j] = q[i];
 				tmp[j + 1] = '\0';
 				continue;
-			} else {
-				tmp[j] = q[i];
-				tmp[j + 1] = '\0';
-				break;
 			}
+			tmp[j] = q[i];
+			tmp[j + 1] = '\0';
+			break;
 		}
 		if (q[i] == '"') {
 			tmp[j] = '\0';
@@ -1223,6 +1220,7 @@ int key_get_float_array(const char *_Nonnull key, const char *_Nonnull buf, floa
 	int ret = 0;
 	char *line = key_get_line(key, buf_to_read);
 	if (line == NULL) {
+		free(buf_to_read);
 		array[0] = 0;
 		return 0;
 	}
