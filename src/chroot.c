@@ -514,7 +514,7 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 		// Copy qemu binary into container.
 		copy_qemu_binary(container);
 		// Store container info.
-		if (!container->enable_unshare && container->use_rurienv) {
+		if (!container->enable_unshare && !container->just_chroot && container->use_rurienv) {
 			store_info(container);
 		}
 		// If `-S` option is set, bind-mount /dev/, /sys/ and /proc/ from host.
@@ -580,7 +580,9 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	// Umount binfmt_misc apifs.
 	umount2("/proc/sys/fs/binfmt_misc", MNT_DETACH | MNT_FORCE);
 	// Set up cgroup limit.
-	set_limit(container);
+	if (!container->just_chroot) {
+		set_limit(container);
+	}
 	// Set up Seccomp BPF.
 	if (container->enable_seccomp) {
 		setup_seccomp(container);
