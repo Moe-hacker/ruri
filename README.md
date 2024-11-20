@@ -7,15 +7,40 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
-# Download:    
+# 中文文档
+[中文文档](doc/README_zh.md)      
+# About:         
+&emsp;ruri is pronounced as `luli`, or you can call it `[瑠璃/琉璃]` ~~(るり)~~ in Chinese or Japanese as well.       
+&emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
+&emsp;ruri is a powerful container implementation that runs on almost any Linux device, even with incomplete kernel configurations or minimal storage space.           
+# Highlights:
+- Powerful Features
+  - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, basic support for rootless container, and even more...      
+  - Built-in support for binfmt_misc & QEMU, so you can run multi-arch container easily with ruri.
+  - Powerful mount option, not only bind-mount dirs to container, but also mount image/partition as root, and you can choose every mountpoint to be read-only or rw.     
+  - Built-in support for config file, so you can dump the current container config, and just load it next time when you run the container.       
+- Zero Dependencies, Ready Out-of-the-Box
+  - Only rootless container need an optional dependency `uidmap`, all feature of chroot/unshare container is built-in, without any dependencies.      
+  - Ruri provides statically linked binaries for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices, you can just download it from release and run it.
+- Ultra-lightweight, for Less Than 1M
+  - The statically linked binary of ruri is very small, after upx, it can even be less than 200k, or even near 100k on some platforms, but it can provide over 30 options and even more features.       
+- Flexibility, for More Platform
+  - From Android devices to IoT gadgets, from amd64 to s390x, ruri supports to run on almost every Linux platforms, the only thing it need is root privilege.      
+- Secure by Design
+  - Built-in protecion for files under /dev, /proc and /sys.      
+  - Built-in security options, to make container more secure.      
+  - Built-in read-only filesystem options for more protection.      
+  - Built-in rootless mode support.      
+- Simple for Beginner
+  - You can just use ruri as an instead of `chroot` command, and ruri will do all things for you.      
+  - Ruri empowers you with the freedom to configure everything, but that do not means you need to learn every option to use it.      
+# Get ruri:    
 You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 Or you can run the following command to download ruri automatically:      
 ```sh
 wget -O - https://github.com/Moe-hacker/ruri/raw/refs/heads/main/get-ruri.sh | bash -s -- -s
 ```
 This will automatically download ruri binary to `./ruri`.      
-# 中文文档
-[中文文档](doc/README_zh.md)      
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -30,49 +55,10 @@ This will automatically download ruri binary to `./ruri`.
 > --Torvalds
 
 If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
-# About:         
-&emsp;ruri is pronounced as  `luli`, or you can call it `瑠璃/琉璃` in Chinese or Japanese as well.       
-&emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation. It's designed to provide better security for Linux containers on devices that do not support docker.       
-- Simple:      
-The basic usage is very very simple, you can use it just like the command `chroot`.
-- Secure:      
-Ruri focus on security, with many built-in protections.
-- Run Everywhere:      
-ruri officially supports multipe platforms: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.         
-The ruri binary is very small, only about 1M, and you can also use `upx` to make it less than 500k, so it can be run anywhere even if the storage is tight.                
 # Container Security:  
 See [Enhance Container Security](doc/Security.md).      
-# Build:      
-```
-git clone https://github.com/Moe-hacker/ruri
-cd ruri
-make static_config
-make
-sudo cp ruri /usr/bin/ruri
-```
-# NOTE:
-The test script has a part that must be run with `sudo`, `DO NOT` run `make test` on your devices!!!!      
-# Build options:
-```
-make config        # configure
-make static_config # static build
-
-#### Only For Developers ####
-
-make dev_config    # dev build
-make dbg_config    # dev build with debug log
-```
-After running one of these command, you can now `make`.      
-Note that `-j` option will not have any effect since ruri use NOTPARALLEL flag.      
-## Build Debian package: 
-Debian do not like static binary, so in debian package, ruri is dynamically linked.      
-You can run:       
-```sh
-apt update
-apt build-dep . -y
-dpkg-buildpackage -b -us -uc -d
-```
-This will bulid the debian package.      
+# Build Manually:      
+Ruri provides statically linked binary, but if you want to build it yourself, see [Build](doc/Build.md).      
 # Integration:
 ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
 See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    

@@ -14,8 +14,8 @@ It will record the following config:
 * Extra read-only mountpoint.
 * Environment variable.
 # Its behavior:
-1. Cover drop_caplist, no_new_privs, enable_seccomp, no_warnings as the config first time when init container. This can only be disabled if you don't use .rurienv file. If you want to change one of these config, use       
+1. Cover drop_caplist, no_new_privs, enable_seccomp, no_warnings as the config first time when init container. This can only be disabled if you don't use .rurienv file. If you want to change one of these config,you should use -U to unmount container and restart it with new args/configs.           
 2. Cover user and work_dir settings if they are not set in cmdline arguments.      
 3. Store container_id to set the container process into the same cgroup.      
-4. Store ns_pid to make sure unshare container in the same namespace.      
+4. Store ns_pid to make sure unshare container in the same namespace. If ruri detected ns_pid, it will automatically enable unshare and join the namespace.            
 5. Store extra_mountpoint and extra_ro_mountpoint for umount container.      
