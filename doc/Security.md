@@ -29,6 +29,8 @@ Ruri supports enable no_new_privs bit by `-n` option, after enabling this, comma
 Ruri supports mounting the rootfs of container as read-only by using `-R` option, this will make all the container read-only.      
 ### Do not create runtime dirs:
 /dev, /proc and /sys will not be mounted if you enable `-j` option.      
+### Disable network:
+You can use `-x` option to create a new net ns and disable network for container.      
 # Other built-in protections:
 ## Devices in /dev.
 For /dev, ruri will only create necessary devices on it,  so that block devices will always be unavailable in container, and as cap_mknod and cap_sys_admin is dropped by default, you can not escape from ruri container by modifying disk partitions.      

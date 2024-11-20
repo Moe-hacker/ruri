@@ -148,6 +148,9 @@ static char *build_container_info(const struct CONTAINER *_Nonnull container)
 	// no_warnings.
 	ret = k2v_add_comment(ret, "Do not show warnings.");
 	ret = k2v_add_config(bool, ret, "no_warnings", container->no_warnings);
+	// no_network.
+	ret = k2v_add_comment(ret, "Disable network.");
+	ret = k2v_add_config(bool, ret, "no_network", container->no_network);
 	// user.
 	ret = k2v_add_comment(ret, "User to run the container.");
 	ret = k2v_add_config(char, ret, "user", container->user);
@@ -343,6 +346,8 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	if (container->user == NULL) {
 		container->user = k2v_get_key(char, "user", buf);
 	}
+	// Get no_network.
+	container->no_network = k2v_get_key(bool, "no_network", buf);
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	container->env[envlen] = NULL;

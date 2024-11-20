@@ -121,18 +121,20 @@ void show_helps(void)
 	cprintf("{base}  -A, --unmask-dirs ...........................: Unmask dirs in /proc and /sys\n");
 	cprintf("{base}  -E, --user [user/uid] .......................: Set the user to run command in the container(*******)\n");
 	cprintf("{base}  -t, --hostname [hostname] ...................: Set the hostname of the container(********)\n");
+	cprintf("{base}  -x, --no-network ............................: Disable network(*********)\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
-	cprintf("{base}(*)        : Will not work for unshare container without PID ns support\n");
-	cprintf("{base}(**)       : `-a` option also need `-q` is set\n");
-	cprintf("{base}(***)      : cap can both be value or name (e.j. cap_chown == 0)\n");
-	cprintf("{base}(****)     : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
-	cprintf("{base}(*****)    : You can use `-m/-M [source] /` to mount other source as root\n");
-	cprintf("{base}(******)   : Each `-l` option can only set one of the cpuset/memory/cpupercent limits\n");
-	cprintf("{base}             for example: `ruri -l memory=1M -l cpupercent=60 -l cpuset=1 /test`\n");
-	cprintf("{base}(*******)  : This option is totally useless\n");
-	cprintf("{base}(********) : If you use username, please make sure it's in /etc/passwd in container\n");
-	cprintf("{base}(*********): This option is only for unshare container.\n");
+	cprintf("{base}(*)         : Will not work for unshare container without PID ns support\n");
+	cprintf("{base}(**)        : `-a` option also need `-q` is set\n");
+	cprintf("{base}(***)       : cap can both be value or name (e.j. cap_chown == 0)\n");
+	cprintf("{base}(****)      : Will not work if [COMMAND [ARGS]...] is like `/bin/su -`\n");
+	cprintf("{base}(*****)     : You can use `-m/-M [source] /` to mount other source as root\n");
+	cprintf("{base}(******)    : Each `-l` option can only set one of the cpuset/memory/cpupercent limits\n");
+	cprintf("{base}              for example: `ruri -l memory=1M -l cpupercent=60 -l cpuset=1 /test`\n");
+	cprintf("{base}(*******)   : This option is totally useless\n");
+	cprintf("{base}(********)  : If you use username, please make sure it's in /etc/passwd in container\n");
+	cprintf("{base}(*********) : This option is only for unshare container\n");
+	cprintf("{base}(**********): This option need net ns, and will enable unshare feature by default\n");
 	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.

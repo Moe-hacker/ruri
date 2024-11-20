@@ -182,6 +182,11 @@ unshare容器和rootless容器会始终在执行命令前fork()自身一次，
 你可以使用此选项在exec(3)前切换到指定用户以降低权限。      
 *************
 ```
--t, --hostname [hostname] ...................: Set hostname
+-t, --hostname [hostname] ...................: 设置主机名
 ```
-Set hostname, only for unshare container.      
+设置主机名，仅供unshare容器。      
+**************
+```
+-x, --disable-network .......................: 禁用网络
+```      
+禁用容器网络，这需要net命名空间支持，并将自动启用unshare。      

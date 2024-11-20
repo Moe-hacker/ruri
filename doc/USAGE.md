@@ -184,3 +184,8 @@ You can use this option to switch to a common user before exec(3).
 -t, --hostname [hostname] ....................: Set hostname
 ```
 Set hostname, only for unshare container.      
+************
+```
+-x, --no-network .............................: Disable network
+```
+Disable network, this option need net ns support and will enable unshare at the same time.      

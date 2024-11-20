@@ -163,6 +163,8 @@ struct __attribute__((aligned(128))) CONTAINER {
 	char *_Nullable user;
 	// Hostname.
 	char *_Nullable hostname;
+	// No network.
+	bool no_network;
 };
 // For get_magic().
 #define magicof(x) (x##_magic)

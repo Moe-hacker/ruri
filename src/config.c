@@ -170,6 +170,12 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	ret = k2v_add_comment(ret, "Default is false.");
 	ret = k2v_add_config(bool, ret, "ro_root", container->ro_root);
 	ret = k2v_add_newline(ret);
+	// no_network.
+	ret = k2v_add_comment(ret, "Disable network.");
+	ret = k2v_add_comment(ret, "This also need enable_unshare to be true.");
+	ret = k2v_add_comment(ret, "Default is false.");
+	ret = k2v_add_config(bool, ret, "no_network", container->no_network);
+	ret = k2v_add_newline(ret);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -245,7 +251,7 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Check if config is valid.
-	char *key_list[] = { "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
+	char *key_list[] = { "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
 	for (int i = 0; key_list[i] != NULL; i++) {
 		if (!have_key(key_list[i], buf)) {
 			error("{red}Invalid config file, there is no key:%s\n{clear}", key_list[i]);
@@ -305,6 +311,8 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	container->unmask_dirs = k2v_get_key(bool, "unmask_dirs", buf);
 	// Get hostname.
 	container->hostname = k2v_get_key(char, "hostname", buf);
+	// Get no_network.
+	container->no_network = k2v_get_key(bool, "no_network", buf);
 	// Get user.
 	if (container->user == NULL) {
 		container->user = k2v_get_key(char, "user", buf);

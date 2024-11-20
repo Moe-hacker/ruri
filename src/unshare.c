@@ -67,6 +67,12 @@ static pid_t init_unshare_container(struct CONTAINER *_Nonnull container)
 	if (unshare(CLONE_FS) == -1 && !container->no_warnings) {
 		warning("{yellow}Warning: seems that we could not unshare filesystem information with child process QwQ{clear}\n");
 	}
+	// Disable network.
+	if (container->no_network) {
+		if (unshare(CLONE_NEWNET) == -1) {
+			error("{red}Failed to unshare network namespace, --no-network cannot be enabled QwQ\n");
+		}
+	}
 	// Fork itself into namespace.
 	// This can fix `can't fork: out of memory` issue.
 	unshare_pid = fork();
@@ -166,6 +172,18 @@ static pid_t join_ns(struct CONTAINER *_Nonnull container)
 			error("{red}Failed to setns mount namespace QwQ\n");
 		}
 		close(ns_fd);
+	}
+	// Disable network.
+	if (container->no_network) {
+		char net_ns_file[PATH_MAX] = { '\0' };
+		sprintf(net_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/net");
+		ns_fd = open(net_ns_file, O_RDONLY | O_CLOEXEC);
+		if (ns_fd < 0) {
+			error("{red}--no-network detected, but failed to open network namespace QwQ\n");
+		}
+		if (setns(ns_fd, CLONE_NEWNET) == -1) {
+			error("{red}--no-network detected, but failed to setns network namespace QwQ\n");
+		}
 	}
 	// Close fds after fork().
 	unshare(CLONE_FILES);

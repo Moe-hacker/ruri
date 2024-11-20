@@ -316,6 +316,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		else if (strcmp(argv[index], "-R") == 0 || strcmp(argv[index], "--read-only") == 0) {
 			container->ro_root = true;
 		}
+		// No network.
+		else if (strcmp(argv[index], "-x") == 0 || strcmp(argv[index], "--no-network") == 0) {
+			container->enable_unshare = true;
+			container->no_network = true;
+		}
 		// cgroup limit.
 		else if (strcmp(argv[index], "-l") == 0 || strcmp(argv[index], "--limit") == 0) {
 			index++;
