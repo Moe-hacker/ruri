@@ -93,3 +93,4 @@ size_t k2v_get_filesize(const char *_Nonnull path);
 		__k2v_ret;                                                \
 	})
 char *k2v_add_comment(char *_Nullable buf, char *_Nonnull comment);
+char *k2v_add_newline(char *_Nullable buf);

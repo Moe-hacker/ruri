@@ -409,7 +409,7 @@ static bool pivot_root_succeed(const char *_Nonnull container_dir)
 	if (chdir(container_dir) != 0) {
 		return true;
 	}
-	sprintf(dev_null, "./dev/null", container_dir);
+	sprintf(dev_null, "%s/./dev/null", container_dir);
 	if (stat(dev_null, &dev_null_stat) != 0) {
 		return true;
 	}
@@ -475,7 +475,7 @@ static void set_hostname(struct CONTAINER *_Nonnull container)
 	 */
 	if (container->hostname != NULL) {
 		if (container->enable_unshare) {
-			ssize_t len = strlen(container->hostname);
+			size_t len = strlen(container->hostname);
 			if (len > HOST_NAME_MAX) {
 				error("{red}Error: hostname is too long QwQ\n");
 			}

@@ -59,9 +59,8 @@ static char *get_current_line(const char *_Nonnull buf)
 	char *ret = strdup(buf);
 	if (strchr(ret, '\n') == NULL) {
 		return ret;
-	} else {
-		*strchr(ret, '\n') = '\0';
 	}
+	*strchr(ret, '\n') = '\0';
 	// ret will be larger than the line we got.
 	// But never mind, '\0' is the end of string.
 	return ret;
@@ -76,8 +75,14 @@ static char *goto_next_line(const char *_Nonnull buf)
 	if (buf == NULL) {
 		return NULL;
 	}
+	if (strlen(buf) == 0) {
+		return NULL;
+	}
 	char *ret = strchr(buf, '\n');
 	if (ret == NULL) {
+		return NULL;
+	}
+	if (strlen(ret) < 2) {
 		return NULL;
 	}
 	if (ret[1] == '\0') {
@@ -126,8 +131,7 @@ char *k2v_open_file(const char *_Nonnull path, size_t bufsize)
 		return NULL;
 	}
 	ssize_t len = read(fd, ret, bufsize);
-	ret[len] = '\n';
-	ret[len + 1] = '\0';
+	ret[len] = '\0';
 	__k2v_lint(ret);
 	close(fd);
 	return ret;
@@ -294,6 +298,26 @@ char *k2v_add_comment(char *_Nonnull buf, char *_Nonnull comment)
 	ret = tmp;
 	return ret;
 }
+char *k2v_add_newline(char *_Nonnull buf)
+{
+	size_t size = 0;
+	if (buf != NULL) {
+		size += strlen(buf);
+	}
+	size += strlen("\n") + 2;
+	char *ret = malloc(size + 8);
+	if (buf != NULL) {
+		sprintf(ret, "%s\n", buf);
+	} else {
+		sprintf(ret, "\n");
+	}
+	free(buf);
+	// Correct memory size.
+	char *tmp = strdup(ret);
+	free(ret);
+	ret = tmp;
+	return ret;
+}
 static bool is_coment_line(const char *_Nonnull buf)
 {
 	// NULL check.
@@ -317,9 +341,8 @@ static bool is_coment_line(const char *_Nonnull buf)
 		}
 		if (buf[i] == '#') {
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 	return false;
 }
@@ -333,21 +356,31 @@ static char *remove_comment(const char *_Nonnull buf)
 	const char *p = buf;
 	char *line = NULL;
 	while (p != NULL) {
+		if (p == NULL) {
+			break;
+		}
 		line = get_current_line(p);
-		p = goto_next_line(p);
+		if (line == NULL) {
+			p = goto_next_line(p);
+			continue;
+		}
 		if (is_coment_line(line)) {
 			free(line);
+			p = goto_next_line(p);
 			continue;
+		}
+		if (ret == NULL) {
+			ret = strdup(line);
+			free(line);
 		} else {
-			if (ret == NULL) {
-				ret = strdup(line);
-				free(line);
-			} else {
-				ret = realloc(ret, strlen(ret) + strlen(line) + 2);
-				strcat(ret, "\n");
-				strcat(ret, line);
-				free(line);
-			}
+			ret = realloc(ret, strlen(ret) + strlen(line) + 2);
+			strcat(ret, "\n");
+			strcat(ret, line);
+			free(line);
+		}
+		p = goto_next_line(p);
+		if (p == NULL) {
+			break;
 		}
 	}
 	return ret;
@@ -358,10 +391,9 @@ static char *line_get_left(const char *_Nonnull line)
 	for (size_t i = 0; i < strlen(line); i++) {
 		if (line[i] == ' ') {
 			continue;
-		} else {
-			line = &line[i];
-			break;
 		}
+		line = &line[i];
+		break;
 	}
 	char *ret = malloc(strlen(line) + 1);
 	for (size_t i = 0; i < strlen(line); i++) {
@@ -371,9 +403,8 @@ static char *line_get_left(const char *_Nonnull line)
 				i++;
 				ret[i] = line[i];
 				continue;
-			} else {
-				ret[i] = line[i];
 			}
+			ret[i] = line[i];
 		}
 		if (line[i] == '=') {
 			ret[i] = '\0';
@@ -386,10 +417,9 @@ static char *line_get_left(const char *_Nonnull line)
 	for (size_t i = strlen(ret) - 1; i > 0; i--) {
 		if (ret[i] == ' ') {
 			continue;
-		} else {
-			ret[i + 1] = '\0';
-			break;
 		}
+		ret[i + 1] = '\0';
+		break;
 	}
 	return ret;
 }
@@ -399,10 +429,9 @@ static char *line_get_right(const char *_Nonnull line)
 	for (size_t i = 0; i < strlen(line); i++) {
 		if (line[i] == ' ') {
 			continue;
-		} else {
-			line = &line[i];
-			break;
 		}
+		line = &line[i];
+		break;
 	}
 	// Goto value.
 	for (size_t i = 0; i < strlen(line); i++) {
@@ -429,10 +458,9 @@ static char *line_get_right(const char *_Nonnull line)
 	for (size_t i = strlen(ret) - 1; i > 0; i--) {
 		if (ret[i] == ' ') {
 			continue;
-		} else {
-			ret[i + 1] = '\0';
-			break;
 		}
+		ret[i + 1] = '\0';
+		break;
 	}
 	return ret;
 }
@@ -475,14 +503,14 @@ static int __k2v_basic_lint(const char *_Nonnull line)
 	// We need a key without space.
 	// We need a value, with "" or [].
 	// So:
+	// NULL check.
 	// Skip space.
 	for (size_t i = 0; i < strlen(line); i++) {
 		if (line[i] == ' ') {
 			continue;
-		} else {
-			line = &line[i];
-			break;
 		}
+		line = &line[i];
+		break;
 	}
 	// Check key.
 	// Check if we have key.
@@ -547,10 +575,9 @@ static int __k2v_basic_lint(const char *_Nonnull line)
 			}
 			if (p[i] == '"') {
 				break;
-			} else {
-				warning("Value should end with \": %s\n", line);
-				return -1;
 			}
+			warning("Value should end with \": %s\n", line);
+			return -1;
 		}
 	} else if (p[0] == '[') {
 		for (size_t i = strlen(p) - 1; i > 0; i--) {
@@ -559,10 +586,9 @@ static int __k2v_basic_lint(const char *_Nonnull line)
 			}
 			if (p[i] == ']') {
 				break;
-			} else {
-				warning("Value should end with ]: %s\n", line);
-				return -1;
 			}
+			warning("Value should end with ]: %s\n", line);
+			return -1;
 		}
 	} else {
 		warning("Value should start with \" or [: %s\n", line);
@@ -589,10 +615,9 @@ static int __k2v_array_lint(const char *_Nonnull line)
 	for (size_t i = 0; i < strlen(p); i++) {
 		if (p[i] == ' ') {
 			continue;
-		} else {
-			p = &p[i];
-			break;
 		}
+		p = &p[i];
+		break;
 	}
 	// Check for `[]`.
 	int bracket = 0;
@@ -697,10 +722,9 @@ static int __k2v_scalar_lint(const char *_Nonnull line)
 	for (size_t i = 0; i < strlen(p); i++) {
 		if (p[i] == ' ') {
 			continue;
-		} else {
-			p = &p[i];
-			break;
 		}
+		p = &p[i];
+		break;
 	}
 	// Check for `"`.
 	int quote = 0;
@@ -730,10 +754,17 @@ static char *k2v_auto_tidy(const char *_Nonnull buf)
 	char *p = tmp;
 	char *line = NULL;
 	while (p != NULL) {
+		if (p == NULL) {
+			break;
+		}
 		line = get_current_line(p);
-		p = goto_next_line(p);
+		if (line == NULL) {
+			p = goto_next_line(p);
+			continue;
+		}
 		if (__k2v_basic_lint(line) != 0) {
 			free(line);
+			p = goto_next_line(p);
 			continue;
 		}
 		if (__k2v_is_array(line)) {
@@ -758,6 +789,10 @@ static char *k2v_auto_tidy(const char *_Nonnull buf)
 			}
 		}
 		free(line);
+		p = goto_next_line(p);
+		if (p == NULL) {
+			break;
+		}
 	}
 	free(tmp);
 	return ret;
@@ -769,8 +804,14 @@ static void __k2v_check_singularity(const char *_Nonnull buf)
 	char *line = NULL;
 	size_t count = 0;
 	while (p != NULL) {
+		if (p == NULL) {
+			break;
+		}
 		line = get_current_line(p);
-		p = goto_next_line(p);
+		if (line == NULL) {
+			p = goto_next_line(p);
+			continue;
+		}
 		char *key = line_get_left(line);
 		if (keys == NULL) {
 			keys = malloc(sizeof(char *) * 3);
@@ -789,6 +830,10 @@ static void __k2v_check_singularity(const char *_Nonnull buf)
 			count++;
 		}
 		free(line);
+		p = goto_next_line(p);
+		if (p == NULL) {
+			break;
+		}
 	}
 	for (int i = 0; keys[i] != NULL; i++) {
 		free(keys[i]);
@@ -805,11 +850,21 @@ static void __k2v_lint(const char *_Nonnull buf)
 	char *p = tmp;
 	char *line = NULL;
 	while (p != NULL) {
+		if (p == NULL) {
+			break;
+		}
 		line = get_current_line(p);
-		p = goto_next_line(p);
+		if (line == NULL) {
+			if (goto_next_line(p) == NULL) {
+				break;
+			}
+			p = goto_next_line(p);
+			continue;
+		}
 		if (__k2v_basic_lint(line) != 0) {
 			warning("\033[31mLint error: %s\n", line);
 			free(line);
+			p = goto_next_line(p);
 			continue;
 		}
 		if (__k2v_is_array(line)) {
@@ -821,7 +876,14 @@ static void __k2v_lint(const char *_Nonnull buf)
 				warning("\033[31mLint error: %s\n", line);
 			}
 		}
+		if (goto_next_line(p) == NULL) {
+			break;
+		}
 		free(line);
+		p = goto_next_line(p);
+		if (p == NULL) {
+			break;
+		}
 	}
 	char *tmp2 = k2v_auto_tidy(tmp);
 	__k2v_check_singularity(tmp2);
@@ -834,8 +896,14 @@ static char *key_get_line(const char *_Nonnull key, const char *_Nonnull buf)
 	char *line = NULL;
 	char *left = NULL;
 	while (p != NULL) {
+		if (p == NULL) {
+			break;
+		}
 		line = get_current_line(p);
-		p = goto_next_line(p);
+		if (line == NULL) {
+			p = goto_next_line(p);
+			continue;
+		}
 		left = line_get_left(line);
 		if (strcmp(left, key) == 0) {
 			free(left);
@@ -843,6 +911,10 @@ static char *key_get_line(const char *_Nonnull key, const char *_Nonnull buf)
 		}
 		free(line);
 		free(left);
+		p = goto_next_line(p);
+		if (p == NULL) {
+			break;
+		}
 	}
 	return NULL;
 }
@@ -1189,10 +1261,9 @@ bool have_key(const char *_Nonnull key, const char *_Nonnull buf)
 	if (tmp == NULL) {
 		free(buf_to_read);
 		return false;
-	} else {
-		free(tmp);
-		free(buf_to_read);
-		return true;
 	}
-	return false;
+
+	free(tmp);
+	free(buf_to_read);
+	return true;
 }
