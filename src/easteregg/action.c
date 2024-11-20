@@ -64,19 +64,19 @@ void face(useconds_t inr, unsigned int keep)
 void mouth(useconds_t inr, unsigned int keep)
 {
 	struct ACTION *action = NULL;
-	action = add_action(action, 9, 8,
+	action = add_action(action, 10, 8,
 			    "\n"
 			    "\n"
 			    "  ███\n");
-	action = add_action(action, 9, 8,
+	action = add_action(action, 10, 8,
 			    "\n"
 			    "\n"
 			    "  ████\n");
-	action = add_action(action, 9, 8,
+	action = add_action(action, 10, 8,
 			    "\n"
 			    "\n"
 			    " ██████\n");
-	action = add_action(action, 9, 8,
+	action = add_action(action, 10, 8,
 			    "\n"
 			    "██    ██\n"
 			    "  ████\n");

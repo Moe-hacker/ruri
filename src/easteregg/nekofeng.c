@@ -55,6 +55,10 @@ static void init()
 	// Use ioctl(2) to get the window size.
 	struct winsize size;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	if (size.ws_col < 70 || size.ws_row < 24) {
+		printf("\033[31mThe window size is too small.\n");
+		exit(1);
+	}
 	x = size.ws_col / 2 - X_SIZE / 2;
 	y = size.ws_row / 2 - Y_SIZE / 2;
 }
@@ -142,7 +146,7 @@ void AwA()
 		}
 	}
 	printf("\033c");
-	layer.layer = "\033[1;38;2;254;228;208m\n"
+	layer.layer = "\033[1;38;2;254;228;208m\n\n"
 		      "●   ●  ●●●  ●●●●●       ●   ●   ●    ●●●  ●●●●● ●●●●  \n"
 		      "●● ●● ●   ● ●           ●   ●  ● ●  ●   ● ●     ●   ● \n"
 		      "● ● ● ●   ● ●●●●  ●●●●● ●●●●● ●●●●● ●     ●●●●  ●●●●● \n"
