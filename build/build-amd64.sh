@@ -8,3 +8,4 @@ sudo ./ruri/ruri ./alpine /bin/sh /build.sh
 echo $(pwd)/x86_64.tar
 mv alpine/*-noupx.tar ./x86_64-noupx.tar
 mv alpine/*.tar ./x86_64.tar
+cp *.tar ../
