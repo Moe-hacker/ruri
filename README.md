@@ -35,7 +35,7 @@
   - You can just use ruri as an instead of `chroot` command, and ruri will do all things for you.      
   - Ruri empowers you with the freedom to configure everything, but that do not means you need to learn every option to use it.    
 <p align="center">
-<img src="https://github.com/Moe-hacker/ruri/raw/main/logo/rurifetch.png" alt="" style="width:50%;align: center;">
+<img src="https://github.com/Moe-hacker/ruri/raw/main/logo/rurifetch.png" alt="" style="width:75%;align: center;">
 </p>
 
 # Get ruri:    
