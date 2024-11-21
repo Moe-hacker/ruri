@@ -8,4 +8,5 @@ sudo apt install -y qemu-user-static
 sudo cp build.sh aarch64/build.sh
 sudo chmod +x aarch64/build.sh
 sudo ./ruri/ruri -a aarch64 -q /usr/bin/qemu-aarch64-static ./aarch64 /bin/sh /build.sh
+mv aarch64/*-noupx.tar ../aarch64-noupx.tar
 cp aarch64/*.tar ../aarch64.tar

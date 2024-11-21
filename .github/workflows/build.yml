@@ -88,3 +88,12 @@ jobs:
             ${{ github.workspace }}/armhf.tar
             ${{ github.workspace }}/aarch64.tar
             ${{ github.workspace }}/riscv64.tar
+            ${{ github.workspace }}/x86_64-noupx.tar
+            ${{ github.workspace }}/i386-noupx.tar
+            ${{ github.workspace }}/s390x-noupx.tar
+            ${{ github.workspace }}/ppc64le-noupx.tar
+            ${{ github.workspace }}/armv7-noupx.tar
+            ${{ github.workspace }}/armhf-noupx.tar
+            ${{ github.workspace }}/aarch64-noupx.tar
+            ${{ github.workspace }}/riscv64-noupx.tar
+

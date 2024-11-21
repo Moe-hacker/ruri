@@ -7,4 +7,5 @@ tar -xvf "$ROOTFS_URL" -C x86
 sudo cp build.sh x86/build.sh
 sudo chmod +x x86/build.sh
 sudo ./ruri/ruri ./x86 /bin/sh /build.sh
+mv x86/*-noupx.tar ../i386-noupx.tar
 cp x86/*.tar ../i386.tar

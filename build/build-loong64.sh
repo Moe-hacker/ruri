@@ -10,6 +10,7 @@ git clone https://github.com/moe-hacker/ruri
 cd ruri
 ./configure -s
 make
+strip ruri
 tar -cvf ../loong64.tar ./ruri ./LICENSE
 EOF
 sudo chmod +x ./debian/build.sh

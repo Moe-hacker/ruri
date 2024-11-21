@@ -8,4 +8,5 @@ sudo apt install -y qemu-user-static
 sudo cp build.sh riscv64/build.sh
 sudo chmod +x riscv64/build.sh
 sudo ./ruri/ruri -a riscv64 -q /usr/bin/qemu-riscv64-static ./riscv64 /bin/sh /build.sh
+mv riscv64/*-noupx.tar ../riscv64-noupx.tar
 cp riscv64/*.tar ../riscv64.tar

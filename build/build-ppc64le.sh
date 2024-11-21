@@ -8,4 +8,5 @@ sudo apt install -y qemu-user-static
 sudo cp build.sh ppc64le/build.sh
 sudo chmod +x ppc64le/build.sh
 sudo ./ruri/ruri -a ppc64le -q /usr/bin/qemu-ppc64le-static ./ppc64le /bin/sh /build.sh
+mv ppc64le/*-noupx.tar ../ppc64le-noupx.tar
 cp ppc64le/*.tar ../ppc64le.tar

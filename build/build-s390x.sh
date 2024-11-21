@@ -8,4 +8,5 @@ sudo apt install -y qemu-user-static
 sudo cp build.sh s390x/build.sh
 sudo chmod +x s390x/build.sh
 sudo ./ruri/ruri -a s390x -q /usr/bin/qemu-s390x-static ./s390x /bin/sh /build.sh
+mv s390x/*-noupx.tar ../s390x-noupx.tar
 cp s390x/*.tar ../s390x.tar
