@@ -101,7 +101,7 @@ static void init_container(struct CONTAINER *_Nonnull container)
 		}
 		mkdir("/dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mount("tmpfs", "/dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
-		usleep(10000);
+		usleep(1000);
 		free(devshm_options);
 		// Mount binfmt_misc.
 		mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
@@ -209,7 +209,7 @@ static void mount_host_runtime(const struct CONTAINER *_Nonnull container)
 	sprintf(buf, "%s/dev/shm", container->container_dir);
 	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("tmpfs", buf, "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
-	usleep(10000);
+	usleep(1000);
 	free(devshm_options);
 }
 // Drop capabilities.
@@ -395,7 +395,7 @@ static void copy_qemu_binary(struct CONTAINER *container)
 		// Correct the qemu-path.
 		free(container->qemu_path);
 		container->qemu_path = strdup("/qemu-ruri");
-		usleep(20000);
+		usleep(2000);
 	}
 }
 static bool pivot_root_succeed(const char *_Nonnull container_dir)
@@ -592,7 +592,7 @@ void run_chroot_container(struct CONTAINER *_Nonnull container)
 	// Set envs.
 	set_envs(container);
 	// Fix a bug that the terminal is frozen.
-	usleep(20000);
+	usleep(2000);
 	// Set NO_NEW_PRIVS Flag.
 	// It requires Linux3.5 or later.
 	// It will make sudo unavailable in container.
@@ -688,7 +688,7 @@ void run_rootless_chroot_container(struct CONTAINER *_Nonnull container)
 	// Set envs.
 	set_envs(container);
 	// Fix a bug that the terminal is frozen.
-	usleep(20000);
+	usleep(2000);
 	// Set NO_NEW_PRIVS Flag.
 	// It requires Linux3.5 or later.
 	// It will make sudo unavailable in container.
