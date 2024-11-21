@@ -1,3 +1,5 @@
+# Dependency:
+libcap, libseccomp, libpthread.      
 # Build:
 ```
 git clone https://github.com/Moe-hacker/ruri
