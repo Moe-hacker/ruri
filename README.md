@@ -13,21 +13,27 @@
 &emsp;ruri is pronounced as `luli`, or you can call it `[瑠璃/琉璃]` ~~(るり)~~ in Chinese or Japanese as well.       
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
 &emsp;ruri is a powerful container implementation that runs on almost any Linux device, even with incomplete kernel configurations or minimal storage space.           
+# Performance:
+```
+# uname -m
+x86_64
+# /usr/bin/time -f "Time: %E\nMax memory: %M KB" ./ruri ../t /bin/true
+Time: 0:00.01
+Max memory: 860 KB
+```
 # Highlights:
 - Powerful Features
   - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, basic support for rootless container, and even more...      
-  - Built-in support for binfmt_misc & QEMU, so you can run multi-arch container easily with ruri.
-  - Powerful mount option, not only bind-mount dirs to container, but also mount image/partition as root, and you can choose every mountpoint to be read-only or rw.     
-  - Built-in support for config file, so you can dump the current container config, and just load it next time when you run the container.       
-- Zero runtime Dependencies, Ready Out-of-the-Box
-  - Only rootless container need an optional runtime dependency `uidmap`, all feature of chroot/unshare container can be built-in to a binary.            
-  - Ruri provides statically linked binaries for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices, you can just download it from release and run it.
-- Ultra-lightweight, for Less Than 1M
-  - The statically linked binary of ruri is very small, after upx, it can even be less than 200k, or even near 100k on some platforms, but it can provide over 30 options and even more features.       
+  - Built-in support for binfmt_misc & QEMU, so you can run multi-arch container easily.
+  - Powerful mount option, you can mount image/partition as root, and you can choose every mountpoint to be read-only or rw.     
+  - Built-in support for config file.
+- Ultra-lightweight, Zero runtime Dependencies, Ready Out-of-the-Box
+  - Only rootless container need an optional runtime dependency `uidmap`, all feature of chroot/unshare container can be built-in to an all-in-one binary.            
+  - Ruri provides statically linked binaries for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices.   
+  - The binary of ruri is very small, after upx, it can even be less than 200k, but it can provide over 30 options and even more features.       
 - Flexibility, for More Platform
-  - From Android devices to IoT gadgets, from amd64 to s390x, ruri supports to run on almost every Linux platforms, the only thing it need is root privilege.      
-- Secure by Design
-  - Built-in protecion for files under /dev, /proc and /sys.      
+  - From Android devices to IoT gadgets, from amd64 to s390x, ruri can provide basic container support on almost every Linux platforms, the only thing it need is root privilege.      
+- Secure by Design 
   - Built-in security options, to make container more secure.      
   - Built-in read-only filesystem options for more protection.      
   - Built-in rootless mode support.      
