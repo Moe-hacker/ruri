@@ -52,4 +52,6 @@ Use `ruri -D -o test.conf /test` to dump the config into test.conf
 You can also add other options like `ruri -D -o test.conf -d cap_chmod -k cap_sys_admin -w -u /test /bin/sh`      
 So next time, just use `ruri -c /path/to/test.conf` to run the container.      
 ## integrate with source:
-If your project supports, you can also edit the main.c, remove `main()` function and use ruri as a lib. But make sure that you know how main.c works, especially how CONTAINER struct works.       
+main() has been replaced to ruri, and every funcion in ruri have ruri_ or nekofeng_ prefix now, so you need not worry about conflicts of symbols now.      
+If your project supports, you can remove `main()` function and use ruri as a lib. But make sure that you know how ruri.c works, especially how RURI_CONTAINER struct works.       
+An example is [rurima](https://github.com/Moe-hacker/rurima), I made ruri to be its subcommand. So `rurima r` have the same effect with `ruri`.            
