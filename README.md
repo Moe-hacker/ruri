@@ -19,8 +19,8 @@
   - Built-in support for binfmt_misc & QEMU, so you can run multi-arch container easily with ruri.
   - Powerful mount option, not only bind-mount dirs to container, but also mount image/partition as root, and you can choose every mountpoint to be read-only or rw.     
   - Built-in support for config file, so you can dump the current container config, and just load it next time when you run the container.       
-- Zero Dependencies, Ready Out-of-the-Box
-  - Only rootless container need an optional dependency `uidmap`, all feature of chroot/unshare container is built-in, without any dependencies.      
+- Zero runtime Dependencies, Ready Out-of-the-Box
+  - Only rootless container need an optional runtime dependency `uidmap`, all feature of chroot/unshare container can be built-in to a binary.            
   - Ruri provides statically linked binaries for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices, you can just download it from release and run it.
 - Ultra-lightweight, for Less Than 1M
   - The statically linked binary of ruri is very small, after upx, it can even be less than 200k, or even near 100k on some platforms, but it can provide over 30 options and even more features.       
