@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-void show_version_info(void)
+void ruri_show_version_info(void)
 {
 	/*
 	 * Just show version info and license.
@@ -63,7 +63,7 @@ void show_version_info(void)
 	cprintf("{clear}\n");
 }
 // For `ruri -V`.
-void show_version_code(void)
+void ruri_show_version_code(void)
 {
 	/*
 	 * The version code is not standard now,
@@ -73,7 +73,7 @@ void show_version_code(void)
 	cprintf("%s\n", RURI_VERSION);
 }
 // For `ruri -h`.
-void show_helps(void)
+void ruri_show_helps(void)
 {
 	/*
 	 * Help page of ruri.
@@ -139,7 +139,7 @@ void show_helps(void)
 	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.
-void show_examples(void)
+void ruri_show_examples(void)
 {
 	/*
 	 * Command line examples.

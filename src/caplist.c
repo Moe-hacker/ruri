@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Add a cap to caplist.
-void add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
+void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {
 	/*
 	 * If cap is already in list, just do nothing and quit.
@@ -39,7 +39,7 @@ void add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 	if (!CAP_IS_SUPPORTED(cap)) {
 		return;
 	}
-	if (!is_in_caplist(list, cap)) {
+	if (!ruri_is_in_caplist(list, cap)) {
 		for (int k = 0; true; k++) {
 			if (list[k] == INIT_VALUE) {
 				list[k] = cap;
@@ -50,7 +50,7 @@ void add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 	}
 }
 // Check if the cap is in the list.
-bool is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap)
+bool ruri_is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap)
 {
 	/*
 	 * If cap is in list, return true,
@@ -68,7 +68,7 @@ bool is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap)
 	return false;
 }
 // Del a cap from caplist.
-void del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
+void ruri_del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {
 	/*
 	 * If the cap is not in list, just do nothing and quit.
@@ -88,7 +88,7 @@ void del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 		}
 	}
 }
-void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
+void ruri_build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[])
 {
 	/*
 	 * If privileged is true, we setup a full list of all capabilities,
@@ -114,7 +114,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 			if (keep_caplist_common[i] == INIT_VALUE) {
 				break;
 			}
-			del_from_caplist(caplist, keep_caplist_common[i]);
+			ruri_del_from_caplist(caplist, keep_caplist_common[i]);
 		}
 	}
 	// Add drop_caplist_extra[] to caplist.
@@ -123,7 +123,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 			if (drop_caplist_extra[i] == INIT_VALUE) {
 				break;
 			}
-			add_to_caplist(caplist, drop_caplist_extra[i]);
+			ruri_add_to_caplist(caplist, drop_caplist_extra[i]);
 		}
 	}
 	// Del keep_caplist_extra[] from caplist.
@@ -132,7 +132,7 @@ void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_capl
 			if (keep_caplist_extra[i] == INIT_VALUE) {
 				break;
 			}
-			del_from_caplist(caplist, keep_caplist_extra[i]);
+			ruri_del_from_caplist(caplist, keep_caplist_extra[i]);
 		}
 	}
 }

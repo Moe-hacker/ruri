@@ -68,7 +68,7 @@ static void panic(int sig)
 	exit(114);
 }
 // Catch coredump signal.
-void register_signal(void)
+void ruri_register_signal(void)
 {
 	/*
 	 * Only SIGSEGV means segmentation fault,

@@ -30,7 +30,7 @@
 #include "include/nekofeng.h"
 /*
  * This file provides the function
- * typewrite_layer() and clear_typewrite_layer().
+ * nekofeng_typewrite_layer() and nekofeng_clear_typewrite_layer().
  *
  * Usage:
  *
@@ -38,9 +38,9 @@
  *  layer.layer = "\033[1;38;2;254;228;208mxxxxxxxxxxxx\n";
  *  layer.x_offset = 1;
  *  layer.y_offset = 14;
- *  typewrite_layer(&layer, 50000, true);
+ *  nekofeng_typewrite_layer(&layer, 50000, true);
  *  sleep(2);
- *  clear_typewrite_layer(&layer, 50000);
+ *  nekofeng_clear_typewrite_layer(&layer, 50000);
  *
  * Do not care how it works, because I forgot,
  * and I am too lazy to read the code.
@@ -100,7 +100,7 @@ static int get_lines(char *_Nonnull buf)
 	}
 	return j;
 }
-void typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
+void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
 {
 	int y_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
@@ -159,7 +159,7 @@ void typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
 		}
 	}
 }
-void clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr)
+void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr)
 {
 	int y_offset = get_lines(layer->layer);
 	char *buf = strdup(layer->layer);

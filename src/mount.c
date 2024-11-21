@@ -160,7 +160,7 @@ static char *losetup(const char *_Nonnull img)
 	ioctl(loopfd, LOOP_SET_FD, imgfd);
 	close(loopfd);
 	close(imgfd);
-	log("{base}losetup {cyan}%s{base} ==> {cyan}%s{base}\n", img, loopfile);
+	ruri_log("{base}losetup {cyan}%s{base} ==> {cyan}%s{base}\n", img, loopfile);
 	return loopfile;
 }
 static int mk_mountpoint_dir(const char *_Nonnull target)
@@ -207,7 +207,7 @@ static int touch_mountpoint_file(const char *_Nonnull target)
 	return 0;
 }
 // Mount dev/dir/img to target.
-int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags)
+int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags)
 {
 	/*
 	 * This function is designed to mount a device/dir/image/file to target.
@@ -224,16 +224,16 @@ int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned 
 	// umount target before mount(2), to avoid `device or resource busy`.
 	umount2(target, MNT_DETACH | MNT_FORCE);
 	int ret = 0;
-	log("{base}Mounting {cyan}%s{base} to {cyan}%s{base} with flags {cyan}%d{base}\n", source, target, mountflags);
+	ruri_log("{base}Mounting {cyan}%s{base} to {cyan}%s{base} with flags {cyan}%d{base}\n", source, target, mountflags);
 	struct stat dev_stat;
 	// If source does not exist, just return -1 as error.
 	if (lstat(source, &dev_stat) != 0) {
-		log("{red}Error: {base}Source {cyan}%s{base} does not exist.\n", source);
+		ruri_log("{red}Error: {base}Source {cyan}%s{base} does not exist.\n", source);
 		return -1;
 	}
 	// Bind-mount dir.
 	if (S_ISDIR(dev_stat.st_mode)) {
-		log("{base}Bind-mounting {cyan}%s{base} to {cyan}%s{base}\n", source, target);
+		ruri_log("{base}Bind-mounting {cyan}%s{base} to {cyan}%s{base}\n", source, target);
 		if (mk_mountpoint_dir(target) != 0) {
 			return -1;
 		}
@@ -243,7 +243,7 @@ int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned 
 	}
 	// Block device.
 	else if (S_ISBLK(dev_stat.st_mode)) {
-		log("{base}Mounting block device {cyan}%s{base} to {cyan}%s{base}\n", source, target);
+		ruri_log("{base}Mounting block device {cyan}%s{base} to {cyan}%s{base}\n", source, target);
 		if (mk_mountpoint_dir(target) != 0) {
 			return -1;
 		}
@@ -258,14 +258,14 @@ int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned 
 		if (mk_mountpoint_dir(target) != 0) {
 			return -1;
 		}
-		log("{base}Mounting as image file {cyan}%s{base} to {cyan}%s{base}\n", source, target);
+		ruri_log("{base}Mounting as image file {cyan}%s{base} to {cyan}%s{base}\n", source, target);
 		ret = mount_device(losetup(source), target, mountflags);
 		// Common file.
 		if (ret != 0) {
 			if (touch_mountpoint_file(target) != 0) {
 				return -1;
 			}
-			log("{base}Bind-mounting as common file {cyan}%s{base} to {cyan}%s{base}\n", source, target);
+			ruri_log("{base}Bind-mounting as common file {cyan}%s{base} to {cyan}%s{base}\n", source, target);
 			mount(source, target, NULL, mountflags | MS_BIND, NULL);
 			ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
 		}
@@ -275,13 +275,13 @@ int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned 
 		if (touch_mountpoint_file(target) != 0) {
 			return -1;
 		}
-		log("{base}Bind-mounting {cyan}%s{base} to {cyan}%s{base}\n", source, target);
+		ruri_log("{base}Bind-mounting {cyan}%s{base} to {cyan}%s{base}\n", source, target);
 		mount(source, target, NULL, mountflags | MS_BIND, NULL);
 		ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
 	}
 	// We do not support to mount other type of files.
 	else {
-		log("{red}Error: {base}Unsupported file type.\n");
+		ruri_log("{red}Error: {base}Unsupported file type.\n");
 		ret = -1;
 	}
 	return ret;

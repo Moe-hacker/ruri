@@ -30,18 +30,18 @@
 #include "include/nekofeng.h"
 /*
  * This file provides the function
- * add_action(), play_action(), playback_action(), and free_action().
+ * nekofeng_add_action(), nekofeng_play_action(), nekofeng_playback_action(), and nekofeng_free_action().
  *
  * Usage:
  *
  *  struct ACTION *action = NULL;
- *  action = add_action(action, 11, 4,
+ *  action = nekofeng_add_action(action, 11, 4,
  *              "\n\033[0m vedvhfkhbfuweh  \n\n");
- *  action = add_action(action, 11, 4,
+ *  action = nekofeng_add_action(action, 11, 4,
  *              "\n\033[0m vedvhfkhbfuweh  \n\n");
- *  play_action(action, inr, keep);
- *  playback_action(action, inr, keep);
- *  free_action(action);
+ *  nekofeng_play_action(action, inr, keep);
+ *  nekofeng_playback_action(action, inr, keep);
+ *  nekofeng_free_action(action);
  *
  * Do not care how it works, because I forgot,
  * and I am too lazy to read the code.
@@ -49,7 +49,7 @@
  */
 static void clear_layer(struct LAYER *_Nonnull layer)
 {
-	spin_lock(&lock);
+	nekofeng_spin_lock(&lock);
 	int y_offset = 0;
 	int x_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
@@ -85,12 +85,12 @@ static void clear_layer(struct LAYER *_Nonnull layer)
 		x_offset++;
 	}
 	fflush(stdout);
-	spin_unlock(&lock);
+	nekofeng_spin_unlock(&lock);
 	usleep(10000);
 }
 static void print_layer(struct LAYER *_Nonnull layer)
 {
-	spin_lock(&lock);
+	nekofeng_spin_lock(&lock);
 	int y_offset = 0;
 	printf("\033[%dH", y + layer->y_offset);
 	printf("\033[%dG", x + layer->x_offset);
@@ -114,10 +114,10 @@ static void print_layer(struct LAYER *_Nonnull layer)
 	}
 	printf("\033[0m");
 	fflush(stdout);
-	spin_unlock(&lock);
+	nekofeng_spin_unlock(&lock);
 	usleep(10000);
 }
-void play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
+void nekofeng_play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
 {
 	struct ACTION **p = &action;
 	while ((*p) != NULL) {
@@ -130,7 +130,7 @@ void play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int ke
 		p = &((*p)->next);
 	}
 }
-void playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
+void nekofeng_playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
 {
 	struct ACTION **p = &action;
 	while ((*p)->next != NULL) {
@@ -146,7 +146,7 @@ void playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned in
 		p = &((*p)->prior);
 	}
 }
-void free_action(struct ACTION *_Nonnull action)
+void nekofeng_free_action(struct ACTION *_Nonnull action)
 {
 	struct ACTION *p = action;
 	while (p != NULL) {
@@ -157,7 +157,7 @@ void free_action(struct ACTION *_Nonnull action)
 		free(t);
 	}
 }
-struct ACTION *add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char *_Nonnull layer)
+struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char *_Nonnull layer)
 {
 	struct ACTION **p = &action;
 	struct ACTION *prior = action;

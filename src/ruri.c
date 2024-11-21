@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Do some checks before chroot(2),called by main().
-static void check_container(const struct CONTAINER *_Nonnull container)
+static void check_container(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * It's called by main() to check if container config is correct.
@@ -39,22 +39,22 @@ static void check_container(const struct CONTAINER *_Nonnull container)
 	 */
 	// Check if container directory is given.
 	if (container->container_dir == NULL) {
-		error("{red}Error: container directory is not set or does not exist QwQ\n");
+		ruri_error("{red}Error: container directory is not set or does not exist QwQ\n");
 	}
 	// Refuse to use `/` for container directory.
 	if (strcmp(container->container_dir, "/") == 0) {
-		error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
+		ruri_error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if we are running with root privileges.
 	if (getuid() != 0 && !(container->rootless)) {
-		error("{red}Error: this program should be run with root privileges QwQ\n");
+		ruri_error("{red}Error: this program should be run with root privileges QwQ\n");
 	}
 	// `--arch` and `--qemu-path` should be set at the same time.
 	if ((container->cross_arch == NULL) != (container->qemu_path == NULL)) {
-		error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
+		ruri_error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
 	}
 }
-static void parse_cgroup_settings(const char *_Nonnull str, struct CONTAINER *_Nonnull container)
+static void parse_cgroup_settings(const char *_Nonnull str, struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Parse and set cgroup limit.
@@ -77,7 +77,7 @@ static void parse_cgroup_settings(const char *_Nonnull str, struct CONTAINER *_N
 		buf[i + 1] = '\0';
 	}
 	if (limit == NULL) {
-		error("{red}Error: cgroup limit should be like `cpuset=1` or `memory=1M`\n");
+		ruri_error("{red}Error: cgroup limit should be like `cpuset=1` or `memory=1M`\n");
 	}
 	if (strcmp("cpuset", buf) == 0) {
 		container->cpuset = limit;
@@ -86,13 +86,13 @@ static void parse_cgroup_settings(const char *_Nonnull str, struct CONTAINER *_N
 	} else if (strcmp("cpupercent", buf) == 0) {
 		container->cpupercent = atoi(limit);
 		if (container->cpupercent < 1 || container->cpupercent > 100) {
-			error("{red}Error: cpupercent should be in range 1-100\n");
+			ruri_error("{red}Error: cpupercent should be in range 1-100\n");
 		}
 	} else {
-		error("{red}Unknown cgroup option %s\n", str);
+		ruri_error("{red}Unknown cgroup option %s\n", str);
 	}
 }
-static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnull container)
+static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * 100% shit-code here.
@@ -104,7 +104,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 	// Check if arguments are given.
 	if (argc <= 1) {
 		cfprintf(stderr, "{red}Error: too few arguments QwQ{clear}\n");
-		show_helps();
+		ruri_show_helps();
 		exit(114);
 	}
 	// Init configs.
@@ -159,27 +159,27 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		/**** For other options ****/
 		// As an easter egg.
 		if (strcmp(argv[index], "AwA") == 0) {
-			AwA();
+			ruri_AwA();
 			exit(EXIT_SUCCESS);
 		}
 		// Show version info.
 		if (strcmp(argv[index], "-v") == 0 || strcmp(argv[index], "--version") == 0) {
-			show_version_info();
+			ruri_show_version_info();
 			exit(EXIT_SUCCESS);
 		}
 		// Show version code, very useless right now.
 		if (strcmp(argv[index], "-V") == 0 || strcmp(argv[index], "--version-code") == 0) {
-			show_version_code();
+			ruri_show_version_code();
 			exit(EXIT_SUCCESS);
 		}
 		// Show help page.
 		if (strcmp(argv[index], "-h") == 0 || strcmp(argv[index], "--help") == 0) {
-			show_helps();
+			ruri_show_helps();
 			exit(EXIT_SUCCESS);
 		}
 		// Show help page and example usage.
 		if (strcmp(argv[index], "-H") == 0 || strcmp(argv[index], "--show-examples") == 0) {
-			show_examples();
+			ruri_show_examples();
 			exit(EXIT_SUCCESS);
 		}
 		// Show neofeth-like ruri version info.
@@ -193,9 +193,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			if (argv[index] != NULL) {
 				char *container_dir = realpath(argv[index], NULL);
 				if (container_dir == NULL) {
-					error("{red}Container directory does not exist QwQ\n");
+					ruri_error("{red}Container directory does not exist QwQ\n");
 				}
-				umount_container(container_dir);
+				ruri_umount_container(container_dir);
 				exit(EXIT_SUCCESS);
 			}
 			exit(114);
@@ -206,9 +206,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			if (argv[index] != NULL) {
 				char *container_dir = realpath(argv[index], NULL);
 				if (container_dir == NULL) {
-					error("{red}Container directory does not exist QwQ\n");
+					ruri_error("{red}Container directory does not exist QwQ\n");
 				}
-				container_ps(container_dir);
+				ruri_container_ps(container_dir);
 				exit(EXIT_SUCCESS);
 			}
 			exit(114);
@@ -217,7 +217,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		if (strcmp(argv[index], "-C") == 0 || strcmp(argv[index], "--correct-config") == 0) {
 			index += 1;
 			if (argv[index] != NULL) {
-				correct_config(argv[index]);
+				ruri_correct_config(argv[index]);
 				exit(EXIT_SUCCESS);
 			}
 			exit(114);
@@ -225,15 +225,15 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		/**** For running a container ****/
 		// Just make clang-tidy happy.
 		if (argv[index] == NULL) {
-			error("{red}Failed to parse arguments.\n");
+			ruri_error("{red}Failed to parse arguments.\n");
 		}
 		// Use config file.
 		if (strcmp(argv[index], "-c") == 0 || strcmp(argv[index], "--config") == 0) {
 			if (index == argc - 1) {
-				error("{red}Please specify a config file !\n{clear}");
+				ruri_error("{red}Please specify a config file !\n{clear}");
 			}
 			index++;
-			read_config(container, argv[index]);
+			ruri_read_config(container, argv[index]);
 			break;
 		}
 		// Dump config.
@@ -244,7 +244,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		else if (strcmp(argv[index], "-o") == 0 || strcmp(argv[index], "--output") == 0) {
 			index++;
 			if (index == argc - 1) {
-				error("{red}Please specify the output file\n{clear}");
+				ruri_error("{red}Please specify the output file\n{clear}");
 			}
 			output_path = argv[index];
 		}
@@ -255,7 +255,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		// Set hostname.
 		else if (strcmp(argv[index], "-t") == 0 || strcmp(argv[index], "--hostname") == 0) {
 			if (index == argc - 1) {
-				error("{red}Please specify the hostname !\n{clear}");
+				ruri_error("{red}Please specify the hostname !\n{clear}");
 			}
 			index++;
 			container->hostname = strdup(argv[index]);
@@ -275,7 +275,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		// User.
 		else if (strcmp(argv[index], "-E") == 0 || strcmp(argv[index], "--user") == 0) {
 			if (index == argc - 1) {
-				error("{red}Please specify the user\n{clear}");
+				ruri_error("{red}Please specify the user\n{clear}");
 			}
 			index++;
 			container->user = strdup(argv[index]);
@@ -283,7 +283,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		// Simulate architecture.
 		else if (strcmp(argv[index], "-a") == 0 || strcmp(argv[index], "--arch") == 0) {
 			if (index == argc - 1) {
-				error("{red}Please specify the arch\n{clear}");
+				ruri_error("{red}Please specify the arch\n{clear}");
 			}
 			index++;
 			container->cross_arch = strdup(argv[index]);
@@ -292,7 +292,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		else if (strcmp(argv[index], "-q") == 0 || strcmp(argv[index], "--qemu-path") == 0) {
 			index++;
 			if (index == argc - 1) {
-				error("{red}Please specify the path of qemu binary\n{clear}");
+				ruri_error("{red}Please specify the path of qemu binary\n{clear}");
 			}
 			container->qemu_path = strdup(argv[index]);
 		}
@@ -339,7 +339,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			if ((argv[index] != NULL)) {
 				parse_cgroup_settings(argv[index], container);
 			} else {
-				error("{red}Unknown cgroup option\n");
+				ruri_error("{red}Unknown cgroup option\n");
 			}
 		}
 		// Work dir.
@@ -348,7 +348,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			if (index < argc) {
 				container->work_dir = strdup(argv[index]);
 			} else {
-				error("{red}Unknown work directory\n");
+				ruri_error("{red}Unknown work directory\n");
 			}
 		}
 		// Set extra env.
@@ -365,11 +365,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 					}
 					// Max 512 envs.
 					if (i == (MAX_ENVS - 1)) {
-						error("{red}Too many envs QwQ\n");
+						ruri_error("{red}Too many envs QwQ\n");
 					}
 				}
 			} else {
-				error("{red}Error: unknown env QwQ\n");
+				ruri_error("{red}Error: unknown env QwQ\n");
 			}
 		}
 		// Set extra mountpoints.
@@ -377,13 +377,13 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
 				if (strcmp(argv[index], "/") == 0) {
-					error("{red}/ is not allowed to use as a mountpoint QwQ\n");
+					ruri_error("{red}/ is not allowed to use as a mountpoint QwQ\n");
 				}
 				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
 					if (container->extra_mountpoint[i] == NULL) {
 						container->extra_mountpoint[i] = realpath(argv[index], NULL);
 						if (container->extra_mountpoint[i] == NULL) {
-							error("{red}mountpoint does not exist QwQ\n");
+							ruri_error("{red}mountpoint does not exist QwQ\n");
 						}
 						index++;
 						container->extra_mountpoint[i + 1] = strdup(argv[index]);
@@ -395,7 +395,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 							if (container->rootfs_source == NULL) {
 								container->rootfs_source = strdup(argv[index]);
 							} else {
-								error("{red}You can only mount one source to / QwQ\n");
+								ruri_error("{red}You can only mount one source to / QwQ\n");
 							}
 						}
 						container->extra_mountpoint[i + 2] = NULL;
@@ -403,11 +403,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 					}
 					// Max 512 mountpoints.
 					if (i == (MAX_MOUNTPOINTS - 1)) {
-						error("{red}Too many mountpoints QwQ\n");
+						ruri_error("{red}Too many mountpoints QwQ\n");
 					}
 				}
 			} else {
-				error("{red}Error: unknown mountpoint QwQ\n");
+				ruri_error("{red}Error: unknown mountpoint QwQ\n");
 			}
 		}
 		// Set extra read-only mountpoints.
@@ -418,7 +418,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 					if (container->extra_ro_mountpoint[i] == NULL) {
 						container->extra_ro_mountpoint[i] = realpath(argv[index], NULL);
 						if (container->extra_ro_mountpoint[i] == NULL) {
-							error("{red}mountpoint does not exist QwQ\n");
+							ruri_error("{red}mountpoint does not exist QwQ\n");
 						}
 						index++;
 						container->extra_ro_mountpoint[i + 1] = strdup(argv[index]);
@@ -432,18 +432,18 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 								container->rootfs_source = strdup(argv[index]);
 								container->ro_root = true;
 							} else {
-								error("{red}You can only mount one source to / QwQ\n");
+								ruri_error("{red}You can only mount one source to / QwQ\n");
 							}
 						}
 						break;
 					}
 					// Max 512 mountpoints.
 					if (i == (MAX_MOUNTPOINTS - 1)) {
-						error("{red}Too many mountpoints QwQ\n");
+						ruri_error("{red}Too many mountpoints QwQ\n");
 					}
 				}
 			} else {
-				error("{red}Error: unknown mountpoint QwQ\n");
+				ruri_error("{red}Error: unknown mountpoint QwQ\n");
 			}
 		}
 		// Extra capabilities to keep.
@@ -454,15 +454,15 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 				// because in the fulture, there might be new capabilities that
 				// we can not use the name to match it in current libcap.
 				if (atoi(argv[index]) != 0) {
-					add_to_caplist(keep_caplist_extra, atoi(argv[index]));
+					ruri_add_to_caplist(keep_caplist_extra, atoi(argv[index]));
 				} else if (cap_from_name(argv[index], &cap) == 0) {
-					add_to_caplist(keep_caplist_extra, cap);
-					log("{base}Keep capability: %s\n", argv[index]);
+					ruri_add_to_caplist(keep_caplist_extra, cap);
+					ruri_log("{base}Keep capability: %s\n", argv[index]);
 				} else {
-					error("{red}or: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
+					ruri_error("{red}or: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
 				}
 			} else {
-				error("{red}Missing argument\n");
+				ruri_error("{red}Missing argument\n");
 			}
 		}
 		// Extra capabilities to drop.
@@ -470,14 +470,14 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 			index++;
 			if (argv[index] != NULL) {
 				if (atoi(argv[index]) != 0) {
-					add_to_caplist(drop_caplist_extra, atoi(argv[index]));
+					ruri_add_to_caplist(drop_caplist_extra, atoi(argv[index]));
 				} else if (cap_from_name(argv[index], &cap) == 0) {
-					add_to_caplist(drop_caplist_extra, cap);
+					ruri_add_to_caplist(drop_caplist_extra, cap);
 				} else {
-					error("{red}Error: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
+					ruri_error("{red}Error: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
 				}
 			} else {
-				error("{red}Missing argument\n");
+				ruri_error("{red}Missing argument\n");
 			}
 		}
 		// If this argument is CONTAINER_DIR.
@@ -504,23 +504,23 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		}
 		// For unknown arguments, yeah I didn't forgot it...
 		else {
-			show_helps();
-			error("{red}Error: unknown option `%s`\nNote that only existing directory can be detected as CONTAINER_DIR\n", argv[index]);
+			ruri_show_helps();
+			ruri_error("{red}Error: unknown option `%s`\nNote that only existing directory can be detected as CONTAINER_DIR\n", argv[index]);
 		}
 	}
 	// Build the caplist to drop.
-	build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
+	ruri_build_caplist(container->drop_caplist, privileged, drop_caplist_extra, keep_caplist_extra);
 	// Dump config.
 	if (dump_config) {
 		// Check if container directory is given.
 		if (container->container_dir == NULL) {
-			error("{red}Error: container directory is not set or does not exist QwQ\n");
+			ruri_error("{red}Error: container directory is not set or does not exist QwQ\n");
 		}
 		// Refuse to use `/` for container directory.
 		if (strcmp(container->container_dir, "/") == 0) {
-			error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
+			ruri_error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 		}
-		char *config = container_info_to_k2v(container);
+		char *config = ruri_container_info_to_k2v(container);
 		if (output_path == NULL) {
 			cprintf("%s", config);
 			exit(EXIT_SUCCESS);
@@ -529,7 +529,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		remove(output_path);
 		int fd = open(output_path, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
 		if (fd < 0) {
-			error("{red}Error: failed to open output file QwQ\n");
+			ruri_error("{red}Error: failed to open output file QwQ\n");
 		}
 		write(fd, config, strlen(config));
 		free(config);
@@ -537,7 +537,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct CONTAINER *_Nonnul
 		exit(EXIT_SUCCESS);
 	}
 	// Enable unshare automatically if we got a ns_pid.
-	pid_t ns_pid = get_ns_pid(container->container_dir);
+	pid_t ns_pid = ruri_get_ns_pid(container->container_dir);
 	if (ns_pid > 0) {
 		container->enable_unshare = true;
 	}
@@ -559,7 +559,7 @@ int ruri(int argc, char **argv)
 	// Set process name.
 	prctl(PR_SET_NAME, "ruri");
 	// Catch coredump signal.
-	register_signal();
+	ruri_register_signal();
 	// Try to create a new session.
 	setsid();
 // Warning for dev/debug build.
@@ -567,7 +567,7 @@ int ruri(int argc, char **argv)
 	cprintf("{red}Warning: this is a dev/debug build, do not use it in production{clear}\n");
 #endif
 	// Info of container to run.
-	struct CONTAINER *container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+	struct RURI_CONTAINER *container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
 	// Parse arguments.
 	parse_args(argc, argv, container);
 	// Check container and the running environment.
@@ -575,19 +575,19 @@ int ruri(int argc, char **argv)
 	// unset $LD_PRELOAD.
 	unsetenv("LD_PRELOAD");
 	// Log.
-	char *info = container_info_to_k2v(container);
-	log("{base}Container config:{cyan}\n%s", info);
+	char *info = ruri_container_info_to_k2v(container);
+	ruri_log("{base}Container config:{cyan}\n%s", info);
 	free(info);
 	// Run container.
 	if ((container->enable_unshare) && !(container->rootless)) {
 		// Unshare container.
-		run_unshare_container(container);
+		ruri_run_unshare_container(container);
 	} else if ((container->rootless)) {
 		// Rootless container.
-		run_rootless_container(container);
+		ruri_run_rootless_container(container);
 	} else {
 		// Common chroot container.
-		run_chroot_container(container);
+		ruri_run_chroot_container(container);
 	}
 	return 0;
 }

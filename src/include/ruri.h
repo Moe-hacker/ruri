@@ -108,7 +108,7 @@
 #include "k2v.h"
 #include "cprintf.h"
 // Info of a container to create.
-struct __attribute__((aligned(128))) CONTAINER {
+struct __attribute__((aligned(128))) RURI_CONTAINER {
 	// Container directory.
 	char *_Nonnull container_dir;
 	// Capabilities to drop.
@@ -166,15 +166,15 @@ struct __attribute__((aligned(128))) CONTAINER {
 	// No network.
 	bool no_network;
 };
-// For get_magic().
-#define magicof(x) (x##_magic)
-#define maskof(x) (x##_mask)
-struct __attribute__((aligned(16))) MAGIC {
+// For ruri_get_magic().
+#define ruri_magicof(x) (x##_magic)
+#define ruri_maskof(x) (x##_mask)
+struct __attribute__((aligned(16))) RURI_ELF_MAGIC {
 	char *_Nonnull magic;
 	char *_Nonnull mask;
 };
-// For get_idmap().
-struct __attribute__((aligned(32))) ID_MAP {
+// For ruri_get_idmap().
+struct __attribute__((aligned(32))) RURI_ID_MAP {
 	uid_t uid;
 	uid_t uid_lower;
 	uid_t uid_count;
@@ -183,9 +183,9 @@ struct __attribute__((aligned(32))) ID_MAP {
 	gid_t gid_count;
 };
 // Warnings.
-#define warning(...) cfprintf(stderr, ##__VA_ARGS__)
+#define ruri_warning(...) cfprintf(stderr, ##__VA_ARGS__)
 // Show error msg and exit.
-#define error(...)                                                                                           \
+#define ruri_error(...)                                                                                      \
 	{                                                                                                    \
 		cfprintf(stderr, "{red}In %s() in %s line %d:\n", __func__, __FILE__, __LINE__);             \
 		cfprintf(stderr, ##__VA_ARGS__);                                                             \
@@ -202,7 +202,7 @@ struct __attribute__((aligned(32))) ID_MAP {
 	}
 // Log system.
 #if defined(RURI_DEBUG)
-#define log(...)                                                                                                                      \
+#define ruri_log(...)                                                                                                                 \
 	{                                                                                                                             \
 		struct timeval tv;                                                                                                    \
 		gettimeofday(&tv, NULL);                                                                                              \
@@ -210,43 +210,41 @@ struct __attribute__((aligned(32))) ID_MAP {
 		cfprintf(stdout, ##__VA_ARGS__)                                                                                       \
 	}
 #else
-#define log(...) \
-	{        \
-	}
+#define ruri_log(...)
 #endif
 // Shared functions.
-void register_signal(void);
-void setup_seccomp(const struct CONTAINER *_Nonnull container);
-void show_version_info(void);
-void show_version_code(void);
-void AwA(void);
-void show_helps(void);
-void show_examples(void);
-void store_info(const struct CONTAINER *_Nonnull container);
-struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_Nonnull container_dir);
-void add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap);
-bool is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap);
-void del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap);
-void build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[]);
-struct MAGIC *get_magic(const char *_Nonnull cross_arch);
-void run_unshare_container(struct CONTAINER *_Nonnull container);
-char *container_info_to_k2v(const struct CONTAINER *_Nonnull container);
-void run_chroot_container(struct CONTAINER *_Nonnull container);
-void run_rootless_container(struct CONTAINER *_Nonnull container);
-void run_rootless_chroot_container(struct CONTAINER *_Nonnull container);
-int trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags);
-void umount_container(const char *_Nonnull container_dir);
-void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path);
-void set_limit(const struct CONTAINER *_Nonnull container);
-struct ID_MAP get_idmap(uid_t uid, gid_t gid);
-void container_ps(char *_Nonnull container_dir);
-void kill_container(const char *_Nonnull container_dir);
-bool user_exist(const char *_Nonnull username);
-uid_t get_user_uid(const char *_Nonnull username);
-gid_t get_user_gid(const char *_Nonnull username);
-pid_t get_ns_pid(const char *_Nonnull container_dir);
+void ruri_register_signal(void);
+void ruri_setup_seccomp(const struct RURI_CONTAINER *_Nonnull container);
+void ruri_show_version_info(void);
+void ruri_show_version_code(void);
+void ruri_AwA(void);
+void ruri_show_helps(void);
+void ruri_show_examples(void);
+void ruri_store_info(const struct RURI_CONTAINER *_Nonnull container);
+struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container, const char *_Nonnull container_dir);
+void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap);
+bool ruri_is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap);
+void ruri_del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap);
+void ruri_build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop_caplist_extra[], cap_value_t keep_caplist_extra[]);
+struct RURI_ELF_MAGIC *ruri_get_magic(const char *_Nonnull cross_arch);
+void ruri_run_unshare_container(struct RURI_CONTAINER *_Nonnull container);
+char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container);
+void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container);
+void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container);
+void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull container);
+int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags);
+void ruri_umount_container(const char *_Nonnull container_dir);
+void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_Nonnull path);
+void ruri_set_limit(const struct RURI_CONTAINER *_Nonnull container);
+struct RURI_ID_MAP ruri_get_idmap(uid_t uid, gid_t gid);
+void ruri_container_ps(char *_Nonnull container_dir);
+void ruri_kill_container(const char *_Nonnull container_dir);
+bool ruri_user_exist(const char *_Nonnull username);
+uid_t ruri_get_user_uid(const char *_Nonnull username);
+gid_t ruri_get_user_gid(const char *_Nonnull username);
+pid_t ruri_get_ns_pid(const char *_Nonnull container_dir);
 void ruri_fetch(void);
-void correct_config(const char *_Nonnull path);
+void ruri_correct_config(const char *_Nonnull path);
 int ruri(int argc, char **argv);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝

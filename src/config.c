@@ -28,7 +28,7 @@
  *
  */
 #include "include/ruri.h"
-char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
+char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Format container info to k2v format.
@@ -235,7 +235,7 @@ char *container_info_to_k2v(const struct CONTAINER *_Nonnull container)
 	ret = k2v_add_newline(ret);
 	return ret;
 }
-void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path)
+void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_Nonnull path)
 {
 	/*
 	 * Read k2v format config file,
@@ -243,7 +243,7 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	 */
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
-		error("{red}No such file or directory:%s\n{clear}", path);
+		ruri_error("{red}No such file or directory:%s\n{clear}", path);
 	}
 	struct stat filestat;
 	fstat(fd, &filestat);
@@ -254,7 +254,7 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	char *key_list[] = { "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
 	for (int i = 0; key_list[i] != NULL; i++) {
 		if (!have_key(key_list[i], buf)) {
-			error("{red}Invalid config file, there is no key:%s\nHint:\n You can try to use `ruri -C config` to fix the config file{clear}", key_list[i]);
+			ruri_error("{red}Invalid config file, there is no key:%s\nHint:\n You can try to use `ruri -C config` to fix the config file{clear}", key_list[i]);
 		}
 	}
 	// Get drop_caplist.
@@ -269,7 +269,7 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 			container->drop_caplist[i] = atoi(drop_caplist[i]);
 		} else {
 			if (cap_from_name(drop_caplist[i], &(container->drop_caplist[i])) < 0) {
-				error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
+				ruri_error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
 			}
 		}
 		free(drop_caplist[i]);
@@ -320,37 +320,37 @@ void read_config(struct CONTAINER *_Nonnull container, const char *_Nonnull path
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
 	if (envlen % 2 != 0) {
-		error("{red}Invalid env format\n{clear}");
+		ruri_error("{red}Invalid env format\n{clear}");
 	}
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
 	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
 	if (mlen % 2 != 0) {
-		error("{red}Invalid extra_mountpoint format\n{clear}");
+		ruri_error("{red}Invalid extra_mountpoint format\n{clear}");
 	}
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
 	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
 	if (mlen % 2 != 0) {
-		error("{red}Invalid extra_ro_mountpoint format\n{clear}");
+		ruri_error("{red}Invalid extra_ro_mountpoint format\n{clear}");
 	}
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	free(buf);
-	buf = container_info_to_k2v(container);
-	log("{base}Container config in %s:{cyan}\n%s", path, buf);
+	buf = ruri_container_info_to_k2v(container);
+	ruri_log("{base}Container config in %s:{cyan}\n%s", path, buf);
 	free(buf);
 }
-void correct_config(const char *_Nonnull path)
+void ruri_correct_config(const char *_Nonnull path)
 {
 	// Disable strict mode for libk2v.
 	k2v_show_warning = false;
 	k2v_stop_at_warning = false;
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
-		error("{red}No such file or directory:%s\n{clear}", path);
+		ruri_error("{red}No such file or directory:%s\n{clear}", path);
 	}
 	struct stat filestat;
 	fstat(fd, &filestat);
@@ -358,14 +358,14 @@ void correct_config(const char *_Nonnull path)
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	if (!have_key("container_dir", buf)) {
-		error("{red}Invalid config file, there is no key:container_dir\n{clear}");
+		ruri_error("{red}Invalid config file, there is no key:container_dir\n{clear}");
 	}
-	struct CONTAINER container;
+	struct RURI_CONTAINER container;
 	container.container_dir = k2v_get_key(char, "container_dir", buf);
 	if (!have_key("drop_caplist", buf)) {
-		warning("{green}No key drop_caplist, we build a default one\n{clear}");
+		ruri_warning("{green}No key drop_caplist, we build a default one\n{clear}");
 		cap_value_t nullcaplist[2] = { INIT_VALUE };
-		build_caplist(container.drop_caplist, false, nullcaplist, nullcaplist);
+		ruri_build_caplist(container.drop_caplist, false, nullcaplist, nullcaplist);
 	} else {
 		char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
 		int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, CAP_LAST_CAP);
@@ -378,7 +378,7 @@ void correct_config(const char *_Nonnull path)
 				container.drop_caplist[i] = atoi(drop_caplist[i]);
 			} else {
 				if (cap_from_name(drop_caplist[i], &(container.drop_caplist[i])) < 0) {
-					error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
+					ruri_error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
 				}
 			}
 			free(drop_caplist[i]);
@@ -386,152 +386,152 @@ void correct_config(const char *_Nonnull path)
 		}
 	}
 	if (!have_key("command", buf)) {
-		warning("{green}No key command found, set to {NULL}\n{clear}");
+		ruri_warning("{green}No key command found, set to {NULL}\n{clear}");
 		container.command[0] = NULL;
 	} else {
 		int comlen = k2v_get_key(char_array, "command", buf, container.command, MAX_COMMANDS);
 		container.command[comlen] = NULL;
 	}
 	if (!have_key("env", buf)) {
-		warning("{green}No key env found, set to {NULL}\n{clear}");
+		ruri_warning("{green}No key env found, set to {NULL}\n{clear}");
 		container.env[0] = NULL;
 	} else {
 		int envlen = k2v_get_key(char_array, "env", buf, container.env, MAX_ENVS);
 		if (envlen % 2 != 0) {
-			warning("{red}Invalid env format\n{clear}");
+			ruri_warning("{red}Invalid env format\n{clear}");
 			container.env[0] = NULL;
 		}
 		container.env[envlen] = NULL;
 		container.env[envlen + 1] = NULL;
 	}
 	if (!have_key("extra_mountpoint", buf)) {
-		warning("{green}No key extra_mountpoint found, set to {NULL}\n{clear}");
+		ruri_warning("{green}No key extra_mountpoint found, set to {NULL}\n{clear}");
 		container.extra_mountpoint[0] = NULL;
 	} else {
 		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container.extra_mountpoint, MAX_MOUNTPOINTS);
 		if (mlen % 2 != 0) {
-			warning("{red}Invalid extra_mountpoint format\n{clear}");
+			ruri_warning("{red}Invalid extra_mountpoint format\n{clear}");
 			container.extra_mountpoint[0] = NULL;
 		}
 		container.extra_mountpoint[mlen] = NULL;
 		container.extra_mountpoint[mlen + 1] = NULL;
 	}
 	if (!have_key("extra_ro_mountpoint", buf)) {
-		warning("{green}No key extra_ro_mountpoint found, set to {NULL}\n{clear}");
+		ruri_warning("{green}No key extra_ro_mountpoint found, set to {NULL}\n{clear}");
 		container.extra_ro_mountpoint[0] = NULL;
 	} else {
 		int mrlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container.extra_ro_mountpoint, MAX_MOUNTPOINTS);
 		if (mrlen % 2 != 0) {
-			warning("{red}Invalid extra_ro_mountpoint format\n{clear}");
+			ruri_warning("{red}Invalid extra_ro_mountpoint format\n{clear}");
 			container.extra_ro_mountpoint[0] = NULL;
 		}
 		container.extra_ro_mountpoint[mrlen] = NULL;
 		container.extra_ro_mountpoint[mrlen + 1] = NULL;
 	}
 	if (!have_key("no_new_privs", buf)) {
-		warning("{green}No key no_new_privs found, set to false\n{clear}");
+		ruri_warning("{green}No key no_new_privs found, set to false\n{clear}");
 		container.no_new_privs = false;
 	} else {
 		container.no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
 	}
 	if (!have_key("enable_seccomp", buf)) {
-		warning("{green}No key enable_seccomp found, set to false\n{clear}");
+		ruri_warning("{green}No key enable_seccomp found, set to false\n{clear}");
 		container.enable_seccomp = false;
 	} else {
 		container.enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	}
 	if (!have_key("no_warnings", buf)) {
-		warning("{green}No key no_warnings found, set to false\n{clear}");
+		ruri_warning("{green}No key no_warnings found, set to false\n{clear}");
 		container.no_warnings = false;
 	} else {
 		container.no_warnings = k2v_get_key(bool, "no_warnings", buf);
 	}
 	if (!have_key("enable_unshare", buf)) {
-		warning("{green}No key enable_unshare found, set to false\n{clear}");
+		ruri_warning("{green}No key enable_unshare found, set to false\n{clear}");
 		container.enable_unshare = false;
 	} else {
 		container.enable_unshare = k2v_get_key(bool, "enable_unshare", buf);
 	}
 	if (!have_key("rootless", buf)) {
-		warning("{green}No key rootless found, set to false\n{clear}");
+		ruri_warning("{green}No key rootless found, set to false\n{clear}");
 		container.rootless = false;
 	} else {
 		container.rootless = k2v_get_key(bool, "rootless", buf);
 	}
 	if (!have_key("mount_host_runtime", buf)) {
-		warning("{green}No key mount_host_runtime found, set to false\n{clear}");
+		ruri_warning("{green}No key mount_host_runtime found, set to false\n{clear}");
 		container.mount_host_runtime = false;
 	} else {
 		container.mount_host_runtime = k2v_get_key(bool, "mount_host_runtime", buf);
 	}
 	if (!have_key("qemu_path", buf)) {
-		warning("{green}No key qemu_path found, set to NULL\n{clear}");
+		ruri_warning("{green}No key qemu_path found, set to NULL\n{clear}");
 		container.qemu_path = NULL;
 	} else {
 		container.qemu_path = k2v_get_key(char, "qemu_path", buf);
 	}
 	if (!have_key("cross_arch", buf)) {
-		warning("{green}No key cross_arch found, set to NULL\n{clear}");
+		ruri_warning("{green}No key cross_arch found, set to NULL\n{clear}");
 		container.cross_arch = NULL;
 	} else {
 		container.cross_arch = k2v_get_key(char, "cross_arch", buf);
 	}
 	if (!have_key("use_rurienv", buf)) {
-		warning("{green}No key use_rurienv found, set to true\n{clear}");
+		ruri_warning("{green}No key use_rurienv found, set to true\n{clear}");
 		container.use_rurienv = true;
 	} else {
 		container.use_rurienv = k2v_get_key(bool, "use_rurienv", buf);
 	}
 	if (!have_key("ro_root", buf)) {
-		warning("{green}No key ro_root found, set to false\n{clear}");
+		ruri_warning("{green}No key ro_root found, set to false\n{clear}");
 		container.ro_root = false;
 	} else {
 		container.ro_root = k2v_get_key(bool, "ro_root", buf);
 	}
 	if (!have_key("cpuset", buf)) {
-		warning("{green}No key cpuset found, set to NULL\n{clear}");
+		ruri_warning("{green}No key cpuset found, set to NULL\n{clear}");
 		container.cpuset = NULL;
 	} else {
 		container.cpuset = k2v_get_key(char, "cpuset", buf);
 	}
 	if (!have_key("memory", buf)) {
-		warning("{green}No key memory found, set to NULL\n{clear}");
+		ruri_warning("{green}No key memory found, set to NULL\n{clear}");
 		container.memory = NULL;
 	} else {
 		container.memory = k2v_get_key(char, "memory", buf);
 	}
 	if (!have_key("cpupercent", buf)) {
-		warning("{green}No key cpupercent found, set to -114\n{clear}");
+		ruri_warning("{green}No key cpupercent found, set to -114\n{clear}");
 		container.cpupercent = INIT_VALUE;
 	} else {
 		container.cpupercent = k2v_get_key(int, "cpupercent", buf);
 	}
 	if (!have_key("just_chroot", buf)) {
-		warning("{green}No key just_chroot found, set to false\n{clear}");
+		ruri_warning("{green}No key just_chroot found, set to false\n{clear}");
 		container.just_chroot = false;
 	} else {
 		container.just_chroot = k2v_get_key(bool, "just_chroot", buf);
 	}
 	if (!have_key("unmask_dirs", buf)) {
-		warning("{green}No key unmask_dirs found, set to false\n{clear}");
+		ruri_warning("{green}No key unmask_dirs found, set to false\n{clear}");
 		container.unmask_dirs = false;
 	} else {
 		container.unmask_dirs = k2v_get_key(bool, "unmask_dirs", buf);
 	}
 	if (!have_key("work_dir", buf)) {
-		warning("{green}No key work_dir found, set to NULL\n{clear}");
+		ruri_warning("{green}No key work_dir found, set to NULL\n{clear}");
 		container.work_dir = NULL;
 	} else {
 		container.work_dir = k2v_get_key(char, "work_dir", buf);
 	}
 	if (!have_key("rootfs_source", buf)) {
-		warning("{green}No key rootfs_source found, set to NULL\n{clear}");
+		ruri_warning("{green}No key rootfs_source found, set to NULL\n{clear}");
 		container.rootfs_source = NULL;
 	} else {
 		container.rootfs_source = k2v_get_key(char, "rootfs_source", buf);
 	}
 	if (!have_key("no_network", buf)) {
-		warning("{green}No key no_network found, set to false\n{clear}");
+		ruri_warning("{green}No key no_network found, set to false\n{clear}");
 		container.no_network = false;
 	} else {
 		container.no_network = k2v_get_key(bool, "no_network", buf);
@@ -540,7 +540,7 @@ void correct_config(const char *_Nonnull path)
 		}
 	}
 	if (!have_key("hostname", buf)) {
-		warning("{green}No key hostname found, set to NULL\n{clear}");
+		ruri_warning("{green}No key hostname found, set to NULL\n{clear}");
 		container.hostname = NULL;
 	} else {
 		container.hostname = k2v_get_key(char, "hostname", buf);
@@ -550,9 +550,9 @@ void correct_config(const char *_Nonnull path)
 	remove(path);
 	fd = open(path, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
 	if (fd < 0) {
-		error("{red}Error: failed to open output file QwQ\n");
+		ruri_error("{red}Error: failed to open output file QwQ\n");
 	}
-	char *config = container_info_to_k2v(&container);
+	char *config = ruri_container_info_to_k2v(&container);
 	write(fd, config, strlen(config));
 	close(fd);
 	free(config);

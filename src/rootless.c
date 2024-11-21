@@ -50,7 +50,7 @@ static int try_setup_idmap(pid_t ppid, uid_t uid, gid_t gid)
 	 * Try to use `uidmap` suid binary to setup uid and gid map.
 	 * If this function failed, we will use set_id_map() to setup the id map.
 	 */
-	struct ID_MAP id_map = get_idmap(uid, gid);
+	struct RURI_ID_MAP id_map = ruri_get_idmap(uid, gid);
 	// Failed to get /etc/subuid or /etc/subgid config for current user.
 	if (id_map.gid_lower == 0 || id_map.uid_lower == 0) {
 		return -1;
@@ -89,10 +89,10 @@ static void try_unshare(int flags)
 	 * if failed, we just error() and exit.
 	 */
 	if (unshare(flags) == -1) {
-		error("{red}Your device does not support some namespaces needed!\n");
+		ruri_error("{red}Your device does not support some namespaces needed!\n");
 	}
 }
-static void init_rootless_container(struct CONTAINER *_Nonnull container)
+static void init_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * For rootless container, the way to create/mount runtime dir/files is different.
@@ -181,14 +181,14 @@ static void set_id_map(uid_t uid, gid_t gid)
 	sprintf(uid_map, "0 %d 1\n", uid);
 	int uidmap_fd = open("/proc/self/uid_map", O_RDWR | O_CLOEXEC);
 	if (uidmap_fd < 0) {
-		error("{red}Failed to open /proc/self/uid_map\n");
+		ruri_error("{red}Failed to open /proc/self/uid_map\n");
 	}
 	write(uidmap_fd, uid_map, strlen(uid_map));
 	close(uidmap_fd);
 	// Set gid map.
 	int setgroups_fd = open("/proc/self/setgroups", O_RDWR | O_CLOEXEC);
 	if (setgroups_fd < 0) {
-		error("{red}Failed to open /proc/self/setgroups\n");
+		ruri_error("{red}Failed to open /proc/self/setgroups\n");
 	}
 	write(setgroups_fd, "deny", 5);
 	close(setgroups_fd);
@@ -196,7 +196,7 @@ static void set_id_map(uid_t uid, gid_t gid)
 	sprintf(gid_map, "0 %d 1\n", gid);
 	int gidmap_fd = open("/proc/self/gid_map", O_RDWR | O_CLOEXEC);
 	if (gidmap_fd < 0) {
-		error("{red}Failed to open /proc/self/gid_map\n");
+		ruri_error("{red}Failed to open /proc/self/gid_map\n");
 	}
 	write(gidmap_fd, gid_map, strlen(gid_map));
 	close(gidmap_fd);
@@ -207,7 +207,7 @@ static void set_id_map(uid_t uid, gid_t gid)
 	write(setgroups_fd, "allow", 5);
 	close(setgroups_fd);
 }
-void run_rootless_container(struct CONTAINER *_Nonnull container)
+void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Setup namespaces and run rootless container.
@@ -243,19 +243,19 @@ void run_rootless_container(struct CONTAINER *_Nonnull container)
 	pid_t pid = fork();
 	if (pid > 0) {
 		if (!set_id_map_succeed && !container->no_warnings) {
-			warning("{yellow}Check if uidmap is installed on your host, command like su will run failed without uidmap.\n");
+			ruri_warning("{yellow}Check if uidmap is installed on your host, command like su will run failed without uidmap.\n");
 			set_id_map(uid, gid);
 		}
 		int stat = 0;
 		waitpid(pid, &stat, 0);
 		exit(stat);
 	} else if (pid < 0) {
-		error("{red}Fork error QwQ?\n");
+		ruri_error("{red}Fork error QwQ?\n");
 	} else {
 		// Init rootless container.
 		if (!container->just_chroot) {
 			init_rootless_container(container);
 		}
-		run_rootless_chroot_container(container);
+		ruri_run_rootless_chroot_container(container);
 	}
 }

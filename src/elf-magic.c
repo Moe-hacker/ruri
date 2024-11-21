@@ -29,14 +29,14 @@
  */
 #include "include/ruri.h"
 // Get ELF magic number and mask for cross_arch specified.
-struct MAGIC *get_magic(const char *_Nonnull cross_arch)
+struct RURI_ELF_MAGIC *ruri_get_magic(const char *_Nonnull cross_arch)
 {
 	/*
 	 * I know that this seems to be a little bit stupid,
 	 * but we have no other ways to match the architecture to its ELF magic.
 	 * TODO: Support more architecture aliases.
 	 */
-	struct MAGIC *ret = (struct MAGIC *)malloc(sizeof(struct MAGIC));
+	struct RURI_ELF_MAGIC *ret = (struct RURI_ELF_MAGIC *)malloc(sizeof(struct RURI_ELF_MAGIC));
 // Avoid to simulate the same architecture as host.
 #if defined(__aarch64__)
 	if (strcmp(cross_arch, "aarch64") == 0 || strcmp(cross_arch, "arm64") == 0) {
@@ -225,104 +225,104 @@ struct MAGIC *get_magic(const char *_Nonnull cross_arch)
 	}
 #endif
 	if (strcmp(cross_arch, "aarch64") == 0 || strcmp(cross_arch, "arm64") == 0 || strcmp(cross_arch, "armv8") == 0) {
-		ret->magic = magicof(aarch64);
-		ret->mask = maskof(aarch64);
+		ret->magic = ruri_magicof(aarch64);
+		ret->mask = ruri_maskof(aarch64);
 	} else if (strcmp(cross_arch, "alpha") == 0) {
-		ret->magic = magicof(alpha);
-		ret->mask = maskof(alpha);
+		ret->magic = ruri_magicof(alpha);
+		ret->mask = ruri_maskof(alpha);
 	} else if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armel") == 0 || strcmp(cross_arch, "armv7") == 0) {
-		ret->magic = magicof(arm);
-		ret->mask = maskof(arm);
+		ret->magic = ruri_magicof(arm);
+		ret->mask = ruri_maskof(arm);
 	} else if (strcmp(cross_arch, "armeb") == 0) {
-		ret->magic = magicof(armeb);
-		ret->mask = maskof(armeb);
+		ret->magic = ruri_magicof(armeb);
+		ret->mask = ruri_maskof(armeb);
 	} else if (strcmp(cross_arch, "cris") == 0) {
-		ret->magic = magicof(cris);
-		ret->mask = maskof(cris);
+		ret->magic = ruri_magicof(cris);
+		ret->mask = ruri_maskof(cris);
 	} else if (strcmp(cross_arch, "hexagon") == 0) {
-		ret->magic = magicof(hexagon);
-		ret->mask = maskof(hexagon);
+		ret->magic = ruri_magicof(hexagon);
+		ret->mask = ruri_maskof(hexagon);
 	} else if (strcmp(cross_arch, "hppa") == 0) {
-		ret->magic = magicof(hppa);
-		ret->mask = maskof(hppa);
+		ret->magic = ruri_magicof(hppa);
+		ret->mask = ruri_maskof(hppa);
 	} else if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
-		ret->magic = magicof(i386);
-		ret->mask = maskof(i386);
+		ret->magic = ruri_magicof(i386);
+		ret->mask = ruri_maskof(i386);
 	} else if (strcmp(cross_arch, "loongarch64") == 0 || strcmp(cross_arch, "loong64") == 0 || strcmp(cross_arch, "loongarch") == 0) {
-		ret->magic = magicof(loongarch64);
-		ret->mask = maskof(loongarch64);
+		ret->magic = ruri_magicof(loongarch64);
+		ret->mask = ruri_maskof(loongarch64);
 	} else if (strcmp(cross_arch, "m68k") == 0) {
-		ret->magic = magicof(m68k);
-		ret->mask = maskof(m68k);
+		ret->magic = ruri_magicof(m68k);
+		ret->mask = ruri_maskof(m68k);
 	} else if (strcmp(cross_arch, "microblaze") == 0) {
-		ret->magic = magicof(microblaze);
-		ret->mask = maskof(microblaze);
+		ret->magic = ruri_magicof(microblaze);
+		ret->mask = ruri_maskof(microblaze);
 	} else if (strcmp(cross_arch, "mips") == 0) {
-		ret->magic = magicof(mips);
-		ret->mask = maskof(mips);
+		ret->magic = ruri_magicof(mips);
+		ret->mask = ruri_maskof(mips);
 	} else if (strcmp(cross_arch, "mips64") == 0) {
-		ret->magic = magicof(mips64);
-		ret->mask = maskof(mips64);
+		ret->magic = ruri_magicof(mips64);
+		ret->mask = ruri_maskof(mips64);
 	} else if (strcmp(cross_arch, "mips64el") == 0) {
-		ret->magic = magicof(mips64el);
-		ret->mask = maskof(mips64el);
+		ret->magic = ruri_magicof(mips64el);
+		ret->mask = ruri_maskof(mips64el);
 	} else if (strcmp(cross_arch, "mipsel") == 0) {
-		ret->magic = magicof(mipsel);
-		ret->mask = maskof(mipsel);
+		ret->magic = ruri_magicof(mipsel);
+		ret->mask = ruri_maskof(mipsel);
 	} else if (strcmp(cross_arch, "mipsn32") == 0) {
-		ret->magic = magicof(mipsn32);
-		ret->mask = maskof(mipsn32);
+		ret->magic = ruri_magicof(mipsn32);
+		ret->mask = ruri_maskof(mipsn32);
 	} else if (strcmp(cross_arch, "mipsn32el") == 0) {
-		ret->magic = magicof(mipsn32el);
-		ret->mask = maskof(mipsn32el);
+		ret->magic = ruri_magicof(mipsn32el);
+		ret->mask = ruri_maskof(mipsn32el);
 	} else if (strcmp(cross_arch, "ppc") == 0) {
-		ret->magic = magicof(ppc);
-		ret->mask = maskof(ppc);
+		ret->magic = ruri_magicof(ppc);
+		ret->mask = ruri_maskof(ppc);
 	} else if (strcmp(cross_arch, "ppc64") == 0) {
-		ret->magic = magicof(ppc64);
-		ret->mask = maskof(ppc64);
+		ret->magic = ruri_magicof(ppc64);
+		ret->mask = ruri_maskof(ppc64);
 	} else if (strcmp(cross_arch, "ppc64le") == 0) {
-		ret->magic = magicof(ppc64le);
-		ret->mask = maskof(ppc64le);
+		ret->magic = ruri_magicof(ppc64le);
+		ret->mask = ruri_maskof(ppc64le);
 	} else if (strcmp(cross_arch, "riscv32") == 0) {
-		ret->magic = magicof(riscv32);
-		ret->mask = maskof(riscv32);
+		ret->magic = ruri_magicof(riscv32);
+		ret->mask = ruri_maskof(riscv32);
 	} else if (strcmp(cross_arch, "riscv64") == 0) {
-		ret->magic = magicof(riscv64);
-		ret->mask = maskof(riscv64);
+		ret->magic = ruri_magicof(riscv64);
+		ret->mask = ruri_maskof(riscv64);
 	} else if (strcmp(cross_arch, "s390x") == 0) {
-		ret->magic = magicof(s390x);
-		ret->mask = maskof(s390x);
+		ret->magic = ruri_magicof(s390x);
+		ret->mask = ruri_maskof(s390x);
 	} else if (strcmp(cross_arch, "sh4") == 0) {
-		ret->magic = magicof(sh4);
-		ret->mask = maskof(sh4);
+		ret->magic = ruri_magicof(sh4);
+		ret->mask = ruri_maskof(sh4);
 	} else if (strcmp(cross_arch, "sh4eb") == 0) {
-		ret->magic = magicof(sh4eb);
-		ret->mask = maskof(sh4eb);
+		ret->magic = ruri_magicof(sh4eb);
+		ret->mask = ruri_maskof(sh4eb);
 	} else if (strcmp(cross_arch, "sparc") == 0) {
-		ret->magic = magicof(sparc);
-		ret->mask = maskof(sparc);
+		ret->magic = ruri_magicof(sparc);
+		ret->mask = ruri_maskof(sparc);
 	} else if (strcmp(cross_arch, "sparc32plus") == 0) {
-		ret->magic = magicof(sparc32plus);
-		ret->mask = maskof(sparc32plus);
+		ret->magic = ruri_magicof(sparc32plus);
+		ret->mask = ruri_maskof(sparc32plus);
 	} else if (strcmp(cross_arch, "sparc64") == 0) {
-		ret->magic = magicof(sparc64);
-		ret->mask = maskof(sparc64);
+		ret->magic = ruri_magicof(sparc64);
+		ret->mask = ruri_maskof(sparc64);
 	} else if (strcmp(cross_arch, "x86_64") == 0 || strcmp(cross_arch, "amd64") == 0) {
-		ret->magic = magicof(x86_64);
-		ret->mask = maskof(x86_64);
+		ret->magic = ruri_magicof(x86_64);
+		ret->mask = ruri_maskof(x86_64);
 	} else if (strcmp(cross_arch, "xtensa") == 0) {
-		ret->magic = magicof(xtensa);
-		ret->mask = maskof(xtensa);
+		ret->magic = ruri_magicof(xtensa);
+		ret->mask = ruri_maskof(xtensa);
 	} else if (strcmp(cross_arch, "xtensaeb") == 0) {
-		ret->magic = magicof(xtensaeb);
-		ret->mask = maskof(xtensaeb);
+		ret->magic = ruri_magicof(xtensaeb);
+		ret->mask = ruri_maskof(xtensaeb);
 	} else {
 		free(ret);
 		return NULL;
 	}
-	log("Cross architecture: {cyan}%s\n", cross_arch);
-	log("ELF magic: {cyan}%s\n", ret->magic);
-	log("ELF mask: {cyan}%s\n", ret->mask);
+	ruri_log("Cross architecture: {cyan}%s\n", cross_arch);
+	ruri_log("ELF magic: {cyan}%s\n", ret->magic);
+	ruri_log("ELF mask: {cyan}%s\n", ret->mask);
 	return ret;
 }

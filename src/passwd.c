@@ -191,7 +191,7 @@ static uid_t line_get_uid_count(const char *_Nonnull p)
 	}
 	return ret;
 }
-static void get_uid_map(char *_Nonnull user, struct ID_MAP *_Nonnull id_map)
+static void get_uid_map(char *_Nonnull user, struct RURI_ID_MAP *_Nonnull id_map)
 {
 	/*
 	 * Get uid_map.
@@ -269,7 +269,7 @@ static gid_t line_get_gid_count(const char *_Nonnull p)
 	}
 	return ret;
 }
-static void get_gid_map(const char *_Nonnull user, struct ID_MAP *_Nonnull id_map)
+static void get_gid_map(const char *_Nonnull user, struct RURI_ID_MAP *_Nonnull id_map)
 {
 	/*
 	 * Get gid_map.
@@ -301,18 +301,18 @@ static void get_gid_map(const char *_Nonnull user, struct ID_MAP *_Nonnull id_ma
 	id_map->gid_count = line_get_gid_count(map);
 	free(buf);
 }
-struct ID_MAP get_idmap(uid_t uid, gid_t gid)
+struct RURI_ID_MAP ruri_get_idmap(uid_t uid, gid_t gid)
 {
 	/*
 	 * Get uid_map and gid_map.
-	 * This function will return a ID_MAP struct for `newuidmap` and `newgidmap`.
+	 * This function will return a RURI_ID_MAP struct for `newuidmap` and `newgidmap`.
 	 * If there is any error, all the id_map will be 0.
 	 */
-	struct ID_MAP ret;
+	struct RURI_ID_MAP ret;
 	ret.uid = uid;
 	ret.gid = gid;
 	char *username = get_username(uid);
-	log("{base}Username: {cyan}%s\n", username);
+	ruri_log("{base}Username: {cyan}%s\n", username);
 	if (username == NULL) {
 		ret.uid_lower = 0;
 		ret.uid_count = 0;
@@ -322,16 +322,16 @@ struct ID_MAP get_idmap(uid_t uid, gid_t gid)
 	}
 	get_uid_map(username, &ret);
 	get_gid_map(username, &ret);
-	log("{base}uid: {cyan}%d\n", ret.uid);
-	log("{base}gid: {cyan}%d\n", ret.gid);
-	log("{base}uid_lower: {cyan}%d\n", ret.uid_lower);
-	log("{base}uid_count: {cyan}%d\n", ret.uid_count);
-	log("{base}gid_lower: {cyan}%d\n", ret.gid_lower);
-	log("{base}gid_count: {cyan}%d\n", ret.gid_count);
+	ruri_log("{base}uid: {cyan}%d\n", ret.uid);
+	ruri_log("{base}gid: {cyan}%d\n", ret.gid);
+	ruri_log("{base}uid_lower: {cyan}%d\n", ret.uid_lower);
+	ruri_log("{base}uid_count: {cyan}%d\n", ret.uid_count);
+	ruri_log("{base}gid_lower: {cyan}%d\n", ret.gid_lower);
+	ruri_log("{base}gid_count: {cyan}%d\n", ret.gid_count);
 	free(username);
 	return ret;
 }
-bool user_exist(const char *_Nonnull username)
+bool ruri_user_exist(const char *_Nonnull username)
 {
 	/*
 	 * Check if the user exists.
@@ -366,7 +366,7 @@ bool user_exist(const char *_Nonnull username)
 	free(buf);
 	return false;
 }
-uid_t get_user_uid(const char *_Nonnull username)
+uid_t ruri_get_user_uid(const char *_Nonnull username)
 {
 	/*
 	 * Get uid by username.
@@ -403,7 +403,7 @@ uid_t get_user_uid(const char *_Nonnull username)
 	free(buf);
 	return 0;
 }
-gid_t get_user_gid(const char *_Nonnull username)
+gid_t ruri_get_user_gid(const char *_Nonnull username)
 {
 	/*
 	 * Get gid by username.

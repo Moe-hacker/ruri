@@ -29,7 +29,7 @@
  */
 #include "include/ruri.h"
 // Umount container.
-void umount_container(const char *_Nonnull container_dir)
+void ruri_umount_container(const char *_Nonnull container_dir)
 {
 	/*
 	 * Read /.rurienv file and umount all mountpoints,
@@ -37,20 +37,20 @@ void umount_container(const char *_Nonnull container_dir)
 	 * and umount system runtime directories.
 	 */
 	if (container_dir == NULL) {
-		error("{red}Error: container directory does not exist QwQ\n");
+		ruri_error("{red}Error: container directory does not exist QwQ\n");
 	}
 	// Do not use '/' for container_dir.
 	if (strcmp(container_dir, "/") == 0) {
-		error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
+		ruri_error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if container_dir exist.
 	char *test = realpath(container_dir, NULL);
 	if (test == NULL) {
-		error("{red}Error: container directory does not exist QwQ\n");
+		ruri_error("{red}Error: container directory does not exist QwQ\n");
 	}
 	free(test);
-	struct CONTAINER *container = read_info(NULL, container_dir);
-	log("{base}Umounting container...\n");
+	struct RURI_CONTAINER *container = ruri_read_info(NULL, container_dir);
+	ruri_log("{base}Umounting container...\n");
 	char infofile[PATH_MAX] = { '\0' };
 	sprintf(infofile, "%s/.rurienv", container_dir);
 	int fd = open(infofile, O_RDONLY | O_CLOEXEC);
@@ -63,7 +63,7 @@ void umount_container(const char *_Nonnull container_dir)
 		remove(infofile);
 		close(fd);
 	} else {
-		warning("{yellow}Warning: .rurienv does not exist\n");
+		ruri_warning("{yellow}Warning: .rurienv does not exist\n");
 	}
 	// Get path to umount.
 	char sys_dir[PATH_MAX];
@@ -83,7 +83,7 @@ void umount_container(const char *_Nonnull container_dir)
 			if (container->extra_mountpoint[i] != NULL) {
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_mountpoint[i]);
-				log("{base}Umounting %s\n", to_umountpoint);
+				ruri_log("{base}Umounting %s\n", to_umountpoint);
 				for (int j = 0; j < 10; j++) {
 					umount2(to_umountpoint, MNT_DETACH);
 					umount(to_umountpoint);
@@ -104,7 +104,7 @@ void umount_container(const char *_Nonnull container_dir)
 				strcpy(to_umountpoint, container_dir);
 				strcat(to_umountpoint, container->extra_ro_mountpoint[i]);
 				for (int j = 0; j < 10; j++) {
-					log("{base}Umounting %s\n", to_umountpoint);
+					ruri_log("{base}Umounting %s\n", to_umountpoint);
 					umount2(to_umountpoint, MNT_DETACH);
 					umount(to_umountpoint);
 					usleep(20000);
@@ -121,10 +121,10 @@ void umount_container(const char *_Nonnull container_dir)
 	}
 	// Force umount system runtime directories for 10 times.
 	// Not necessary, but I think it's more secure.
-	log("{base}Umounting %s\n", sys_dir);
-	log("{base}Umounting %s\n", proc_dir);
-	log("{base}Umounting %s\n", dev_dir);
-	log("{base}Umounting %s\n", container_dir);
+	ruri_log("{base}Umounting %s\n", sys_dir);
+	ruri_log("{base}Umounting %s\n", proc_dir);
+	ruri_log("{base}Umounting %s\n", dev_dir);
+	ruri_log("{base}Umounting %s\n", container_dir);
 	for (int i = 1; i < 10; i++) {
 		umount2(sys_dir, MNT_DETACH | MNT_FORCE);
 		usleep(2000);
@@ -137,11 +137,11 @@ void umount_container(const char *_Nonnull container_dir)
 	}
 	// Kill ns_pid.
 	if (container->ns_pid > 0) {
-		log("Kill ns pid: %d\n", container->ns_pid);
+		ruri_log("Kill ns pid: %d\n", container->ns_pid);
 		kill(container->ns_pid, SIGKILL);
 	}
 	// Kill all processes in container.
-	kill_container(container_dir);
+	ruri_kill_container(container_dir);
 	// Make Asan happy.
 	free(container);
 }

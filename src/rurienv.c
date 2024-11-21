@@ -64,7 +64,7 @@ static bool is_ruri_pid(pid_t pid)
 	return true;
 }
 // Get ns_pid.
-pid_t get_ns_pid(const char *_Nonnull container_dir)
+pid_t ruri_get_ns_pid(const char *_Nonnull container_dir)
 {
 	/*
 	 * Read .rurienv,
@@ -98,7 +98,7 @@ pid_t get_ns_pid(const char *_Nonnull container_dir)
 	return INIT_VALUE;
 }
 // Format container info as k2v.
-static char *build_container_info(const struct CONTAINER *_Nonnull container)
+static char *build_container_info(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Format container runtime info to k2v format,
@@ -181,11 +181,11 @@ static char *build_container_info(const struct CONTAINER *_Nonnull container)
 	}
 	ret = k2v_add_comment(ret, "Environment variable.");
 	ret = k2v_add_config(char_array, ret, "env", container->env, len);
-	log("{base}Container config in /.rurienv:{cyan}\n%s", ret);
+	ruri_log("{base}Container config in /.rurienv:{cyan}\n%s", ret);
 	return ret;
 }
 // Store container info.
-void store_info(const struct CONTAINER *_Nonnull container)
+void ruri_store_info(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Format the runtime info of container to k2v format.
@@ -239,12 +239,12 @@ void store_info(const struct CONTAINER *_Nonnull container)
 	free(info);
 }
 // Read .rurienv file.
-struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_Nonnull container_dir)
+struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container, const char *_Nonnull container_dir)
 {
 	/*
 	 * Get runtime info of container.
 	 * And return the container struct back.
-	 * For umount_container() and container_ps(), it will accept a NULL struct,
+	 * For ruri_umount_container() and ruri_container_ps(), it will accept a NULL struct,
 	 * and return a struct with malloced memory.
 	 */
 	char file[PATH_MAX] = { '\0' };
@@ -252,9 +252,9 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	int fd = open(file, O_RDONLY | O_CLOEXEC);
 	// If .rurienv file does not exist.
 	if (fd < 0) {
-		// Return a malloced struct for umount_container() and container_ps().
+		// Return a malloced struct for ruri_umount_container() and ruri_container_ps().
 		if (container == NULL) {
-			container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+			container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
 			container->extra_mountpoint[0] = NULL;
 			container->extra_ro_mountpoint[0] = NULL;
 			container->ns_pid = INIT_VALUE;
@@ -267,18 +267,18 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	close(fd);
 	// Read .rurienv file.
 	char *buf = k2v_open_file(file, (size_t)size);
-	log("{base}Container config in /.rurienv:{cyan}\n%s", buf);
+	ruri_log("{base}Container config in /.rurienv:{cyan}\n%s", buf);
 	// We only need to get part of container info when container is NULL.
 	if (container == NULL) {
-		// For umount_container().
-		container = (struct CONTAINER *)malloc(sizeof(struct CONTAINER));
+		// For ruri_umount_container().
+		container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
 		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
 		container->extra_mountpoint[mlen] = NULL;
 		container->extra_mountpoint[mlen + 1] = NULL;
 		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
-		// For container_ps() and umount_container().
+		// For ruri_container_ps() and ruri_umount_container().
 		if (is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 			container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 		} else {
@@ -295,11 +295,11 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	// Check if ns_pid is a ruri process.
 	// If not, that means the container is not running.
 	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
-		log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
+		ruri_log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
-			warning("{yellow}Open .rurienv failed{clear}\n");
+			ruri_warning("{yellow}Open .rurienv failed{clear}\n");
 		}
 		int attr = 0;
 		ioctl(fd, FS_IOC_GETFLAGS, &attr);
@@ -333,7 +333,7 @@ struct CONTAINER *read_info(struct CONTAINER *_Nullable container, const char *_
 	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	// Get ns_pid.
 	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
-	log("{base}ns_pid: %d\n", container->ns_pid);
+	ruri_log("{base}ns_pid: %d\n", container->ns_pid);
 	// Get container_id.
 	container->container_id = k2v_get_key(int, "container_id", buf);
 	// Get work_dir.
