@@ -57,6 +57,8 @@ Or you can run the following command to download ruri automatically:
 wget -O - https://github.com/Moe-hacker/ruri/raw/refs/heads/main/get-ruri.sh | bash -s -- -s
 ```
 This will automatically download ruri binary to `./ruri`.      
+# Usage:    
+See [USAGE](doc/USAGE.md) to explore all features of ruri.         
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -80,8 +82,6 @@ ruri is ready to integrate into other projects, with the MIT License, it is comp
 An example is ruri's own build action [build-all.sh](build/build-all.sh), it runs containers for 9 different architectures to build itself, that shows its broad application prospects.      
 Another example is [rurima](https://github.com/Moe-hacker/rurima), I made ruri built-in into it, so it can be run as a subcommand.      
 See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    
-# Usage:    
-See [USAGE](doc/USAGE.md)      
 # Behavior of rurienv:
 After initing the container, ruri will create a file /.rurienv by default, this config can unify container config, but it will also cover some of the command-line args, you can use `--no-rurienv` to disable it, or see [rurienv.md](doc/rurienv.md) to see its behavior.     
 If you want to change the container config, just use -U to umount it and re-run the container.      

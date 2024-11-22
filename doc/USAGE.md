@@ -70,12 +70,14 @@ For example:
 ruri -q /usr/bin/qemu-x86_64-static -a x86_64 ./test-x86_64
 ```
 But remember that do not use this feature to simulate host architecture.      
+Note: This option need kernel support for binfmt_misc.      
 *******************************************************************
 ```
 -u, --unshare ...............................: Enable unshare feature
 ```
 ruri supports unshare container, but NET and USER namespace is not supported.        
 Note: when PID 1 died in PID NS, the ns will be cleared, so all process in it will die.      
+Note: This option need kernel support for namespaces, it will try to enable supported ns, but if failed, it will only show warnings.     
 *****************************************
 ```
 -n, --no-new-privs ..........................: Set NO_NEW_PRIVS flag
@@ -91,6 +93,7 @@ ruri will create /.rurienv in container to save container config by default, you
 -s, --enable-seccomp ........................: Enable built-in Seccomp profile
 ```
 ruri provides a built-in seccomp profile, but if you really need to use seccomp, you might need to edit src/seccomp.c with your own rules and recompile it.      
+Note: This option need kernel support seccomp.
 ****************************************
 ```
 -p, --privileged ............................: Run privileged container
@@ -102,6 +105,7 @@ This argument will give all capabilities to container, but you can also use `-d`
 ```
 This option should be run with common user, so you can run rootless container with user ns.      
 This option require `uidmap` package and user namespace support.      
+Note: This option need user ns support, and need kernel to allow create user ns with common user.      
 *********************************************
 ```
 -k, --keep [cap] ............................: Keep the specified capability
@@ -153,6 +157,7 @@ for example:
 ```
 ruri -l memory=1M -l cpuset=1 /test
 ```
+Note: This option need kernel support for specified cgroup.      
 **************************************************
 ```
 -w, --no-warnings ...........................: Disable warnings
