@@ -638,10 +638,6 @@ void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull containe
 	mount_mountpoints(container);
 	// Copy qemu binary into container.
 	copy_qemu_binary(container);
-	// Store container info.
-	if (container->use_rurienv) {
-		ruri_store_info(container);
-	}
 	// If `-R` option is set, make / read-only.
 	if (container->ro_root) {
 		mount(container->container_dir, container->container_dir, NULL, MS_BIND | MS_REMOUNT | MS_RDONLY, NULL);
@@ -660,11 +656,11 @@ void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull containe
 	// Check binary used.
 	check_binary(container);
 	// chroot(2) into container.
-	if (try_pivot_root(container) == -1) {
-		chdir(container->container_dir);
-		chroot(".");
-		chdir("/");
+	chdir(container->container_dir);
+	if (chroot(".") == -1) {
+		ruri_error("{red}Error: failed to chroot(2) into container QwQ\n");
 	}
+	chdir("/");
 	// Change to the work dir.
 	if (container->work_dir != NULL) {
 		if (chdir(container->work_dir) == -1 && !container->no_warnings) {

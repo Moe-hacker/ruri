@@ -294,7 +294,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	container->cpupercent = INIT_VALUE;
 	// Check if ns_pid is a ruri process.
 	// If not, that means the container is not running.
-	if (container->enable_unshare && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
+	if ((container->enable_unshare || container->rootless) && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 		ruri_log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);

@@ -1,5 +1,6 @@
 # v3.8:
   * Support more platforms, currently supports: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.
+  * Improve rootless container support.
   * Add `-W` option: `--work-dir`.
   * Add `-A` option: `--unmask-dirs`.
   * Add `-E` option: `--user`.

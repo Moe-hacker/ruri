@@ -212,6 +212,7 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 	/*
 	 * Setup namespaces and run rootless container.
 	 */
+	ruri_read_info(container, container->container_dir);
 	uid_t uid = geteuid();
 	gid_t gid = getegid();
 	bool set_id_map_succeed = false;
@@ -222,23 +223,63 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 	// to change the parent process's id map.
 	pid_t pid_1 = fork();
 	if (pid_1 > 0) {
-		// Enable user namespace.
-		try_unshare(CLONE_NEWUSER);
-		int stat = 0;
-		waitpid(pid_1, &stat, 0);
-		if (WEXITSTATUS(stat) == 0) {
+		if (container->ns_pid < 0) {
+			// Enable user namespace.
+			try_unshare(CLONE_NEWUSER);
+			int stat = 0;
+			waitpid(pid_1, &stat, 0);
+			if (WEXITSTATUS(stat) == 0) {
+				set_id_map_succeed = true;
+			}
+		} else {
+			char user_ns[PATH_MAX] = { '\0' };
+			sprintf(user_ns, "/proc/%d/ns/user", container->ns_pid);
+			int user_ns_fd = open(user_ns, O_RDONLY | O_CLOEXEC);
+			if (user_ns_fd < 0) {
+				ruri_error("{red}Failed to open %s\n", user_ns);
+			}
+			if (setns(user_ns_fd, CLONE_NEWUSER) == -1) {
+				ruri_error("{red}Failed to setns(2) to %s\n", user_ns);
+			}
 			set_id_map_succeed = true;
 		}
 	} else {
-		// To ensure that unshare(2) finished in parent process.
-		usleep(1000);
-		int stat = try_setup_idmap(ppid, uid, gid);
-		exit(stat);
+		if (container->ns_pid < 0) {
+			// To ensure that unshare(2) finished in parent process.
+			usleep(1000);
+			int stat = try_setup_idmap(ppid, uid, gid);
+			exit(stat);
+		} else {
+			exit(0);
+		}
 	}
-	// We need to own mount namespace.
-	try_unshare(CLONE_NEWNS);
-	// Seems we need to own a new pid namespace for mount procfs.
-	try_unshare(CLONE_NEWPID);
+	if (container->ns_pid > 0 && set_id_map_succeed) {
+		char mnt_ns[PATH_MAX] = { '\0' };
+		sprintf(mnt_ns, "/proc/%d/ns/mnt", container->ns_pid);
+		int mnt_ns_fd = open(mnt_ns, O_RDONLY | O_CLOEXEC);
+		if (mnt_ns_fd < 0) {
+			ruri_error("{red}Failed to open %s\n", mnt_ns);
+		}
+		if (setns(mnt_ns_fd, CLONE_NEWNS) == -1) {
+			ruri_error("{red}Failed to setns(2) to %s\n", mnt_ns);
+		}
+		close(mnt_ns_fd);
+		char pid_ns[PATH_MAX] = { '\0' };
+		sprintf(pid_ns, "/proc/%d/ns/pid", container->ns_pid);
+		int pid_ns_fd = open(pid_ns, O_RDONLY | O_CLOEXEC);
+		if (pid_ns_fd < 0) {
+			ruri_error("{red}Failed to open %s\n", pid_ns);
+		}
+		if (setns(pid_ns_fd, CLONE_NEWPID) == -1) {
+			ruri_error("{red}Failed to setns(2) to %s\n", pid_ns);
+		}
+		close(pid_ns_fd);
+	} else {
+		// We need to own mount namespace.
+		try_unshare(CLONE_NEWNS);
+		// Seems we need to own a new pid namespace for mount procfs.
+		try_unshare(CLONE_NEWPID);
+	}
 	// fork(2) into new namespaces we created.
 	pid_t pid = fork();
 	if (pid > 0) {
@@ -246,6 +287,12 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 			ruri_warning("{yellow}Check if uidmap is installed on your host, command like su will run failed without uidmap.\n");
 			set_id_map(uid, gid);
 		}
+		usleep(1000);
+		container->ns_pid = pid;
+		if (container->use_rurienv && !container->just_chroot) {
+			ruri_store_info(container);
+		}
+		// Wait for child process to exit.
 		int stat = 0;
 		waitpid(pid, &stat, 0);
 		exit(stat);
@@ -256,6 +303,7 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 		if (!container->just_chroot) {
 			init_rootless_container(container);
 		}
+		usleep(1000);
 		ruri_run_rootless_chroot_container(container);
 	}
 }

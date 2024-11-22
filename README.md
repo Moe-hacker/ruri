@@ -23,7 +23,7 @@ Max memory: 860 KB
 ```
 # Highlights:
 - Powerful Features
-  - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, basic support for rootless container, and even more...      
+  - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, run rootless container, and even more...      
   - Built-in support for binfmt_misc & QEMU, so you can run multi-arch container easily.
   - Powerful mount option, you can mount image/partition as root, and you can choose every mountpoint to be read-only or rw.     
   - Built-in support for config file.
@@ -34,9 +34,9 @@ Max memory: 860 KB
 - Flexibility, for More Platform
   - From Android devices to IoT gadgets, from amd64 to s390x, ruri can provide basic container support on almost every Linux platforms, the only thing it need is root privilege.      
 - Secure by Design 
+  - Built-in rootless container support.      
   - Built-in security options, to make container more secure.      
-  - Built-in read-only filesystem options for more protection.      
-  - Built-in rootless mode support.      
+  - Built-in read-only filesystem options for more protection.          
 - Simple for Beginner
   - You can just use ruri as an instead of `chroot` command, and ruri will do all things for you.      
   - Ruri empowers you with the freedom to configure everything, but that do not means you need to learn every option to use it.    
