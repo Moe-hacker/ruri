@@ -397,7 +397,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 							container->extra_mountpoint[i] = NULL;
 							container->extra_mountpoint[i + 1] = NULL;
 							if (container->rootfs_source == NULL) {
-								container->rootfs_source = realpath(argv[index] - 1, NULL);
+								container->rootfs_source = realpath(argv[index] - 2, NULL);
 							} else {
 								ruri_error("{red}You can only mount one source to / QwQ\n");
 							}
