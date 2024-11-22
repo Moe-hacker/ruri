@@ -40,8 +40,8 @@ static pid_t init_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 	// unshare_pid in forked process is 0.
 	pid_t unshare_pid = INIT_VALUE;
 	// Create namespaces.
-	if (unshare(CLONE_NEWNS) == -1 && !container->no_warnings) {
-		ruri_warning("{yellow}Warning: seems that mount namespace is not supported on this device QwQ{clear}\n");
+	if (unshare(CLONE_NEWNS) == -1) {
+		ruri_error("{red}Unshare container need at least mount ns support QwQ\n");
 	}
 	if (unshare(CLONE_NEWUTS) == -1 && !container->no_warnings) {
 		ruri_warning("{yellow}Warning: seems that uts namespace is not supported on this device QwQ{clear}\n");
@@ -173,8 +173,8 @@ static pid_t join_ns(struct RURI_CONTAINER *_Nonnull container)
 		}
 	}
 	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !container->no_warnings) {
-		ruri_warning("{yellow}Warning: seems that mount namespace is not supported on this device QwQ{clear}\n");
+	if (ns_fd < 0) {
+		ruri_error("{red}Unshare container need at least mount ns support QwQ\n");
 	} else {
 		usleep(1000);
 		if (setns(ns_fd, CLONE_NEWNS) == -1) {
