@@ -38,7 +38,7 @@ static char *line_get_username(const char *_Nonnull p)
 	// /etc/passwd format:
 	// name:password:uid:gid:comment:home directory:login shell
 	// So we only need the string before the first colon.
-	for (int i = 0; p[i] != '\0'; i++) {
+	for (int i = 0; p[i] != '\0' && i < (LOGIN_NAME_MAX * 2); i++) {
 		if (p[i] == ':') {
 			break;
 		}
