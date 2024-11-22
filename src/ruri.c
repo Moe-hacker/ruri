@@ -49,6 +49,10 @@ static void check_container(const struct RURI_CONTAINER *_Nonnull container)
 	if (getuid() != 0 && !(container->rootless)) {
 		ruri_error("{red}Error: this program should be run with root privileges QwQ\n");
 	}
+	// rootless container should not be run with root privileges.
+	if (container->rootless && getuid() == 0) {
+		ruri_error("{red}Error: rootless container should not be run with root privileges QwQ\n");
+	}
 	// `--arch` and `--qemu-path` should be set at the same time.
 	if ((container->cross_arch == NULL) != (container->qemu_path == NULL)) {
 		ruri_error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
@@ -551,6 +555,16 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		}
 	}
 }
+static bool ruri_rootless_mode_detected(char *_Nonnull container_dir)
+{
+	struct RURI_CONTAINER *container = ruri_read_info(NULL, container_dir);
+	if (container->rootless && container->ns_pid > 0) {
+		free(container);
+		return true;
+	}
+	free(container);
+	return false;
+}
 // The real main function.
 int ruri(int argc, char **argv)
 {
@@ -570,6 +584,10 @@ int ruri(int argc, char **argv)
 	struct RURI_CONTAINER *container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
 	// Parse arguments.
 	parse_args(argc, argv, container);
+	// Detect rootless mode.
+	if (ruri_rootless_mode_detected(container->container_dir)) {
+		container->rootless = true;
+	}
 	// Check container and the running environment.
 	check_container(container);
 	// unset $LD_PRELOAD.

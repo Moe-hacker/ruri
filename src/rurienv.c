@@ -151,8 +151,11 @@ static char *build_container_info(const struct RURI_CONTAINER *_Nonnull containe
 	// no_network.
 	ret = k2v_add_comment(ret, "Disable network.");
 	ret = k2v_add_config(bool, ret, "no_network", container->no_network);
+	// rootless
+	ret = k2v_add_comment(ret, "Run rootless container.");
+	ret = k2v_add_config(bool, ret, "rootless", container->rootless);
 	// user.
-	ret = k2v_add_comment(ret, "User to run the container.");
+	ret = k2v_add_comment(ret, "User to run command in the container.");
 	ret = k2v_add_config(char, ret, "user", container->user);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
@@ -258,6 +261,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 			container->extra_mountpoint[0] = NULL;
 			container->extra_ro_mountpoint[0] = NULL;
 			container->ns_pid = INIT_VALUE;
+			container->rootless = false;
 		}
 		return container;
 	}
@@ -279,23 +283,23 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
 		// For ruri_container_ps() and ruri_umount_container().
+		// Also for ruri_rootless_mode_detected().
 		if (is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 			container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 		} else {
 			container->ns_pid = INIT_VALUE;
 		}
+		// Get rootless.
+		container->rootless = k2v_get_key(bool, "rootless", buf);
 		close(fd);
 		free(buf);
 		return container;
 	}
-	// Unset cgroup limits because it's already set.
-	container->cpuset = NULL;
-	container->memory = NULL;
-	container->cpupercent = INIT_VALUE;
 	// Check if ns_pid is a ruri process.
 	// If not, that means the container is not running.
 	if ((container->enable_unshare || container->rootless) && !is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 		ruri_log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
+		free(buf);
 		// Unset immutable flag of .rurienv.
 		fd = open(file, O_RDONLY | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
@@ -365,5 +369,10 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	free(container->qemu_path);
 	container->qemu_path = NULL;
 	container->cross_arch = NULL;
+	// Unset cgroup limits because it's already set.
+	container->cpuset = NULL;
+	container->memory = NULL;
+	container->cpupercent = INIT_VALUE;
+	free(buf);
 	return container;
 }
