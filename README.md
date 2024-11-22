@@ -14,6 +14,7 @@
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
 &emsp;ruri is a powerful container implementation that runs on almost any Linux device, even with incomplete kernel configurations or minimal storage space.           
 # Performance:
+On AMD Ryzen 5 5500U, Windows 11, Ubuntu 22.04.5 WSL 2      
 ```
 # uname -m
 x86_64
@@ -21,6 +22,11 @@ x86_64
 Time: 0:00.01
 Max memory: 860 KB
 ```
+## Binary size(amd64):
+||ruri|crun|%|
+|---|---|---|---|
+|(noupx)|320k|3.0M|-89.33%|
+
 # Highlights:
 - Powerful Features
   - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, run rootless container, and even more...      
