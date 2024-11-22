@@ -160,16 +160,6 @@ static pid_t join_ns(struct RURI_CONTAINER *_Nonnull container)
 		}
 		close(ns_fd);
 	}
-	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
-	if (ns_fd < 0 && !container->no_warnings) {
-		ruri_warning("{yellow}Warning: seems that mount namespace is not supported on this device QwQ{clear}\n");
-	} else {
-		usleep(1000);
-		if (setns(ns_fd, CLONE_NEWNS) == -1) {
-			ruri_error("{red}Failed to setns mount namespace QwQ\n");
-		}
-		close(ns_fd);
-	}
 	// Disable network.
 	if (container->no_network) {
 		char net_ns_file[PATH_MAX] = { '\0' };
@@ -181,6 +171,16 @@ static pid_t join_ns(struct RURI_CONTAINER *_Nonnull container)
 		if (setns(ns_fd, CLONE_NEWNET) == -1) {
 			ruri_error("{red}--no-network detected, but failed to setns network namespace QwQ\n");
 		}
+	}
+	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
+	if (ns_fd < 0 && !container->no_warnings) {
+		ruri_warning("{yellow}Warning: seems that mount namespace is not supported on this device QwQ{clear}\n");
+	} else {
+		usleep(1000);
+		if (setns(ns_fd, CLONE_NEWNS) == -1) {
+			ruri_error("{red}Failed to setns mount namespace QwQ\n");
+		}
+		close(ns_fd);
 	}
 	// Close fds after fork().
 	unshare(CLONE_FILES);
