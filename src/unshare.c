@@ -58,9 +58,6 @@ static pid_t init_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 	if (unshare(CLONE_NEWTIME) == -1 && !container->no_warnings) {
 		ruri_warning("{yellow}Warning: seems that time namespace is not supported on this device QwQ{clear}\n");
 	}
-	if (unshare(CLONE_SYSVSEM) == -1 && !container->no_warnings) {
-		ruri_warning("{yellow}Warning: seems that semaphore namespace is not supported on this device QwQ{clear}\n");
-	}
 	if (unshare(CLONE_FILES) == -1 && !container->no_warnings) {
 		ruri_warning("{yellow}Warning: seems that we could not unshare file descriptors with child process QwQ{clear}\n");
 	}

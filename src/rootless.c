@@ -274,11 +274,93 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 			ruri_error("{red}Failed to setns(2) to %s\n", pid_ns);
 		}
 		close(pid_ns_fd);
+		char uts_ns[PATH_MAX] = { '\0' };
+		sprintf(uts_ns, "/proc/%d/ns/uts", container->ns_pid);
+		int uts_ns_fd = open(uts_ns, O_RDONLY | O_CLOEXEC);
+		if (uts_ns_fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that uts namespace is not supported on this device QwQ{clear}\n");
+		} else {
+			if (setns(uts_ns_fd, CLONE_NEWUTS) == -1) {
+				ruri_error("{red}Failed to setns(2) to %s\n", uts_ns);
+			}
+		}
+		close(uts_ns_fd);
+		char ipc_ns[PATH_MAX] = { '\0' };
+		sprintf(ipc_ns, "/proc/%d/ns/ipc", container->ns_pid);
+		int ipc_ns_fd = open(ipc_ns, O_RDONLY | O_CLOEXEC);
+		if (ipc_ns_fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that ipc namespace is not supported on this device QwQ{clear}\n");
+		} else {
+			if (setns(ipc_ns_fd, CLONE_NEWIPC) == -1) {
+				ruri_error("{red}Failed to setns(2) to %s\n", ipc_ns);
+			}
+		}
+		close(ipc_ns_fd);
+		char cgroup_ns[PATH_MAX] = { '\0' };
+		sprintf(cgroup_ns, "/proc/%d/ns/cgroup", container->ns_pid);
+		int cgroup_ns_fd = open(cgroup_ns, O_RDONLY | O_CLOEXEC);
+		if (cgroup_ns_fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that cgroup namespace is not supported on this device QwQ{clear}\n");
+		} else {
+			if (setns(cgroup_ns_fd, CLONE_NEWCGROUP) == -1) {
+				ruri_error("{red}Failed to setns(2) to %s\n", cgroup_ns);
+			}
+		}
+		close(cgroup_ns_fd);
+		char time_ns[PATH_MAX] = { '\0' };
+		sprintf(time_ns, "/proc/%d/ns/time", container->ns_pid);
+		int time_ns_fd = open(time_ns, O_RDONLY | O_CLOEXEC);
+		if (time_ns_fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that time namespace is not supported on this device QwQ{clear}\n");
+		} else {
+			if (setns(time_ns_fd, CLONE_NEWTIME) == -1) {
+				ruri_error("{red}Failed to setns(2) to %s\n", time_ns);
+			}
+		}
+		close(time_ns_fd);
+		// Disable network.
+		if (container->no_network) {
+			char net_ns_file[PATH_MAX] = { '\0' };
+			sprintf(net_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/net");
+			int net_ns_fd = open(net_ns_file, O_RDONLY | O_CLOEXEC);
+			if (net_ns_fd < 0) {
+				ruri_error("{red}--no-network detected, but failed to open network namespace QwQ\n");
+			}
+			if (setns(net_ns_fd, CLONE_NEWNET) == -1) {
+				ruri_error("{red}--no-network detected, but failed to setns network namespace QwQ\n");
+			}
+		}
 	} else {
 		// We need to own mount namespace.
 		try_unshare(CLONE_NEWNS);
 		// Seems we need to own a new pid namespace for mount procfs.
 		try_unshare(CLONE_NEWPID);
+		if (unshare(CLONE_NEWUTS) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that uts namespace is not supported on this device QwQ{clear}\n");
+		}
+		if (unshare(CLONE_NEWIPC) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that ipc namespace is not supported on this device QwQ{clear}\n");
+		}
+		if (unshare(CLONE_NEWCGROUP) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that cgroup namespace is not supported on this device QwQ{clear}\n");
+		}
+		if (unshare(CLONE_NEWTIME) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that time namespace is not supported on this device QwQ{clear}\n");
+		}
+		if (unshare(CLONE_SYSVSEM) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that semaphore namespace is not supported on this device QwQ{clear}\n");
+		}
+		if (unshare(CLONE_FILES) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that we could not unshare file descriptors with child process QwQ{clear}\n");
+		}
+		if (unshare(CLONE_FS) == -1 && !container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that we could not unshare filesystem information with child process QwQ{clear}\n");
+		}
+		if (container->no_network) {
+			if (unshare(CLONE_NEWNET) == -1) {
+				ruri_error("{red}--no-network detected, but failed to unshare network namespace QwQ\n");
+			}
+		}
 	}
 	// fork(2) into new namespaces we created.
 	pid_t pid = fork();
