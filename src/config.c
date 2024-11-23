@@ -30,7 +30,50 @@
 #include "include/ruri.h"
 /*
  * This file provides config file support for ruri.
+ * ruri_init_config() is also here.
  */
+void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
+{
+	/*
+	 * Initialize a RURI_CONTAINER struct.
+	 * Set all values to default.
+	 */
+	container->container_dir = NULL;
+	for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
+		container->drop_caplist[i] = INIT_VALUE;
+	}
+	cap_value_t nullcaplist[2] = { INIT_VALUE };
+	ruri_build_caplist(container->drop_caplist, false, nullcaplist, nullcaplist);
+	container->enable_seccomp = false;
+	container->no_new_privs = false;
+	container->no_warnings = false;
+	container->enable_unshare = false;
+	container->rootless = false;
+	container->mount_host_runtime = false;
+	container->command[0] = NULL;
+	container->env[0] = NULL;
+	container->extra_mountpoint[0] = NULL;
+	container->extra_ro_mountpoint[0] = NULL;
+	container->cross_arch = NULL;
+	container->qemu_path = NULL;
+	container->ns_pid = INIT_VALUE;
+	container->use_rurienv = true;
+	container->ro_root = false;
+	container->cpuset = NULL;
+	container->memory = NULL;
+	container->work_dir = NULL;
+	container->just_chroot = false;
+	container->rootfs_source = NULL;
+	container->unmask_dirs = false;
+	container->user = NULL;
+	container->hostname = NULL;
+	container->cpupercent = INIT_VALUE;
+	// Use the time now for container_id.
+	time_t tm = time(NULL);
+	// We need a int value for container_id, so use long%86400.
+	// (86400 is the seconds of a day).
+	container->container_id = (int)(tm % 86400);
+}
 char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*

@@ -247,6 +247,7 @@ pid_t ruri_get_ns_pid(const char *_Nonnull container_dir);
 void ruri_fetch(void);
 void ruri_correct_config(const char *_Nonnull path);
 int ruri(int argc, char **argv);
+void ruri_init_config(struct RURI_CONTAINER *_Nonnull container);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

@@ -122,35 +122,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t cap = INIT_VALUE;
 	bool privileged = false;
-	container->enable_seccomp = false;
-	container->no_new_privs = false;
-	container->no_warnings = false;
-	container->enable_unshare = false;
-	container->rootless = false;
-	container->mount_host_runtime = false;
-	container->command[0] = NULL;
-	container->env[0] = NULL;
-	container->extra_mountpoint[0] = NULL;
-	container->extra_ro_mountpoint[0] = NULL;
-	container->cross_arch = NULL;
-	container->qemu_path = NULL;
-	container->ns_pid = INIT_VALUE;
-	container->use_rurienv = true;
-	container->ro_root = false;
-	container->cpuset = NULL;
-	container->memory = NULL;
-	container->work_dir = NULL;
-	container->just_chroot = false;
-	container->rootfs_source = NULL;
-	container->unmask_dirs = false;
-	container->user = NULL;
-	container->hostname = NULL;
-	container->cpupercent = INIT_VALUE;
-	// Use the time now for container_id.
-	time_t tm = time(NULL);
-	// We need a int value for container_id, so use long%86400.
-	// (86400 is the seconds of a day).
-	container->container_id = (int)(tm % 86400);
+	ruri_init_config(container);
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {

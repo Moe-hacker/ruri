@@ -263,6 +263,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		// Return a malloced struct for ruri_umount_container() and ruri_container_ps().
 		if (container == NULL) {
 			container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
+			ruri_init_config(container);
 			container->extra_mountpoint[0] = NULL;
 			container->extra_ro_mountpoint[0] = NULL;
 			container->ns_pid = INIT_VALUE;
@@ -281,6 +282,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	if (container == NULL) {
 		// For ruri_umount_container().
 		container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
+		ruri_init_config(container);
 		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
 		container->extra_mountpoint[mlen] = NULL;
 		container->extra_mountpoint[mlen + 1] = NULL;
