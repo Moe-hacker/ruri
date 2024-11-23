@@ -49,13 +49,17 @@ ruri -D -o test.conf -k cap_sys_admin -d cap_sys_chroot ./t
 This will save config to test.conf.      
 *****************************************
 ```
--c, --config [config file] ..................: Use config file
+-c, --config [config] [args] [COMMAND [ARGS]]: Use config file
 ```
 You can use `ruri -c config_file` to run a container with config file.      
 For example:      
 ```
 ruri -c test.conf
 ```
+or:      
+```
+ruri -c test.conf -k cap_sys_admin /bin/su root -
+```      
 This will run container using test.conf.
 ***********************************************
 ```      

@@ -49,7 +49,7 @@ ruri -D -o test.conf -k cap_sys_admin -d cap_sys_chroot ./t
 将会把配置文件保存到test.conf。  
 *****************************************
 ```
--c, --config [config file] ..................: 使用配置文件
+-c, --config [config] [args] [COMMAND [ARGS]]: 使用配置文件
 ```
 您可以使用`ruri -c config_file`来使用配置文件运行容器。  
 例如：  
@@ -57,6 +57,10 @@ ruri -D -o test.conf -k cap_sys_admin -d cap_sys_chroot ./t
 ruri -c test.conf
 ```
 这将使用test.conf运行容器。
+或者：      
+```
+ruri -c test.conf -k cap_sys_admin /bin/su root -
+```      
 ***********************************************
 ```      
 -a, --arch [arch] ...........................: 通过binfmt_misc/QEMU模拟架构

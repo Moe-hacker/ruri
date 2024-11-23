@@ -106,8 +106,8 @@ void ruri_show_helps(void)
 	cprintf("\n");
 	cprintf("{base}ARGS:\n");
 	cprintf("{base}  -D, --dump-config ...........................: Dump the config\n");
-	cprintf("{base}  -o, --output [config file] ..................: Set output file of `-D` option\n");
-	cprintf("{base}  -c, --config [config file] ..................: Use config file\n");
+	cprintf("{base}  -o, --output [config] .......................: Set output file of `-D` option\n");
+	cprintf("{base}  -c, --config [config] [args] [COMMAND [ARGS]]: Use config file\n");
 	cprintf("{base}  -a, --arch [arch] ...........................: Simulate architecture via binfmt_misc/QEMU (**)\n");
 	cprintf("{base}  -q, --qemu-path [path] ......................: Specify the path of QEMU\n");
 	cprintf("{base}  -u, --unshare ...............................: Enable unshare feature\n");

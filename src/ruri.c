@@ -122,6 +122,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
 	cap_value_t cap = INIT_VALUE;
 	bool privileged = false;
+	bool use_config_file = false;
 	ruri_init_config(container);
 	// A very large and shit-code for() loop.
 	// At least it works fine...
@@ -213,7 +214,8 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			}
 			index++;
 			ruri_read_config(container, argv[index]);
-			break;
+			use_config_file = true;
+			index++;
 		}
 		// Dump config.
 		if (strcmp(argv[index], "-D") == 0 || strcmp(argv[index], "--dump-config") == 0) {
@@ -459,6 +461,26 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				ruri_error("{red}Missing argument\n");
 			}
 		}
+		// If use_config_file is true.
+		// The first unrecognized argument will be treated as command to exec in container.
+		else if (use_config_file) {
+			// Arguments after container_dir will be read as command to exec in container.
+			if (index < argc) {
+				for (int i = 0; i < argc; i++) {
+					if (index < argc && i < MAX_COMMANDS) {
+						container->command[i] = strdup(argv[index]);
+						container->command[i + 1] = NULL;
+						index++;
+					} else {
+						break;
+					}
+				}
+			} else {
+				container->command[0] = NULL;
+			}
+		}
+		// If use_config_file is false.
+		// The first unrecognized argument will be treated as container directory.
 		// If this argument is CONTAINER_DIR.
 		else if (({
 				 // We use a GNU extension here.
@@ -467,9 +489,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			 }) != NULL) {
 			index++;
 			// Arguments after container_dir will be read as command to exec in container.
-			if (argv[index]) {
+			if (index < argc) {
 				for (int i = 0; i < argc; i++) {
-					if (argv[index]) {
+					if (index < argc && i < MAX_COMMANDS) {
 						container->command[i] = strdup(argv[index]);
 						container->command[i + 1] = NULL;
 						index++;
