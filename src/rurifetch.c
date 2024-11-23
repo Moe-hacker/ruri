@@ -32,7 +32,7 @@ static void __ruri_fetch(char **logo, char **info)
 {
 	int j = 0;
 	for (int i = 0; logo[i] != NULL; i++) {
-		j = i - 2;
+		j = i - 1;
 		if (j >= 0 && info[j] != NULL) {
 			cprintf("%s%s\n", logo[i], info[j]);
 			j++;
@@ -80,35 +80,46 @@ void ruri_fetch(void)
 	char commit_id[128] = { '\0' };
 	sprintf(commit_id, "{91;207;250}Commit{white}: %s", RURI_COMMIT_ID);
 	ruri_info[5] = commit_id;
+	char host_arch[128] = { '\0' };
+	sprintf(host_arch, "{91;207;250}Architecture{white}: %s", RURI_HOST_ARCH);
+	ruri_info[6] = host_arch;
+	struct stat st;
+	char binary_size[128] = { '\0' };
+	if (stat("/proc/self/exe", &st) == 0) {
+		sprintf(binary_size, "{91;207;250}Binary size{white}: %ldK", (st.st_size / 1024));
+	}else{
+		sprintf(binary_size, "{91;207;250}Binary size{white}: unknown");
+	}
+	ruri_info[7] = binary_size;
 	char compiler_info[128] = { '\0' };
 	sprintf(compiler_info, "{91;207;250}Compiler{white}: %s", __VERSION__);
-	ruri_info[6] = compiler_info;
+	ruri_info[8] = compiler_info;
 	char build_date[128] = { '\0' };
 	sprintf(build_date, "{91;207;250}Build date{white}: %s", __DATE__);
-	ruri_info[7] = build_date;
+	ruri_info[9] = build_date;
 	char cprintf_version[128] = { '\0' };
 	sprintf(cprintf_version, "{91;207;250}cprintf{white}: %d.%d", CPRINTF_MAJOR, CPRINTF_MINOR);
-	ruri_info[8] = cprintf_version;
+	ruri_info[10] = cprintf_version;
 	char libk2v_version[128] = { '\0' };
 	sprintf(libk2v_version, "{91;207;250}libk2v{white}: %d.%d", LIBK2V_MAJOR, LIBK2V_MINOR);
-	ruri_info[9] = libk2v_version;
+	ruri_info[11] = libk2v_version;
 #if !defined(LIBCAP_MAJOR) || !defined(LIBCAP_MINOR)
-	ruri_info[10] = "{91;207;250}libcap{white}: unknown";
+	ruri_info[12] = "{91;207;250}libcap{white}: unknown";
 #else
 	char libcap_version[128] = { '\0' };
 	sprintf(libcap_version, "{91;207;250}libcap{white}: %d.%d", LIBCAP_MAJOR, LIBCAP_MINOR);
-	ruri_info[10] = libcap_version;
+	ruri_info[12] = libcap_version;
 #endif
 #if !defined(SCMP_VER_MAJOR) || !defined(SCMP_VER_MINOR) || !defined(SCMP_VER_MICRO)
-	ruri_info[11] = "{91;207;250}libseccomp{white}: unknown";
+	ruri_info[13] = "{91;207;250}libseccomp{white}: unknown";
 #else
 	char libseccomp_version[128] = { '\0' };
 	sprintf(libseccomp_version, "{91;207;250}libseccomp{white}: %d.%d.%d", SCMP_VER_MAJOR, SCMP_VER_MINOR, SCMP_VER_MICRO);
-	ruri_info[11] = libseccomp_version;
+	ruri_info[13] = libseccomp_version;
 #endif
-	ruri_info[12] = " ";
-	ruri_info[13] = "[black]   [red]   [green]   [yellow]   [blue]   [purple]   [cyan]   [white]   [clear]";
-	ruri_info[14] = "\033[48;5;243m   \033[48;5;196m   \033[48;5;46m   \033[48;5;226m   \033[48;5;33m   \033[48;5;201m   \033[48;5;51m   \033[48;5;15m   \033[0m";
-	ruri_info[15] = NULL;
+	ruri_info[14] = " ";
+	ruri_info[15] = "[black]   [red]   [green]   [yellow]   [blue]   [purple]   [cyan]   [white]   [clear]";
+	ruri_info[16] = "\033[48;5;243m   \033[48;5;196m   \033[48;5;46m   \033[48;5;226m   \033[48;5;33m   \033[48;5;201m   \033[48;5;51m   \033[48;5;15m   \033[0m";
+	ruri_info[17] = NULL;
 	__ruri_fetch(ruri_logo, ruri_info);
 }
