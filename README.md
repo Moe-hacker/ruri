@@ -77,6 +77,10 @@ If you think something does not work as expected, please [Open a new isssue](htt
 See [Enhance Container Security](doc/Security.md).      
 # Build Manually:      
 Ruri provides statically linked binary, but if you want to build it yourself, see [Build](doc/Build.md).      
+# About systemd:
+Systemd need CAP_SYS_ADMIN to work, and need user ns support to make itself to be PID 1.      
+On my device, with `sudo ./ruri -u -k cap_sys_admin ../ubuntu /sbin/init &` and then `sudo ./ruri ../ubuntu /bin/bash` to enter container, although it shows `State: degraded`, systemd seems works.     
+But, as it might do some changes for the host, you take your own risk to use it.      
 # Integration:
 ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
 An example is ruri's own build action [build-all.sh](build/build-all.sh), it runs containers for 9 different architectures to build itself, that shows its broad application prospects.      
