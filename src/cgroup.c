@@ -130,14 +130,41 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 	ruri_log("{base}Cgroup v2 does not support %s\n", type);
 	return false;
 }
+static char *memory_to_bytes(const char *_Nonnull memory)
+{
+	/*
+	 * Convert memory string to bytes.
+	 * Return a string of bytes.
+	 */
+	char *bytes = NULL;
+	char *memory_dup = strdup(memory);
+	char *ret = malloc(1024);
+	if (strstr(memory_dup, "K") != NULL) {
+		bytes = strtok(memory_dup, "K");
+		int kilobytes = atoi(bytes);
+		sprintf(ret, "%d", kilobytes * 1024);
+	} else if (strstr(memory_dup, "M") != NULL) {
+		bytes = strtok(memory_dup, "M");
+		int megabytes = atoi(bytes);
+		sprintf(ret, "%d", megabytes * 1024 * 1024);
+	} else if (strstr(memory_dup, "G") != NULL) {
+		bytes = strtok(memory_dup, "G");
+		int gigabytes = atoi(bytes);
+		sprintf(ret, "%ld", (long)gigabytes * 1024 * 1024 * 1024);
+	} else {
+		ruri_error("Memory format error, only K M G is supported\n");
+	}
+	free(memory_dup);
+	return ret;
+}
 static void set_cgroup_v1_memory(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
-	* Mount cgroupv1 memory controller and set limit.
-	* Nothing to return, only warnings to show if cgroup is not supported.
-	* Control file:
-	* /sys/fs/cgroup/memory/${container_id}/memory.limit_in_bytes
-	*/
+	 * Mount cgroupv1 memory controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 * Control file:
+	 * /sys/fs/cgroup/memory/${container_id}/memory.limit_in_bytes
+	 */
 	mount_cgroup_v1_memory();
 	pid_t pid = getpid();
 	char buf[128] = { '\0' };
@@ -156,10 +183,12 @@ static void set_cgroup_v1_memory(const struct RURI_CONTAINER *_Nonnull container
 			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 			return;
 		}
-		sprintf(buf, "%s\n", container->memory);
+		char *memory = memory_to_bytes(container->memory);
+		sprintf(buf, "%s\n", memory);
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
 			ruri_warning("{yellow}Set memory limit failed{clear}\n");
 		}
+		free(memory);
 		close(fd);
 	}
 	char memory_cgroup_procs_path[PATH_MAX] = { '\0' };
