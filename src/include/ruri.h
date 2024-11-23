@@ -109,7 +109,7 @@
 #include "cprintf.h"
 #include "hostarch.h"
 // Info of a container to create.
-struct __attribute__((aligned(128))) RURI_CONTAINER {
+struct RURI_CONTAINER {
 	// Container directory.
 	char *_Nonnull container_dir;
 	// Capabilities to drop.
@@ -170,12 +170,12 @@ struct __attribute__((aligned(128))) RURI_CONTAINER {
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)
 #define ruri_maskof(x) (x##_mask)
-struct __attribute__((aligned(16))) RURI_ELF_MAGIC {
+struct RURI_ELF_MAGIC {
 	char *_Nonnull magic;
 	char *_Nonnull mask;
 };
 // For ruri_get_idmap().
-struct __attribute__((aligned(32))) RURI_ID_MAP {
+struct RURI_ID_MAP {
 	uid_t uid;
 	uid_t uid_lower;
 	uid_t uid_count;

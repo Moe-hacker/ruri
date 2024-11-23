@@ -33,16 +33,17 @@ void ruri_setup_seccomp(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Based on docker's default seccomp profile.
+	 * This is a blacklist profile.
 	 * NOTE: This profile is not fully tested.
 	 */
 	scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_ALLOW);
-	// I hope this is the right way to write the seccomp rule...
 	if (ruri_is_in_caplist(container->drop_caplist, CAP_SYS_PACCT)) {
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(acct), 0);
 	}
 	seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(add_key), 0);
 	seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(bpf), 0);
 	if (ruri_is_in_caplist(container->drop_caplist, CAP_SYS_ADMIN)) {
+		// Fix `TIODSTI should be a privileged operation`.
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(ioctl), 1, SCMP_CMP(1, SCMP_CMP_EQ, TIOCSTI));
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(lookup_dcookie), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(mount), 0);
@@ -53,6 +54,7 @@ void ruri_setup_seccomp(const struct RURI_CONTAINER *_Nonnull container)
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(umount), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(umount2), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(unshare), 0);
+		// clone(2) can have the same effect as unshare(2), we deny it.
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(clone), 1, SCMP_CMP(0, SCMP_CMP_MASKED_EQ, CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET));
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(vm86), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(vm86old), 0);

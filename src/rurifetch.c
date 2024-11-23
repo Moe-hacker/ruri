@@ -87,7 +87,7 @@ void ruri_fetch(void)
 	char binary_size[128] = { '\0' };
 	if (stat("/proc/self/exe", &st) == 0) {
 		sprintf(binary_size, "{91;207;250}Binary size{white}: %ldK", (st.st_size / 1024));
-	}else{
+	} else {
 		sprintf(binary_size, "{91;207;250}Binary size{white}: unknown");
 	}
 	ruri_info[7] = binary_size;

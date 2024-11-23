@@ -33,12 +33,14 @@ void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {
 	/*
 	 * If cap is already in list, just do nothing and quit.
-	 * list[] is initialized by INIT_VALUE, and the INIT_VALUE will be ignored when dropping caps.
+	 * list[] is initialized by INIT_VALUE,
+	 * and the INIT_VALUE is the end of the list.
 	 */
-	// Add cap to caplist.
+	// We do not add non-supported capabilities to caplist.
 	if (!CAP_IS_SUPPORTED(cap)) {
 		return;
 	}
+	// Add cap to caplist.
 	if (!ruri_is_in_caplist(list, cap)) {
 		for (int k = 0; true; k++) {
 			if (list[k] == INIT_VALUE) {
@@ -55,6 +57,7 @@ bool ruri_is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap)
 	/*
 	 * If cap is in list, return true,
 	 * else, return false.
+	 * INIT_VALUE is the end of the list.
 	 */
 	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
@@ -98,8 +101,12 @@ void ruri_build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop
 	 *
 	 * If privileged is false, we just add drop_caplist_extra[] to the list,
 	 * and del keep_caplist_extra[] from the list.
+	 *
+	 * NOTE: keep_caplist_extra[] will cover drop_caplist_extra[],
+	 * if they have the same capabilities.
 	 */
 	// Based on docker's default capability set.
+	// And I removed some unneeded capabilities.
 	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, INIT_VALUE };
 	// Set default caplist to drop.
 	caplist[0] = INIT_VALUE;

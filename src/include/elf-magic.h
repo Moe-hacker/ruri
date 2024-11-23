@@ -2,7 +2,6 @@
  * This header contains no copyrightable information.
  */
 // Do not format this.
-
 // clang-format off
 /* ELF magic header and mask for binfmt_misc & QEMU. */
 #define aarch64_magic        "\\x7f\\x45\\x4c\\x46\\x02\\x01\\x01\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x02\\x00\\xb7\\x00"

@@ -132,6 +132,12 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 }
 static void set_cgroup_v1_memory(const struct RURI_CONTAINER *_Nonnull container)
 {
+	/*
+	* Mount cgroupv1 memory controller and set limit.
+	* Nothing to return, only warnings to show if cgroup is not supported.
+	* Control file:
+	* /sys/fs/cgroup/memory/${container_id}/memory.limit_in_bytes
+	*/
 	mount_cgroup_v1_memory();
 	pid_t pid = getpid();
 	char buf[128] = { '\0' };
@@ -171,6 +177,13 @@ static void set_cgroup_v1_memory(const struct RURI_CONTAINER *_Nonnull container
 }
 static void set_cgroup_v1_cpu(const struct RURI_CONTAINER *_Nonnull container)
 {
+	/*
+	 * Mount cgroupv1 cpu controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 * Control file:
+	 * /sys/fs/cgroup/cpu/${container_id}/cpu.cfs_quota_us
+	 * /sys/fs/cgroup/cpu/${container_id}/cpu.cfs_period_us
+	 */
 	mount_cgroup_v1_cpu();
 	char cpu_cgroup_path[PATH_MAX] = { '\0' };
 	sprintf(cpu_cgroup_path, "/sys/fs/cgroup/cpu/%d", container->container_id);
@@ -223,6 +236,11 @@ static void set_cgroup_v1_cpu(const struct RURI_CONTAINER *_Nonnull container)
 }
 static void set_cgroup_v1_cpuset(const struct RURI_CONTAINER *_Nonnull container)
 {
+	/*
+	 * Mount cgroupv1 cpuset controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 * Control file: /sys/fs/cgroup/cpuset/${container_id}/cpuset.cpus
+	 */
 	mount_cgroup_v1_cpuset();
 	char cpuset_cgroup_path[PATH_MAX] = { '\0' };
 	sprintf(cpuset_cgroup_path, "/sys/fs/cgroup/cpuset/%d", container->container_id);
@@ -275,7 +293,11 @@ static void set_cgroup_v1_cpuset(const struct RURI_CONTAINER *_Nonnull container
 }
 static void set_cgroup_v2_memory(const struct RURI_CONTAINER *_Nonnull container)
 {
-	// Mount cgroup v2.
+	/*
+	 * Mount cgroupv2 memory controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 * Control file: /sys/fs/cgroup/${container_id}/memory.max
+	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
@@ -321,7 +343,11 @@ static void set_cgroup_v2_memory(const struct RURI_CONTAINER *_Nonnull container
 }
 static void set_cgroup_v2_cpuset(const struct RURI_CONTAINER *_Nonnull container)
 {
-	// Mount cgroup v2.
+	/*
+	 * Mount cgroupv2 cpuset controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 * Control file: /sys/fs/cgroup/${container_id}/cpuset.cpus
+	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
@@ -370,7 +396,11 @@ static void set_cgroup_v2_cpuset(const struct RURI_CONTAINER *_Nonnull container
 }
 static void set_cgroup_v2_cpu(const struct RURI_CONTAINER *_Nonnull container)
 {
-	// Mount cgroup v2.
+	/*
+	 * Mount cgroupv2 cpu controller and set limit.
+	 * Nothing to return, only warnings to show if cgroup is not supported.
+	 * Control file: /sys/fs/cgroup/${container_id}/cpu.max
+	 */
 	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
 	// Maybe needless.
 	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
