@@ -76,6 +76,10 @@ jobs:
           name: ${{ env.release_name }}
           body: |
             This is ruri binary release.
+            NOTE:
+            *-noupx means the binary is not upx compressed.
+            ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
+            But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
             Build time: ${{ env.build_time }}
           prerelease: false
           files: |
