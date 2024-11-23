@@ -28,11 +28,17 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file is the core of ruri.
+ * It provides functions to run container as info in struct RURI_CONTAINER.
+ * Bisic functions of ruri is implemented here.
+ */
 static bool su_biany_exist(char *_Nonnull container_dir)
 {
 	/*
 	 * Check if /bin/su exists in container.
-	 * Because in some rootfs, /bin/su is not exist.
+	 * Because in some rootfs, /bin/su is not exist,
+	 * so we need to check it.
 	 */
 	char su_path[PATH_MAX] = { '\0' };
 	sprintf(su_path, "%s/bin/su", container_dir);
@@ -51,6 +57,7 @@ static void check_binary(const struct RURI_CONTAINER *_Nonnull container)
 	/*
 	 * Since ruri use execvp() instead of execv(),
 	 * we will not check for init binary here now.
+	 * So, only check for qemu binary.
 	 */
 	// Check QEMU path.
 	if (container->cross_arch != NULL) {
@@ -76,6 +83,7 @@ static void init_container(struct RURI_CONTAINER *_Nonnull container)
 	/*
 	 * It'll be run after chroot(2), so `/` is the root dir of container now.
 	 * The device list and permissions are based on common docker containers.
+	 * If -A is not set, we will mask some dirs in /sys and /proc to avoid security issues.
 	 */
 	// If /proc/1 exists, that means container is already initialized.
 	// I used to check /sys/class/input, but in WSL1, /sys/class/input is not exist.
@@ -261,6 +269,7 @@ static void set_envs(const struct RURI_CONTAINER *_Nonnull container)
 	/*
 	 * Set environment variables.
 	 * $PATH and $TMPDIR will also be set here.
+	 * And $SHELL will be set to sh, for compatibility.
 	 */
 	// Set $PATH to the common value in GNU/Linux,
 	// because $PATH in termux is not correct for common GNU/Linux containers.
@@ -365,6 +374,8 @@ static void copy_qemu_binary(struct RURI_CONTAINER *container)
 {
 	/*
 	 * Copy qemu binary into container.
+	 * ruri support to use qemu-path in host,
+	 * but, to use qemu, we need to copy qemu binary into container.
 	 */
 	// If -q is not set, return.
 	if (container->qemu_path == NULL) {
@@ -408,7 +419,7 @@ static bool pivot_root_succeed(const char *_Nonnull container_dir)
 	/*
 	 * Check if pivot_root(2) succeed.
 	 */
-	// Check if /dev/null is a character device.
+	// Check if ${container_dir}/dev/null is a character device.
 	struct stat dev_null_stat;
 	char dev_null[PATH_MAX] = { '\0' };
 	if (chdir(container_dir) != 0) {
@@ -477,6 +488,9 @@ static void set_hostname(struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
 	 * Set hostname.
+	 * Only for unshare container,
+	 * because hostname is a global setting in the system,
+	 * and we do not want to change the hostname of the host.
 	 */
 	if (container->hostname != NULL) {
 		if (container->enable_unshare) {
@@ -552,7 +566,7 @@ void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
 	}
 	// Check binary used.
 	check_binary(container);
-	// chroot(2) into container.
+	// chroot(2) into container, or use pivot_root(2) if `-u` is set.
 	if (!container->enable_unshare) {
 		chdir(container->container_dir);
 		chroot(".");

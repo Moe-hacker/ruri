@@ -28,6 +28,11 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides unshare container support for ruri.
+ * The design is: unshare(2) or setns(2), then fork(2),
+ * Then, we can just call ruri_run_container(), the next step have the same logic.
+ */
 // For ruri_run_unshare_container().
 static pid_t init_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 {

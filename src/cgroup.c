@@ -28,6 +28,11 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides functions to set cgoup limits for container.
+ * ${container_id} is set by the time creating the container,
+ * And it will be unified by .rurienv file.
+ */
 static void mount_cgroup_v1_memory(void)
 {
 	/*

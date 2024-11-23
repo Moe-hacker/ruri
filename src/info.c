@@ -28,10 +28,14 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides some functions to show help/version info.
+ * As ruri_fetch() is too long but useless, I put it in rurifetch.c.
+ */
 void ruri_show_version_info(void)
 {
 	/*
-	 * Just show version info and license.
+	 * Just show some info.
 	 * Version info is defined in macro RURI_VERSION.
 	 * RURI_COMMIT_ID is defined as -D option of compiler.
 	 */

@@ -28,6 +28,10 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides functions to manage capability list.
+ * But drop_caps() to set capabilities is in chroot.c, not here.
+ */
 // Add a cap to caplist.
 void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {

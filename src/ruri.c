@@ -28,6 +28,9 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file was the main.c of ruri.
+ */
 // Do some checks before chroot(2),called by main().
 static void check_container(const struct RURI_CONTAINER *_Nonnull container)
 {

@@ -28,6 +28,10 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * A neofetch-like program for ruri.
+ * Nothing useful, just for fun.
+ */
 static void __ruri_fetch(char **logo, char **info)
 {
 	int j = 0;

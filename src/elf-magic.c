@@ -28,6 +28,10 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides functions to get ELF magic number and mask for cross_arch.
+ * These info will be used for binfmt_misc.
+ */
 // Get ELF magic number and mask for cross_arch specified.
 struct RURI_ELF_MAGIC *ruri_get_magic(const char *_Nonnull cross_arch)
 {

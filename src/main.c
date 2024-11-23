@@ -32,6 +32,7 @@ int main(int argc, char **argv)
 {
 	/*
 	 * Nothing here, just call ruri().
+	 * So that we can make ruri built-in into other programs easily.
 	 */
 	return ruri(argc, argv);
 }

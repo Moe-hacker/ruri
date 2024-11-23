@@ -28,6 +28,12 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * Since we cannot statically link getpwuid() in glibc,
+ * we need to implement it by ourselves.
+ * This file provides functions to parse /etc/passwd,
+ * and it can also parse /etc/subuid and /etc/subgid.
+ */
 static char *line_get_username(const char *_Nonnull p)
 {
 	/*

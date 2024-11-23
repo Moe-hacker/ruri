@@ -28,6 +28,11 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides rootless container support,
+ * as ruri_run_rootless_chroot_container() needs some functions in chroot.c,
+ * it's in chroot.c, not here.
+ */
 static int try_execvp(char *_Nonnull argv[])
 {
 	/*

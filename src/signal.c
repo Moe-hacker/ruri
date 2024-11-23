@@ -28,6 +28,11 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file is used to catch segfault,
+ * So that we can show some extra info when segfault.
+ * I hope my program will never panic() QwQ.
+ */
 // Show some extra info when segfault.
 static void panic(int sig)
 {

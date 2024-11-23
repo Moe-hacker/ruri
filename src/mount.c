@@ -28,6 +28,10 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides the mount functions for ruri.
+ * It's used to mount disk devices, loop devices, and dir/files.
+ */
 // Return the same value as mkdir().
 static int mkdirs(const char *_Nonnull dir, mode_t mode)
 {

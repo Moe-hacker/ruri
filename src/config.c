@@ -28,6 +28,9 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides config file support for ruri.
+ */
 char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
@@ -345,6 +348,10 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 }
 void ruri_correct_config(const char *_Nonnull path)
 {
+	/*
+	 * Correct the config file.
+	 * This is useful when upgrading ruri to the new version.
+	 */
 	// Disable strict mode for libk2v.
 	k2v_show_warning = false;
 	k2v_stop_at_warning = false;

@@ -28,6 +28,11 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides functions to read and store .rurienv file.
+ * ${container_dir}/.rurienv file is a file that stores the runtime info of the container.
+ * It's used when running and umounting container.
+ */
 // Check if the running pid is ruri.
 static bool is_ruri_pid(pid_t pid)
 {

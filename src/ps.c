@@ -28,6 +28,9 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides functions to show or kill all processes in the container.
+ */
 static char *getpid_name(pid_t pid)
 {
 	/*
@@ -234,10 +237,11 @@ static bool is_container_process(pid_t pid, const char *_Nonnull container_dir)
 void ruri_kill_container(const char *_Nonnull container_dir)
 {
 	/*
+	 *
 	 * Check all the processes in /proc,
 	 * If the process is in the container, kill it.
 	 * We check for /proc/pid/root to determine if the process is in the container.
-	 *
+	 * This function is called by ruri_umount_container().
 	 */
 	DIR *proc_dir = opendir("/proc");
 	struct dirent *file = NULL;

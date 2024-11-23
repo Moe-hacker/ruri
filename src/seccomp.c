@@ -28,6 +28,9 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * This file provides the built-in seccomp filter rules for ruri.
+ */
 // Setup seccomp filter rule, with libseccomp.
 void ruri_setup_seccomp(const struct RURI_CONTAINER *_Nonnull container)
 {
