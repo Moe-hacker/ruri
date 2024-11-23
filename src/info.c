@@ -49,6 +49,11 @@ void ruri_show_version_info(void)
 #if defined(RURI_COMMIT_ID)
 	cprintf("{base}%s%s%s", "ruri commit id ...:  ", RURI_COMMIT_ID, "\n");
 #endif
+	cprintf("{base}%s%s%s", "Architecture .....:  ", RURI_HOST_ARCH, "\n");
+	struct stat st;
+	if (stat("/proc/self/exe", &st) == 0) {
+		cprintf("{base}%s%ldK%s", "Binary size ......:  ", (st.st_size / 1024), "\n");
+	}
 #if defined(LIBCAP_MAJOR) && defined(LIBCAP_MINOR)
 	cprintf("{base}%s%d%s%d%s", "libcap ...........:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");
 #endif

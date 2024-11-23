@@ -37,200 +37,23 @@ struct RURI_ELF_MAGIC *ruri_get_magic(const char *_Nonnull cross_arch)
 	 * TODO: Support more architecture aliases.
 	 */
 	struct RURI_ELF_MAGIC *ret = (struct RURI_ELF_MAGIC *)malloc(sizeof(struct RURI_ELF_MAGIC));
-// Avoid to simulate the same architecture as host.
-#if defined(__aarch64__)
-	if (strcmp(cross_arch, "aarch64") == 0 || strcmp(cross_arch, "arm64") == 0) {
-		free(ret);
-		return NULL;
+	// Avoid to simulate the same architecture as host.
+	if (strcmp(cross_arch, RURI_HOST_ARCH) == 0) {
+		ruri_error("Do not simulate the same architecture as host.");
 	}
-#endif
-#if defined(__alpha__)
-	if (strcmp(cross_arch, "alpha") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__arm__)
-	if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "armel") == 0 || strcmp(cross_arch, "armv7") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__armeb__)
-	if (strcmp(cross_arch, "armeb") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__cris__)
-	if (strcmp(cross_arch, "cris") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__hexagon__)
-	if (strcmp(cross_arch, "hexagon") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__hppa__)
-	if (strcmp(cross_arch, "hppa") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__i386__)
-	if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__loongarch64__)
-	if (strcmp(cross_arch, "loongarch64") == 0 || strcmp(cross_arch, "loong64") == 0 || strcmp(cross_arch, "loongarch") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__m68k__)
-	if (strcmp(cross_arch, "m68k") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__microblaze__)
-	if (strcmp(cross_arch, "microblaze") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__mips__)
-	if (strcmp(cross_arch, "mips") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__mips64__)
-	if (strcmp(cross_arch, "mips64") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__mips64el__)
-	if (strcmp(cross_arch, "mips64el") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__mipsel__)
-	if (strcmp(cross_arch, "mipsel") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__mipsn32__)
-	if (strcmp(cross_arch, "mipsn32") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__mipsn32el__)
-	if (strcmp(cross_arch, "mipsn32el") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__ppc__)
-	if (strcmp(cross_arch, "ppc") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__ppc64__)
-	if (strcmp(cross_arch, "ppc64") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__ppc64le__)
-	if (strcmp(cross_arch, "ppc64le") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__riscv32__)
-	if (strcmp(cross_arch, "riscv32") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__riscv64__)
-	if (strcmp(cross_arch, "riscv64") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__s390x__)
-	if (strcmp(cross_arch, "s390x") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__sh4__)
-	if (strcmp(cross_arch, "sh4") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__sh4eb__)
-	if (strcmp(cross_arch, "sh4eb") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__sparc__)
-	if (strcmp(cross_arch, "sparc") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__sparc32plus__)
-	if (strcmp(cross_arch, "sparc32plus") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__sparc64__)
-	if (strcmp(cross_arch, "sparc64") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__x86_64__)
-	if (strcmp(cross_arch, "x86_64") == 0 || strcmp(cross_arch, "amd64") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__xtensa__)
-	if (strcmp(cross_arch, "xtensa") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
-#if defined(__xtensaeb__)
-	if (strcmp(cross_arch, "xtensaeb") == 0) {
-		free(ret);
-		return NULL;
-	}
-#endif
 	if (strcmp(cross_arch, "aarch64") == 0 || strcmp(cross_arch, "arm64") == 0 || strcmp(cross_arch, "armv8") == 0) {
+		if (strcmp(RURI_HOST_ARCH, "aarch64") == 0) {
+			ruri_error("Do not simulate the same architecture as host.");
+		}
 		ret->magic = ruri_magicof(aarch64);
 		ret->mask = ruri_maskof(aarch64);
 	} else if (strcmp(cross_arch, "alpha") == 0) {
 		ret->magic = ruri_magicof(alpha);
 		ret->mask = ruri_maskof(alpha);
 	} else if (strcmp(cross_arch, "arm") == 0 || strcmp(cross_arch, "armhf") == 0 || strcmp(cross_arch, "arm32") == 0 || strcmp(cross_arch, "armel") == 0 || strcmp(cross_arch, "armv7") == 0) {
+		if (strcmp(RURI_HOST_ARCH, "arm") == 0) {
+			ruri_error("Do not simulate the same architecture as host.");
+		}
 		ret->magic = ruri_magicof(arm);
 		ret->mask = ruri_maskof(arm);
 	} else if (strcmp(cross_arch, "armeb") == 0) {
@@ -246,9 +69,15 @@ struct RURI_ELF_MAGIC *ruri_get_magic(const char *_Nonnull cross_arch)
 		ret->magic = ruri_magicof(hppa);
 		ret->mask = ruri_maskof(hppa);
 	} else if (strcmp(cross_arch, "i386") == 0 || strcmp(cross_arch, "x86") == 0) {
+		if (strcmp(RURI_HOST_ARCH, "i386") == 0) {
+			ruri_error("Do not simulate the same architecture as host.");
+		}
 		ret->magic = ruri_magicof(i386);
 		ret->mask = ruri_maskof(i386);
 	} else if (strcmp(cross_arch, "loongarch64") == 0 || strcmp(cross_arch, "loong64") == 0 || strcmp(cross_arch, "loongarch") == 0) {
+		if (strcmp(RURI_HOST_ARCH, "loongarch64") == 0) {
+			ruri_error("Do not simulate the same architecture as host.");
+		}
 		ret->magic = ruri_magicof(loongarch64);
 		ret->mask = ruri_maskof(loongarch64);
 	} else if (strcmp(cross_arch, "m68k") == 0) {
@@ -309,6 +138,9 @@ struct RURI_ELF_MAGIC *ruri_get_magic(const char *_Nonnull cross_arch)
 		ret->magic = ruri_magicof(sparc64);
 		ret->mask = ruri_maskof(sparc64);
 	} else if (strcmp(cross_arch, "x86_64") == 0 || strcmp(cross_arch, "amd64") == 0) {
+		if (strcmp(RURI_HOST_ARCH, "x86_64") == 0) {
+			ruri_error("Do not simulate the same architecture as host.");
+		}
 		ret->magic = ruri_magicof(x86_64);
 		ret->mask = ruri_maskof(x86_64);
 	} else if (strcmp(cross_arch, "xtensa") == 0) {
