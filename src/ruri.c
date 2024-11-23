@@ -46,11 +46,11 @@ static void check_container(const struct RURI_CONTAINER *_Nonnull container)
 		ruri_error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 	}
 	// Check if we are running with root privileges.
-	if (getuid() != 0 && !(container->rootless)) {
+	if (geteuid() != 0 && !(container->rootless)) {
 		ruri_error("{red}Error: this program should be run with root privileges QwQ\n");
 	}
 	// rootless container should not be run with root privileges.
-	if (container->rootless && getuid() == 0) {
+	if (container->rootless && (geteuid() == 0 || getuid() == 0 || getgid() == 0 || getegid() == 0)) {
 		ruri_error("{red}Error: rootless container should not be run with root privileges QwQ\n");
 	}
 	// `--arch` and `--qemu-path` should be set at the same time.
@@ -565,9 +565,31 @@ static bool ruri_rootless_mode_detected(char *_Nonnull container_dir)
 	free(container);
 	return false;
 }
-// The real main function.
+static void detect_suid_or_capability(void)
+{
+	struct stat st;
+	if (stat("/proc/self/exe", &st) == 0) {
+		if (((st.st_mode & S_ISUID) || (st.st_mode & S_ISGID)) && (geteuid() == 0 || getegid() == 0)) {
+			ruri_warning("{red}Warning: SUID or SGID bit detected on ruri, this is unsafe desu QwQ\n");
+		}
+	}
+	cap_t caps = cap_get_file("/proc/self/exe");
+	if (caps == NULL) {
+		return;
+	}
+	char *caps_str = cap_to_text(caps, NULL);
+	if (caps_str == NULL) {
+		return;
+	}
+	if (strlen(caps_str) > 0) {
+		ruri_warning("{red}Warning: capabilities detected on ruri, this is unsafe desu QwQ\n");
+	}
+}
+// The real main() function.
 int ruri(int argc, char **argv)
 {
+	// Detect SUID or capability.
+	detect_suid_or_capability();
 	// Exit when we get error reading configs.
 	k2v_stop_at_warning = true;
 	// Set process name.
