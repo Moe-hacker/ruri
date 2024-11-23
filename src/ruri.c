@@ -584,6 +584,8 @@ static void detect_suid_or_capability(void)
 	if (strlen(caps_str) > 0) {
 		ruri_warning("{red}Warning: capabilities detected on ruri, this is unsafe desu QwQ\n");
 	}
+	cap_free(caps);
+	cap_free(caps_str);
 }
 // The real main() function.
 int ruri(int argc, char **argv)
