@@ -175,7 +175,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				ruri_error("{red}Container directory or config does not exist QwQ\n");
 			}
 			if (S_ISDIR(st.st_mode)) {
-				ruri_umount_container(realpath(argv[index], NULL));
+				char *container_dir = realpath(argv[index], NULL);
+				ruri_umount_container(container_dir);
+				free(container_dir);
 			} else if (S_ISREG(st.st_mode)) {
 				ruri_read_config(container, argv[index]);
 				ruri_umount_container(container->container_dir);
@@ -192,7 +194,8 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				ruri_error("{red}Container directory or config does not exist QwQ\n");
 			}
 			if (S_ISDIR(st.st_mode)) {
-				ruri_container_ps(realpath(argv[index], NULL));
+				char *container_dir = realpath(argv[index], NULL);
+				ruri_container_ps(container_dir);
 			} else if (S_ISREG(st.st_mode)) {
 				ruri_read_config(container, argv[index]);
 				ruri_container_ps(container->container_dir);
