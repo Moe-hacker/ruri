@@ -100,8 +100,8 @@ void ruri_show_helps(void)
 	cprintf("{base}  -V, --version-code ..........................: Show version code\n");
 	cprintf("{base}  -h, --help ..................................: Show helps\n");
 	cprintf("{base}  -H, --show-examples .........................: Show commandline examples\n");
-	cprintf("{base}  -U, --umount [container_dir] ................: Umount a container\n");
-	cprintf("{base}  -P, --ps [container_dir] ....................: Show process status of the container(*)\n");
+	cprintf("{base}  -U, --umount [container_dir/config] .........: Umount a container\n");
+	cprintf("{base}  -P, --ps [container_dir/config] .............: Show process status of the container(*)\n");
 	cprintf("{base}  -C, --correct-config [config]................: Correct a container config\n");
 	cprintf("\n");
 	cprintf("{base}ARGS:\n");

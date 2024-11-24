@@ -170,26 +170,34 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		// Umount a container.
 		if (strcmp(argv[index], "-U") == 0 || strcmp(argv[index], "--umount") == 0) {
 			index += 1;
-			if (argv[index] != NULL) {
-				char *container_dir = realpath(argv[index], NULL);
-				if (container_dir == NULL) {
-					ruri_error("{red}Container directory does not exist QwQ\n");
-				}
-				ruri_umount_container(container_dir);
-				exit(EXIT_SUCCESS);
+			struct stat st;
+			if (stat(argv[index], &st) != 0) {
+				ruri_error("{red}Container directory or config does not exist QwQ\n");
+			}
+			if (S_ISDIR(st.st_mode)) {
+				ruri_umount_container(realpath(argv[index], NULL));
+			} else if (S_ISREG(st.st_mode)) {
+				ruri_read_config(container, argv[index]);
+				ruri_umount_container(container->container_dir);
+			} else {
+				ruri_error("{red}Error: unknown file type QwQ\n");
 			}
 			exit(114);
 		}
 		// Show process status of a container.
 		if (strcmp(argv[index], "-P") == 0 || strcmp(argv[index], "--ps") == 0) {
 			index += 1;
-			if (argv[index] != NULL) {
-				char *container_dir = realpath(argv[index], NULL);
-				if (container_dir == NULL) {
-					ruri_error("{red}Container directory does not exist QwQ\n");
-				}
-				ruri_container_ps(container_dir);
-				exit(EXIT_SUCCESS);
+			struct stat st;
+			if (stat(argv[index], &st) != 0) {
+				ruri_error("{red}Container directory or config does not exist QwQ\n");
+			}
+			if (S_ISDIR(st.st_mode)) {
+				ruri_container_ps(realpath(argv[index], NULL));
+			} else if (S_ISREG(st.st_mode)) {
+				ruri_read_config(container, argv[index]);
+				ruri_container_ps(container->container_dir);
+			} else {
+				ruri_error("{red}Error: unknown file type QwQ\n");
 			}
 			exit(114);
 		}

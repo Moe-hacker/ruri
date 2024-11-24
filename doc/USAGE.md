@@ -9,12 +9,12 @@ ruri [ARGS]... [CONTAINER_DIRECTORY]... [COMMAND [ARGS]...]
 -V, --version-code ..........................: Show version code
 -h, --help ..................................: Show helps
 -H, --show-examples .........................: Show commandline examples
--P, --ps [container_dir] ....................: Show process status of the container
+-P, --ps [container_dir/config] .............: Show process status of the container
 ```
 These four options will show the info.
 ********************************************
 ```
--U, --umount [container_dir] ................: Umount a container
+-U, --umount [container_dir/config] .........: Umount a container
 ```
 When running a container, ruri needs to mount some directories on it.         
 And after running the container, you can use `-U` option to umount a container.          
