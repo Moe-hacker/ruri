@@ -138,6 +138,10 @@ static void init_container(struct RURI_CONTAINER *_Nonnull container)
 		chmod("/dev/urandom", S_IRUSR | S_IRGRP | S_IROTH);
 		mkdir("/dev/net", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 		mknod("/dev/net/tun", S_IFCHR, makedev(10, 200));
+		if (container->use_kvm) {
+			mknod("/dev/kvm", S_IFCHR, makedev(10, 232));
+			chmod("/dev/kvm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
+		}
 		// Create some system runtime link files in /dev.
 		symlink("/proc/self/fd", "/dev/fd");
 		symlink("/proc/self/fd/0", "/dev/stdin");

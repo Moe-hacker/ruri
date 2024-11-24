@@ -105,6 +105,7 @@ void ruri_show_helps(void)
 	cprintf("{base}  -C, --correct-config [config]................: Correct a container config\n");
 	cprintf("\n");
 	cprintf("{base}ARGS:\n");
+	cprintf("{base}  -r, --rootless ..............................: Run rootless container\n");
 	cprintf("{base}  -D, --dump-config ...........................: Dump the config\n");
 	cprintf("{base}  -o, --output [config] .......................: Set output file of `-D` option\n");
 	cprintf("{base}  -c, --config [config] [args] [COMMAND [ARGS]]: Use config file\n");
@@ -115,7 +116,6 @@ void ruri_show_helps(void)
 	cprintf("{base}  -N, --no-rurienv ............................: Do not use .rurienv file\n");
 	cprintf("{base}  -s, --enable-seccomp ........................: Enable built-in Seccomp profile\n");
 	cprintf("{base}  -p, --privileged ............................: Run privileged container\n");
-	cprintf("{base}  -r, --rootless ..............................: Run rootless container\n");
 	cprintf("{base}  -k, --keep [cap] ............................: Keep the specified capability(***)\n");
 	cprintf("{base}  -d, --drop [cap] ............................: Drop the specified capability\n");
 	cprintf("{base}  -e, --env [env] [value] .....................: Set environment variables to its value (****)\n");
@@ -132,7 +132,7 @@ void ruri_show_helps(void)
 	cprintf("{base}  -E, --user [user/uid] .......................: Set the user to run command in the container(*******)\n");
 	cprintf("{base}  -t, --hostname [hostname] ...................: Set the hostname of the container(********)\n");
 	cprintf("{base}  -x, --no-network ............................: Disable network(*********)\n");
-	cprintf("\n");
+	cprintf("{base}  -K, --use-kvm ...............................: Enable /dev/kvm for container") cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*)         : Will not work for unshare container without PID ns support\n");
 	cprintf("{base}(**)        : `-a` option also need `-q` is set\n");

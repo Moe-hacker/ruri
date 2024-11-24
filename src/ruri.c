@@ -128,10 +128,6 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
 		/**** Deprecated options. ****/
-		if (strcmp(argv[index], "-K") == 0) {
-			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
-			exit(EXIT_SUCCESS);
-		}
 		if (strcmp(argv[index], "-T") == 0) {
 			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
 			exit(EXIT_SUCCESS);
@@ -328,6 +324,10 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		else if (strcmp(argv[index], "-x") == 0 || strcmp(argv[index], "--no-network") == 0) {
 			container->enable_unshare = true;
 			container->no_network = true;
+		}
+		// Use kvm.
+		else if (strcmp(argv[index], "-K") == 0 || strcmp(argv[index], "--use-kvm") == 0) {
+			container->use_kvm = true;
 		}
 		// cgroup limit.
 		else if (strcmp(argv[index], "-l") == 0 || strcmp(argv[index], "--limit") == 0) {

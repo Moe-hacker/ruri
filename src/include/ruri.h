@@ -166,6 +166,8 @@ struct RURI_CONTAINER {
 	char *_Nullable hostname;
 	// No network.
 	bool no_network;
+	// Use kvm.
+	bool use_kvm;
 };
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)

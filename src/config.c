@@ -68,6 +68,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->user = NULL;
 	container->hostname = NULL;
 	container->cpupercent = INIT_VALUE;
+	container->use_kvm = false;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -222,6 +223,10 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_comment(ret, "Default is false.");
 	ret = k2v_add_config(bool, ret, "no_network", container->no_network);
 	ret = k2v_add_newline(ret);
+	// Use kvm.
+	ret = k2v_add_comment(ret, "Use kvm");
+	ret = k2v_add_comment(ret, "Default is false.");
+	ret = k2v_add_config(bool, ret, "use_kvm", container->use_kvm);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -297,7 +302,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Check if config is valid.
-	char *key_list[] = { "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
+	char *key_list[] = { "use_kvm", "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
 	for (int i = 0; key_list[i] != NULL; i++) {
 		if (!have_key(key_list[i], buf)) {
 			ruri_error("{red}Invalid config file, there is no key:%s\nHint:\n You can try to use `ruri -C config` to fix the config file{clear}", key_list[i]);
@@ -359,6 +364,8 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	container->hostname = k2v_get_key(char, "hostname", buf);
 	// Get no_network.
 	container->no_network = k2v_get_key(bool, "no_network", buf);
+	// Get use_kvm.
+	container->use_kvm = k2v_get_key(bool, "use_kvm", buf);
 	// Get user.
 	if (container->user == NULL) {
 		container->user = k2v_get_key(char, "user", buf);
@@ -594,6 +601,12 @@ void ruri_correct_config(const char *_Nonnull path)
 		container.hostname = NULL;
 	} else {
 		container.hostname = k2v_get_key(char, "hostname", buf);
+	}
+	if (!have_key("use_kvm", buf)) {
+		ruri_warning("{green}No key use_kvm found, set to false\n{clear}");
+		container.use_kvm = false;
+	} else {
+		container.use_kvm = k2v_get_key(bool, "use_kvm", buf);
 	}
 	free(buf);
 	unlink(path);

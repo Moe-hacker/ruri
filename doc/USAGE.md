@@ -203,3 +203,8 @@ Set hostname, only for unshare container.
 -x, --no-network .............................: Disable network
 ```
 Disable network, this option need net ns support and will enable unshare at the same time.      
+***********
+```
+-K, --use-kvm ...............................: Enable /dev/kvm support
+```
+Enable /dev/kvm for container.      

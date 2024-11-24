@@ -7,7 +7,8 @@
   * Add `-t` option: `--hostname`.
   * Add `-F` option: `--ruri-fetch`.
   * Add `-x` option: `--disable-network`.
-  * Add `-C` option: `--correct-config`
+  * Add `-C` option: `--correct-config`.
+  * Add `-K` option: `--use-kvm`.
   * `-c` option can now recognize other args and command to run.
   * `-U` and `-P` option can now use config file.
   * Rewrite cgroup support, add cpupercent limit support.
