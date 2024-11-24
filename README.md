@@ -91,6 +91,7 @@ Another example is [rurima](https://github.com/Moe-hacker/rurima), I made ruri b
 See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    
 # Behavior of rurienv:
 After initing the container, ruri will create a file /.rurienv by default, this config can unify container config, but it will also cover some of the command-line args, you can use `--no-rurienv` to disable it, or see [rurienv.md](doc/rurienv.md) to see its behavior.     
+You might cannot remove this file unless you run `chattr -i .rurienv`, but don't worry, after umounting conainer by `ruri -U`, this config file will be removed automatically.      
 If you want to change the container config, just use -U to umount it and re-run the container.      
 # FAQ:   
 [FAQ](doc/FAQ.md)      
