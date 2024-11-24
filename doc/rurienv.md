@@ -6,7 +6,6 @@ It will record the following config:
 * Enable built-in seccomp profile.
 * PID owning unshare namespace.
 * Container ID.
-* Just chroot, do not create runtime dirs.
 * Work directory.
 * Do not show warnings.
 * User to run the container.
