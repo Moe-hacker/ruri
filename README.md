@@ -57,7 +57,7 @@ Max memory: 860 KB
 You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 Or you can run the following command to download ruri automatically:      
 ```sh
-wget -O - https://github.com/Moe-hacker/ruri/raw/refs/heads/main/get-ruri.sh | bash -s -- -s
+wget -q -O - https://getruri.crack.moe | bash -s -- -s
 ```
 This will automatically download ruri binary to `./ruri`.      
 # Usage:    
