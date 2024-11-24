@@ -215,6 +215,7 @@ void ruri_container_ps(char *_Nonnull container_dir)
 	}
 	__container_ps(container_dir, in_pid_ns);
 	free(container);
+	exit(EXIT_SUCCESS);
 }
 static bool is_container_process(pid_t pid, const char *_Nonnull container_dir)
 {

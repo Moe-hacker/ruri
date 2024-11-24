@@ -178,9 +178,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				char *container_dir = realpath(argv[index], NULL);
 				ruri_umount_container(container_dir);
 				free(container_dir);
+				exit(EXIT_SUCCESS);
 			} else if (S_ISREG(st.st_mode)) {
 				ruri_read_config(container, argv[index]);
 				ruri_umount_container(container->container_dir);
+				exit(EXIT_SUCCESS);
 			} else {
 				ruri_error("{red}Error: unknown file type QwQ\n");
 			}
@@ -196,9 +198,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			if (S_ISDIR(st.st_mode)) {
 				char *container_dir = realpath(argv[index], NULL);
 				ruri_container_ps(container_dir);
+				exit(EXIT_SUCCESS);
 			} else if (S_ISREG(st.st_mode)) {
 				ruri_read_config(container, argv[index]);
 				ruri_container_ps(container->container_dir);
+				exit(EXIT_SUCCESS);
 			} else {
 				ruri_error("{red}Error: unknown file type QwQ\n");
 			}
