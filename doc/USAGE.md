@@ -208,3 +208,8 @@ Disable network, this option need net ns support and will enable unshare at the 
 -K, --use-kvm ...............................: Enable /dev/kvm support
 ```
 Enable /dev/kvm for container.      
+********
+```
+-I, --char-dev [device] [major] [minor] .....: Add a character device to container
+```
+Add a character device to container, for example `-I kvm 10 232` or `-I dri/card0 226 0`.      

@@ -183,6 +183,23 @@ static void init_container(struct RURI_CONTAINER *_Nonnull container)
 		free(test);
 	}
 }
+static void mk_char_devs(struct RURI_CONTAINER *_Nonnull container)
+{
+	chdir("/dev");
+	for (int i = 0; true; i += 3) {
+		if (container->char_devs[i] == NULL) {
+			break;
+		}
+		ruri_mkdirs(container->char_devs[i], 0666);
+		rmdir(container->char_devs[i]);
+		mknod(container->char_devs[i], S_IFCHR, makedev(atoi(container->char_devs[i + 1]), atoi(container->char_devs[i + 2])));
+		chmod(container->char_devs[i], S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	}
+	chdir("/");
+	if (container->work_dir != NULL) {
+		chdir(container->work_dir);
+	}
+}
 // Run before chroot(2), so that init_container() will not take effect.
 static void mount_host_runtime(const struct RURI_CONTAINER *_Nonnull container)
 {
@@ -605,6 +622,10 @@ void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
 	// Set up cgroup limit.
 	if (!container->just_chroot) {
 		ruri_set_limit(container);
+	}
+	// Create character devices.
+	if (container->char_devs[0] != NULL) {
+		mk_char_devs(container);
 	}
 	// Set up Seccomp BPF.
 	if (container->enable_seccomp) {

@@ -9,6 +9,7 @@
   * Add `-x` option: `--disable-network`.
   * Add `-C` option: `--correct-config`.
   * Add `-K` option: `--use-kvm`.
+  * Add `-I` option: `--char-dev`.
   * `-c` option can now recognize other args and command to run.
   * `-U` and `-P` option can now use config file.
   * Rewrite cgroup support, add cpupercent limit support.

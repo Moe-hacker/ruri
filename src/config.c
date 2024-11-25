@@ -69,6 +69,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->hostname = NULL;
 	container->cpupercent = INIT_VALUE;
 	container->use_kvm = false;
+	container->char_devs[0] = NULL;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -266,6 +267,19 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_comment(ret, "Set it to empty to disable.");
 	ret = k2v_add_config(char_array, ret, "env", container->env, len);
 	ret = k2v_add_newline(ret);
+	// Char devices.
+	for (int i = 0; true; i++) {
+		if (container->char_devs[i] == NULL) {
+			len = i;
+			break;
+		}
+	}
+	ret = k2v_add_comment(ret, "Extra char devices.");
+	ret = k2v_add_comment(ret, "Format: \"device\",\"major\",\"minor\".");
+	ret = k2v_add_comment(ret, "For example, [\"kvm\",\"10\",\"232\"] is valid.");
+	ret = k2v_add_comment(ret, "Set it to empty to disable.");
+	ret = k2v_add_config(char_array, ret, "char_devs", container->char_devs, len);
+	ret = k2v_add_newline(ret);
 	// command.
 	for (int i = 0; true; i++) {
 		if (container->command[i] == NULL) {
@@ -302,7 +316,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Check if config is valid.
-	char *key_list[] = { "use_kvm", "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
+	char *key_list[] = { "char_devs", "use_kvm", "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
 	for (int i = 0; key_list[i] != NULL; i++) {
 		if (!have_key(key_list[i], buf)) {
 			ruri_error("{red}Invalid config file, there is no key:%s\nHint:\n You can try to use `ruri -C config` to fix the config file{clear}", key_list[i]);
@@ -391,6 +405,12 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	}
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
+	// Get char_devs.
+	int charlen = k2v_get_key(char_array, "char_devs", buf, container->char_devs, MAX_CHAR_DEVS);
+	container->char_devs[charlen] = NULL;
+	if (charlen % 3 != 0) {
+		ruri_error("{red}Invalid char_devs format\n{clear}");
+	}
 	free(buf);
 	buf = ruri_container_info_to_k2v(container);
 	ruri_log("{base}Container config in %s:{cyan}\n%s", path, buf);
@@ -473,17 +493,28 @@ void ruri_correct_config(const char *_Nonnull path)
 		container.extra_mountpoint[mlen] = NULL;
 		container.extra_mountpoint[mlen + 1] = NULL;
 	}
+	if (!have_key("char_devs", buf)) {
+		ruri_warning("{green}No key char_devs found, set to {NULL}\n{clear}");
+		container.char_devs[0] = NULL;
+	} else {
+		int charlen = k2v_get_key(char_array, "char_devs", buf, container.char_devs, MAX_CHAR_DEVS);
+		container.char_devs[charlen] = NULL;
+		if (charlen % 3 != 0) {
+			ruri_warning("{red}Invalid char_devs format\n{clear}");
+			container.char_devs[0] = NULL;
+		}
+	}
 	if (!have_key("extra_ro_mountpoint", buf)) {
 		ruri_warning("{green}No key extra_ro_mountpoint found, set to {NULL}\n{clear}");
 		container.extra_ro_mountpoint[0] = NULL;
 	} else {
-		int mrlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container.extra_ro_mountpoint, MAX_MOUNTPOINTS);
-		if (mrlen % 2 != 0) {
+		int mrlen2 = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container.extra_ro_mountpoint, MAX_MOUNTPOINTS);
+		if (mrlen2 % 2 != 0) {
 			ruri_warning("{red}Invalid extra_ro_mountpoint format\n{clear}");
 			container.extra_ro_mountpoint[0] = NULL;
 		}
-		container.extra_ro_mountpoint[mrlen] = NULL;
-		container.extra_ro_mountpoint[mrlen + 1] = NULL;
+		container.extra_ro_mountpoint[mrlen2] = NULL;
+		container.extra_ro_mountpoint[mrlen2 + 1] = NULL;
 	}
 	if (!have_key("no_new_privs", buf)) {
 		ruri_warning("{green}No key no_new_privs found, set to false\n{clear}");

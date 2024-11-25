@@ -102,6 +102,7 @@
 #define MAX_COMMANDS (1024)
 #define MAX_ENVS (512 * 2)
 #define MAX_MOUNTPOINTS (512 * 2)
+#define MAX_CHAR_DEVS (128 * 3)
 // Include other headers.
 #include "elf-magic.h"
 #include "version.h"
@@ -115,13 +116,13 @@ struct RURI_CONTAINER {
 	// Capabilities to drop.
 	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
 	// Command for exec(2).
-	char *_Nullable command[MAX_COMMANDS + 1];
+	char *_Nonnull command[MAX_COMMANDS + 1];
 	// Extra mountpoints.
-	char *_Nullable extra_mountpoint[MAX_MOUNTPOINTS + 2];
+	char *_Nonnull extra_mountpoint[MAX_MOUNTPOINTS + 2];
 	// Extra read-only mountpoints.
-	char *_Nullable extra_ro_mountpoint[MAX_MOUNTPOINTS + 2];
+	char *_Nonnull extra_ro_mountpoint[MAX_MOUNTPOINTS + 2];
 	// Environment variables.
-	char *_Nullable env[MAX_ENVS + 2];
+	char *_Nonnull env[MAX_ENVS + 2];
 	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
 	// Enable built-in seccomp profile.
@@ -168,6 +169,8 @@ struct RURI_CONTAINER {
 	bool no_network;
 	// Use kvm.
 	bool use_kvm;
+	// Char devices.
+	char *_Nonnull char_devs[MAX_CHAR_DEVS];
 };
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)
@@ -250,6 +253,7 @@ void ruri_fetch(void);
 void ruri_correct_config(const char *_Nonnull path);
 int ruri(int argc, char **argv);
 void ruri_init_config(struct RURI_CONTAINER *_Nonnull container);
+int ruri_mkdirs(const char *_Nonnull dir, mode_t mode);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

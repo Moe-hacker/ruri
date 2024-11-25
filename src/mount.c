@@ -31,9 +31,10 @@
 /*
  * This file provides the mount functions for ruri.
  * It's used to mount disk devices, loop devices, and dir/files.
+ * It also provides ruri_mkdirs() to create directories recursively.
  */
 // Return the same value as mkdir().
-static int mkdirs(const char *_Nonnull dir, mode_t mode)
+int ruri_mkdirs(const char *_Nonnull dir, mode_t mode)
 {
 	/*
 	 * A very simple implementation of mkdir -p.
@@ -178,7 +179,7 @@ static int mk_mountpoint_dir(const char *_Nonnull target)
 	// Check if mountpoint exists.
 	char *test = realpath(target, NULL);
 	if (test == NULL) {
-		if (mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) != 0) {
+		if (ruri_mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH) != 0) {
 			return -1;
 		}
 	} else {
@@ -192,10 +193,10 @@ static int touch_mountpoint_file(const char *_Nonnull target)
 	/*
 	 * Create a common file at target.
 	 */
-	// We use mkdirs() to create the parent directory of the file,
+	// We use ruri_mkdirs() to create the parent directory of the file,
 	// And rmdir() target, so we will never get error that
 	// the parent directory of the file is not exist.
-	mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH);
+	ruri_mkdirs(target, S_IRGRP | S_IWGRP | S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH);
 	rmdir(target);
 	// Check if mountpoint exists.
 	int fd = open(target, O_RDONLY | O_CLOEXEC);

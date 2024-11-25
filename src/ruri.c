@@ -442,6 +442,34 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				ruri_error("{red}Error: unknown mountpoint QwQ\n");
 			}
 		}
+		// Char devices.
+		else if (strcmp(argv[index], "-I") == 0 || strcmp(argv[index], "--char-dev") == 0) {
+			index++;
+			if ((argv[index] != NULL) && (argv[index + 1] != NULL) && (argv[index + 2] != NULL)) {
+				for (int i = 0; i < MAX_CHAR_DEVS; i++) {
+					if (container->char_devs[i] == NULL) {
+						container->char_devs[i] = strdup(argv[index]);
+						index++;
+						if (atoi(argv[index]) <= 0) {
+							ruri_error("{red}Error: invalid major number QwQ\n");
+						}
+						container->char_devs[i + 1] = strdup(argv[index]);
+						index++;
+						if (atoi(argv[index]) <= 0 && strcmp(argv[index], "0") != 0) {
+							ruri_error("{red}Error: invalid minor number QwQ\n");
+						}
+						container->char_devs[i + 2] = strdup(argv[index]);
+						container->char_devs[i + 3] = NULL;
+						break;
+					}
+					if (i == (MAX_CHAR_DEVS - 1)) {
+						ruri_error("{red}Too many char devices QwQ\n");
+					}
+				}
+			} else {
+				ruri_error("{red}Error: unknown char devices QwQ\n");
+			}
+		}
 		// Extra capabilities to keep.
 		else if (strcmp(argv[index], "-k") == 0 || strcmp(argv[index], "--keep") == 0) {
 			index++;

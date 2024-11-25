@@ -202,3 +202,8 @@ unshare容器和rootless容器会始终在执行命令前fork()自身一次，
 -K, --use-kvm ..........................: 开启/dev/kvm支持
 ```
 开启/dev/kvm支持。      
+********
+```
+-I, --char-dev [device] [major] [minor] .....: 添加一个字符设备
+```
+例如 `-I kvm 10 232` 或 `-I dri/card0 226 0`.         
