@@ -9,6 +9,8 @@
 -----------------     
 # 中文文档
 [中文文档](doc/README_zh.md)      
+# WIP wiki:
+https://wiki.crack.moe/ruri      
 # About:         
 &emsp;ruri is pronounced as `luli`, or you can call it `[瑠璃/琉璃]` ~~(るり)~~ in Chinese or Japanese as well.       
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
