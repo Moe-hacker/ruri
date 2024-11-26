@@ -135,6 +135,7 @@ void ruri_show_helps(void)
 	cprintf("{base}  -K, --use-kvm ...............................: Enable /dev/kvm for container\n");
 	cprintf("{base}  -I, --char-dev [device] [major] [minor] .....: Add a character device to container(*11)\n");
 	cprintf("{base}  -i, --hidepid [1/2] .........................: Hidepid for /proc\n");
+	cprintf("{base}  -T, --timens-offset [monotonic] [realtime]...: Set time offset for timens(*12)\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*1)  : Will not work for unshare container without PID ns support\n");
@@ -149,6 +150,7 @@ void ruri_show_helps(void)
 	cprintf("{base}(*9)  : This option is only for unshare container\n");
 	cprintf("{base}(*10) : This option need net ns, and will enable unshare feature by default\n");
 	cprintf("{base}(*11) : For example, `-I kvm 10 232` or `-I dri/card0 226 0`\n");
+	cprintf("{base}(*12) : This feature might not work. The value is in seconds. This feature will auto enable unshare\n");
 	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.

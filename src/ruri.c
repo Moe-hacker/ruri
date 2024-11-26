@@ -127,11 +127,6 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	// A very large and shit-code for() loop.
 	// At least it works fine...
 	for (int index = 1; index < argc; index++) {
-		/**** Deprecated options. ****/
-		if (strcmp(argv[index], "-T") == 0) {
-			cprintf("{yellow}%s option has been deprecated.{clear}\n", argv[index]);
-			exit(EXIT_SUCCESS);
-		}
 		/**** For other options ****/
 		// As an easter egg.
 		if (strcmp(argv[index], "AwA") == 0) {
@@ -475,6 +470,22 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			} else {
 				ruri_error("{red}Error: unknown char devices QwQ\n");
 			}
+		}
+		// Time ns offset.
+		else if (strcmp(argv[index], "-T") == 0 || strcmp(argv[index], "--timens-offset") == 0) {
+			index++;
+			if (argv[index] != NULL) {
+				container->timens_monotonic_offset = strtoll(argv[index], NULL, 10);
+			} else {
+				ruri_error("{red}Error: unknown time ns offset QwQ\n");
+			}
+			index++;
+			if (argv[index] != NULL) {
+				container->timens_realtime_offset = strtoll(argv[index], NULL, 10);
+			} else {
+				ruri_error("{red}Error: unknown time ns offset QwQ\n");
+			}
+			container->enable_unshare = true;
 		}
 		// Extra capabilities to keep.
 		else if (strcmp(argv[index], "-k") == 0 || strcmp(argv[index], "--keep") == 0) {

@@ -60,8 +60,28 @@ static pid_t init_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 	if (unshare(CLONE_NEWCGROUP) == -1 && !container->no_warnings) {
 		ruri_warning("{yellow}Warning: seems that cgroup namespace is not supported on this device QwQ{clear}\n");
 	}
-	if (unshare(CLONE_NEWTIME) == -1 && !container->no_warnings) {
-		ruri_warning("{yellow}Warning: seems that time namespace is not supported on this device QwQ{clear}\n");
+	if (unshare(CLONE_NEWTIME) == -1) {
+		if (container->timens_realtime_offset != 0 || container->timens_monotonic_offset != 0) {
+			ruri_error("{red}Failed to unshare time namespace, --timens-offset cannot be enabled QwQ\n");
+		}
+		if (!container->no_warnings) {
+			ruri_warning("{yellow}Warning: seems that time namespace is not supported on this device QwQ{clear}\n");
+		}
+	}
+	if (container->timens_monotonic_offset != 0) {
+		usleep(1000);
+		int fd = open("/proc/self/timens_offsets", O_WRONLY);
+		char buf[1024] = { '\0' };
+		sprintf(buf, "monotonic %lld 0", container->timens_monotonic_offset);
+		write(fd, buf, strlen(buf));
+		close(fd);
+	}
+	if (container->timens_realtime_offset != 0) {
+		int fd = open("/proc/self/timens_offsets", O_WRONLY);
+		char buf[1024] = { '\0' };
+		sprintf(buf, "boottime %lld 0", container->timens_realtime_offset);
+		write(fd, buf, strlen(buf));
+		close(fd);
 	}
 	if (unshare(CLONE_FILES) == -1 && !container->no_warnings) {
 		ruri_warning("{yellow}Warning: seems that we could not unshare file descriptors with child process QwQ{clear}\n");

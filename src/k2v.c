@@ -162,6 +162,16 @@ char *int_to_k2v(const char *_Nonnull key, int val)
 	sprintf(ret, "%s=\"%d\"\n", key, val);
 	return ret;
 }
+char *llong_to_k2v(const char *_Nonnull key, long long val)
+{
+	// NULL check.
+	if (key == NULL) {
+		return NULL;
+	}
+	char *ret = malloc(strlen(key) + 18 + 8 + 114);
+	sprintf(ret, "%s=\"%lld\"\n", key, val);
+	return ret;
+}
 char *bool_to_k2v(const char *_Nonnull key, bool val)
 {
 	// NULL check.
@@ -966,6 +976,30 @@ int key_get_int(const char *_Nonnull key, const char *_Nonnull buf)
 	free(tmp);
 	p[strlen(p) - 1] = '\0';
 	int ret = atoi(p);
+	free(p);
+	free(buf_to_read);
+	return ret;
+}
+long long key_get_llong(const char *_Nonnull key, const char *_Nonnull buf)
+{
+	if (buf == NULL || key == NULL) {
+		return 0;
+	}
+	if (strlen(key) == 0 || strlen(buf) == 0) {
+		return 0;
+	}
+	__k2v_lint(buf);
+	char *buf_to_read = k2v_auto_tidy(buf);
+	char *line = key_get_line(key, buf_to_read);
+	if (line == NULL) {
+		return 0;
+	}
+	char *tmp = line_get_right(line);
+	free(line);
+	char *p = strdup(&tmp[1]);
+	free(tmp);
+	p[strlen(p) - 1] = '\0';
+	long long ret = strtoll(p, NULL, 10);
 	free(p);
 	free(buf_to_read);
 	return ret;

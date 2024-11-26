@@ -380,6 +380,9 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	container->cpuset = NULL;
 	container->memory = NULL;
 	container->cpupercent = INIT_VALUE;
+	// Unset timens offsets because it's already set.
+	container->timens_realtime_offset = 0;
+	container->timens_monotonic_offset = 0;
 	free(buf);
 	return container;
 }

@@ -173,6 +173,9 @@ struct RURI_CONTAINER {
 	char *_Nonnull char_devs[MAX_CHAR_DEVS];
 	// Hidepid for procfs.
 	int hidepid;
+	// Timens offset.
+	__TIME64_T_TYPE timens_realtime_offset;
+	time_t timens_monotonic_offset;
 };
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)

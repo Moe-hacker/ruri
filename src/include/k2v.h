@@ -94,3 +94,5 @@ size_t k2v_get_filesize(const char *_Nonnull path);
 	})
 char *k2v_add_comment(char *_Nullable buf, char *_Nonnull comment);
 char *k2v_add_newline(char *_Nullable buf);
+long long key_get_llong(const char *_Nonnull key, const char *_Nonnull buf);
+char *llong_to_k2v(const char *_Nonnull key, long long val);

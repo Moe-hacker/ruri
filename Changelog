@@ -11,6 +11,7 @@
   * Add `-K` option: `--use-kvm`.
   * Add `-I` option: `--char-dev`.
   * Add `-i` option: `--hide-pid`.
+  * Add `-T` option: `--timens-offset`.
   * `-c` option can now recognize other args and command to run.
   * `-U` and `-P` option can now use config file.
   * Rewrite cgroup support, add cpupercent limit support.
