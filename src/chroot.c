@@ -523,6 +523,14 @@ static void set_hostname(struct RURI_CONTAINER *_Nonnull container)
 		}
 	}
 }
+static void hidepid(int stat)
+{
+	if (stat == 1) {
+		mount("none", "/proc", "proc", MS_REMOUNT, "hidepid=1");
+	} else if (stat == 2) {
+		mount("none", "/proc", "proc", MS_REMOUNT, "hidepid=2");
+	}
+}
 // Run chroot container.
 void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
 {
@@ -609,6 +617,8 @@ void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
 	if (!container->just_chroot) {
 		init_container(container);
 	}
+	// Hide pid.
+	hidepid(container->hidepid);
 	// Fix /etc/mtab.
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
@@ -715,6 +725,8 @@ void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull containe
 	remove("/etc/mtab");
 	unlink("/etc/mtab");
 	symlink("/proc/mounts", "/etc/mtab");
+	// Hide pid.
+	hidepid(container->hidepid);
 	// Setup binfmt_misc.
 	if (container->cross_arch != NULL) {
 		setup_binfmt_misc(container);

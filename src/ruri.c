@@ -328,6 +328,12 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		// Use kvm.
 		else if (strcmp(argv[index], "-K") == 0 || strcmp(argv[index], "--use-kvm") == 0) {
 			container->use_kvm = true;
+		} else if (strcmp(argv[index], "-i") == 0 || strcmp(argv[index], "--hidepid") == 0) {
+			index++;
+			container->hidepid = atoi(argv[index]);
+			if (container->hidepid < 0 || container->hidepid > 2) {
+				ruri_error("{red}hidepid should be in range 0-2\n");
+			}
 		}
 		// cgroup limit.
 		else if (strcmp(argv[index], "-l") == 0 || strcmp(argv[index], "--limit") == 0) {

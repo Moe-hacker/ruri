@@ -171,6 +171,8 @@ struct RURI_CONTAINER {
 	bool use_kvm;
 	// Char devices.
 	char *_Nonnull char_devs[MAX_CHAR_DEVS];
+	// Hidepid for procfs.
+	int hidepid;
 };
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)

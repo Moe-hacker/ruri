@@ -213,3 +213,8 @@ Enable /dev/kvm for container.
 -I, --char-dev [device] [major] [minor] .....: Add a character device to container
 ```
 Add a character device to container, for example `-I kvm 10 232` or `-I dri/card0 226 0`.      
+**********
+```
+-i, --hidepid 1/2 ...........................: Hidepid for /proc
+```
+Hidepid option for /proc

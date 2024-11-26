@@ -6,6 +6,8 @@ If your device supports user ns, you can install uidmap and use `-r` option with
 ### Run command in container with common user:
 If you can not run rootless container, there's another choice, add a common user in your container and use `-E username` to run command as common user instead root.      
 If you don't need any privileges, it's better to enable no_new_privs at the same time.      
+### Hidepid:
+ruri supports hidepid options for /proc, use `-i 1/2` to enable it.      
 ### Capabilities:
 Ruri will automatically drop unneeded capabilities, but ruri also provides capability control function, you can read capabilities(7) and use `-d` option to filter out unnecessary capabilities in container.      
 ### Disable .rurienv:

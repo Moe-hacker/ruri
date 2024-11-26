@@ -70,6 +70,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->cpupercent = INIT_VALUE;
 	container->use_kvm = false;
 	container->char_devs[0] = NULL;
+	container->hidepid = INIT_VALUE;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -167,6 +168,11 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_comment(ret, "Enable built-in seccomp profile.");
 	ret = k2v_add_comment(ret, "Default is false.");
 	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
+	ret = k2v_add_newline(ret);
+	// hidepid.
+	ret = k2v_add_comment(ret, "Hide pid in /proc.");
+	ret = k2v_add_comment(ret, "Can be 1 or 2, set <=0 to use default.");
+	ret = k2v_add_config(int, ret, "hidepid", container->hidepid);
 	ret = k2v_add_newline(ret);
 	// cpuset.
 	ret = k2v_add_comment(ret, "Cgroup cpuset limit.");
@@ -316,7 +322,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Check if config is valid.
-	char *key_list[] = { "char_devs", "use_kvm", "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
+	char *key_list[] = { "hidepid", "char_devs", "use_kvm", "no_network", "container_dir", "user", "drop_caplist", "no_new_privs", "enable_seccomp", "rootless", "no_warnings", "cross_arch", "qemu_path", "use_rurienv", "cpuset", "memory", "cpupercent", "just_chroot", "unmask_dirs", "mount_host_runtime", "work_dir", "rootfs_source", "ro_root", "extra_mountpoint", "extra_ro_mountpoint", "env", "command", "hostname", NULL };
 	for (int i = 0; key_list[i] != NULL; i++) {
 		if (!have_key(key_list[i], buf)) {
 			ruri_error("{red}Invalid config file, there is no key:%s\nHint:\n You can try to use `ruri -C config` to fix the config file{clear}", key_list[i]);
@@ -380,6 +386,8 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	container->no_network = k2v_get_key(bool, "no_network", buf);
 	// Get use_kvm.
 	container->use_kvm = k2v_get_key(bool, "use_kvm", buf);
+	// Get hidepid.
+	container->hidepid = k2v_get_key(int, "hidepid", buf);
 	// Get user.
 	if (container->user == NULL) {
 		container->user = k2v_get_key(char, "user", buf);
@@ -575,6 +583,12 @@ void ruri_correct_config(const char *_Nonnull path)
 		container.ro_root = false;
 	} else {
 		container.ro_root = k2v_get_key(bool, "ro_root", buf);
+	}
+	if (!have_key("hidepid", buf)) {
+		ruri_warning("{green}No key hidepid found, set to default value\n{clear}");
+		container.hidepid = INIT_VALUE;
+	} else {
+		container.hidepid = k2v_get_key(int, "hidepid", buf);
 	}
 	if (!have_key("cpuset", buf)) {
 		ruri_warning("{green}No key cpuset found, set to NULL\n{clear}");

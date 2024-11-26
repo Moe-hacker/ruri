@@ -134,6 +134,7 @@ void ruri_show_helps(void)
 	cprintf("{base}  -x, --no-network ............................: Disable network(*10)\n");
 	cprintf("{base}  -K, --use-kvm ...............................: Enable /dev/kvm for container\n");
 	cprintf("{base}  -I, --char-dev [device] [major] [minor] .....: Add a character device to container(*11)\n");
+	cprintf("{base}  -i, --hidepid [1/2] .........................: Hidepid for /proc\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*1)  : Will not work for unshare container without PID ns support\n");
