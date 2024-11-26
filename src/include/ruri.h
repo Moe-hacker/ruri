@@ -174,7 +174,7 @@ struct RURI_CONTAINER {
 	// Hidepid for procfs.
 	int hidepid;
 	// Timens offset.
-	__TIME64_T_TYPE timens_realtime_offset;
+	time_t timens_realtime_offset;
 	time_t timens_monotonic_offset;
 };
 // For ruri_get_magic().

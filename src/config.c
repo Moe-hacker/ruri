@@ -310,8 +310,8 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_comment(ret, "Time offset for timens.");
 	ret = k2v_add_comment(ret, "Default is 0.");
 	ret = k2v_add_comment(ret, "Need unshare enabled.");
-	ret = k2v_add_config(llong, ret, "timens_monotonic_offset", container->timens_monotonic_offset);
-	ret = k2v_add_config(llong, ret, "timens_realtime_offset", container->timens_realtime_offset);
+	ret = k2v_add_config(long, ret, "timens_monotonic_offset", container->timens_monotonic_offset);
+	ret = k2v_add_config(long, ret, "timens_realtime_offset", container->timens_realtime_offset);
 	ret = k2v_add_newline(ret);
 	return ret;
 }
@@ -429,8 +429,8 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 		ruri_error("{red}Invalid char_devs format\n{clear}");
 	}
 	// Get time offset.
-	container->timens_realtime_offset = k2v_get_key(llong, "timens_realtime_offset", buf);
-	container->timens_monotonic_offset = k2v_get_key(llong, "timens_monotonic_offset", buf);
+	container->timens_realtime_offset = k2v_get_key(long, "timens_realtime_offset", buf);
+	container->timens_monotonic_offset = k2v_get_key(long, "timens_monotonic_offset", buf);
 	free(buf);
 	buf = ruri_container_info_to_k2v(container);
 	ruri_log("{base}Container config in %s:{cyan}\n%s", path, buf);
@@ -669,13 +669,13 @@ void ruri_correct_config(const char *_Nonnull path)
 		ruri_warning("{green}No key timens_realtime_offset found, set to 0\n{clear}");
 		container.timens_realtime_offset = 0;
 	} else {
-		container.timens_realtime_offset = k2v_get_key(llong, "timens_realtime_offset", buf);
+		container.timens_realtime_offset = k2v_get_key(long, "timens_realtime_offset", buf);
 	}
 	if (!have_key("timens_monotonic_offset", buf)) {
 		ruri_warning("{green}No key timens_monotonic_offset found, set to 0\n{clear}");
 		container.timens_monotonic_offset = 0;
 	} else {
-		container.timens_monotonic_offset = k2v_get_key(llong, "timens_monotonic_offset", buf);
+		container.timens_monotonic_offset = k2v_get_key(long, "timens_monotonic_offset", buf);
 	}
 	free(buf);
 	unlink(path);

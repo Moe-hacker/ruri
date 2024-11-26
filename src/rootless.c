@@ -365,14 +365,14 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 			usleep(1000);
 			int fd = open("/proc/self/timens_offsets", O_WRONLY);
 			char buf[1024] = { '\0' };
-			sprintf(buf, "monotonic %lld 0", container->timens_monotonic_offset);
+			sprintf(buf, "monotonic %ld 0", container->timens_monotonic_offset);
 			write(fd, buf, strlen(buf));
 			close(fd);
 		}
 		if (container->timens_realtime_offset != 0) {
 			int fd = open("/proc/self/timens_offsets", O_WRONLY);
 			char buf[1024] = { '\0' };
-			sprintf(buf, "bottime %lld 0", container->timens_realtime_offset);
+			sprintf(buf, "bottime %ld 0", container->timens_realtime_offset);
 			write(fd, buf, strlen(buf));
 			close(fd);
 		}
