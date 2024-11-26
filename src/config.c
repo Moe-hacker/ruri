@@ -309,8 +309,9 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	// Time offset.
 	ret = k2v_add_comment(ret, "Time offset for timens.");
 	ret = k2v_add_comment(ret, "Default is 0.");
-	ret = k2v_add_config(llong, ret, "timens_realtime_offset", container->timens_realtime_offset);
+	ret = k2v_add_comment(ret, "Need unshare enabled.");
 	ret = k2v_add_config(llong, ret, "timens_monotonic_offset", container->timens_monotonic_offset);
+	ret = k2v_add_config(llong, ret, "timens_realtime_offset", container->timens_realtime_offset);
 	ret = k2v_add_newline(ret);
 	return ret;
 }
