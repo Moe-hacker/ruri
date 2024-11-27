@@ -43,7 +43,7 @@ static pid_t init_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 	 * NOTE: Network namespace is not supported.
 	 */
 	// unshare_pid in forked process is 0.
-	pid_t unshare_pid = INIT_VALUE;
+	pid_t unshare_pid = RURI_INIT_VALUE;
 	// Create namespaces.
 	if (unshare(CLONE_NEWNS) == -1) {
 		ruri_error("{red}Unshare container need at least mount ns support QwQ\n");
@@ -119,7 +119,7 @@ static pid_t join_ns(struct RURI_CONTAINER *_Nonnull container)
 	/*
 	 * Use setns(2) to enter existing namespaces.
 	 */
-	pid_t unshare_pid = INIT_VALUE;
+	pid_t unshare_pid = RURI_INIT_VALUE;
 	// Use setns(2) to enter existing namespaces.
 	char cgroup_ns_file[PATH_MAX] = { '\0' };
 	char ipc_ns_file[PATH_MAX] = { '\0' };
@@ -134,7 +134,7 @@ static pid_t join_ns(struct RURI_CONTAINER *_Nonnull container)
 	sprintf(time_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/time");
 	sprintf(uts_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/uts");
 	// Enter namespaces via setns(2).
-	int ns_fd = INIT_VALUE;
+	int ns_fd = RURI_INIT_VALUE;
 	ns_fd = open(pid_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0 && !container->no_warnings) {
 		ruri_warning("{yellow}Warning: seems that pid namespace is not supported on this device QwQ{clear}\n");
@@ -234,7 +234,7 @@ void ruri_run_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 	 * If container->ns_pid is not set, use unshare(2) to create new namespaces.
 	 * If container->ns_pid is set, use setns(2) to enter existing namespaces.
 	 */
-	pid_t unshare_pid = INIT_VALUE;
+	pid_t unshare_pid = RURI_INIT_VALUE;
 	// unshare(2) itself into new namespaces.
 	if (container->use_rurienv) {
 		container = ruri_read_info(container, container->container_dir);

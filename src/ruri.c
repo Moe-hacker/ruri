@@ -118,9 +118,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	bool fork_exec = false;
 	bool dump_config = false;
 	char *output_path = NULL;
-	cap_value_t keep_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
-	cap_value_t drop_caplist_extra[CAP_LAST_CAP + 1] = { INIT_VALUE };
-	cap_value_t cap = INIT_VALUE;
+	cap_value_t keep_caplist_extra[RURI_CAP_LAST_CAP + 1] = { RURI_INIT_VALUE };
+	cap_value_t drop_caplist_extra[RURI_CAP_LAST_CAP + 1] = { RURI_INIT_VALUE };
+	cap_value_t cap = RURI_INIT_VALUE;
 	bool privileged = false;
 	bool use_config_file = false;
 	ruri_init_config(container);
@@ -352,7 +352,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		else if (strcmp(argv[index], "-e") == 0 || strcmp(argv[index], "--env") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
-				for (int i = 0; i < MAX_ENVS; i++) {
+				for (int i = 0; i < RURI_MAX_ENVS; i++) {
 					if (container->env[i] == NULL) {
 						container->env[i] = strdup(argv[index]);
 						index++;
@@ -361,7 +361,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						break;
 					}
 					// Max 512 envs.
-					if (i == (MAX_ENVS - 1)) {
+					if (i == (RURI_MAX_ENVS - 1)) {
 						ruri_error("{red}Too many envs QwQ\n");
 					}
 				}
@@ -376,7 +376,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				if (strcmp(argv[index], "/") == 0) {
 					ruri_error("{red}/ is not allowed to use as a mountpoint QwQ\n");
 				}
-				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
+				for (int i = 0; i < RURI_MAX_MOUNTPOINTS; i++) {
 					if (container->extra_mountpoint[i] == NULL) {
 						container->extra_mountpoint[i] = realpath(argv[index], NULL);
 						if (container->extra_mountpoint[i] == NULL) {
@@ -399,7 +399,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						break;
 					}
 					// Max 512 mountpoints.
-					if (i == (MAX_MOUNTPOINTS - 1)) {
+					if (i == (RURI_MAX_MOUNTPOINTS - 1)) {
 						ruri_error("{red}Too many mountpoints QwQ\n");
 					}
 				}
@@ -411,7 +411,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		else if (strcmp(argv[index], "-M") == 0 || strcmp(argv[index], "--ro-mount") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
-				for (int i = 0; i < MAX_MOUNTPOINTS; i++) {
+				for (int i = 0; i < RURI_MAX_MOUNTPOINTS; i++) {
 					if (container->extra_ro_mountpoint[i] == NULL) {
 						container->extra_ro_mountpoint[i] = realpath(argv[index], NULL);
 						if (container->extra_ro_mountpoint[i] == NULL) {
@@ -435,7 +435,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						break;
 					}
 					// Max 512 mountpoints.
-					if (i == (MAX_MOUNTPOINTS - 1)) {
+					if (i == (RURI_MAX_MOUNTPOINTS - 1)) {
 						ruri_error("{red}Too many mountpoints QwQ\n");
 					}
 				}
@@ -447,7 +447,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		else if (strcmp(argv[index], "-I") == 0 || strcmp(argv[index], "--char-dev") == 0) {
 			index++;
 			if ((argv[index] != NULL) && (argv[index + 1] != NULL) && (argv[index + 2] != NULL)) {
-				for (int i = 0; i < MAX_CHAR_DEVS; i++) {
+				for (int i = 0; i < RURI_MAX_CHAR_DEVS; i++) {
 					if (container->char_devs[i] == NULL) {
 						container->char_devs[i] = strdup(argv[index]);
 						index++;
@@ -463,7 +463,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						container->char_devs[i + 3] = NULL;
 						break;
 					}
-					if (i == (MAX_CHAR_DEVS - 1)) {
+					if (i == (RURI_MAX_CHAR_DEVS - 1)) {
 						ruri_error("{red}Too many char devices QwQ\n");
 					}
 				}
@@ -527,7 +527,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			// Arguments after container_dir will be read as command to exec in container.
 			if (index < argc) {
 				for (int i = 0; i < argc; i++) {
-					if (index < argc && i < MAX_COMMANDS) {
+					if (index < argc && i < RURI_MAX_COMMANDS) {
 						container->command[i] = strdup(argv[index]);
 						container->command[i + 1] = NULL;
 						index++;
@@ -551,7 +551,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			// Arguments after container_dir will be read as command to exec in container.
 			if (index < argc) {
 				for (int i = 0; i < argc; i++) {
-					if (index < argc && i < MAX_COMMANDS) {
+					if (index < argc && i < RURI_MAX_COMMANDS) {
 						container->command[i] = strdup(argv[index]);
 						container->command[i + 1] = NULL;
 						index++;

@@ -76,15 +76,15 @@ pid_t ruri_get_ns_pid(const char *_Nonnull container_dir)
 	 * and get the ns_pid.
 	 * If the ns_pid is a ruri process,
 	 * return the ns_pid.
-	 * If not, return INIT_VALUE.
-	 * If .rurienv does not exist, return INIT_VALUE.
+	 * If not, return RURI_INIT_VALUE.
+	 * If .rurienv does not exist, return RURI_INIT_VALUE.
 	 */
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container_dir);
 	int fd = open(file, O_RDONLY | O_CLOEXEC);
 	// If .rurienv file does not exist.
 	if (fd < 0) {
-		return INIT_VALUE;
+		return RURI_INIT_VALUE;
 	}
 	struct stat filestat;
 	fstat(fd, &filestat);
@@ -95,12 +95,12 @@ pid_t ruri_get_ns_pid(const char *_Nonnull container_dir)
 	pid_t ret = k2v_get_key(int, "ns_pid", buf);
 	free(buf);
 	if (ret <= 0) {
-		return INIT_VALUE;
+		return RURI_INIT_VALUE;
 	}
 	if (is_ruri_pid(ret)) {
 		return ret;
 	}
-	return INIT_VALUE;
+	return RURI_INIT_VALUE;
 }
 // Format container info as k2v.
 static char *build_container_info(const struct RURI_CONTAINER *_Nonnull container)
@@ -111,11 +111,11 @@ static char *build_container_info(const struct RURI_CONTAINER *_Nonnull containe
 	 */
 	char *ret = NULL;
 	// drop_caplist.
-	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
+	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	char *cap_tmp = NULL;
 	int len = 0;
 	for (int i = 0; true; i++) {
-		if (container->drop_caplist[i] == INIT_VALUE) {
+		if (container->drop_caplist[i] == RURI_INIT_VALUE) {
 			len = i;
 			break;
 		}
@@ -266,7 +266,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 			ruri_init_config(container);
 			container->extra_mountpoint[0] = NULL;
 			container->extra_ro_mountpoint[0] = NULL;
-			container->ns_pid = INIT_VALUE;
+			container->ns_pid = RURI_INIT_VALUE;
 			container->rootless = false;
 		}
 		return container;
@@ -283,10 +283,10 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		// For ruri_umount_container().
 		container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
 		ruri_init_config(container);
-		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
+		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, RURI_MAX_MOUNTPOINTS);
 		container->extra_mountpoint[mlen] = NULL;
 		container->extra_mountpoint[mlen + 1] = NULL;
-		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
+		mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, RURI_MAX_MOUNTPOINTS);
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
 		// For ruri_container_ps() and ruri_umount_container().
@@ -294,7 +294,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		if (is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 			container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 		} else {
-			container->ns_pid = INIT_VALUE;
+			container->ns_pid = RURI_INIT_VALUE;
 		}
 		// Get rootless.
 		container->rootless = k2v_get_key(bool, "rootless", buf);
@@ -322,12 +322,12 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		return container;
 	}
 	// Get capabilities to drop.
-	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, CAP_LAST_CAP);
+	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
+	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
-			container->drop_caplist[i] = INIT_VALUE;
+			container->drop_caplist[i] = RURI_INIT_VALUE;
 			break;
 		}
 		if (atoi(drop_caplist[i]) > 0) {
@@ -336,7 +336,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 			cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
 		}
 		free(drop_caplist[i]);
-		container->drop_caplist[i + 1] = INIT_VALUE;
+		container->drop_caplist[i + 1] = RURI_INIT_VALUE;
 	}
 	// Get no_new_privs.
 	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
@@ -360,15 +360,15 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	// Get no_network.
 	container->no_network = k2v_get_key(bool, "no_network", buf);
 	// Get env.
-	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
+	int envlen = k2v_get_key(char_array, "env", buf, container->env, RURI_MAX_ENVS);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
-	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
+	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, RURI_MAX_MOUNTPOINTS);
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
-	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
+	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, RURI_MAX_MOUNTPOINTS);
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	// Qemu will only be set when initializing container.
@@ -379,7 +379,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	// Unset cgroup limits because it's already set.
 	container->cpuset = NULL;
 	container->memory = NULL;
-	container->cpupercent = INIT_VALUE;
+	container->cpupercent = RURI_INIT_VALUE;
 	// Unset timens offsets because it's already set.
 	container->timens_realtime_offset = 0;
 	container->timens_monotonic_offset = 0;

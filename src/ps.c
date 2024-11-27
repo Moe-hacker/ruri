@@ -141,13 +141,13 @@ static void __container_ps(char *_Nonnull container_dir, bool in_pid_ns)
 		if (file->d_type == DT_DIR) {
 			if (atoi(file->d_name) > 0) {
 				pids[i] = atoi(file->d_name);
-				pids[i + 1] = INIT_VALUE;
+				pids[i + 1] = RURI_INIT_VALUE;
 				i++;
 			}
 		}
 	}
 	for (int j = 0; j < len; j++) {
-		if (pids[j] != INIT_VALUE) {
+		if (pids[j] != RURI_INIT_VALUE) {
 			ruri_log("{base}Checking pid: {cyan}%d\n", pids[j]);
 			test_and_print_pid(pids[j], container_dir, in_pid_ns);
 		} else {
@@ -261,13 +261,13 @@ void ruri_kill_container(const char *_Nonnull container_dir)
 		if (file->d_type == DT_DIR) {
 			if (atoi(file->d_name) > 0) {
 				pids[i] = atoi(file->d_name);
-				pids[i + 1] = INIT_VALUE;
+				pids[i + 1] = RURI_INIT_VALUE;
 				i++;
 			}
 		}
 	}
 	for (int j = 0; j < len; j++) {
-		if (pids[j] != INIT_VALUE) {
+		if (pids[j] != RURI_INIT_VALUE) {
 			ruri_log("{base}Checking pid: {cyan}%d\n", pids[j]);
 			if (is_container_process(pids[j], container_dir)) {
 				ruri_log("{base}Killing pid: {cyan}%d\n", pids[j]);

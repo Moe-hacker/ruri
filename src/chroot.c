@@ -255,9 +255,9 @@ static void drop_caps(const struct RURI_CONTAINER *_Nonnull container)
 	 * And clear CapInh.
 	 * It will be called after chroot(2).
 	 */
-	for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
-		// INIT_VALUE is the end of drop_caplist[].
-		if (container->drop_caplist[i] == INIT_VALUE) {
+	for (int i = 0; i < RURI_CAP_LAST_CAP + 1; i++) {
+		// RURI_INIT_VALUE is the end of drop_caplist[].
+		if (container->drop_caplist[i] == RURI_INIT_VALUE) {
 			break;
 		}
 		// Check if the capability is supported in the kernel,

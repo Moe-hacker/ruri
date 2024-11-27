@@ -81,10 +81,9 @@
 #ifndef _Nonnull
 #define _Nonnull
 #endif
-// We redefine CAP_LAST_CAP to 114,
+// We define RURI_CAP_LAST_CAP to 114,
 // because for kernel in the fulture, there may be more capabilities than today.
-#undef CAP_LAST_CAP
-#define CAP_LAST_CAP 114
+#define RURI_CAP_LAST_CAP 114
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 #warning "This program has not been tested on Linux 3.x or earlier."
 #endif
@@ -97,12 +96,12 @@
 #endif
 #endif
 // For initializing some variables.
-#define INIT_VALUE (-114)
+#define RURI_INIT_VALUE (-114)
 // Limitations.
-#define MAX_COMMANDS (1024)
-#define MAX_ENVS (512 * 2)
-#define MAX_MOUNTPOINTS (512 * 2)
-#define MAX_CHAR_DEVS (128 * 3)
+#define RURI_MAX_COMMANDS (1024)
+#define RURI_MAX_ENVS (512 * 2)
+#define RURI_MAX_MOUNTPOINTS (512 * 2)
+#define RURI_MAX_CHAR_DEVS (128 * 3)
 // Include other headers.
 #include "elf-magic.h"
 #include "version.h"
@@ -114,15 +113,15 @@ struct RURI_CONTAINER {
 	// Container directory.
 	char *_Nonnull container_dir;
 	// Capabilities to drop.
-	cap_value_t drop_caplist[CAP_LAST_CAP + 1];
+	cap_value_t drop_caplist[RURI_CAP_LAST_CAP + 1];
 	// Command for exec(2).
-	char *_Nonnull command[MAX_COMMANDS + 1];
+	char *_Nonnull command[RURI_MAX_COMMANDS + 1];
 	// Extra mountpoints.
-	char *_Nonnull extra_mountpoint[MAX_MOUNTPOINTS + 2];
+	char *_Nonnull extra_mountpoint[RURI_MAX_MOUNTPOINTS + 2];
 	// Extra read-only mountpoints.
-	char *_Nonnull extra_ro_mountpoint[MAX_MOUNTPOINTS + 2];
+	char *_Nonnull extra_ro_mountpoint[RURI_MAX_MOUNTPOINTS + 2];
 	// Environment variables.
-	char *_Nonnull env[MAX_ENVS + 2];
+	char *_Nonnull env[RURI_MAX_ENVS + 2];
 	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
 	// Enable built-in seccomp profile.
@@ -170,7 +169,7 @@ struct RURI_CONTAINER {
 	// Use kvm.
 	bool use_kvm;
 	// Char devices.
-	char *_Nonnull char_devs[MAX_CHAR_DEVS];
+	char *_Nonnull char_devs[RURI_MAX_CHAR_DEVS];
 	// Hidepid for procfs.
 	int hidepid;
 	// Timens offset.

@@ -37,8 +37,8 @@ void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {
 	/*
 	 * If cap is already in list, just do nothing and quit.
-	 * list[] is initialized by INIT_VALUE,
-	 * and the INIT_VALUE is the end of the list.
+	 * list[] is initialized by RURI_INIT_VALUE,
+	 * and the RURI_INIT_VALUE is the end of the list.
 	 */
 	// We do not add non-supported capabilities to caplist.
 	if (!CAP_IS_SUPPORTED(cap)) {
@@ -47,9 +47,9 @@ void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 	// Add cap to caplist.
 	if (!ruri_is_in_caplist(list, cap)) {
 		for (int k = 0; true; k++) {
-			if (list[k] == INIT_VALUE) {
+			if (list[k] == RURI_INIT_VALUE) {
 				list[k] = cap;
-				list[k + 1] = INIT_VALUE;
+				list[k + 1] = RURI_INIT_VALUE;
 				break;
 			}
 		}
@@ -61,14 +61,14 @@ bool ruri_is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap)
 	/*
 	 * If cap is in list, return true,
 	 * else, return false.
-	 * INIT_VALUE is the end of the list.
+	 * RURI_INIT_VALUE is the end of the list.
 	 */
 	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
 			return true;
 			break;
 		}
-		if (list[i] == INIT_VALUE) {
+		if (list[i] == RURI_INIT_VALUE) {
 			break;
 		}
 	}
@@ -83,14 +83,14 @@ void ruri_del_from_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 	 */
 	for (int i = 0; true; i++) {
 		if (list[i] == cap) {
-			while (i <= CAP_LAST_CAP) {
+			while (i <= RURI_CAP_LAST_CAP) {
 				list[i] = list[i + 1];
 				i++;
 			}
-			list[i - 1] = INIT_VALUE;
+			list[i - 1] = RURI_INIT_VALUE;
 			return;
 		}
-		if (list[i] == INIT_VALUE) {
+		if (list[i] == RURI_INIT_VALUE) {
 			return;
 		}
 	}
@@ -111,36 +111,36 @@ void ruri_build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop
 	 */
 	// Based on docker's default capability set.
 	// And I removed some unneeded capabilities.
-	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, INIT_VALUE };
+	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, RURI_INIT_VALUE };
 	// Set default caplist to drop.
-	caplist[0] = INIT_VALUE;
+	caplist[0] = RURI_INIT_VALUE;
 	if (!privileged) {
 		// Add all capabilities to caplist.
 		for (int i = 0; CAP_IS_SUPPORTED(i); i++) {
 			caplist[i] = i;
-			caplist[i + 1] = INIT_VALUE;
+			caplist[i + 1] = RURI_INIT_VALUE;
 		}
 		// Del keep_caplist_common[] from caplist.
 		for (int i = 0; true; i++) {
-			if (keep_caplist_common[i] == INIT_VALUE) {
+			if (keep_caplist_common[i] == RURI_INIT_VALUE) {
 				break;
 			}
 			ruri_del_from_caplist(caplist, keep_caplist_common[i]);
 		}
 	}
 	// Add drop_caplist_extra[] to caplist.
-	if (drop_caplist_extra[0] != INIT_VALUE) {
+	if (drop_caplist_extra[0] != RURI_INIT_VALUE) {
 		for (int i = 0; true; i++) {
-			if (drop_caplist_extra[i] == INIT_VALUE) {
+			if (drop_caplist_extra[i] == RURI_INIT_VALUE) {
 				break;
 			}
 			ruri_add_to_caplist(caplist, drop_caplist_extra[i]);
 		}
 	}
 	// Del keep_caplist_extra[] from caplist.
-	if (keep_caplist_extra[0] != INIT_VALUE) {
+	if (keep_caplist_extra[0] != RURI_INIT_VALUE) {
 		for (int i = 0; true; i++) {
-			if (keep_caplist_extra[i] == INIT_VALUE) {
+			if (keep_caplist_extra[i] == RURI_INIT_VALUE) {
 				break;
 			}
 			ruri_del_from_caplist(caplist, keep_caplist_extra[i]);

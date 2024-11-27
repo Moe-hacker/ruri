@@ -39,10 +39,10 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	 * Set all values to default.
 	 */
 	container->container_dir = NULL;
-	for (int i = 0; i < CAP_LAST_CAP + 1; i++) {
-		container->drop_caplist[i] = INIT_VALUE;
+	for (int i = 0; i < RURI_CAP_LAST_CAP + 1; i++) {
+		container->drop_caplist[i] = RURI_INIT_VALUE;
 	}
-	cap_value_t nullcaplist[2] = { INIT_VALUE };
+	cap_value_t nullcaplist[2] = { RURI_INIT_VALUE };
 	ruri_build_caplist(container->drop_caplist, false, nullcaplist, nullcaplist);
 	container->enable_seccomp = false;
 	container->no_new_privs = false;
@@ -56,7 +56,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->extra_ro_mountpoint[0] = NULL;
 	container->cross_arch = NULL;
 	container->qemu_path = NULL;
-	container->ns_pid = INIT_VALUE;
+	container->ns_pid = RURI_INIT_VALUE;
 	container->use_rurienv = true;
 	container->ro_root = false;
 	container->cpuset = NULL;
@@ -67,10 +67,10 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->unmask_dirs = false;
 	container->user = NULL;
 	container->hostname = NULL;
-	container->cpupercent = INIT_VALUE;
+	container->cpupercent = RURI_INIT_VALUE;
 	container->use_kvm = false;
 	container->char_devs[0] = NULL;
-	container->hidepid = INIT_VALUE;
+	container->hidepid = RURI_INIT_VALUE;
 	container->timens_realtime_offset = 0;
 	container->timens_monotonic_offset = 0;
 	// Use the time now for container_id.
@@ -99,11 +99,11 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_config(char, ret, "user", container->user);
 	ret = k2v_add_newline(ret);
 	// drop_caplist.
-	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
+	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	char *cap_tmp = NULL;
 	int len = 0;
 	for (int i = 0; true; i++) {
-		if (container->drop_caplist[i] == INIT_VALUE) {
+		if (container->drop_caplist[i] == RURI_INIT_VALUE) {
 			len = i;
 			break;
 		}
@@ -338,8 +338,8 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 		}
 	}
 	// Get drop_caplist.
-	char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, CAP_LAST_CAP);
+	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
+	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
 	drop_caplist[caplen] = NULL;
 	for (int i = 0; true; i++) {
 		if (drop_caplist[i] == NULL) {
@@ -353,7 +353,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 			}
 		}
 		free(drop_caplist[i]);
-		container->drop_caplist[i + 1] = INIT_VALUE;
+		container->drop_caplist[i + 1] = RURI_INIT_VALUE;
 	}
 	// Get no_new_privs.
 	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
@@ -402,28 +402,28 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 		container->user = k2v_get_key(char, "user", buf);
 	}
 	// Get env.
-	int envlen = k2v_get_key(char_array, "env", buf, container->env, MAX_ENVS);
+	int envlen = k2v_get_key(char_array, "env", buf, container->env, RURI_MAX_ENVS);
 	if (envlen % 2 != 0) {
 		ruri_error("{red}Invalid env format\n{clear}");
 	}
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
 	// Get extra_mountpoint.
-	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, MAX_MOUNTPOINTS);
+	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, RURI_MAX_MOUNTPOINTS);
 	if (mlen % 2 != 0) {
 		ruri_error("{red}Invalid extra_mountpoint format\n{clear}");
 	}
 	container->extra_mountpoint[mlen] = NULL;
 	container->extra_mountpoint[mlen + 1] = NULL;
 	// Get extra_ro_mountpoint.
-	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, MAX_MOUNTPOINTS);
+	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, RURI_MAX_MOUNTPOINTS);
 	if (mlen % 2 != 0) {
 		ruri_error("{red}Invalid extra_ro_mountpoint format\n{clear}");
 	}
 	container->extra_ro_mountpoint[mlen] = NULL;
 	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	// Get char_devs.
-	int charlen = k2v_get_key(char_array, "char_devs", buf, container->char_devs, MAX_CHAR_DEVS);
+	int charlen = k2v_get_key(char_array, "char_devs", buf, container->char_devs, RURI_MAX_CHAR_DEVS);
 	container->char_devs[charlen] = NULL;
 	if (charlen % 3 != 0) {
 		ruri_error("{red}Invalid char_devs format\n{clear}");
@@ -461,11 +461,11 @@ void ruri_correct_config(const char *_Nonnull path)
 	container.container_dir = k2v_get_key(char, "container_dir", buf);
 	if (!have_key("drop_caplist", buf)) {
 		ruri_warning("{green}No key drop_caplist, we build a default one\n{clear}");
-		cap_value_t nullcaplist[2] = { INIT_VALUE };
+		cap_value_t nullcaplist[2] = { RURI_INIT_VALUE };
 		ruri_build_caplist(container.drop_caplist, false, nullcaplist, nullcaplist);
 	} else {
-		char *drop_caplist[CAP_LAST_CAP + 1] = { NULL };
-		int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, CAP_LAST_CAP);
+		char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
+		int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
 		drop_caplist[caplen] = NULL;
 		for (int i = 0; true; i++) {
 			if (drop_caplist[i] == NULL) {
@@ -479,21 +479,21 @@ void ruri_correct_config(const char *_Nonnull path)
 				}
 			}
 			free(drop_caplist[i]);
-			container.drop_caplist[i + 1] = INIT_VALUE;
+			container.drop_caplist[i + 1] = RURI_INIT_VALUE;
 		}
 	}
 	if (!have_key("command", buf)) {
 		ruri_warning("{green}No key command found, set to {NULL}\n{clear}");
 		container.command[0] = NULL;
 	} else {
-		int comlen = k2v_get_key(char_array, "command", buf, container.command, MAX_COMMANDS);
+		int comlen = k2v_get_key(char_array, "command", buf, container.command, RURI_MAX_COMMANDS);
 		container.command[comlen] = NULL;
 	}
 	if (!have_key("env", buf)) {
 		ruri_warning("{green}No key env found, set to {NULL}\n{clear}");
 		container.env[0] = NULL;
 	} else {
-		int envlen = k2v_get_key(char_array, "env", buf, container.env, MAX_ENVS);
+		int envlen = k2v_get_key(char_array, "env", buf, container.env, RURI_MAX_ENVS);
 		if (envlen % 2 != 0) {
 			ruri_warning("{red}Invalid env format\n{clear}");
 			container.env[0] = NULL;
@@ -505,7 +505,7 @@ void ruri_correct_config(const char *_Nonnull path)
 		ruri_warning("{green}No key extra_mountpoint found, set to {NULL}\n{clear}");
 		container.extra_mountpoint[0] = NULL;
 	} else {
-		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container.extra_mountpoint, MAX_MOUNTPOINTS);
+		int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container.extra_mountpoint, RURI_MAX_MOUNTPOINTS);
 		if (mlen % 2 != 0) {
 			ruri_warning("{red}Invalid extra_mountpoint format\n{clear}");
 			container.extra_mountpoint[0] = NULL;
@@ -517,7 +517,7 @@ void ruri_correct_config(const char *_Nonnull path)
 		ruri_warning("{green}No key char_devs found, set to {NULL}\n{clear}");
 		container.char_devs[0] = NULL;
 	} else {
-		int charlen = k2v_get_key(char_array, "char_devs", buf, container.char_devs, MAX_CHAR_DEVS);
+		int charlen = k2v_get_key(char_array, "char_devs", buf, container.char_devs, RURI_MAX_CHAR_DEVS);
 		container.char_devs[charlen] = NULL;
 		if (charlen % 3 != 0) {
 			ruri_warning("{red}Invalid char_devs format\n{clear}");
@@ -528,7 +528,7 @@ void ruri_correct_config(const char *_Nonnull path)
 		ruri_warning("{green}No key extra_ro_mountpoint found, set to {NULL}\n{clear}");
 		container.extra_ro_mountpoint[0] = NULL;
 	} else {
-		int mrlen2 = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container.extra_ro_mountpoint, MAX_MOUNTPOINTS);
+		int mrlen2 = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container.extra_ro_mountpoint, RURI_MAX_MOUNTPOINTS);
 		if (mrlen2 % 2 != 0) {
 			ruri_warning("{red}Invalid extra_ro_mountpoint format\n{clear}");
 			container.extra_ro_mountpoint[0] = NULL;
@@ -598,7 +598,7 @@ void ruri_correct_config(const char *_Nonnull path)
 	}
 	if (!have_key("hidepid", buf)) {
 		ruri_warning("{green}No key hidepid found, set to default value\n{clear}");
-		container.hidepid = INIT_VALUE;
+		container.hidepid = RURI_INIT_VALUE;
 	} else {
 		container.hidepid = k2v_get_key(int, "hidepid", buf);
 	}
@@ -616,7 +616,7 @@ void ruri_correct_config(const char *_Nonnull path)
 	}
 	if (!have_key("cpupercent", buf)) {
 		ruri_warning("{green}No key cpupercent found, set to -114\n{clear}");
-		container.cpupercent = INIT_VALUE;
+		container.cpupercent = RURI_INIT_VALUE;
 	} else {
 		container.cpupercent = k2v_get_key(int, "cpupercent", buf);
 	}
