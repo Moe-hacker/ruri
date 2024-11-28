@@ -468,6 +468,7 @@ static gid_t line_get_group_gid(const char *p)
 		}
 		ret = ret * 10 + (gid_t)(p[i] - '0');
 	}
+	return ret;
 }
 static bool groups_line_have_user(const char *p, const char *username)
 {
