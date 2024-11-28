@@ -62,6 +62,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <grp.h>
 // This program need to be linked with `-lseccomp`.
 #include <seccomp.h>
 // This program need to be linked with `-lcap`.
@@ -258,6 +259,7 @@ void ruri_correct_config(const char *_Nonnull path);
 int ruri(int argc, char **argv);
 void ruri_init_config(struct RURI_CONTAINER *_Nonnull container);
 int ruri_mkdirs(const char *_Nonnull dir, mode_t mode);
+int ruri_get_groups(uid_t uid, gid_t groups[]);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗

@@ -446,3 +446,105 @@ gid_t ruri_get_user_gid(const char *_Nonnull username)
 	free(buf);
 	return 0;
 }
+static gid_t line_get_group_gid(const char *p)
+{
+	/*
+	 * /etc/groups format:
+	 * groupname:password:gid:user1,user2,user3
+	 * So we need to skip 2 colons.
+	 */
+	gid_t ret = 0;
+	for (int i = 0; i < 2; i++) {
+		if (strchr(p, ':') == NULL) {
+			return 0;
+		}
+		p = strchr(p, ':') + 1;
+	}
+	// Now, after we skip 2 colons, we can get the gid.
+	// Read the gid until we meet the next colon.
+	for (int i = 0; p[i] != '\0'; i++) {
+		if (p[i] == ':') {
+			return ret;
+		}
+		ret = ret * 10 + (gid_t)(p[i] - '0');
+	}
+}
+static bool groups_line_have_user(const char *p, const char *username)
+{
+	/*
+	 * Check if the line have the user.
+	 */
+	// /etc/groups format:
+	// groupname:password:gid:user1,user2,user3
+	// So we need to skip 3 colons.
+	for (int i = 0; i < 3; i++) {
+		if (strchr(p, ':') == NULL) {
+			return false;
+		}
+		p = strchr(p, ':') + 1;
+	}
+	// Now, after we skip 3 colons, we can get the users.
+	// If we reached the end of the line, we return false.
+	if (p[0] == '\0' || p[0] == '\n') {
+		return false;
+	}
+	// Read the users until we meet the next colon.
+	char *users = malloc(strlen(p) + 1);
+	strcpy(users, p);
+	if (strchr(users, '\n') != NULL) {
+		*strchr(users, '\n') = '\0';
+	}
+	char *user = strtok(users, ",");
+	while (user != NULL) {
+		if (strcmp(user, username) == 0) {
+			free(users);
+			return true;
+		}
+		user = strtok(NULL, ",");
+	}
+	free(users);
+	return false;
+}
+int ruri_get_groups(uid_t uid, gid_t groups[])
+{
+	/*
+	 * Get groups by uid.
+	 */
+	char *username = get_username(uid);
+	if (username == NULL) {
+		return 0;
+	}
+	groups[0] = ruri_get_user_gid(username);
+	if (groups[0] == 0) {
+		free(username);
+		return 0;
+	}
+	int ret = 1;
+	int fd = open("/etc/group", O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
+		free(username);
+		return 1;
+	}
+	struct stat filestat;
+	fstat(fd, &filestat);
+	off_t size = filestat.st_size;
+	char *buf = malloc((size_t)size + 1);
+	read(fd, buf, (size_t)size);
+	buf[size] = '\0';
+	close(fd);
+	char *p = buf;
+	gid_t tmpgid = 114514;
+	while (p != NULL) {
+		tmpgid = line_get_group_gid(p);
+		if (groups_line_have_user(p, username)) {
+			groups[ret] = tmpgid;
+			ret++;
+		}
+		p = strchr(p, '\n');
+		if (p == NULL) {
+			break;
+		}
+		p = p + 1;
+	}
+	return ret;
+}

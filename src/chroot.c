@@ -493,12 +493,34 @@ static void change_user(const struct RURI_CONTAINER *_Nonnull container)
 	 */
 	if (container->user != NULL) {
 		if (atoi(container->user) > 0) {
+			int groups_count = 0;
+			gid_t *groups = malloc(NGROUPS_MAX * sizeof(gid_t));
+			groups_count = ruri_get_groups(atoi(container->user), groups);
+			if (groups_count > 0) {
+				setgroups(groups_count, groups);
+			} else {
+				groups[0] = atoi(container->user);
+				setgroups(1, groups);
+			}
+			usleep(1000);
+			free(groups);
 			setgid((gid_t)atoi(container->user));
 			setuid((uid_t)atoi(container->user));
 		} else {
 			if (!ruri_user_exist(container->user)) {
 				ruri_error("{red}Error: user `%s` does not exist QwQ\n", container->user);
 			} else {
+				int groups_count = 0;
+				gid_t *groups = malloc(NGROUPS_MAX * sizeof(gid_t));
+				groups_count = ruri_get_groups(ruri_get_user_uid(container->user), groups);
+				if (groups_count > 0) {
+					setgroups(groups_count, groups);
+				} else {
+					groups[0] = ruri_get_user_uid(container->user);
+					setgroups(1, groups);
+				}
+				usleep(1000);
+				free(groups);
 				setgid(ruri_get_user_gid(container->user));
 				setuid(ruri_get_user_uid(container->user));
 			}
