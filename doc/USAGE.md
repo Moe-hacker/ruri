@@ -217,4 +217,10 @@ Add a character device to container, for example `-I kvm 10 232` or `-I dri/card
 ```
 -i, --hidepid 1/2 ...........................: Hidepid for /proc
 ```
-Hidepid option for /proc
+Hidepid option for /proc      
+*********
+```
+-b, --background ............................: Fork to background
+-L, --logfile [file] ........................: Set log file of -b option
+```
+Run ruri in background and set output file.      

@@ -123,6 +123,8 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	cap_value_t cap = RURI_INIT_VALUE;
 	bool privileged = false;
 	bool use_config_file = false;
+	bool background = false;
+	char *log_file = NULL;
 	ruri_init_config(container);
 	// A very large and shit-code for() loop.
 	// At least it works fine...
@@ -234,6 +236,19 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				ruri_error("{red}Please specify the output file\n{clear}");
 			}
 			output_path = argv[index];
+		}
+		// log file.
+		else if (strcmp(argv[index], "-L") == 0 || strcmp(argv[index], "--log-file") == 0) {
+			index++;
+			if (index == argc - 1) {
+				ruri_error("{red}Please specify the log file\n{clear}");
+			}
+			background = true;
+			log_file = argv[index];
+		}
+		// Run in background.
+		else if (strcmp(argv[index], "-b") == 0 || strcmp(argv[index], "--background") == 0) {
+			background = true;
 		}
 		// Fork to exec.
 		else if (strcmp(argv[index], "-f") == 0 || strcmp(argv[index], "--fork") == 0) {
@@ -567,6 +582,25 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		else {
 			ruri_show_helps();
 			ruri_error("{red}Error: unknown option `%s`\nNote that only existing directory can be detected as CONTAINER_DIR\n", argv[index]);
+		}
+	}
+	// Fork to background if -b is set.
+	if (background) {
+		if (fork() > 0) {
+			usleep(1000);
+			exit(EXIT_SUCCESS);
+		}
+		if (log_file != NULL) {
+			ruri_mkdirs(log_file, 0755);
+			rmdir(log_file);
+			remove(log_file);
+			int logfd = open(log_file, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
+			if (logfd < 0) {
+				ruri_error("{red}Error: failed to open log file QwQ\n");
+			}
+			dup2(logfd, STDOUT_FILENO);
+			dup2(logfd, STDERR_FILENO);
+			close(logfd);
 		}
 	}
 	// Build the caplist to drop.

@@ -136,6 +136,8 @@ void ruri_show_helps(void)
 	cprintf("{base}  -I, --char-dev [device] [major] [minor] .....: Add a character device to container(*11)\n");
 	cprintf("{base}  -i, --hidepid [1/2] .........................: Hidepid for /proc\n");
 	cprintf("{base}  -T, --timens-offset [monotonic] [realtime]...: Set time offset for timens(*12)\n");
+	cprintf("{base}  -b, --background ............................: Fork to background\n");
+	cprintf("{base}  -L, --logfile [file] ........................: Set log file of -b option\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*1)  : Will not work for unshare container without PID ns support\n");

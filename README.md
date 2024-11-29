@@ -35,7 +35,7 @@ Max memory: 860 KB
 ## ~~Alphabet coverage~~
 |Alphabet|ruri used|%|
 |---|---|---|
-|52|39|75%|
+|52|41|79%|
 # Highlights:
 - Powerful Features
   - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, run rootless container, and even more...      
@@ -64,6 +64,10 @@ You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i3
 Or you can run the following command to download ruri automatically:      
 ```sh
 wget -q -O - https://getruri.crack.moe | bash -s -- -s
+```
+or:     
+```sh
+wget -q -O - https://ruri.nekofeng.com | bash -s -- -s
 ```
 This will automatically download ruri binary to `./ruri`.      
 # Usage:    
