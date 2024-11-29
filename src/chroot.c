@@ -192,7 +192,7 @@ static void mk_char_devs(struct RURI_CONTAINER *_Nonnull container)
 		}
 		ruri_mkdirs(container->char_devs[i], 0666);
 		rmdir(container->char_devs[i]);
-		mknod(container->char_devs[i], S_IFCHR, makedev(atoi(container->char_devs[i + 1]), atoi(container->char_devs[i + 2])));
+		mknod(container->char_devs[i], S_IFCHR, makedev((unsigned int)atoi(container->char_devs[i + 1]), (unsigned int)atoi(container->char_devs[i + 2])));
 		chmod(container->char_devs[i], S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	}
 	chdir("/");
@@ -495,11 +495,11 @@ static void change_user(const struct RURI_CONTAINER *_Nonnull container)
 		if (atoi(container->user) > 0) {
 			int groups_count = 0;
 			gid_t *groups = malloc(NGROUPS_MAX * sizeof(gid_t));
-			groups_count = ruri_get_groups(atoi(container->user), groups);
+			groups_count = ruri_get_groups((uid_t)atoi(container->user), groups);
 			if (groups_count > 0) {
-				setgroups(groups_count, groups);
+				setgroups((size_t)groups_count, groups);
 			} else {
-				groups[0] = atoi(container->user);
+				groups[0] = (gid_t)atoi(container->user);
 				setgroups(1, groups);
 			}
 			usleep(1000);
@@ -514,7 +514,7 @@ static void change_user(const struct RURI_CONTAINER *_Nonnull container)
 				gid_t *groups = malloc(NGROUPS_MAX * sizeof(gid_t));
 				groups_count = ruri_get_groups(ruri_get_user_uid(container->user), groups);
 				if (groups_count > 0) {
-					setgroups(groups_count, groups);
+					setgroups((size_t)groups_count, groups);
 				} else {
 					groups[0] = ruri_get_user_uid(container->user);
 					setgroups(1, groups);
