@@ -60,6 +60,16 @@ static void check_container(const struct RURI_CONTAINER *_Nonnull container)
 	if ((container->cross_arch == NULL) != (container->qemu_path == NULL)) {
 		ruri_error("{red}Error: --arch and --qemu-path should be set at the same time QwQ\n");
 	}
+	for (int i = 0; container->extra_mountpoint[i] != NULL; i++) {
+		if (strlen(container->extra_mountpoint[i]) > PATH_MAX) {
+			ruri_error("{red}Error: mountpoint path is too long QwQ\n");
+		}
+	}
+	for (int i = 0; container->extra_ro_mountpoint[i] != NULL; i++) {
+		if (strlen(container->extra_ro_mountpoint[i]) > PATH_MAX) {
+			ruri_error("{red}Error: mountpoint path is too long QwQ\n");
+		}
+	}
 }
 static void parse_cgroup_settings(const char *_Nonnull str, struct RURI_CONTAINER *_Nonnull container)
 {
