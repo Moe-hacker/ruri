@@ -611,6 +611,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			dup2(logfd, STDOUT_FILENO);
 			dup2(logfd, STDERR_FILENO);
 			close(logfd);
+		} else {
+			int nullfd = open("/dev/null", O_RDWR);
+			dup2(nullfd, STDOUT_FILENO);
+			dup2(nullfd, STDERR_FILENO);
+			close(nullfd);
 		}
 	}
 	// Build the caplist to drop.
