@@ -104,7 +104,7 @@ static void init_container(struct RURI_CONTAINER *_Nonnull container)
 		mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "size=65536k,mode=755");
 		// Continue mounting some other directories in /dev.
 		mkdir("/dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-		mount("devpts", "/dev/pts", "devpts", 0, "mode=620,ptmxmode=666");
+		mount("devpts", "/dev/pts", "devpts", MS_NODEV | MS_NOSUID | MS_NOEXEC, "mode=620,ptmxmode=666");
 		char *devshm_options = NULL;
 		if (container->memory == NULL) {
 			devshm_options = strdup("mode=1777");
@@ -230,7 +230,7 @@ static void mount_host_runtime(const struct RURI_CONTAINER *_Nonnull container)
 	memset(buf, '\0', sizeof(buf));
 	sprintf(buf, "%s/dev/pts", container->container_dir);
 	mkdir(buf, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("devpts", buf, "devpts", 0, "mode=600,ptmxmode=666");
+	mount("/dev/pts", buf, "none", MS_BIND, NULL);
 	// Mount devshm.
 	char *devshm_options = NULL;
 	if (container->memory == NULL) {

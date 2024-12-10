@@ -135,7 +135,7 @@ static void init_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 	symlink("/proc/self/fd/2", "./dev/stderr");
 	symlink("/dev/null", "./dev/tty0");
 	mkdir("./dev/pts", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-	mount("devpts", "./dev/pts", "devpts", 0, "mode=620,ptmxmode=666");
+	mount("devpts", "./dev/pts", "devpts", MS_NODEV | MS_NOSUID | MS_NOEXEC, "mode=620,ptmxmode=666");
 	char *devshm_options = NULL;
 	if (container->memory == NULL) {
 		devshm_options = strdup("mode=1777");
