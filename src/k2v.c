@@ -132,6 +132,9 @@ char *k2v_open_file(const char *_Nonnull path, size_t bufsize)
 	}
 	ssize_t len = read(fd, ret, bufsize);
 	ret[len] = '\0';
+	if (len != strlen(ret)) {
+		warning("\033[0m \\0 is not the end of file\n");
+	}
 	__k2v_lint(ret);
 	close(fd);
 	return ret;
