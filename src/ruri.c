@@ -102,6 +102,7 @@ static void parse_cgroup_settings(const char *_Nonnull str, struct RURI_CONTAINE
 		container->memory = limit;
 	} else if (strcmp("cpupercent", buf) == 0) {
 		container->cpupercent = atoi(limit);
+		free(limit);
 		if (container->cpupercent < 1 || container->cpupercent > 100) {
 			ruri_error("{red}Error: cpupercent should be in range 1-100\n");
 		}
@@ -612,7 +613,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			dup2(logfd, STDERR_FILENO);
 			close(logfd);
 		} else {
-			int nullfd = open("/dev/null", O_RDWR);
+			int nullfd = open("/dev/null", O_RDWR | O_CLOEXEC);
 			dup2(nullfd, STDOUT_FILENO);
 			dup2(nullfd, STDERR_FILENO);
 			close(nullfd);
