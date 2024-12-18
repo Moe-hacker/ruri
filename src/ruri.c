@@ -589,6 +589,381 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				container->command[0] = NULL;
 			}
 		}
+		// Parse BSD style command-line.
+		else if (argv[index][0] == '-') {
+			if (strlen(argv[index]) == 1) {
+				ruri_error("Invalid argument %s\n", argv[index]);
+			}
+			// Very shit. I know.
+			// At least it works.
+			int index_bk = index;
+			for (size_t i = 1; i < strlen(argv[index]); i++) {
+				if (index_bk != index) {
+					break;
+				}
+				switch (argv[index][i]) {
+				case 'r':
+					container->rootless = true;
+					break;
+				case 'D':
+					dump_config = true;
+					break;
+				case 'u':
+					container->enable_unshare = true;
+					break;
+				case 'n':
+					container->no_new_privs = true;
+					break;
+				case 'N':
+					container->use_rurienv = false;
+					break;
+				case 's':
+					container->enable_seccomp = true;
+					break;
+				case 'p':
+					privileged = true;
+					break;
+				case 'S':
+					container->mount_host_runtime = true;
+					break;
+				case 'R':
+					container->ro_root = true;
+					break;
+				case 'w':
+					container->no_warnings = true;
+					break;
+				case 'f':
+					fork_exec = true;
+					break;
+				case 'j':
+					container->just_chroot = true;
+					break;
+				case 'A':
+					container->unmask_dirs = true;
+					break;
+				case 'x':
+					container->no_network = true;
+					break;
+				case 'K':
+					container->use_kvm = true;
+					break;
+				case 'b':
+					background = true;
+					break;
+				case 'o':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the output file\n{clear}");
+						}
+						output_path = argv[index];
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'c':
+					if (i == (strlen(argv[index]) - 1)) {
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify a config file !\n{clear}");
+						}
+						index++;
+						ruri_read_config(container, argv[index]);
+						use_config_file = true;
+						index++;
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'a':
+					if (i == (strlen(argv[index]) - 1)) {
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the arch\n{clear}");
+						}
+						index++;
+						container->cross_arch = strdup(argv[index]);
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'q':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the path of qemu binary\n{clear}");
+						}
+						container->qemu_path = strdup(argv[index]);
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'k':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (argv[index] != NULL) {
+							// We both support capability name and number,
+							// because in the fulture, there might be new capabilities that
+							// we can not use the name to match it in current libcap.
+							if (atoi(argv[index]) != 0) {
+								ruri_add_to_caplist(keep_caplist_extra, atoi(argv[index]));
+							} else if (cap_from_name(argv[index], &cap) == 0) {
+								ruri_add_to_caplist(keep_caplist_extra, cap);
+								ruri_log("{base}Keep capability: %s\n", argv[index]);
+							} else {
+								ruri_error("{red}or: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
+							}
+						} else {
+							ruri_error("{red}Missing argument\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'd':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (argv[index] != NULL) {
+							if (atoi(argv[index]) != 0) {
+								ruri_add_to_caplist(drop_caplist_extra, atoi(argv[index]));
+							} else if (cap_from_name(argv[index], &cap) == 0) {
+								ruri_add_to_caplist(drop_caplist_extra, cap);
+							} else {
+								ruri_error("{red}Error: unknown capability `%s`\nQwQ{clear}\n", argv[index]);
+							}
+						} else {
+							ruri_error("{red}Missing argument\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'e':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
+							for (int i = 0; i < RURI_MAX_ENVS; i++) {
+								if (container->env[i] == NULL) {
+									container->env[i] = strdup(argv[index]);
+									index++;
+									container->env[i + 1] = strdup(argv[index]);
+									container->env[i + 2] = NULL;
+									break;
+								}
+								// Max 512 envs.
+								if (i == (RURI_MAX_ENVS - 1)) {
+									ruri_error("{red}Too many envs QwQ\n");
+								}
+							}
+						} else {
+							ruri_error("{red}Error: unknown env QwQ\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'm':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
+							if (strcmp(argv[index], "/") == 0) {
+								ruri_error("{red}/ is not allowed to use as a mountpoint QwQ\n");
+							}
+							for (int i = 0; i < RURI_MAX_MOUNTPOINTS; i++) {
+								if (container->extra_mountpoint[i] == NULL) {
+									container->extra_mountpoint[i] = realpath(argv[index], NULL);
+									if (container->extra_mountpoint[i] == NULL) {
+										ruri_error("{red}mountpoint does not exist QwQ\n");
+									}
+									index++;
+									container->extra_mountpoint[i + 1] = strdup(argv[index]);
+									if (strcmp(argv[index], "/") == 0) {
+										free(container->extra_mountpoint[i]);
+										free(container->extra_mountpoint[i + 1]);
+										container->extra_mountpoint[i] = NULL;
+										container->extra_mountpoint[i + 1] = NULL;
+										if (container->rootfs_source == NULL) {
+											container->rootfs_source = realpath(argv[index - 1], NULL);
+										} else {
+											ruri_error("{red}You can only mount one source to / QwQ\n");
+										}
+									}
+									container->extra_mountpoint[i + 2] = NULL;
+									break;
+								}
+								// Max 512 mountpoints.
+								if (i == (RURI_MAX_MOUNTPOINTS - 1)) {
+									ruri_error("{red}Too many mountpoints QwQ\n");
+								}
+							}
+						} else {
+							ruri_error("{red}Error: unknown mountpoint QwQ\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'M':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if ((argv[index] != NULL) && (argv[index + 1] != NULL)) {
+							for (int i = 0; i < RURI_MAX_MOUNTPOINTS; i++) {
+								if (container->extra_ro_mountpoint[i] == NULL) {
+									container->extra_ro_mountpoint[i] = realpath(argv[index], NULL);
+									if (container->extra_ro_mountpoint[i] == NULL) {
+										ruri_error("{red}mountpoint does not exist QwQ\n");
+									}
+									index++;
+									container->extra_ro_mountpoint[i + 1] = strdup(argv[index]);
+									container->extra_ro_mountpoint[i + 2] = NULL;
+									if (strcmp(argv[index], "/") == 0) {
+										free(container->extra_ro_mountpoint[i]);
+										free(container->extra_ro_mountpoint[i + 1]);
+										container->extra_ro_mountpoint[i] = NULL;
+										container->extra_ro_mountpoint[i + 1] = NULL;
+										if (container->rootfs_source == NULL) {
+											container->rootfs_source = realpath(argv[index - 1], NULL);
+											container->ro_root = true;
+										} else {
+											ruri_error("{red}You can only mount one source to / QwQ\n");
+										}
+									}
+									break;
+								}
+								// Max 512 mountpoints.
+								if (i == (RURI_MAX_MOUNTPOINTS - 1)) {
+									ruri_error("{red}Too many mountpoints QwQ\n");
+								}
+							}
+						} else {
+							ruri_error("{red}Error: unknown mountpoint QwQ\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'l':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if ((argv[index] != NULL)) {
+							parse_cgroup_settings(argv[index], container);
+						} else {
+							ruri_error("{red}Unknown cgroup option\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'W':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (index < argc) {
+							container->work_dir = strdup(argv[index]);
+						} else {
+							ruri_error("{red}Unknown work directory\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'E':
+					if (i == (strlen(argv[index]) - 1)) {
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the user\n{clear}");
+						}
+						index++;
+						container->user = strdup(argv[index]);
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 't':
+					if (i == (strlen(argv[index]) - 1)) {
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the hostname !\n{clear}");
+						}
+						index++;
+						container->hostname = strdup(argv[index]);
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'I':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if ((argv[index] != NULL) && (argv[index + 1] != NULL) && (argv[index + 2] != NULL)) {
+							for (int i = 0; i < RURI_MAX_CHAR_DEVS; i++) {
+								if (container->char_devs[i] == NULL) {
+									container->char_devs[i] = strdup(argv[index]);
+									index++;
+									if (atoi(argv[index]) <= 0) {
+										ruri_error("{red}Error: invalid major number QwQ\n");
+									}
+									container->char_devs[i + 1] = strdup(argv[index]);
+									index++;
+									if (atoi(argv[index]) <= 0 && strcmp(argv[index], "0") != 0) {
+										ruri_error("{red}Error: invalid minor number QwQ\n");
+									}
+									container->char_devs[i + 2] = strdup(argv[index]);
+									container->char_devs[i + 3] = NULL;
+									break;
+								}
+								if (i == (RURI_MAX_CHAR_DEVS - 1)) {
+									ruri_error("{red}Too many char devices QwQ\n");
+								}
+							}
+						} else {
+							ruri_error("{red}Error: unknown char devices QwQ\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'i':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						container->hidepid = atoi(argv[index]);
+						if (container->hidepid < 0 || container->hidepid > 2) {
+							ruri_error("{red}hidepid should be in range 0-2\n");
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'T':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (argv[index] != NULL) {
+							container->timens_monotonic_offset = strtoll(argv[index], NULL, 10);
+						} else {
+							ruri_error("{red}Error: unknown time ns offset QwQ\n");
+						}
+						index++;
+						if (argv[index] != NULL) {
+							container->timens_realtime_offset = strtoll(argv[index], NULL, 10);
+						} else {
+							ruri_error("{red}Error: unknown time ns offset QwQ\n");
+						}
+						container->enable_unshare = true;
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'L':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the log file\n{clear}");
+						}
+						background = true;
+						log_file = argv[index];
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				default:
+					ruri_error("Invalid argument %s\n", argv[index]);
+				}
+			}
+		}
 		// For unknown arguments, yeah I didn't forgot it...
 		else {
 			ruri_show_helps();

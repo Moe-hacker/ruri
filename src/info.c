@@ -153,7 +153,7 @@ void ruri_show_helps(void)
 	cprintf("{base}(*10) : This option need net ns, and will enable unshare feature by default\n");
 	cprintf("{base}(*11) : For example, `-I kvm 10 232` or `-I dri/card0 226 0`\n");
 	cprintf("{base}(*12) : This feature might not work. The value is in seconds. This feature will auto enable unshare\n");
-	cprintf("{base}{clear}\n");
+	cprintf("\n{base}Note:\n") cprintf("{base}BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.\n") cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.
 void ruri_show_examples(void)

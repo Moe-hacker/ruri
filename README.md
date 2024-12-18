@@ -72,6 +72,8 @@ wget -q -O - https://ruri.nekofeng.com | bash -s -- -s
 This will automatically download ruri binary to `./ruri`.      
 # Usage:    
 See [USAGE](doc/USAGE.md) to explore all features of ruri.         
+# About command-line:
+BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.      
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
