@@ -58,7 +58,7 @@ void ruri_setup_seccomp(const struct RURI_CONTAINER *_Nonnull container)
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(umount2), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(unshare), 0);
 		// clone(2) can have the same effect as unshare(2), we deny it.
-		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(clone), 1, SCMP_CMP(0, SCMP_CMP_MASKED_EQ, CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET));
+		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(clone), 1, SCMP_CMP(2, SCMP_CMP_MASKED_EQ, CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET, CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET));
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(vm86), 0);
 		seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(vm86old), 0);
 	}
