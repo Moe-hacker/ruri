@@ -327,18 +327,12 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 			}
 		}
 		close(time_ns_fd);
-		// Disable network.
-		if (container->no_network) {
-			char net_ns_file[PATH_MAX] = { '\0' };
-			sprintf(net_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/net");
-			int net_ns_fd = open(net_ns_file, O_RDONLY | O_CLOEXEC);
-			if (net_ns_fd < 0) {
-				ruri_error("{red}--no-network detected, but failed to open network namespace QwQ\n");
-			}
-			if (setns(net_ns_fd, CLONE_NEWNET) == -1) {
-				ruri_error("{red}--no-network detected, but failed to setns network namespace QwQ\n");
-			}
-		}
+		// Join net ns.
+		// This action will be forced, and will not error.
+		char net_ns_file[PATH_MAX] = { '\0' };
+		sprintf(net_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/net");
+		int net_ns_fd = open(net_ns_file, O_RDONLY | O_CLOEXEC);
+		setns(net_ns_fd, CLONE_NEWNET);
 	} else {
 		// We need to own mount namespace.
 		try_unshare(CLONE_NEWNS);
