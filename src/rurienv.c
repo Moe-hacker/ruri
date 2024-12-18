@@ -321,6 +321,22 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		remove(file);
 		return container;
 	}
+	// Rootless container will only get ns_pid, work_dir and user.
+	// Because these config are safe.
+	if (container->rootless) {
+		container->ns_pid = k2v_get_key(int, "ns_pid", buf);
+		if (container->work_dir == NULL) {
+			container->work_dir = k2v_get_key(char, "work_dir", buf);
+		}
+		if (container->user == NULL) {
+			container->user = k2v_get_key(char, "user", buf);
+		}
+		free(buf);
+		// Unset timens offsets because it's already set.
+		container->timens_realtime_offset = 0;
+		container->timens_monotonic_offset = 0;
+		return container;
+	}
 	// Get capabilities to drop.
 	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
