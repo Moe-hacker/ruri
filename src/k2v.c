@@ -46,6 +46,58 @@ static void __k2v_lint(const char *_Nonnull buf);
 // We use global variables here, because we need it to be simple for developers.
 bool k2v_stop_at_warning = false;
 bool k2v_show_warning = true;
+// Correct backslash.
+static char *correct_backslash(char *buf)
+{
+	/*
+	 * Delete the backslash.
+	 * '\n' -> '\n' (no change)
+	 * '\t' -> '\t' (no change)
+	 * '\r' -> '\r' (no change)
+	 * '\\' -> '\' (delete one backslash)
+	 * '\x' -> 'x' (delete the backslash)
+	 * '\0' -> '0' (delete the backslash)
+	 * '\"' -> '\"' (no change)
+	 * As I need it to follow the Shell standard,
+	 * '\"' will output as '\"'.
+	 */
+	char *ret = strdup(buf);
+	int j = 0;
+	for (size_t i = 0; i < strlen(buf); i++) {
+		if (buf[i] == '\\') {
+			if (i < strlen(buf) - 1) {
+				i++;
+				if (buf[i] == 'n') {
+					ret[j] = '\\';
+					j++;
+					ret[j] = 'n';
+				} else if (buf[i] == 't') {
+					ret[j] = '\\';
+					j++;
+					ret[j] = 't';
+				} else if (buf[i] == 'r') {
+					ret[j] = '\\';
+					j++;
+					ret[j] = 'r';
+				} else if (buf[i] == '"') {
+					ret[j] = '\\';
+					j++;
+					ret[j] = '"';
+				} else {
+					ret[j] = buf[i];
+				}
+				j++;
+				ret[j] = '\0';
+				continue;
+			}
+		}
+		ret[j] = buf[i];
+		j++;
+		ret[j] = '\0';
+	}
+	free(buf);
+	return ret;
+}
 // Get the first line in buffer.
 static char *get_current_line(const char *_Nonnull buf)
 {
@@ -110,7 +162,6 @@ size_t k2v_get_filesize(const char *_Nonnull path)
 	// To avoid overflow.
 	return (size_t)ret + 3;
 }
-
 char *k2v_open_file(const char *_Nonnull path, size_t bufsize)
 {
 	/*
@@ -474,6 +525,7 @@ static char *line_get_right(const char *_Nonnull line)
 		ret[i + 1] = '\0';
 		break;
 	}
+	ret = correct_backslash(ret);
 	return ret;
 }
 static bool __k2v_is_array(const char *_Nonnull line)
