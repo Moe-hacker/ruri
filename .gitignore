@@ -21,3 +21,4 @@ debian/.debhelper
 debian/debhelper-build-stamp
 debian/files
 tmpdir*
+test-root

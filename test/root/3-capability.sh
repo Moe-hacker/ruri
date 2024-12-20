@@ -10,7 +10,7 @@ export SUBTEST_DESCRIPTION="Default capability"
 show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
-cat /proc/self/status | grep CapEff| awk '{print \$2}' > /cap
+cat /proc/self/status | grep CapBnd| awk '{print \$2}' > /cap
 EOF
 chmod 777 test/test.sh
 ./ruri ./test /bin/sh /test.sh
@@ -55,7 +55,7 @@ export SUBTEST_DESCRIPTION="Add capability CAP_SYS_ADMIN"
 show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
-cat /proc/self/status | grep CapEff| awk '{print \$2}' > /cap
+cat /proc/self/status | grep CapBnd| awk '{print \$2}' > /cap
 EOF
 chmod 777 test/test.sh
 ./ruri -k cap_sys_admin ./test /bin/sh /test.sh
@@ -72,7 +72,7 @@ export SUBTEST_DESCRIPTION="Drop capability CAP_CHOWN"
 show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
-cat /proc/self/status | grep CapEff| awk '{print \$2}' > /cap
+cat /proc/self/status | grep CapBnd| awk '{print \$2}' > /cap
 EOF
 chmod 777 test/test.sh
 ./ruri -d cap_chown ./test /bin/sh /test.sh
@@ -89,7 +89,7 @@ export SUBTEST_DESCRIPTION="Drop all capabilities"
 show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
-cat /proc/self/status | grep CapEff| awk '{print \$2}' > /cap
+cat /proc/self/status | grep CapBnd| awk '{print \$2}' > /cap
 EOF
 chmod 777 test/test.sh
 for i in $(seq 0 40); do
@@ -109,7 +109,7 @@ export SUBTEST_DESCRIPTION="Keep all capabilities(privileged)"
 show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
-cat /proc/self/status | grep CapEff| awk '{print \$2}' > /cap
+cat /proc/self/status | grep CapBnd| awk '{print \$2}' > /cap
 EOF
 chmod 777 test/test.sh
 ./ruri -p ./test /bin/sh /test.sh
@@ -126,7 +126,7 @@ export SUBTEST_DESCRIPTION="Drop all capabilities but keep CAP_SYS_ADMIN"
 show_subtest_description
 cd ${TMPDIR}
 cat <<EOF >test/test.sh
-cat /proc/self/status | grep CapEff| awk '{print \$2}' > /cap
+cat /proc/self/status | grep CapBnd| awk '{print \$2}' > /cap
 EOF
 chmod 777 test/test.sh
 for i in $(seq 0 40); do

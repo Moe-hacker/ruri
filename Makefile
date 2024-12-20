@@ -92,6 +92,7 @@ format :
 	shfmt -i 4 -w get-ruri.sh
 	chmod 777 test/*.sh
 	chmod 777 test/root/*
+	clang-format -i test/*.c
 clean :
 	$(CLEAN_LOG) $(BIN_TARGET)
 	@rm -f $(BIN_TARGET)||true
