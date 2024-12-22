@@ -1013,6 +1013,8 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		}
 		unlink(output_path);
 		remove(output_path);
+		ruri_mkdirs(output_path, 0755);
+		rmdir(output_path);
 		int fd = open(output_path, O_CREAT | O_CLOEXEC | O_RDWR, S_IRUSR | S_IRGRP | S_IROTH | S_IWGRP | S_IWUSR | S_IWOTH);
 		if (fd < 0) {
 			ruri_error("{red}Error: failed to open output file QwQ\n");
