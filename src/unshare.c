@@ -196,6 +196,13 @@ static pid_t join_ns(struct RURI_CONTAINER *_Nonnull container)
 		if (setns(ns_fd, CLONE_NEWNET) == -1) {
 			ruri_error("{red}--no-network detected, but failed to setns network namespace QwQ\n");
 		}
+	} else {
+		// Join net ns will be forced.
+		// As I plan to add net ns support in rurima.
+		char net_ns_file[PATH_MAX] = { '\0' };
+		sprintf(net_ns_file, "%s%d%s", "/proc/", container->ns_pid, "/ns/net");
+		ns_fd = open(net_ns_file, O_RDONLY | O_CLOEXEC);
+		setns(ns_fd, CLONE_NEWNET);
 	}
 	ns_fd = open(mount_ns_file, O_RDONLY | O_CLOEXEC);
 	if (ns_fd < 0) {
