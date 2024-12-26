@@ -30,8 +30,8 @@ Max memory: 860 KB
 ## Binary size(amd64):
 ||ruri|crun|%|
 |---|---|---|---|
-|(noupx)|372K|3.0M|-87.6%|
-|(withupx)|136K|1.3M|-89.5%|
+|(noupx)|454K|3.0M|-84.9%|
+|(withupx)|147K|1.3M|-88.7%|
 ## ~~Alphabet coverage~~
 |Alphabet|ruri used|%|
 |---|---|---|
