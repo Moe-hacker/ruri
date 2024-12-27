@@ -45,7 +45,7 @@ void __cfprintf(FILE *_Nonnull stream, const char *_Nonnull buf);
 // Get the size of the string to print.
 // We give another 514 bytes to avoid buffer overflow.
 // We call snprintf() twice, but never mind, it's fast enough.
-#define cprintf_get_bufsize(format, ...) (snprintf(NULL, 0, format, ##__VA_ARGS__) > 0 ? (size_t)snprintf(NULL, 0, format, ##__VA_ARGS__) + 514 : 0)
+#define cprintf_get_bufsize(format, ...) (snprintf(NULL, 0, format, ##__VA_ARGS__) > 0 ? (size_t)snprintf(NULL, 0, format, ##__VA_ARGS__) + 514 : 514)
 // The `base` color.
 extern char *cprintf_base_color;
 /*
