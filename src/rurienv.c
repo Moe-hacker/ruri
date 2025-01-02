@@ -211,6 +211,8 @@ void ruri_store_info(const struct RURI_CONTAINER *_Nonnull container)
 	char *info = build_container_info(container);
 	char file[PATH_MAX] = { '\0' };
 	sprintf(file, "%s/.rurienv", container->container_dir);
+	// Umount the .rurienv file.
+	umount2(file, MNT_DETACH | MNT_FORCE);
 	int fd = open(file, O_RDONLY | O_CLOEXEC);
 	// We know that it's not recommended to use bitwise operator on signed int.
 	// But I found this code in man-doc:
@@ -244,6 +246,9 @@ void ruri_store_info(const struct RURI_CONTAINER *_Nonnull container)
 	attr |= FS_IMMUTABLE_FL;
 	ioctl(fd, FS_IOC_SETFLAGS, &attr);
 	close(fd);
+	// Mount the .rurienv file as read-only.
+	mount(file, file, NULL, MS_BIND | MS_REC, NULL);
+	mount(file, file, NULL, MS_REMOUNT | MS_RDONLY | MS_BIND, NULL);
 	free(info);
 }
 // Read .rurienv file.
@@ -308,6 +313,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		ruri_log("{base}pid %d is not a ruri process.\n", k2v_get_key(int, "ns_pid", buf));
 		free(buf);
 		// Unset immutable flag of .rurienv.
+		umount2(file, MNT_DETACH | MNT_FORCE);
 		fd = open(file, O_RDONLY | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
 			ruri_warning("{yellow}Open .rurienv failed{clear}\n");
