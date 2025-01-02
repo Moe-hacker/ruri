@@ -508,12 +508,6 @@ void ruri_set_limit(const struct RURI_CONTAINER *_Nonnull container)
 	}
 	// Mask /sys/fs again.
 	if (!container->unmask_dirs) {
-		// mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_RDONLY, NULL);
+		mount("tmpfs", "/sys/fs", "tmpfs", MS_RDONLY, NULL);
 	}
-	// Mount cgroup v2.
-	mkdir("/sys/fs/cgroup", S_IRUSR | S_IWUSR);
-	// Maybe needless.
-	umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
-	// Mount /sys/fs/cgroup as cgroup2.
-	mount("none", "/sys/fs/cgroup", "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 }
