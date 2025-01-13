@@ -436,6 +436,9 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	// Get time offset.
 	container->timens_realtime_offset = k2v_get_key(long, "timens_realtime_offset", buf);
 	container->timens_monotonic_offset = k2v_get_key(long, "timens_monotonic_offset", buf);
+	// Get command.
+	int comlen = k2v_get_key(char_array, "command", buf, container->command, RURI_MAX_COMMANDS);
+	container->command[comlen] = NULL;
 	free(buf);
 	buf = ruri_container_info_to_k2v(container);
 	ruri_log("{base}Container config in %s:{cyan}\n%s", path, buf);

@@ -235,6 +235,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			ruri_read_config(container, argv[index]);
 			use_config_file = true;
 			index++;
+			if (index == argc) {
+				break;
+			}
 		}
 		// Dump config.
 		if (strcmp(argv[index], "-D") == 0 || strcmp(argv[index], "--dump-config") == 0) {
