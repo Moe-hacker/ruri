@@ -314,7 +314,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		}
 		// Enable built-in seccomp profile.
 		else if (strcmp(argv[index], "-s") == 0 || strcmp(argv[index], "--enable-seccomp") == 0) {
-			container->enable_seccomp = true;
+			container->enable_default_seccomp = true;
 		}
 		// Run unshare container.
 		else if (strcmp(argv[index], "-u") == 0 || strcmp(argv[index], "--unshare") == 0) {
@@ -500,6 +500,27 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				ruri_error("{red}Error: unknown char devices QwQ\n");
 			}
 		}
+		// Deny syscall.
+		else if (strcmp(argv[index], "-X") == 0 || strcmp(argv[index], "--deny-syscall") == 0) {
+			index++;
+			if (argv[index] != NULL) {
+				if (seccomp_syscall_resolve_name(argv[index]) == __NR_SCMP_ERROR) {
+					ruri_error("{red}Error: unknown syscall `%s`\nQwQ{clear}\n", argv[index]);
+				}
+				for (int i = 0; i < RURI_MAX_SECCOMP_DENIED_SYSCALL; i++) {
+					if (container->seccomp_denied_syscall[i] == NULL) {
+						container->seccomp_denied_syscall[i] = strdup(argv[index]);
+						container->seccomp_denied_syscall[i + 1] = NULL;
+						break;
+					}
+					if (i == (RURI_MAX_SECCOMP_DENIED_SYSCALL - 1)) {
+						ruri_error("{red}Too many syscalls QwQ\n");
+					}
+				}
+			} else {
+				ruri_error("{red}Error: unknown syscall QwQ\n");
+			}
+		}
 		// Time ns offset.
 		else if (strcmp(argv[index], "-T") == 0 || strcmp(argv[index], "--timens-offset") == 0) {
 			index++;
@@ -621,7 +642,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 					container->use_rurienv = false;
 					break;
 				case 's':
-					container->enable_seccomp = true;
+					container->enable_default_seccomp = true;
 					break;
 				case 'p':
 					privileged = true;
@@ -958,6 +979,29 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						}
 						background = true;
 						log_file = argv[index];
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'X':
+					if (i == (strlen(argv[index]) - 1)) {
+						if (index == argc - 1) {
+							ruri_error("{red}Please specify the syscall\n{clear}");
+						}
+						index++;
+						if (seccomp_syscall_resolve_name(argv[index]) == __NR_SCMP_ERROR) {
+							ruri_error("{red}Error: unknown syscall `%s`\nQwQ{clear}\n", argv[index]);
+						}
+						for (int i = 0; i < RURI_MAX_SECCOMP_DENIED_SYSCALL; i++) {
+							if (container->seccomp_denied_syscall[i] == NULL) {
+								container->seccomp_denied_syscall[i] = strdup(argv[index]);
+								container->seccomp_denied_syscall[i + 1] = NULL;
+								break;
+							}
+							if (i == (RURI_MAX_SECCOMP_DENIED_SYSCALL - 1)) {
+								ruri_error("{red}Too many syscalls QwQ\n");
+							}
+						}
 					} else {
 						ruri_error("Invalid argument %s\n", argv[index]);
 					}

@@ -660,7 +660,7 @@ void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
 		mk_char_devs(container);
 	}
 	// Set up Seccomp BPF.
-	if (container->enable_seccomp) {
+	if (container->enable_default_seccomp || container->seccomp_denied_syscall[0] != NULL) {
 		ruri_setup_seccomp(container);
 	}
 	// Drop caps.
@@ -754,7 +754,7 @@ void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull containe
 		setup_binfmt_misc(container);
 	}
 	// Set up Seccomp BPF.
-	if (container->enable_seccomp) {
+	if (container->enable_default_seccomp || container->seccomp_denied_syscall[0] != NULL) {
 		ruri_setup_seccomp(container);
 	}
 	// Drop caps.

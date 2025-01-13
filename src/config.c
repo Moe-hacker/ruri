@@ -44,7 +44,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	}
 	cap_value_t nullcaplist[2] = { RURI_INIT_VALUE };
 	ruri_build_caplist(container->drop_caplist, false, nullcaplist, nullcaplist);
-	container->enable_seccomp = false;
+	container->enable_default_seccomp = false;
 	container->no_new_privs = false;
 	container->no_warnings = false;
 	container->enable_unshare = false;
@@ -73,6 +73,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->hidepid = RURI_INIT_VALUE;
 	container->timens_realtime_offset = 0;
 	container->timens_monotonic_offset = 0;
+	container->seccomp_denied_syscall[0] = NULL;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -171,10 +172,10 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_comment(ret, "Default is true.");
 	ret = k2v_add_config(bool, ret, "use_rurienv", container->use_rurienv);
 	ret = k2v_add_newline(ret);
-	// enable_seccomp.
+	// enable_default_seccomp.
 	ret = k2v_add_comment(ret, "Enable built-in seccomp profile.");
 	ret = k2v_add_comment(ret, "Default is false.");
-	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
+	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_default_seccomp);
 	ret = k2v_add_newline(ret);
 	// hidepid.
 	ret = k2v_add_comment(ret, "Hide pid in /proc.");
@@ -318,6 +319,18 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_config(long, ret, "timens_monotonic_offset", container->timens_monotonic_offset);
 	ret = k2v_add_config(long, ret, "timens_realtime_offset", container->timens_realtime_offset);
 	ret = k2v_add_newline(ret);
+	// seccomp_denied_syscall.
+	for (int i = 0; true; i++) {
+		if (container->seccomp_denied_syscall[i] == NULL) {
+			len = i;
+			break;
+		}
+	}
+	ret = k2v_add_comment(ret, "Denied syscalls, use seccomp.");
+	ret = k2v_add_comment(ret, "For example, [\"syscall1\",\"syscall2\"] is valid.");
+	ret = k2v_add_comment(ret, "Set it to empty to disable.");
+	ret = k2v_add_config(char_array, ret, "deny_syscall", container->seccomp_denied_syscall, len);
+	ret = k2v_add_newline(ret);
 	return ret;
 }
 void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_Nonnull path)
@@ -363,7 +376,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	// Get no_new_privs.
 	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
 	// Get enable_seccomp.
-	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
+	container->enable_default_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	// Get container_dir.
 	container->container_dir = k2v_get_key(char, "container_dir", buf);
 	// Get qemu_path.
@@ -433,6 +446,9 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	if (charlen % 3 != 0) {
 		ruri_error("{red}Invalid char_devs format\n{clear}");
 	}
+	// Get seccomp_denied_syscall.
+	int seccomplen = k2v_get_key(char_array, "deny_syscall", buf, container->seccomp_denied_syscall, RURI_MAX_SECCOMP_DENIED_SYSCALL);
+	container->seccomp_denied_syscall[seccomplen] = NULL;
 	// Get time offset.
 	container->timens_realtime_offset = k2v_get_key(long, "timens_realtime_offset", buf);
 	container->timens_monotonic_offset = k2v_get_key(long, "timens_monotonic_offset", buf);
@@ -552,9 +568,9 @@ void ruri_correct_config(const char *_Nonnull path)
 	}
 	if (!have_key("enable_seccomp", buf)) {
 		ruri_warning("{green}No key enable_seccomp found, set to false\n{clear}");
-		container.enable_seccomp = false;
+		container.enable_default_seccomp = false;
 	} else {
-		container.enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
+		container.enable_default_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
 	}
 	if (!have_key("no_warnings", buf)) {
 		ruri_warning("{green}No key no_warnings found, set to false\n{clear}");

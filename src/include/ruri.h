@@ -103,6 +103,7 @@
 #define RURI_MAX_ENVS (512 * 2)
 #define RURI_MAX_MOUNTPOINTS (512 * 2)
 #define RURI_MAX_CHAR_DEVS (128 * 3)
+#define RURI_MAX_SECCOMP_DENIED_SYSCALL (2048)
 // Include other headers.
 #include "elf-magic.h"
 #include "version.h"
@@ -126,7 +127,7 @@ struct RURI_CONTAINER {
 	// Set NO_NEW_PRIV bit.
 	bool no_new_privs;
 	// Enable built-in seccomp profile.
-	bool enable_seccomp;
+	bool enable_default_seccomp;
 	// Do not show warnings.
 	bool no_warnings;
 	// Unshare container.
@@ -176,6 +177,8 @@ struct RURI_CONTAINER {
 	// Timens offset.
 	time_t timens_realtime_offset;
 	time_t timens_monotonic_offset;
+	// Denied syscalls.
+	char *_Nonnull seccomp_denied_syscall[RURI_MAX_SECCOMP_DENIED_SYSCALL];
 };
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)

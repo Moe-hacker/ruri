@@ -1,6 +1,7 @@
 # v3.9:
   * Support part of bsd-style command-line usage.
   * Fix built-in seccomp profile.
+  * Add `-X` option: `--deny-syscall`.
 # v3.8:
   * Support more platforms, currently supports: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.
   * Improve rootless container support.

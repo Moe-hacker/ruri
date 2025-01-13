@@ -140,7 +140,17 @@ static char *build_container_info(const struct RURI_CONTAINER *_Nonnull containe
 	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
 	// enable_seccomp.
 	ret = k2v_add_comment(ret, "Enable built-in seccomp profile.");
-	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_seccomp);
+	ret = k2v_add_config(bool, ret, "enable_seccomp", container->enable_default_seccomp);
+	// seccomp_denied_syscall.
+	for (int i = 0; true; i++) {
+		if (container->seccomp_denied_syscall[i] == NULL) {
+			len = i;
+			break;
+		}
+	}
+	ret = k2v_add_comment(ret, "Denied syscalls, use seccomp.");
+	ret = k2v_add_config(char_array, ret, "deny_syscall", container->seccomp_denied_syscall, len);
+	ret = k2v_add_newline(ret);
 	// ns_pid.
 	ret = k2v_add_comment(ret, "PID owning unshare namespace.");
 	ret = k2v_add_config(int, ret, "ns_pid", container->ns_pid);
@@ -363,7 +373,10 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	// Get no_new_privs.
 	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
 	// Get enable_seccomp.
-	container->enable_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
+	container->enable_default_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
+	// Get seccomp_denied_syscall.
+	int seccomplen = k2v_get_key(char_array, "deny_syscall", buf, container->seccomp_denied_syscall, RURI_MAX_SECCOMP_DENIED_SYSCALL);
+	container->seccomp_denied_syscall[seccomplen] = NULL;
 	// Get ns_pid.
 	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 	ruri_log("{base}ns_pid: %d\n", container->ns_pid);
