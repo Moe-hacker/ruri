@@ -134,12 +134,6 @@ static char *goto_next_line(const char *_Nonnull buf)
 	if (ret == NULL) {
 		return NULL;
 	}
-	if (strlen(ret) < 2) {
-		return NULL;
-	}
-	if (ret[1] == '\0') {
-		return NULL;
-	}
 	// Skip '\n'.
 	return ret + 1;
 }
