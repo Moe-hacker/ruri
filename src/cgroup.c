@@ -106,7 +106,8 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 	close(subtree_control_fd);
 	usleep(200);
 	// Check if we have a controlable cgroup for cpuset and memory.
-	int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_CLOEXEC);
+	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
+	int fd = open("/sys/fs/cgroup/ruri/cgroup.controllers", O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 		ruri_log("{base}Cgroup v2 does not support %s\n", type);
@@ -124,6 +125,11 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 	buf[len] = '\0';
 	char str_to_find[32] = { '\0' };
 	ruri_log("{base}cgroup.controllers: %s\n", buf);
+	//
+	//
+	// TODO: This can cause bug.
+	//
+	//
 	sprintf(str_to_find, "%s ", type);
 	ruri_log("{base}str_to_find: %s\n", str_to_find);
 	if (strstr(buf, str_to_find) != NULL) {
