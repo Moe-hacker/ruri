@@ -224,3 +224,8 @@ Hidepid option for /proc
 -L, --logfile [file] ........................: Set log file of -b option
 ```
 Run ruri in background and set output file.      
+*********
+```
+-X, --deny-syscall [syscall] ................: Deny a syscall
+```
+Use Seccomp to set SCMP_ACT_KILL for the syscall.      
