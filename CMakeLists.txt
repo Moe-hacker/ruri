@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name
 project(ruri LANGUAGES C)
 
-# 检查头文件
+# Check for header
 include(CheckIncludeFile)
 
 execute_process(
@@ -43,7 +43,7 @@ check_include_file("sys/capability.h" HAVE_SYS_CAPABILITY_H)
 check_include_file("seccomp.h" HAVE_SECCOMP_H)
 check_include_file("pthread.h" HAVE_PTHREAD_H)
 
-# 如果没有找到头文件，则抛出错误
+# Check for headers
 if(NOT HAVE_TIME_H)
     message(FATAL_ERROR "Missing required header: time.h")
 endif()
@@ -81,12 +81,12 @@ if(NOT HAVE_PTHREAD_H)
     message(FATAL_ERROR "Missing required header: pthread.h")
 endif()
 
-# 查找库
+# Search for libs
 find_library(CAP_LIBRARY cap)
 find_library(SECCOMP_LIBRARY seccomp)
 find_library(PTHREAD_LIBRARY pthread)
 
-# 检查每个库是否存在
+# Check dependent library
 if(NOT CAP_LIBRARY)
     message(FATAL_ERROR "libcap is required")
 endif()
@@ -99,7 +99,7 @@ if(NOT PTHREAD_LIBRARY)
     message(FATAL_ERROR "pthread is required")
 endif()
 
-# 设置默认的 CFLAGS 和 LDFLAGS
+# Set default CFLAGS and LDFLAGS
 set(CFLAGS_LIST
     "-flto=auto"
     "-pie"
@@ -137,12 +137,11 @@ endforeach()
 
 set(LDFLAGS "-Wl,-z,relro -Wl,-z,noexecstack -Wl,-z,now")
 
-# 处理调试和静态链接构建选项
 option(ENABLE_DEBUG "Enable debug build" OFF)
 option(ENABLE_STATIC "Enable static linking" OFF)
 option(BUILD_LIB "BUILD with lib" OFF)
 
-# 根据调试选项修改 CFLAGS
+# For Debug build
 if(ENABLE_DEBUG)
     message(WARNING "Warning: DEBUG mode is enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -O0 -DDEBUG_BUILD -DRURI_DEBUG -DRURI_DEV")
@@ -150,12 +149,12 @@ else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -DNDEBUG")
 endif()
 
-# 根据静态链接选项修改 LDFLAGS
+# For static build
 if(ENABLE_STATIC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
 
-# 将 LDFLAGS 添加到链接器标志中
+# Add LDFLAGS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
 
 execute_process(
@@ -198,10 +197,3 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         target_link_libraries(ruri ${LCAP} ${LSECCOMP})
     endif()
 endif()
-
-add_custom_target(
-    tidy
-    COMMAND clang-tidy --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn --list-checks ${SOURCES} -- -lpthread -lseccomp -lcap -Wall -Wextra
-    COMMENT "Running tidy"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/ruri/src/ # Set correct path where main.go is located
-)
