@@ -47,6 +47,7 @@ static void mount_cgroup_v1_memory(void)
 	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 	// Mount memory controller.
 	mkdir("/sys/fs/cgroup/memory", S_IRUSR | S_IWUSR);
+	usleep(2000);
 	mount("none", "/sys/fs/cgroup/memory", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "memory");
 	ruri_log("{base}Tried to mount cgroup v1 memory\n");
 }
@@ -64,6 +65,7 @@ static void mount_cgroup_v1_cpu(void)
 	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 	// Mount cpu controller.
 	mkdir("/sys/fs/cgroup/cpu", S_IRUSR | S_IWUSR);
+	usleep(2000);
 	mount("none", "/sys/fs/cgroup/cpu", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpu");
 	ruri_log("{base}Tried to mount cgroup v1 cpu\n");
 }
@@ -81,6 +83,7 @@ static void mount_cgroup_v1_cpuset(void)
 	mount("tmpfs", "/sys/fs/cgroup", "tmpfs", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, NULL);
 	// Mount cpuset controller.
 	mkdir("/sys/fs/cgroup/cpuset", S_IRUSR | S_IWUSR);
+	usleep(2000);
 	mount("none", "/sys/fs/cgroup/cpuset", "cgroup", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_RELATIME, "cpuset");
 	ruri_log("{base}Tried to mount cgroup v1 cpuset\n");
 }
@@ -105,7 +108,7 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 	write(subtree_control_fd, "+cpuset\n", strlen("+cpuset\n"));
 	close(subtree_control_fd);
 	usleep(200);
-	// Check if we have a controlable cgroup for cpuset and memory.
+	// Check if we have a controlable cgroup for `type`.
 	mkdir("/sys/fs/cgroup/ruri", S_IRUSR | S_IWUSR);
 	int fd = open("/sys/fs/cgroup/ruri/cgroup.controllers", O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
@@ -125,14 +128,11 @@ static bool is_cgroupv2_support(const char *_Nonnull type)
 	buf[len] = '\0';
 	char str_to_find[32] = { '\0' };
 	ruri_log("{base}cgroup.controllers: %s\n", buf);
-	//
-	//
-	// TODO: This can cause bug.
-	//
-	//
-	sprintf(str_to_find, "%s ", type);
+	sprintf(str_to_find, "%s", type);
 	ruri_log("{base}str_to_find: %s\n", str_to_find);
-	if (strstr(buf, str_to_find) != NULL) {
+	// If str_to_find is in buf and str_to_find+1 is space (' ') or end ('\0').
+	// We return true.
+	if (strstr(buf, str_to_find) != NULL && (strstr(buf, str_to_find)[strlen(str_to_find)] == ' ' || strstr(buf, str_to_find)[strlen(str_to_find)] == '\0')) {
 		umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
 		ruri_log("{base}Cgroup v2 supports %s\n", type);
 		return true;
