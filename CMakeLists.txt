@@ -81,6 +81,31 @@ if(NOT HAVE_PTHREAD_H)
     message(FATAL_ERROR "Missing required header: pthread.h")
 endif()
 
+# Fix TinyCC build
+# We should set library path for tcc before checking libraries
+if(CMAKE_C_COMPILER MATCHES "tcc")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+        set(CMAKE_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu/")
+        set(CMAKE_INCLUDE_PATH "/usr/include/x86_64-linux-gnu/")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        set(CMAKE_LIBRARY_PATH "/usr/lib/aarch64-linux-gnu/")
+        set(CMAKE_INCLUDE_PATH "/usr/include/aarch64-linux-gnu/")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7l")
+        set(CMAKE_LIBRARY_PATH "/usr/lib/arm-linux-gnueabihf/")
+        set(CMAKE_INCLUDE_PATH "/usr/include/arm-linux-gnueabihf/")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i386")
+        set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu/")
+        set(CMAKE_INCLUDE_PATH "/usr/include/i386-linux-gnu/")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "powerpc64le")
+        set(CMAKE_LIBRARY_PATH "/usr/lib/powerpc64le-linux-gnu/")
+        set(CMAKE_INCLUDE_PATH "/usr/include/powerpc64le-linux-gnu/")
+    endif()
+    # Fix tcc not defined __VERSION__ and __TIMPSTAMP__
+    add_definitions(-D__VERSION__="TinyCC")
+    add_definitions(-D__TIMESTAMP__="unknown")
+endif()
+
+
 # Search for libs
 find_library(CAP_LIBRARY cap)
 find_library(SECCOMP_LIBRARY seccomp)
@@ -186,6 +211,13 @@ else ()
         )
         install (TARGETS ruri DESTINATION /usr/bin/)
 endif()
+
+add_custom_target(
+    tidy
+    COMMAND clang-tidy --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn --list-checks ${SOURCES} -- -lpthread -lseccomp -lcap -Wall -Wextra
+    COMMENT "Running clang tidy"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/ruri/src/
+)
 
 # on linux clang 14
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
