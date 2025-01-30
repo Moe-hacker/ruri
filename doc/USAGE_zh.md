@@ -218,3 +218,9 @@ unshare容器和rootless容器会始终在执行命令前fork()自身一次，
 -L, --logfile [file] ........................: 日志文件，用于-b参数
 ```
 后台运行ruri并输出到日志。      
+**********      
+```
+-X，--deny-syscall [syscall].................:阻止某个syscall
+
+```
+使用seccomp直接对某个syscall设置SCMP_ACT_KILL。      
