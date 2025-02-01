@@ -2,13 +2,6 @@ name: Build release
 
 on:
   workflow_dispatch:
-    inputs:
-      ruri_version:
-        description: "Optional: ruri version to use as tag_name (leave blank to use the latest remote version)"
-        required: false
-      release_name:
-        description: "Optional: Custom release name (ruri v* release)"
-        required: false
   push:
     branches: [ "main" ]
     paths:
@@ -19,68 +12,157 @@ on:
   pull_request:
 
 jobs:
-  check_update:
-    name: Check update
+  update:
+    name: Fetch Latest Version
     runs-on: ubuntu-latest
-    steps:
-      - name: Check latest version
-        id: check_version
-        run: |
-          remote_version=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -L https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
-          remote_name=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -L https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .name)
-          echo "remote_version=$remote_version" | tee -a $GITHUB_OUTPUT
-          echo "remote_name=$remote_name" | tee -a $GITHUB_OUTPUT
     outputs:
-      remote_version: ${{ steps.check_version.outputs.remote_version }}
-      remote_name: ${{ steps.check_version.outputs.remote_name }}
+      release: ${{ steps.fetch_version.outputs.release }}
+      version: ${{ steps.fetch_version.outputs.version }}
+      release_name: ${{ steps.fetch_version.outputs.release_name }}
+      build_time: ${{ steps.fetch_version.outputs.build_time }}
+    steps:
+      - name: fetch latest version
+        id: fetch_version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+            version="${{ github.ref_name }}"
+            release_name="ruri ${{ github.ref_name }} Release"
+          else
+            response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -L "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+            version=$(echo "$response" | jq -r .tag_name)
+            release_name=$(echo "$response" | jq -r .name)
+          fi
+
+          if [[ -n "$version" && "$version" != "null" && -n "$release_name" && "$release_name" != "null" ]]; then
+            echo "release=true" >> $GITHUB_OUTPUT
+          else
+            echo "release=false" >> $GITHUB_OUTPUT
+          fi
+
+          build_time="UTC $(TZ=UTC date '+%Y%m%d%H%M')"
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "release_name=$release_name" >> $GITHUB_OUTPUT
+          echo "build_time=$build_time" >> $GITHUB_OUTPUT
 
   build:
     name: Build
-    needs: check_update
+    needs: update
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64, s390x]
     steps:
-      - name: Set env
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [ -n "${{ github.event.inputs.ruri_version }}" ]; then
-              echo "version=${{ github.event.inputs.ruri_version }}" | tee -a $GITHUB_ENV
-            else
-              echo "version=${{ needs.check_update.outputs.remote_version }}" | tee -a $GITHUB_ENV
-            fi
+          sudo apt-get update
+          sudo apt-get --no-install-recommends -y install \
+          curl \
+          wget \
+          xz-utils \
+          make \
+          clang \
+          libseccomp-dev \
+          libcap-dev \
+          libc6-dev \
+          binutils \
+          qemu-user-static
 
-            if [ -n "${{ github.event.inputs.release_name }}" ]; then
-              echo "release_name=${{ github.event.inputs.release_name }}" | tee -a $GITHUB_ENV
-            elif [ -n "${{ github.event.inputs.ruri_version }}" ]; then
-              echo "release_name=${{ github.event.inputs.ruri_version }}" | tee -a $GITHUB_ENV
-            else
-              echo "release_name=${{ needs.check_update.outputs.remote_name }}" | tee -a $GITHUB_ENV
-            fi
-          else
-            echo "version=${{ needs.check_update.outputs.remote_version }}" | tee -a $GITHUB_ENV
-            echo "release_name=${{ needs.check_update.outputs.remote_name }}" | tee -a $GITHUB_ENV
-          fi
-          echo "build_time=$(TZ=Asia/Shanghai date '+%Y%m%d%H%M')" | tee -a $GITHUB_ENV
+      - name: build source code
+        run: |
+          # cd build
+          # git clone --depth 1 https://github.com/moe-hacker/ruri.git
+          # cd ruri
+          cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
 
-      - uses: actions/checkout@v4
-      - name: Build-Release
+      - name: download latest minirootfs
+        env:
+          ARCHITECTURE: ${{ matrix.arch }}
+          URL: https://dl-cdn.alpinelinux.org/alpine/edge/releases
         run: |
           cd build
-          sudo bash build-all.sh
+          mkdir -p $ARCHITECTURE
+
+          wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O yq
+          sudo mv yq /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+
+          FILE=$(curl -s "$URL/$ARCHITECTURE/latest-releases.yaml" | yq '.[] | select(.flavor == "alpine-minirootfs") | .file')
+          wget -q "$URL/$ARCHITECTURE/$FILE"
+          tar -xzf "$FILE" -C  "$ARCHITECTURE"
+
+      - name: Build for ${{ matrix.arch }}
+        env:
+         ARCHITECTURE: ${{ matrix.arch }}
+        run: |
+          cd build
+          cp build.sh "$ARCHITECTURE/build.sh"
+          # sudo chmod +x ruri/ruri
+          sudo chmod +x ../ruri
+          sudo chmod +x "$ARCHITECTURE/build.sh"
+          case "$ARCHITECTURE" in
+            x86_64)
+              # sudo ./ruri/ruri ./$ARCHITECTURE /bin/sh /build.sh
+              sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              ;;
+            x86)
+              sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              ;;
+            aarch64)
+              sudo ../ruri -a aarch64 -q /usr/bin/qemu-aarch64-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              ;;
+            riscv64)
+              sudo ../ruri -a riscv64 -q /usr/bin/qemu-riscv64-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              ;;
+            armhf)
+              sudo ../ruri -a armhf -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              ;;
+            armv7)
+              sudo ../ruri -a armv7 -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              ;;
+            ppc64le)
+              sudo ../ruri -a ppc64le -q /usr/bin/qemu-ppc64le-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/outpu2t && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              ;;
+            s390x)
+              sudo ../ruri -a s390x -q /usr/bin/qemu-s390x-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              ;;
+            loongarch64)
+              sudo ../ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./$ARCHITECTURE /bin/sh /build.sh
+              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              ;;
+          esac
 
       - name: Release
+        if: needs.update.outputs.release == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.version }}
-          name: ${{ env.release_name }}
+          tag_name: ${{ needs.update.outputs.version }}
+          name: ${{ needs.update.outputs.release_name }}
           body: |
             This is ruri binary release.
             NOTE:
             *-noupx means the binary is not upx compressed.
             ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
             But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
-            Build time: ${{ env.build_time }}
+            Build time: ${{ needs.update.outputs.build_time }}
           prerelease: false
           files: |
-            ${{ github.workspace }}/*.tar
+            *.tar
