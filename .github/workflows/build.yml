@@ -93,7 +93,7 @@ jobs:
 
           FILE=$(curl -s "$URL/$ARCHITECTURE/latest-releases.yaml" | yq '.[] | select(.flavor == "alpine-minirootfs") | .file')
           wget -q "$URL/$ARCHITECTURE/$FILE"
-          tar -xzf "$FILE" -C  "$ARCHITECTURE"
+          tar -xzf "$FILE" -C "$ARCHITECTURE"
 
       - name: Build for ${{ matrix.arch }}
         env:
@@ -113,8 +113,8 @@ jobs:
               ;;
             x86)
               sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output && tar -cf ../../../i386.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../i386-noupx.tar .)
               ;;
             aarch64)
               sudo ../ruri -a aarch64 -q /usr/bin/qemu-aarch64-static ./$ARCHITECTURE /bin/sh /build.sh
@@ -138,7 +138,7 @@ jobs:
             ppc64le)
               sudo ../ruri -a ppc64le -q /usr/bin/qemu-ppc64le-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/outpu2t && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
               ;;
             s390x)
               sudo ../ruri -a s390x -q /usr/bin/qemu-s390x-static ./$ARCHITECTURE /bin/sh /build.sh
