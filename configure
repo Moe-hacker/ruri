@@ -107,7 +107,7 @@ default_cflag() {
         test_and_add_cflag "-static"
         test_and_add_cflag "-Wl,--disable-new-dtags"
     fi
-    test_and_add_cflag "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3"
+    test_and_add_cflag "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_FILE_OFFSET_BITS=64"
     test_and_add_ldflag "-lcap"
     test_and_add_ldflag "-lseccomp"
     test_and_add_ldflag "-lpthread"

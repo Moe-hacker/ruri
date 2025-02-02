@@ -103,6 +103,10 @@ static pid_t init_unshare_container(struct RURI_CONTAINER *_Nonnull container)
 		if (container->use_rurienv) {
 			container->ns_pid = unshare_pid;
 			ruri_store_info(container);
+		} else {
+			if (!container->no_warnings) {
+				ruri_warning("{base}NS PID:{green} %d\n", unshare_pid);
+			}
 		}
 		// Fix `can't access tty` issue.
 		int stat = 0;

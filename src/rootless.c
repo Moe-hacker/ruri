@@ -221,7 +221,13 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 	/*
 	 * Setup namespaces and run rootless container.
 	 */
-	ruri_read_info(container, container->container_dir);
+	if (container->use_rurienv) {
+		ruri_read_info(container, container->container_dir);
+	}
+	bool container_initlized = false;
+	if (container->ns_pid > 0) {
+		container_initlized = true;
+	}
 	uid_t uid = geteuid();
 	gid_t gid = getegid();
 	bool set_id_map_succeed = false;
@@ -394,8 +400,12 @@ void ruri_run_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 		}
 		usleep(1000);
 		container->ns_pid = pid;
-		if (container->use_rurienv && !container->just_chroot) {
+		if (container->use_rurienv && !container_initlized && !container->just_chroot) {
 			ruri_store_info(container);
+		} else {
+			if (!container->no_warnings && !container_initlized) {
+				ruri_warning("{base}NS PID:{green} %d\n", container->ns_pid);
+			}
 		}
 		// Wait for child process to exit.
 		int stat = 0;

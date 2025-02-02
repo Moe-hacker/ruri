@@ -139,6 +139,7 @@ void ruri_show_helps(void)
 	cprintf("{base}  -b, --background ............................: Fork to background\n");
 	cprintf("{base}  -L, --logfile [file] ........................: Set log file of -b option\n");
 	cprintf("{base}  -X, --deny-syscall [syscall] ................: Deny syscall, use seccomp\n");
+	cprintf("{base}  -J, --join-ns [NS_PID] ......................: Join ns using ns_pid(*13)\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*1)  : Will not work for unshare container without PID ns support\n");
@@ -154,6 +155,7 @@ void ruri_show_helps(void)
 	cprintf("{base}(*10) : This option need net ns, and will enable unshare feature by default\n");
 	cprintf("{base}(*11) : For example, `-I kvm 10 232` or `-I dri/card0 226 0`\n");
 	cprintf("{base}(*12) : This feature might not work. The value is in seconds. This feature will auto enable unshare\n");
+	cprintf("{base}(*13) : This can only be used when `-N` option is enabled\n");
 	cprintf("\n{base}Note:\n") cprintf("{base}BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.\n") cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.

@@ -191,6 +191,9 @@ execute_process(
 
 add_definitions(-DRURI_COMMIT_ID="${GIT_COMMIT_ID}")
 
+# Enable LFS
+add_definitions(-D_FILE_OFFSET_BITS=64)
+
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.c ${CMAKE_SOURCE_DIR}/src/easteregg/*.c)
 
 if (BUILD_LIB)
