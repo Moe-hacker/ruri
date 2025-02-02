@@ -32,6 +32,74 @@
  * This file provides function to umount the container.
  * All pids detected in the container will be killed at the same time.
  */
+
+static char *proc_mounts(void)
+{
+	/*
+	 * Read /proc/mounts
+	 * Warning: free() after use.
+	 */
+	int fd = open("/proc/mounts", O_RDONLY);
+	if (fd < 0) {
+		exit(0);
+	}
+	char buf[1024 + 1];
+	size_t bufsize = 1024;
+	ssize_t bytes_read = 0;
+	char *ret = malloc(bufsize);
+	ret[0] = '\0';
+	while ((bytes_read = read(fd, buf, 1024)) > 0) {
+		bufsize += 1024;
+		ret = realloc(ret, bufsize);
+		buf[bytes_read] = '\0';
+		strcat(ret, buf);
+	}
+	close(fd);
+	return ret;
+}
+static char *goto_next_line(const char *_Nonnull buf)
+{
+	/*
+	 * Goto next line, without any check.
+	 * We assume all input is legal.
+	 */
+	if (strchr(buf, '\n') == NULL) {
+		return NULL;
+	}
+	return strchr(buf, '\n') + 1;
+}
+static void umount_subdir(const char *_Nonnull dir)
+{
+	/*
+	 * Umount subdir, use info in /proc/mounts
+	 * This is another implementation of umount_container,
+	 * we use it as a double-check.
+	 */
+	char *mount_info = proc_mounts();
+	if (strstr(mount_info, dir) != NULL) {
+		ruri_log("{base}There's still umounted dirs, using info in /proc/mounts to umount them\n");
+	} else {
+		exit(EXIT_SUCCESS);
+	}
+	char *umount_point = NULL;
+	char *p = mount_info;
+	while ((p = strstr(p, dir)) != NULL) {
+		if (p == NULL) {
+			break;
+		}
+		if (p[strlen(dir)] != '/' && p[strlen(dir) - 1] != '/' && p[strlen(dir)] != ' ') {
+			p = goto_next_line(p);
+			continue;
+		}
+		umount_point = strdup(p);
+		*strchr(umount_point, ' ') = '\0';
+		ruri_log("{base}Umounting %s{green}\n", umount_point);
+		umount2(umount_point, MNT_DETACH | MNT_FORCE);
+		free(umount_point);
+		p = goto_next_line(p);
+	}
+	free(mount_info);
+}
 // Umount container.
 void ruri_umount_container(const char *_Nonnull container_dir)
 {
@@ -150,4 +218,7 @@ void ruri_umount_container(const char *_Nonnull container_dir)
 	ruri_kill_container(container_dir);
 	// Make Asan happy.
 	free(container);
+	// Use info in /proc/mounts to umount container.
+	// This is a double check.
+	umount_subdir(container_dir);
 }
