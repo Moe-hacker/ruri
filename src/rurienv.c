@@ -353,6 +353,9 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		container->timens_monotonic_offset = 0;
 		return container;
 	}
+	// Backup container config.
+	struct RURI_CONTAINER *backup = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
+	memcpy(backup, container, sizeof(struct RURI_CONTAINER));
 	// Get capabilities to drop.
 	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
@@ -370,13 +373,37 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		free(drop_caplist[i]);
 		container->drop_caplist[i + 1] = RURI_INIT_VALUE;
 	}
+	// Check if drop_caplist changed.
+	if (memcmp(backup->drop_caplist, container->drop_caplist, sizeof(cap_t) * RURI_CAP_LAST_CAP) != 0) {
+		if (!container->no_warnings) {
+			ruri_warning("{yellow}.rurienv detected, drop_caplist changed{clear}\n");
+		}
+	}
 	// Get no_new_privs.
 	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
+	// Check if no_new_privs changed.
+	if (backup->no_new_privs != container->no_new_privs) {
+		if (!container->no_warnings) {
+			ruri_warning("{yellow}.rurienv detected, no_new_privs changed{clear}\n");
+		}
+	}
 	// Get enable_seccomp.
 	container->enable_default_seccomp = k2v_get_key(bool, "enable_seccomp", buf);
+	// Check if enable_seccomp changed.
+	if (backup->enable_default_seccomp != container->enable_default_seccomp) {
+		if (!container->no_warnings) {
+			ruri_warning("{yellow}.rurienv detected, enable_seccomp changed{clear}\n");
+		}
+	}
 	// Get seccomp_denied_syscall.
 	int seccomplen = k2v_get_key(char_array, "deny_syscall", buf, container->seccomp_denied_syscall, RURI_MAX_SECCOMP_DENIED_SYSCALL);
 	container->seccomp_denied_syscall[seccomplen] = NULL;
+	// Check if seccomp_denied_syscall changed.
+	if (memcmp(backup->seccomp_denied_syscall, container->seccomp_denied_syscall, sizeof(char *) * RURI_MAX_SECCOMP_DENIED_SYSCALL) != 0) {
+		if (!container->no_warnings) {
+			ruri_warning("{yellow}.rurienv detected, seccomp_denied_syscall changed{clear}\n");
+		}
+	}
 	// Get ns_pid.
 	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 	ruri_log("{base}ns_pid: %d\n", container->ns_pid);
@@ -398,14 +425,6 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, RURI_MAX_ENVS);
 	container->env[envlen] = NULL;
 	container->env[envlen + 1] = NULL;
-	// Get extra_mountpoint.
-	int mlen = k2v_get_key(char_array, "extra_mountpoint", buf, container->extra_mountpoint, RURI_MAX_MOUNTPOINTS);
-	container->extra_mountpoint[mlen] = NULL;
-	container->extra_mountpoint[mlen + 1] = NULL;
-	// Get extra_ro_mountpoint.
-	mlen = k2v_get_key(char_array, "extra_ro_mountpoint", buf, container->extra_ro_mountpoint, RURI_MAX_MOUNTPOINTS);
-	container->extra_ro_mountpoint[mlen] = NULL;
-	container->extra_ro_mountpoint[mlen + 1] = NULL;
 	// Qemu will only be set when initializing container.
 	free(container->cross_arch);
 	free(container->qemu_path);
@@ -419,5 +438,6 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	container->timens_realtime_offset = 0;
 	container->timens_monotonic_offset = 0;
 	free(buf);
+	free(backup);
 	return container;
 }
