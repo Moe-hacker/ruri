@@ -352,11 +352,21 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		// Use kvm.
 		else if (strcmp(argv[index], "-K") == 0 || strcmp(argv[index], "--use-kvm") == 0) {
 			container->use_kvm = true;
-		} else if (strcmp(argv[index], "-i") == 0 || strcmp(argv[index], "--hidepid") == 0) {
+		}
+		// Hidepid.
+		else if (strcmp(argv[index], "-i") == 0 || strcmp(argv[index], "--hidepid") == 0) {
 			index++;
 			container->hidepid = atoi(argv[index]);
 			if (container->hidepid < 0 || container->hidepid > 2) {
 				ruri_error("{red}hidepid should be in range 0-2\n");
+			}
+		}
+		// Join ns.
+		else if (strcmp(argv[index], "-J") == 0 || strcmp(argv[index], "--join-ns") == 0) {
+			index++;
+			container->ns_pid = atoi(argv[index]);
+			if (container->ns_pid <= 0) {
+				ruri_error("{red}NS_PID should be in range 0-2\n");
 			}
 		}
 		// cgroup limit.
@@ -1001,6 +1011,17 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 							if (i == (RURI_MAX_SECCOMP_DENIED_SYSCALL - 1)) {
 								ruri_error("{red}Too many syscalls QwQ\n");
 							}
+						}
+					} else {
+						ruri_error("Invalid argument %s\n", argv[index]);
+					}
+					break;
+				case 'J':
+					if (i == (strlen(argv[index]) - 1)) {
+						index++;
+						container->ns_pid = atoi(argv[index]);
+						if (container->ns_pid <= 0) {
+							ruri_error("{red}NS_PID should >= 0\n");
 						}
 					} else {
 						ruri_error("Invalid argument %s\n", argv[index]);

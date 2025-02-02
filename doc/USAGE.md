@@ -92,6 +92,12 @@ This argument will set NO_NEW_PRIVS, commands like `sudo` will be unavailable fo
 -N, --no-rurienv ............................: Do not use .rurienv file
 ```
 ruri will create /.rurienv in container to save container config by default, you can use this option to disable it.      
+***************************************
+```
+-J, --join-ns [NS_PID].......................: Join ns using NS_PID.
+```
+If you use unshare/rootless container with -N option enabled, you can use this option to join its namespace.      
+This will only work with `-uN` or `-rN` option enabled.      
 *********************************************
 ```
 -s, --enable-seccomp ........................: Enable built-in Seccomp profile
