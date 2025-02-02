@@ -26,8 +26,8 @@ jobs:
       - name: Check latest version
         id: check_version
         run: |
-          remote_version=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .tag_name)
-          remote_name=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .name)
+          remote_version=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -L https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          remote_name=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -L https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .name)
           echo "remote_version=$remote_version" | tee -a $GITHUB_OUTPUT
           echo "remote_name=$remote_name" | tee -a $GITHUB_OUTPUT
     outputs:
@@ -83,21 +83,4 @@ jobs:
             Build time: ${{ env.build_time }}
           prerelease: false
           files: |
-            ${{ github.workspace }}/x86_64.tar
-            ${{ github.workspace }}/i386.tar
-            ${{ github.workspace }}/s390x.tar
-            ${{ github.workspace }}/ppc64le.tar
-            ${{ github.workspace }}/loongarch64.tar
-            ${{ github.workspace }}/armv7.tar
-            ${{ github.workspace }}/armhf.tar
-            ${{ github.workspace }}/aarch64.tar
-            ${{ github.workspace }}/riscv64.tar
-            ${{ github.workspace }}/x86_64-noupx.tar
-            ${{ github.workspace }}/i386-noupx.tar
-            ${{ github.workspace }}/s390x-noupx.tar
-            ${{ github.workspace }}/ppc64le-noupx.tar
-            ${{ github.workspace }}/armv7-noupx.tar
-            ${{ github.workspace }}/armhf-noupx.tar
-            ${{ github.workspace }}/aarch64-noupx.tar
-            ${{ github.workspace }}/riscv64-noupx.tar
-
+            ${{ github.workspace }}/*.tar
