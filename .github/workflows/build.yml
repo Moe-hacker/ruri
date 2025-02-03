@@ -9,6 +9,8 @@ on:
       - 'build/**'
       - 'configure'
       - 'Makefile'
+    tags:
+      - "v*"
   pull_request:
 
 jobs:
@@ -44,9 +46,78 @@ jobs:
           echo "release_name=$release_name" >> $GITHUB_OUTPUT
           echo "build_time=$build_time" >> $GITHUB_OUTPUT
 
-  build:
-    name: Build
-    needs: update
+  buildloong64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binfmt-support binutils build-essential debootstrap git libc6-dev libcap-dev libfdt-dev libglib2.0-dev libpixman-1-dev libseccomp-dev ninja-build pkg-config python3 python3-pip python3-tomli qemu-system-misc tree upx-ucl xz-utils zlib1g-dev uuid-runtime
+          pip3 install meson
+
+      - name: Build x86_64 Ruri
+        run: |
+          mkdir -p build
+          cd build
+          git clone --depth 1 https://github.com/moe-hacker/ruri.git
+          cd ruri
+          ./configure -s
+          make
+          strip ruri
+          tar -cf ../../x86_64-noupx-$(uuidgen).tar ./ruri ./LICENSE
+          upx --best ruri
+          tar -cf ../../x86_64-$(uuidgen).tar ./ruri ./LICENSE
+
+      - name: Build loong64 qemu
+        run: |
+          cd build
+          git clone --depth=1 https://github.com/qemu/qemu.git
+          cd qemu
+          ./configure --static --disable-system --target-list=loongarch64-linux-user
+          make -j$(nproc)
+
+          sudo cp build/qemu-loongarch64 /usr/bin/qemu-loongarch64-static
+
+      - name: Build loongarch64 system
+        run: |
+          cd build
+          sudo debootstrap --no-check-gpg \
+            --foreign --arch=loong64 --variant=buildd --include=debian-ports-archive-keyring \
+            --verbose --components=main --resolve-deps --extra-suites=unreleased \
+            unstable ./debian http://ftp.ports.debian.org/debian-ports
+
+          sudo cp /usr/bin/qemu-loongarch64-static ./debian/usr/bin/
+          sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /debootstrap/debootstrap --second-stage
+
+      - name: Build loong64 Ruri
+        run: |
+          cd build
+          sudo bash -c 'cat <<EOF >> ./debian/build.sh
+          rm -f /etc/resolv.conf
+          echo nameserver 1.1.1.1 > /etc/resolv.conf
+          apt-get update
+          apt-get install -y wget make clang git libseccomp-dev libcap-dev libc-dev binutils upx-ucl tar
+          git clone --depth 1 https://github.com/moe-hacker/ruri.git
+          cd ruri
+          ./configure -s
+          make
+          strip ruri
+          tar -cf ../loong64.tar ./ruri ./LICENSE
+          EOF'
+
+          sudo chmod +x ./debian/build.sh
+          sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /bin/sh /build.sh
+          cp ./debian/loong64.tar ../loongarch64-$(uuidgen).tar
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruri-${{ github.run_id }}
+          path: |
+            ./*.tar
+          retention-days: 7
+
+  buildmatrix:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -61,23 +132,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get --no-install-recommends -y install \
-          curl \
-          wget \
-          xz-utils \
-          make \
-          clang \
-          libseccomp-dev \
-          libcap-dev \
-          libc6-dev \
-          binutils \
-          qemu-user-static
+            binutils clang curl libc6-dev libcap-dev libseccomp-dev make qemu-user-static wget xz-utils
 
       - name: build source code
         run: |
-          # cd build
-          # git clone --depth 1 https://github.com/moe-hacker/ruri.git
-          # cd ruri
+          cd build
+          git clone --depth 1 https://github.com/moe-hacker/ruri.git
+          cd ruri
           cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
+          cp ./ruri ../../
 
       - name: download latest minirootfs
         env:
@@ -150,9 +213,37 @@ jobs:
               ;;
           esac
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruri-${{ matrix.arch }}
+          path: |
+            ./*.tar
+          retention-days: 7
+
+  release:
+    name: Push Release
+    needs: [update, buildloong64, buildmatrix]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: |
+      (github.event_name == 'push' && needs.update.outputs.release == 'true') ||
+      startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download All Build
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all
+
+      - name: Move all .tar files
+        run: |
+          find ./all -type f -name "*.tar" -exec mv {} ./ \;
+
       - name: Release
-        if: needs.update.outputs.release == 'true'
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.update.outputs.version }}
           name: ${{ needs.update.outputs.release_name }}
@@ -160,9 +251,9 @@ jobs:
             This is ruri binary release.
             NOTE:
             *-noupx means the binary is not upx compressed.
+            Non-unique identifiers (UUIDs) are all compiled using the Alpine system.
             ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
             But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
             Build time: ${{ needs.update.outputs.build_time }}
-          prerelease: false
           files: |
             *.tar
