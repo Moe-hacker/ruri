@@ -61,12 +61,13 @@ jobs:
           cd build
           git clone --depth 1 https://github.com/moe-hacker/ruri.git
           cd ruri
-          ./configure -s
-          make
-          strip ruri
-          tar -cf ../../x86_64-noupx-$(uuidgen).tar ./ruri ./LICENSE
-          upx --best ruri
-          tar -cf ../../x86_64-$(uuidgen).tar ./ruri ./LICENSE
+          cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
+          # ./configure -s
+          # make
+          # strip ruri
+          # tar -cf ../../x86_64-noupx-$(uuidgen).tar ./ruri ./LICENSE
+          # upx --best ruri
+          # tar -cf ../../x86_64-$(uuidgen).tar ./ruri ./LICENSE
 
       - name: Build loong64 qemu
         run: |
@@ -107,7 +108,8 @@ jobs:
 
           sudo chmod +x ./debian/build.sh
           sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /bin/sh /build.sh
-          cp ./debian/loong64.tar ../loongarch64-$(uuidgen).tar
+          # cp ./debian/loong64.tar ../loongarch64-$(uuidgen).tar
+          cp ./debian/loong64.tar ../loongarch64.tar
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -214,6 +216,7 @@ jobs:
           esac
 
       - name: Upload artifacts
+        if: matrix.arch != 'loongarch64'
         uses: actions/upload-artifact@v4
         with:
           name: ruri-${{ matrix.arch }}
@@ -251,7 +254,6 @@ jobs:
             This is ruri binary release.
             NOTE:
             *-noupx means the binary is not upx compressed.
-            Non-unique identifiers (UUIDs) are all compiled using the Alpine system.
             ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
             But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
             Build time: ${{ needs.update.outputs.build_time }}
