@@ -2,13 +2,6 @@ name: Run autotest
 
 on:
   workflow_dispatch:
-    inputs:
-      ruri_version:
-        description: "Optional: ruri version to use as tag_name (leave blank to use the latest remote version)"
-        required: false
-      release_name:
-        description: "Optional: Custom release name (ruri v* release)"
-        required: false
   push:
     branches: [ "main" ]
     paths:
@@ -20,24 +13,8 @@ on:
   pull_request:
 
 jobs:
-  check_update:
-    name: Check update
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check latest version
-        id: check_version
-        run: |
-          remote_version=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .tag_name)
-          remote_name=$(curl -L https://api.github.com/repos/Moe-hacker/ruri/releases/latest | jq -r .name)
-          echo "remote_version=$remote_version" | tee -a $GITHUB_OUTPUT
-          echo "remote_name=$remote_name" | tee -a $GITHUB_OUTPUT
-    outputs:
-      remote_version: ${{ steps.check_version.outputs.remote_version }}
-      remote_name: ${{ steps.check_version.outputs.remote_name }}
-
-  build:
-    name: Build
-    needs: check_update
+  test:
+    name: Test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -45,8 +22,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test
         run: |
-          sudo apt update&&sudo apt install -y git wget
-          yes | sudo apt install --no-install-recommends -y curl xz-utils \
+          sudo apt update && sudo apt install -y git wget
+          sudo apt install --no-install-recommends -y curl xz-utils \
           make \
           clang \
           libseccomp-dev \
