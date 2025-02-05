@@ -32,16 +32,18 @@
  * This file provides function to umount the container.
  * All pids detected in the container will be killed at the same time.
  */
-
 static char *proc_mounts(void)
 {
 	/*
 	 * Read /proc/mounts
 	 * Warning: free() after use.
 	 */
+	// As procfs does not support stat(),
+	// that means we can not know the size of /proc/mounts,
+	// so we have to use a buffer to read it.
 	int fd = open("/proc/mounts", O_RDONLY);
 	if (fd < 0) {
-		exit(0);
+		return NULL;
 	}
 	char buf[1024 + 1];
 	size_t bufsize = 1024;
@@ -75,11 +77,23 @@ static void umount_subdir(const char *_Nonnull dir)
 	 * This is another implementation of umount_container,
 	 * we use it as a double-check.
 	 */
+
+	/*
+	 * /proc/mounts format:
+	 * device mount_point filesystem_type options dump fsck_order
+	 * We just use strstr to find `dir` in /proc/mounts,
+	 * and umount it.
+	 * This is okey in most scenarios.
+	 */
 	char *mount_info = proc_mounts();
+	if (mount_info == NULL) {
+		return;
+	}
+	// A simple way to check if container is umounted.
 	if (strstr(mount_info, dir) != NULL) {
 		ruri_log("{base}There's still umounted dirs, using info in /proc/mounts to umount them\n");
 	} else {
-		exit(EXIT_SUCCESS);
+		return;
 	}
 	char *umount_point = NULL;
 	char *p = mount_info;
@@ -87,6 +101,7 @@ static void umount_subdir(const char *_Nonnull dir)
 		if (p == NULL) {
 			break;
 		}
+		// To avoid that we have dir=/foo but strstr find /foobar.
 		if (p[strlen(dir)] != '/' && p[strlen(dir) - 1] != '/' && p[strlen(dir)] != ' ') {
 			p = goto_next_line(p);
 			continue;
@@ -98,6 +113,7 @@ static void umount_subdir(const char *_Nonnull dir)
 		free(umount_point);
 		p = goto_next_line(p);
 	}
+	// Make ASAN happy.
 	free(mount_info);
 }
 // Umount container.
@@ -215,6 +231,9 @@ void ruri_umount_container(const char *_Nonnull container_dir)
 		kill(container->ns_pid, SIGKILL);
 	}
 	// Kill all processes in container.
+	// For container with PID ns enabled, when ns_pid is killed,
+	// all process will die, but without PID ns, we still need to
+	// find & kill other process.
 	ruri_kill_container(container_dir);
 	// Make Asan happy.
 	free(container);
