@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-# set the project name
+# Set the project name
 project(ruri LANGUAGES C)
 
 # Check for header
@@ -17,9 +17,6 @@ execute_process(
     OUTPUT_VARIABLE CMAKE_CURRENT_TIME
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
-add_definitions(-DBUILD_DATE="${CMAKE_CURRENT_DATE}")
-add_definitions(-DBUILD_TIME="${CMAKE_CURRENT_TIME}")
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
@@ -102,9 +99,8 @@ if(CMAKE_C_COMPILER MATCHES "tcc")
     endif()
     # Fix tcc not defined __VERSION__ and __TIMPSTAMP__
     add_definitions(-D__VERSION__="TinyCC")
-    add_definitions(-D__TIMESTAMP__="unknown")
+    add_definitions(-D__TIMESTAMP__="${CMAKE_CURRENT_DATE} ${CMAKE_CURRENT_TIME}")
 endif()
-
 
 # Search for libs
 find_library(CAP_LIBRARY cap)
@@ -222,7 +218,6 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/ruri/src/
 )
 
-# on linux clang 14
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     if (ENABLE_STATIC)
         target_link_libraries(ruri -lcap -lseccomp)
