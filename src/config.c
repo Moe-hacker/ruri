@@ -366,7 +366,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 		if (atoi(drop_caplist[i]) > 0) {
 			container->drop_caplist[i] = atoi(drop_caplist[i]);
 		} else {
-			if (cap_from_name(drop_caplist[i], &(container->drop_caplist[i])) < 0) {
+			if (ruri_cap_from_name(drop_caplist[i], &(container->drop_caplist[i])) < 0) {
 				ruri_error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
 			}
 		}
@@ -498,8 +498,10 @@ void ruri_correct_config(const char *_Nonnull path)
 			if (atoi(drop_caplist[i]) > 0) {
 				container.drop_caplist[i] = atoi(drop_caplist[i]);
 			} else {
-				if (cap_from_name(drop_caplist[i], &(container.drop_caplist[i])) < 0) {
-					ruri_error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
+				if (ruri_cap_from_name(drop_caplist[i], &(container.drop_caplist[i])) < 0) {
+					ruri_warning("{green}Invalid capability in drop_caplist, we build a default one\n{clear}");
+					cap_value_t nullcaplist[2] = { RURI_INIT_VALUE };
+					ruri_build_caplist(container.drop_caplist, false, nullcaplist, nullcaplist);
 				}
 			}
 			free(drop_caplist[i]);

@@ -368,7 +368,9 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		if (atoi(drop_caplist[i]) > 0) {
 			container->drop_caplist[i] = atoi(drop_caplist[i]);
 		} else {
-			cap_from_name(drop_caplist[i], &(container->drop_caplist[i]));
+			if (ruri_cap_from_name(drop_caplist[i], &(container->drop_caplist[i])) < 0) {
+				ruri_error("{red}Invalid capability:%s\n{clear}", drop_caplist[i]);
+			}
 		}
 		free(drop_caplist[i]);
 		container->drop_caplist[i + 1] = RURI_INIT_VALUE;

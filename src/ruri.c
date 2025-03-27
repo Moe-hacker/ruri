@@ -556,7 +556,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 				// we can not use the name to match it in current libcap.
 				if (atoi(argv[index]) != 0) {
 					ruri_add_to_caplist(keep_caplist_extra, atoi(argv[index]));
-				} else if (cap_from_name(argv[index], &cap) == 0) {
+				} else if (ruri_cap_from_name(argv[index], &cap) == 0) {
 					ruri_add_to_caplist(keep_caplist_extra, cap);
 					ruri_log("{base}Keep capability: %s\n", argv[index]);
 				} else {
@@ -739,7 +739,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 							// we can not use the name to match it in current libcap.
 							if (atoi(argv[index]) != 0) {
 								ruri_add_to_caplist(keep_caplist_extra, atoi(argv[index]));
-							} else if (cap_from_name(argv[index], &cap) == 0) {
+							} else if (ruri_cap_from_name(argv[index], &cap) == 0) {
 								ruri_add_to_caplist(keep_caplist_extra, cap);
 								ruri_log("{base}Keep capability: %s\n", argv[index]);
 							} else {
@@ -758,7 +758,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						if (argv[index] != NULL) {
 							if (atoi(argv[index]) != 0) {
 								ruri_add_to_caplist(drop_caplist_extra, atoi(argv[index]));
-							} else if (cap_from_name(argv[index], &cap) == 0) {
+							} else if (ruri_cap_from_name(argv[index], &cap) == 0) {
 								ruri_add_to_caplist(drop_caplist_extra, cap);
 							} else {
 								ruri_error("{red}Error: unknown capability `%s`\nQwQ{clear}\n", argv[index]);

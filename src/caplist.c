@@ -32,6 +32,18 @@
  * This file provides functions to manage capability list.
  * But drop_caps() to set capabilities is in chroot.c, not here.
  */
+// cap_from_name() that supports both upper and lower case.
+int ruri_cap_from_name(const char *str, cap_value_t *cap)
+{
+	char *buf = malloc(strlen(str) + 1);
+	for (int i = 0; str[i] != '\0'; i++) {
+		buf[i] = (char)tolower(str[i]);
+	}
+	buf[strlen(str)] = '\0';
+	int ret = cap_from_name(buf, cap);
+	free(buf);
+	return ret;
+}
 // Add a cap to caplist.
 void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {

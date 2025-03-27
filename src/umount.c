@@ -93,6 +93,8 @@ static void umount_subdir(const char *_Nonnull dir)
 	if (strstr(mount_info, dir) != NULL) {
 		ruri_log("{base}There's still umounted dirs, using info in /proc/mounts to umount them\n");
 	} else {
+		// Make ASAN happy.
+		free(mount_info);
 		return;
 	}
 	char *umount_point = NULL;

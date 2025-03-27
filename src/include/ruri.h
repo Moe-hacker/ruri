@@ -263,6 +263,7 @@ int ruri(int argc, char **argv);
 void ruri_init_config(struct RURI_CONTAINER *_Nonnull container);
 int ruri_mkdirs(const char *_Nonnull dir, mode_t mode);
 int ruri_get_groups(uid_t uid, gid_t groups[]);
+int ruri_cap_from_name(const char *str, cap_value_t *cap);
 //   ██╗ ██╗  ███████╗   ████╗   ███████╗
 //  ████████╗ ██╔════╝ ██╔═══██╗ ██╔════╝
 //  ╚██╔═██╔╝ █████╗   ██║   ██║ █████╗
