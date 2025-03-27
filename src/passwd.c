@@ -30,7 +30,7 @@
 #include "include/ruri.h"
 /*
  * Since we cannot statically link getpwuid() in glibc,
- * we need to implement it by ourselves.
+ * we need to implement it.
  * This file provides functions to parse /etc/passwd,
  * and it can also parse /etc/subuid and /etc/subgid.
  */
@@ -38,12 +38,18 @@ static char *line_get_username(const char *_Nonnull p)
 {
 	/*
 	 * Get username by line.
+	 * free() after use.
 	 */
 	char *ret = malloc(LOGIN_NAME_MAX * 4);
 	ret[0] = '\0';
 	// /etc/passwd format:
 	// name:password:uid:gid:comment:home directory:login shell
 	// So we only need the string before the first colon.
+	// Check if there is a colon.
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
+		return ret;
+	}
+	// Read the username until we meet the first colon.
 	for (int i = 0; p[i] != '\0' && i < (LOGIN_NAME_MAX * 2); i++) {
 		if (p[i] == ':') {
 			break;
@@ -59,14 +65,23 @@ static uid_t line_get_uid(const char *_Nonnull p)
 	 * Get uid by line.
 	 */
 	uid_t ret = 0;
+	const char *bound = p + strlen(p);
 	// /etc/passwd format:
 	// name:password:uid:gid:comment:home directory:login shell
 	// So we need to skip 2 colons.
 	for (int i = 0; i < 2; i++) {
-		if (strchr(p, ':') == NULL) {
+		if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 			return 0;
 		}
 		p = strchr(p, ':') + 1;
+	}
+	// Check for bound.
+	if (p >= bound) {
+		return 0;
+	}
+	// Check if there is still a colon.
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
+		return 0;
 	}
 	// Now, after we skip 2 colons, we can get the uid.
 	// Read the uid until we meet the next colon.
@@ -84,14 +99,23 @@ static gid_t line_get_gid(const char *_Nonnull p)
 	 * Get gid by line.
 	 */
 	uid_t ret = 0;
+	const char *bound = p + strlen(p);
 	// /etc/passwd format:
 	// name:password:uid:gid:comment:home directory:login shell
 	// So we need to skip 3 colons.
 	for (int i = 0; i < 3; i++) {
-		if (strchr(p, ':') == NULL) {
+		if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 			return 0;
 		}
 		p = strchr(p, ':') + 1;
+	}
+	// Check for bound.
+	if (p >= bound) {
+		return 0;
+	}
+	// Check if there is still a colon.
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
+		return 0;
 	}
 	// Now, after we skip 3 colons, we can get the gid.
 	// Read the uid until we meet the next colon.
@@ -119,7 +143,12 @@ static char *get_username(uid_t uid)
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(buf);
+		return NULL;
+	}
 	char *p = buf;
+	const char *bound = p + strlen(p);
 	uid_t tmpuid = 0;
 	char *tmpusername = " ";
 	// Every time, we get the username and uid by line.
@@ -137,6 +166,9 @@ static char *get_username(uid_t uid)
 			break;
 		}
 		p = p + 1;
+		if (p >= bound) {
+			break;
+		}
 	}
 	free(buf);
 	return NULL;
@@ -147,15 +179,20 @@ static uid_t line_get_uid_lower(const char *_Nonnull p)
 	 * Get uid_lower by line.
 	 */
 	uid_t ret = 0;
+	const char *bound = p + strlen(p);
 	// /etc/subuid format:
 	//   foo:uid_lower:uid_count
 	// So we need to skip a colon.
-	if (strchr(p, ':') == NULL) {
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
+	// Check for bound.
+	if (p >= bound) {
+		return 0;
+	}
 	// Check if there is still a colon.
-	if (strchr(p, ':') == NULL) {
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	// Read the uid_lower until we meet the next colon.
@@ -173,18 +210,27 @@ static uid_t line_get_uid_count(const char *_Nonnull p)
 	 * Get uid_count by line.
 	 */
 	uid_t ret = 0;
+	const char *bound = p + strlen(p);
 	// /etc/subuid format:
 	//   foo:uid_lower:uid_count
 	// So we need to skip 2 colons.
-	if (strchr(p, ':') == NULL) {
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
-	if (strchr(p, ':') == NULL) {
+	// Check for bound.
+	if (p >= bound) {
+		return 0;
+	}
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
-	// Check if there is a \n (newline).
+	// Check for bound.
+	if (p >= bound) {
+		return 0;
+	}
+	// Check if there is a '\n' (newline).
 	if (strchr(p, '\n') == NULL) {
 		return 0;
 	}
@@ -216,6 +262,10 @@ static void get_uid_map(char *_Nonnull user, struct RURI_ID_MAP *_Nonnull id_map
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(buf);
+		return;
+	}
 	// Find username in /etc/subuid.
 	char *map = strstr(buf, user);
 	if (map == NULL) {
@@ -235,11 +285,16 @@ static gid_t line_get_gid_lower(const char *_Nonnull p)
 	 * See comments in line_get_uid_lower().
 	 */
 	gid_t ret = 0;
-	if (strchr(p, ':') == NULL) {
+	const char *bound = p + strlen(p);
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
-	if (strchr(p, ':') == NULL) {
+	// Check for bound.
+	if (p >= bound) {
+		return 0;
+	}
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	for (int i = 0; p[i] != '\0'; i++) {
@@ -256,14 +311,21 @@ static gid_t line_get_gid_count(const char *_Nonnull p)
 	 * See comments in line_get_uid_count().
 	 */
 	gid_t ret = 0;
-	if (strchr(p, ':') == NULL) {
+	const char *bound = p + strlen(p);
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
-	if (strchr(p, ':') == NULL) {
+	if (p >= bound) {
+		return 0;
+	}
+	if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 		return 0;
 	}
 	p = strchr(p, ':') + 1;
+	if (p >= bound) {
+		return 0;
+	}
 	if (strchr(p, '\n') == NULL) {
 		return 0;
 	}
@@ -353,7 +415,12 @@ bool ruri_user_exist(const char *_Nonnull username)
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(buf);
+		return false;
+	}
 	char *p = buf;
+	const char *bound = p + strlen(p);
 	char *tmpusername = " ";
 	while (true) {
 		tmpusername = line_get_username(p);
@@ -368,6 +435,9 @@ bool ruri_user_exist(const char *_Nonnull username)
 			break;
 		}
 		p = p + 1;
+		if (p >= bound) {
+			break;
+		}
 	}
 	free(buf);
 	return false;
@@ -388,7 +458,12 @@ uid_t ruri_get_user_uid(const char *_Nonnull username)
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(buf);
+		return 0;
+	}
 	char *p = buf;
+	const char *bound = p + strlen(p);
 	uid_t tmpuid = 0;
 	char *tmpusername = " ";
 	while (true) {
@@ -405,6 +480,9 @@ uid_t ruri_get_user_uid(const char *_Nonnull username)
 			break;
 		}
 		p = p + 1;
+		if (p >= bound) {
+			break;
+		}
 	}
 	free(buf);
 	return 0;
@@ -425,7 +503,12 @@ gid_t ruri_get_user_gid(const char *_Nonnull username)
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(buf);
+		return 0;
+	}
 	char *p = buf;
+	const char *bound = p + strlen(p);
 	gid_t tmpgid = 0;
 	char *tmpusername = " ";
 	while (true) {
@@ -442,6 +525,9 @@ gid_t ruri_get_user_gid(const char *_Nonnull username)
 			break;
 		}
 		p = p + 1;
+		if (p >= bound) {
+			break;
+		}
 	}
 	free(buf);
 	return 0;
@@ -455,7 +541,7 @@ static gid_t line_get_group_gid(const char *p)
 	 */
 	gid_t ret = 0;
 	for (int i = 0; i < 2; i++) {
-		if (strchr(p, ':') == NULL) {
+		if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 			return 0;
 		}
 		p = strchr(p, ':') + 1;
@@ -479,7 +565,7 @@ static bool groups_line_have_user(const char *p, const char *username)
 	// groupname:password:gid:user1,user2,user3
 	// So we need to skip 3 colons.
 	for (int i = 0; i < 3; i++) {
-		if (strchr(p, ':') == NULL) {
+		if ((strchr(p, ':') == NULL) || (strchr(p, ':') > (strchr(p, '\n') == NULL ? 0 : strchr(p, '\n')))) {
 			return false;
 		}
 		p = strchr(p, ':') + 1;
@@ -533,7 +619,13 @@ int ruri_get_groups(uid_t uid, gid_t groups[])
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(username);
+		free(buf);
+		return 1;
+	}
 	char *p = buf;
+	const char *bound = p + strlen(p);
 	gid_t tmpgid = 114514;
 	while (p != NULL) {
 		tmpgid = line_get_group_gid(p);
@@ -546,6 +638,9 @@ int ruri_get_groups(uid_t uid, gid_t groups[])
 			break;
 		}
 		p = p + 1;
+		if (p >= bound) {
+			break;
+		}
 	}
 	free(username);
 	return ret;
