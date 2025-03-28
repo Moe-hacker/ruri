@@ -7,6 +7,20 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
+# WARNING:      
+> [!WARNING]
+> ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
+```
+* Your warranty is void.
+* I am not responsible for anything that may happen to your device by using this program.
+* You do it at your own risk and take the responsibility upon yourself.
+* This program has no Super Cow Powers.
+```
+# Bug reporting:
+> “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
+> --Torvalds
+
+If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
 # 中文文档
 [中文文档](doc/README_zh.md)      
 # WIP wiki:
@@ -74,28 +88,14 @@ This will automatically download ruri binary to `./ruri`.
 See [USAGE](doc/USAGE.md) to explore all features of ruri.         
 # About command-line:
 BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.      
-# WARNING:      
-> [!WARNING]
-> ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
-```
-* Your warranty is void.
-* I am not responsible for anything that may happen to your device by using this program.
-* You do it at your own risk and take the responsibility upon yourself.
-* This program has no Super Cow Powers.
-```
-# Bug reporting:
-> “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
-> --Torvalds
-
-If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
 # Container Security:  
 See [Enhance Container Security](doc/Security.md).      
 # Build Manually:      
 Ruri provides statically linked binary, but if you want to build it yourself, see [Build](doc/Build.md).      
 # About systemd:
-Systemd need CAP_SYS_ADMIN to work, and need user ns support to make itself to be PID 1.      
+Systemd need CAP_SYS_ADMIN to work, and need PID namespace support to make itself to be PID 1.      
 On my device, with `sudo ./ruri -u -k cap_sys_admin ../ubuntu /sbin/init &` and then `sudo ./ruri ../ubuntu /bin/bash` to enter container, although it shows `State: degraded`, systemd seems works.     
-But, as it might do some changes for the host, you take your own risk to use it.      
+But, as it might do some changes for the host and might make the device crash, you take your own risk to use it.      
 # Integration:
 ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
 An example is ruri's own build action [build-all.sh](build/build-all.sh), it runs containers for 9 different architectures to build itself, that shows its broad application prospects.      
