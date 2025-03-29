@@ -13,7 +13,7 @@ for package in upx lld; do
     fi
 done
 
-mkdir output output2
+mkdir output output2 output3
 
 git clone --depth 1 https://github.com/moe-hacker/ruri.git
 cd ruri
@@ -26,6 +26,11 @@ cp LICENSE ../output/LICENSE
 
 cp ruri ../output2/ruri
 cp LICENSE ../output2/LICENSE
+
+./configure --disable-libseccomp --disable-libcap -s --disable-rurienv
+make
+cp ruri ../output3/ruri
+cp LICENSE ../output3/LICENSE
 
 if command -v upx >/dev/null 2>&1; then
     cd ..
