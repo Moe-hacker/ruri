@@ -29,6 +29,7 @@ cp LICENSE ../output2/LICENSE
 
 ./configure -c -s
 make
+strip ruri
 cp ruri ../output3/ruri
 cp LICENSE ../output3/LICENSE
 
