@@ -175,9 +175,9 @@ jobs:
               ;;
             x86)
               sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
+              (cd $ARCHITECTURE/output && tar -cf ../../../i386.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../i386-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../i386-core.tar .)
               ;;
             aarch64)
               sudo ../ruri -a aarch64 -q /usr/bin/qemu-aarch64-static ./$ARCHITECTURE /bin/sh /build.sh
