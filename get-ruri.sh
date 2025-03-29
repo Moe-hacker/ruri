@@ -54,7 +54,7 @@ if ! command -v wget &>/dev/null; then
     exit 1
 fi
 rm ${CPU_ARCH}.tar >/dev/null 2>&1
-wget https://github.com/Moe-hacker/ruri/releases/latest/download/${CPU_ARCH}.tar
+wget https://github.com/Moe-hacker/ruri/releases/latest/download/${CPU_ARCH}-noupx.tar
 if [[ $? != 0 ]]; then
     echo "Failed to download ruri"
     echo "Please check your network or download ruri manually"
