@@ -48,6 +48,7 @@ Max memory: 860 KB
 |(withupx)|147K|1.3M|-88.7%|
 ## Core version:
 Without libcap and libseccomp, the core version, just as better-chroot implementation, can be even more lightweight.            
+It's useless, but it's cool.      
 ## ~~Alphabet coverage~~
 |Alphabet|ruri used|%|
 |---|---|---|
