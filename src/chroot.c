@@ -553,8 +553,6 @@ static void hidepid(int stat)
 	if (stat <= 0) {
 		return;
 	}
-	// Unmount /proc.
-	umount2("/proc", MNT_DETACH | MNT_FORCE);
 	usleep(1000);
 	if (stat == 1) {
 		mount("none", "/proc", "proc", MS_REMOUNT, "hidepid=1");
