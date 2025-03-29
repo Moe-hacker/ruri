@@ -211,6 +211,7 @@ jobs:
             s390x)
               sudo ../ruri -a s390x -q /usr/bin/qemu-s390x-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
               (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             loongarch64)
