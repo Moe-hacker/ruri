@@ -161,6 +161,7 @@ void ruri_AwA()
 	printf("\n\033[?25h");
 }
 #else
+#include "../include/ruri.h"
 void ruri_AwA()
 {
 	cprintf("{red}ruri was build with core-only mode QwQ.\n");
