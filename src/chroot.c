@@ -255,6 +255,7 @@ static void drop_caps(const struct RURI_CONTAINER *_Nonnull container)
 	 * And clear CapInh.
 	 * It will be called after chroot(2).
 	 */
+#ifndef DISABLE_LIBCAP
 	for (int i = 0; i < RURI_CAP_LAST_CAP + 1; i++) {
 		// RURI_INIT_VALUE is the end of drop_caplist[].
 		if (container->drop_caplist[i] == RURI_INIT_VALUE) {
@@ -283,6 +284,7 @@ static void drop_caps(const struct RURI_CONTAINER *_Nonnull container)
 	capset(hrdp, datap);
 	free(hrdp);
 	free(datap);
+#endif
 }
 // Set envs.
 static void set_envs(const struct RURI_CONTAINER *_Nonnull container)

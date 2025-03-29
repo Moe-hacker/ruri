@@ -110,10 +110,11 @@ static char *build_container_info(const struct RURI_CONTAINER *_Nonnull containe
 	 * and return the formatted config.
 	 */
 	char *ret = NULL;
-	// drop_caplist.
+	int len = 0;
+// drop_caplist.
+#ifndef DISABLE_LIBCAP
 	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	char *cap_tmp = NULL;
-	int len = 0;
 	for (int i = 0; true; i++) {
 		if (container->drop_caplist[i] == RURI_INIT_VALUE) {
 			len = i;
@@ -135,6 +136,7 @@ static char *build_container_info(const struct RURI_CONTAINER *_Nonnull containe
 	for (int i = 0; i < len; i++) {
 		free(drop_caplist[i]);
 	}
+#endif
 	// no_new_privs.
 	ret = k2v_add_comment(ret, "Set NO_NEW_PRIVS bit.");
 	ret = k2v_add_config(bool, ret, "no_new_privs", container->no_new_privs);
@@ -359,6 +361,7 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	// Backup container config.
 	struct RURI_CONTAINER *backup = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
 	memcpy(backup, container, sizeof(struct RURI_CONTAINER));
+#ifndef DISABLE_LIBCAP
 	// Get capabilities to drop.
 	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
@@ -378,8 +381,9 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		free(drop_caplist[i]);
 		container->drop_caplist[i + 1] = RURI_INIT_VALUE;
 	}
+#endif
 	// Check if drop_caplist changed.
-	if (memcmp(backup->drop_caplist, container->drop_caplist, sizeof(cap_t) * RURI_CAP_LAST_CAP) != 0) {
+	if (memcmp(backup->drop_caplist, container->drop_caplist, sizeof(cap_value_t) * RURI_CAP_LAST_CAP) != 0) {
 		if (!container->no_warnings) {
 			ruri_warning("{yellow}.rurienv detected, drop_caplist changed{clear}\n");
 		}

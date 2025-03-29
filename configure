@@ -108,8 +108,19 @@ default_cflag() {
         test_and_add_cflag "-Wl,--disable-new-dtags"
     fi
     test_and_add_cflag "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_FILE_OFFSET_BITS=64"
-    test_and_add_ldflag "-lcap"
-    test_and_add_ldflag "-lseccomp"
+    if [ $DISABLE_LIBSECCOMP ]; then
+        test_and_add_cflag "-DDISABLE_LIBSECCOMP"
+    else
+        test_and_add_ldflag "-lseccomp"
+    fi
+    if [ $DISABLE_LIBCAP ]; then
+        test_and_add_cflag "-DDISABLE_LIBCAP"
+    else
+        test_and_add_ldflag "-lcap"
+    fi
+    if [ $DISABLE_RURIENV ]; then
+        test_and_add_cflag "-DDISABLE_RURIENV"
+    fi
     test_and_add_ldflag "-lpthread"
 }
 dev_cflag() {
@@ -137,8 +148,19 @@ dev_cflag() {
     if [ $STATIC_COMPILE ]; then
         test_and_add_cflag "-static"
     fi
-    test_and_add_ldflag "-lcap"
-    test_and_add_ldflag "-lseccomp"
+    if [ $DISABLE_LIBSECCOMP ]; then
+        test_and_add_cflag "-DDISABLE_LIBSECCOMP"
+    else
+        test_and_add_ldflag "-lseccomp"
+    fi
+    if [ $DISABLE_LIBCAP ]; then
+        test_and_add_cflag "-DDISABLE_LIBCAP"
+    else
+        test_and_add_ldflag "-lcap"
+    fi
+    if [ $DISABLE_RURIENV ]; then
+        test_and_add_cflag "-DDISABLE_RURIENV"
+    fi
     test_and_add_ldflag "-lpthread"
     export STRIP=true
 }
@@ -154,10 +176,13 @@ check_headers_and_libs() {
 }
 show_help() {
     echo "Usage: ./configure [OPTION]..."
-    echo "    -h, --help          show help"
-    echo "    -s, --static        compile static binary"
-    echo "    -d, --dev           compile dev version"
-    echo "    -D, --debug         compile with debug log"
+    echo "    -h, --help             show help"
+    echo "    -s, --static           compile static binary"
+    echo "    -d, --dev              compile dev version"
+    echo "    -D, --debug            compile with debug log"
+    echo "    --disable-libseccomp   disable libseccomp"
+    echo "    --disable-libcap       disable libcap"
+    echo "    --disable-rurienv      disable .rurienv"
 }
 while [ $1 ]; do
     case $1 in
@@ -165,6 +190,9 @@ while [ $1 ]; do
     "-s" | "--static") export STATIC_COMPILE=true ;;
     "-d" | "--dev") export DEV_BUILD=true ;;
     "-D" | "--debug") export DEBUG_BUILD=true ;;
+    "--disable-libseccomp") export DISABLE_LIBSECCOMP=true ;;
+    "--disable-libcap") export DISABLE_LIBCAP=true ;;
+    "--disable-rurienv") export DISABLE_RURIENV=true ;;
     esac
     shift
 done

@@ -98,7 +98,7 @@ On my device, with `sudo ./ruri -u -k cap_sys_admin ../ubuntu /sbin/init &` and 
 But, as it might do some changes for the host and might make the device crash, you take your own risk to use it.      
 # Integration:
 ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
-An example is ruri's own build action [build-all.sh](build/build-all.sh), it runs containers for 9 different architectures to build itself, that shows its broad application prospects.      
+An example is ruri's own build action , it runs containers for 9 different architectures to build itself, that shows its broad application prospects.      
 Another example is [rurima](https://github.com/Moe-hacker/rurima), I made ruri built-in into it, so it can be run as a subcommand.      
 See [Integration](doc/Integration.md) for a guide to integrate ruri into your projects.    
 # Behavior of rurienv:

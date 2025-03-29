@@ -32,6 +32,7 @@
  * This file provides functions to manage capability list.
  * But drop_caps() to set capabilities is in chroot.c, not here.
  */
+#ifndef DISABLE_LIBCAP
 // cap_from_name() that supports both upper and lower case.
 int ruri_cap_from_name(const char *str, cap_value_t *cap)
 {
@@ -44,14 +45,16 @@ int ruri_cap_from_name(const char *str, cap_value_t *cap)
 	free(buf);
 	return ret;
 }
+#endif
 // Add a cap to caplist.
 void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 {
-	/*
-	 * If cap is already in list, just do nothing and quit.
-	 * list[] is initialized by RURI_INIT_VALUE,
-	 * and the RURI_INIT_VALUE is the end of the list.
-	 */
+/*
+ * If cap is already in list, just do nothing and quit.
+ * list[] is initialized by RURI_INIT_VALUE,
+ * and the RURI_INIT_VALUE is the end of the list.
+ */
+#ifndef DISABLE_LIBCAP
 	// We do not add non-supported capabilities to caplist.
 	if (!CAP_IS_SUPPORTED(cap)) {
 		return;
@@ -66,6 +69,7 @@ void ruri_add_to_caplist(cap_value_t *_Nonnull list, cap_value_t cap)
 			}
 		}
 	}
+#endif
 }
 // Check if the cap is in the list.
 bool ruri_is_in_caplist(const cap_value_t *_Nonnull list, cap_value_t cap)
@@ -121,6 +125,8 @@ void ruri_build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop
 	 * NOTE: keep_caplist_extra[] will cover drop_caplist_extra[],
 	 * if they have the same capabilities.
 	 */
+
+#ifndef DISABLE_LIBCAP
 	// Based on docker's default capability set.
 	// And I removed some unneeded capabilities.
 	cap_value_t keep_caplist_common[] = { CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER, CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_SETPCAP, CAP_NET_BIND_SERVICE, CAP_SYS_CHROOT, CAP_KILL, CAP_AUDIT_WRITE, RURI_INIT_VALUE };
@@ -158,4 +164,7 @@ void ruri_build_caplist(cap_value_t caplist[], bool privileged, cap_value_t drop
 			ruri_del_from_caplist(caplist, keep_caplist_extra[i]);
 		}
 	}
+#else
+	caplist[0] = RURI_INIT_VALUE;
+#endif
 }

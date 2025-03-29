@@ -520,6 +520,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		}
 		// Deny syscall.
 		else if (strcmp(argv[index], "-X") == 0 || strcmp(argv[index], "--deny-syscall") == 0) {
+#ifndef DISABLE_LIBSECCOMP
 			index++;
 			if (argv[index] != NULL) {
 				if (seccomp_syscall_resolve_name(argv[index]) == __NR_SCMP_ERROR) {
@@ -538,6 +539,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			} else {
 				ruri_error("{red}Error: unknown syscall QwQ\n");
 			}
+#else
+			ruri_error("{red}Error: libseccomp is disabled, please recompile ruri with libseccomp support QwQ\n");
+#endif
 		}
 		// Time ns offset.
 		else if (strcmp(argv[index], "-T") == 0 || strcmp(argv[index], "--timens-offset") == 0) {
@@ -557,6 +561,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		}
 		// Extra capabilities to keep.
 		else if (strcmp(argv[index], "-k") == 0 || strcmp(argv[index], "--keep") == 0) {
+#ifndef DISABLE_LIBCAP
 			index++;
 			if (argv[index] != NULL) {
 				// We both support capability name and number,
@@ -573,9 +578,13 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			} else {
 				ruri_error("{red}Missing argument\n");
 			}
+#else
+			ruri_error("{red}Error: libcap is disabled, please recompile ruri with libcap support QwQ\n");
+#endif
 		}
 		// Extra capabilities to drop.
 		else if (strcmp(argv[index], "-d") == 0 || strcmp(argv[index], "--drop") == 0) {
+#ifndef DISABLE_LIBCAP
 			index++;
 			if (argv[index] != NULL) {
 				if (atoi(argv[index]) != 0) {
@@ -588,6 +597,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 			} else {
 				ruri_error("{red}Missing argument\n");
 			}
+#else
+			ruri_error("{red}Error: libcap is disabled, please recompile ruri with libcap support QwQ\n");
+#endif
 		}
 		// If use_config_file is true.
 		// The first unrecognized argument will be treated as command to exec in container.
@@ -739,6 +751,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 					}
 					break;
 				case 'k':
+#ifndef DISABLE_LIBCAP
 					if (i == (strlen(argv[index]) - 1)) {
 						index++;
 						if (argv[index] != NULL) {
@@ -760,7 +773,11 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						ruri_error("Invalid argument %s\n", argv[index]);
 					}
 					break;
+#else
+					ruri_error("{red}Error: libcap is disabled, please recompile ruri with libcap support QwQ\n");
+#endif
 				case 'd':
+#ifndef DISABLE_LIBCAP
 					if (i == (strlen(argv[index]) - 1)) {
 						index++;
 						if (argv[index] != NULL) {
@@ -778,6 +795,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						ruri_error("Invalid argument %s\n", argv[index]);
 					}
 					break;
+#else
+					ruri_error("{red}Error: libcap is disabled, please recompile ruri with libcap support QwQ\n");
+#endif
 				case 'e':
 					if (i == (strlen(argv[index]) - 1)) {
 						index++;
@@ -1013,6 +1033,7 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 					}
 					break;
 				case 'X':
+#ifndef DISABLE_LIBSECCOMP
 					if (i == (strlen(argv[index]) - 1)) {
 						if (index == argc - 1) {
 							ruri_error("{red}Please specify the syscall\n{clear}");
@@ -1035,6 +1056,9 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 						ruri_error("Invalid argument %s\n", argv[index]);
 					}
 					break;
+#else
+					ruri_error("{red}Error: libseccomp is disabled, please recompile ruri with libseccomp support QwQ\n");
+#endif
 				case 'J':
 					if (i == (strlen(argv[index]) - 1)) {
 						index++;
@@ -1138,6 +1162,7 @@ static bool ruri_rootless_mode_detected(char *_Nonnull container_dir)
 }
 static void detect_suid_or_capability(void)
 {
+#ifndef DISABLE_LIBCAP
 	struct stat st;
 	if (stat("/proc/self/exe", &st) == 0) {
 		if (((st.st_mode & S_ISUID) || (st.st_mode & S_ISGID)) && (geteuid() == 0 || getegid() == 0)) {
@@ -1157,6 +1182,7 @@ static void detect_suid_or_capability(void)
 	}
 	cap_free(caps);
 	cap_free(caps_str);
+#endif
 }
 // The real main() function.
 int ruri(int argc, char **argv)

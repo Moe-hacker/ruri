@@ -62,12 +62,6 @@ jobs:
           git clone --depth 1 https://github.com/moe-hacker/ruri.git
           cd ruri
           cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
-          # ./configure -s
-          # make
-          # strip ruri
-          # tar -cf ../../x86_64-noupx-$(uuidgen).tar ./ruri ./LICENSE
-          # upx --best ruri
-          # tar -cf ../../x86_64-$(uuidgen).tar ./ruri ./LICENSE
 
       - name: Build loong64 qemu
         run: |
@@ -104,12 +98,16 @@ jobs:
           make
           strip ruri
           tar -cf ../loong64.tar ./ruri ./LICENSE
+          ./configure --disable-libseccomp --disable-libcap -s --disable-rurienv
+          make
+          strip ruri
+          tar -cf ../loong64-core.tar ./ruri ./LICENSE
           EOF'
 
           sudo chmod +x ./debian/build.sh
           sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /bin/sh /build.sh
-          # cp ./debian/loong64.tar ../loongarch64-$(uuidgen).tar
           cp ./debian/loong64.tar ../loongarch64.tar
+          cp ./debian/loong64-core.tar ../loongarch64-core.tar
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -166,52 +164,59 @@ jobs:
         run: |
           cd build
           cp build.sh "$ARCHITECTURE/build.sh"
-          # sudo chmod +x ruri/ruri
           sudo chmod +x ../ruri
           sudo chmod +x "$ARCHITECTURE/build.sh"
           case "$ARCHITECTURE" in
             x86_64)
-              # sudo ./ruri/ruri ./$ARCHITECTURE /bin/sh /build.sh
               sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
               (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             x86)
               sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../i386.tar .)
               (cd $ARCHITECTURE/output2 && tar -cf ../../../i386-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../i386-core.tar .)
               ;;
             aarch64)
               sudo ../ruri -a aarch64 -q /usr/bin/qemu-aarch64-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
               (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             riscv64)
               sudo ../ruri -a riscv64 -q /usr/bin/qemu-riscv64-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             armhf)
               sudo ../ruri -a armhf -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
               (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             armv7)
               sudo ../ruri -a armv7 -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
               (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             ppc64le)
               sudo ../ruri -a ppc64le -q /usr/bin/qemu-ppc64le-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
               (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             s390x)
               sudo ../ruri -a s390x -q /usr/bin/qemu-s390x-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
             loongarch64)
               sudo ../ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./$ARCHITECTURE /bin/sh /build.sh
               (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
           esac
 
@@ -254,6 +259,7 @@ jobs:
             This is ruri binary release.
             NOTE:
             *-noupx means the binary is not upx compressed.
+            *-core means the binary is built without libseccomp and libcap, and with .rurienv disabled.
             ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
             But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
             Build time: ${{ needs.update.outputs.build_time }}

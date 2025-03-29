@@ -57,7 +57,11 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->cross_arch = NULL;
 	container->qemu_path = NULL;
 	container->ns_pid = RURI_INIT_VALUE;
+#ifndef DISABLE_RURIENV
 	container->use_rurienv = true;
+#else
+	container->use_rurienv = false;
+#endif
 	container->ro_root = false;
 	container->cpuset = NULL;
 	container->memory = NULL;
@@ -107,8 +111,9 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_newline(ret);
 	// drop_caplist.
 	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
-	char *cap_tmp = NULL;
 	int len = 0;
+#ifndef DISABLE_LIBCAP
+	char *cap_tmp = NULL;
 	for (int i = 0; true; i++) {
 		if (container->drop_caplist[i] == RURI_INIT_VALUE) {
 			len = i;
@@ -124,6 +129,7 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 			cap_tmp = NULL;
 		}
 	}
+#endif
 	ret = k2v_add_comment(ret, "The capability to drop.");
 	ret = k2v_add_comment(ret, "Format: \"capname1\",\"capname2\".");
 	ret = k2v_add_comment(ret, "For example, [\"cap_sys_admin\",\"cap_sys_chroot\"] is valid.");
@@ -362,6 +368,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 			ruri_error("{red}Invalid config file, there is no key:%s\nHint:\n You can try to use `ruri -C config` to fix the config file{clear}", key_list[i]);
 		}
 	}
+#ifndef DISABLE_LIBCAP
 	// Get drop_caplist.
 	char *drop_caplist[RURI_CAP_LAST_CAP + 1] = { NULL };
 	int caplen = k2v_get_key(char_array, "drop_caplist", buf, drop_caplist, RURI_CAP_LAST_CAP);
@@ -380,6 +387,7 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 		free(drop_caplist[i]);
 		container->drop_caplist[i + 1] = RURI_INIT_VALUE;
 	}
+#endif
 	// Get no_new_privs.
 	container->no_new_privs = k2v_get_key(bool, "no_new_privs", buf);
 	// Get enable_seccomp.
@@ -400,6 +408,9 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	container->no_warnings = k2v_get_key(bool, "no_warnings", buf);
 	// Get use_rurienv.
 	container->use_rurienv = k2v_get_key(bool, "use_rurienv", buf);
+#ifdef DISABLE_RURIENV
+	container->use_rurienv = false;
+#endif
 	// Get cpuset.
 	container->cpuset = k2v_get_key(char, "cpuset", buf);
 	// Get memory.
@@ -492,6 +503,7 @@ void ruri_correct_config(const char *_Nonnull path)
 	}
 	struct RURI_CONTAINER container;
 	container.container_dir = k2v_get_key(char, "container_dir", buf);
+#ifndef DISABLE_LIBCAP
 	if (!have_key("drop_caplist", buf)) {
 		ruri_warning("{green}No key drop_caplist, we build a default one\n{clear}");
 		cap_value_t nullcaplist[2] = { RURI_INIT_VALUE };
@@ -517,6 +529,9 @@ void ruri_correct_config(const char *_Nonnull path)
 			container.drop_caplist[i + 1] = RURI_INIT_VALUE;
 		}
 	}
+#else
+	container.drop_caplist[0] = RURI_INIT_VALUE;
+#endif
 	if (!have_key("command", buf)) {
 		ruri_warning("{green}No key command found, set to {NULL}\n{clear}");
 		container.command[0] = NULL;
@@ -625,6 +640,9 @@ void ruri_correct_config(const char *_Nonnull path)
 	} else {
 		container.use_rurienv = k2v_get_key(bool, "use_rurienv", buf);
 	}
+#ifdef DISABLE_RURIENV
+	container.use_rurienv = false;
+#endif
 	if (!have_key("ro_root", buf)) {
 		ruri_warning("{green}No key ro_root found, set to false\n{clear}");
 		container.ro_root = false;
