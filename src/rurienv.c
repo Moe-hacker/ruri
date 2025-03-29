@@ -172,6 +172,9 @@ static char *build_container_info(const struct RURI_CONTAINER *_Nonnull containe
 	// user.
 	ret = k2v_add_comment(ret, "User to run command in the container.");
 	ret = k2v_add_config(char, ret, "user", container->user);
+	// OOM score.
+	ret = k2v_add_comment(ret, "OOM score.");
+	ret = k2v_add_config(int, ret, "oom_score_adj", container->oom_score_adj);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -423,6 +426,8 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	}
 	// Get no_network.
 	container->no_network = k2v_get_key(bool, "no_network", buf);
+	// Get oom_score_adj.
+	container->oom_score_adj = k2v_get_key(int, "oom_score_adj", buf);
 	// Get env.
 	int envlen = k2v_get_key(char_array, "env", buf, container->env, RURI_MAX_ENVS);
 	container->env[envlen] = NULL;

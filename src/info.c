@@ -140,6 +140,7 @@ void ruri_show_helps(void)
 	cprintf("{base}  -L, --logfile [file] ........................: Set log file of -b option\n");
 	cprintf("{base}  -X, --deny-syscall [syscall] ................: Deny syscall, use seccomp\n");
 	cprintf("{base}  -J, --join-ns [NS_PID] ......................: Join ns using ns_pid(*13)\n");
+	cprintf("{base}  -O, --oom-score-adj [score] .................: Set oom_score_adj for container(*14)\n");
 	cprintf("\n");
 	cprintf("{base}Note:\n");
 	cprintf("{base}(*1)  : Will not work for unshare container without PID ns support\n");
@@ -156,6 +157,7 @@ void ruri_show_helps(void)
 	cprintf("{base}(*11) : For example, `-I kvm 10 232` or `-I dri/card0 226 0`\n");
 	cprintf("{base}(*12) : This feature might not work. The value is in seconds. This feature will auto enable unshare\n");
 	cprintf("{base}(*13) : This can only be used when `-N` option is enabled\n");
+	cprintf("{base}(*14) : The value is in range of -1000 to 1000, but setting to negative value might cause security issues\n");
 	cprintf("\n{base}Note:\n") cprintf("{base}BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.\n") cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.

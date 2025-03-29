@@ -230,3 +230,8 @@ unshare容器和rootless容器会始终在执行命令前fork()自身一次，
 
 ```
 使用seccomp直接对某个syscall设置SCMP_ACT_KILL。      
+*********
+```
+-O, --oom-score-adj [score] .................: 设置oom_score_adj
+```
+注意：使用负值是危险行为      

@@ -49,7 +49,7 @@ Max memory: 860 KB
 ## ~~Alphabet coverage~~
 |Alphabet|ruri used|%|
 |---|---|---|
-|52|43|83%|
+|52|44|85%|
 # Highlights:
 - Powerful Features
   - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, run rootless container, and even more...      

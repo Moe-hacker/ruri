@@ -179,6 +179,8 @@ struct RURI_CONTAINER {
 	time_t timens_monotonic_offset;
 	// Denied syscalls.
 	char *_Nonnull seccomp_denied_syscall[RURI_MAX_SECCOMP_DENIED_SYSCALL];
+	// OOM score.
+	int oom_score_adj;
 };
 // For ruri_get_magic().
 #define ruri_magicof(x) (x##_magic)

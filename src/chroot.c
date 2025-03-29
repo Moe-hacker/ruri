@@ -547,11 +547,47 @@ static void set_hostname(struct RURI_CONTAINER *_Nonnull container)
 }
 static void hidepid(int stat)
 {
+	/*
+	 * Hide pid option for mounting /proc.
+	 */
+	if (stat <= 0) {
+		return;
+	}
+	// Unmount /proc.
+	umount2("/proc", MNT_DETACH | MNT_FORCE);
+	usleep(1000);
 	if (stat == 1) {
 		mount("none", "/proc", "proc", MS_REMOUNT, "hidepid=1");
 	} else if (stat == 2) {
 		mount("none", "/proc", "proc", MS_REMOUNT, "hidepid=2");
 	}
+}
+static void set_oom_score(int score)
+{
+	/*
+	 * Set OOM score.
+	 * It will be called after /proc is mounted.
+	 * The score is between -1000 and 1000.
+	 * If the score is 0, it will not be set.
+	 * This feature need linux kernel 2.6.36 or later.
+	 */
+	if (score < -1000 || score > 1000) {
+		ruri_error("{red}Error: OOM score must be between -1000 and 1000 QwQ\n");
+	}
+	if (score == 0) {
+		return;
+	}
+	// Set OOM score.
+	char buf[PATH_MAX] = { '\0' };
+	sprintf(buf, "/proc/%d/oom_score_adj", getpid());
+	int fd = open(buf, O_WRONLY | O_CLOEXEC);
+	if (fd < 0) {
+		ruri_error("{red}Error: failed to open /proc/%d/oom_score_adj QwQ\n", getpid());
+	}
+	char score_str[16] = { '\0' };
+	sprintf(score_str, "%d", score);
+	write(fd, score_str, strlen(score_str));
+	close(fd);
 }
 // Run chroot container.
 void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
@@ -658,6 +694,10 @@ void ruri_run_chroot_container(struct RURI_CONTAINER *_Nonnull container)
 	// Create character devices.
 	if (container->char_devs[0] != NULL) {
 		mk_char_devs(container);
+	}
+	// Set OOM score.
+	if (container->oom_score_adj != 0) {
+		set_oom_score(container->oom_score_adj);
 	}
 	// Set up Seccomp BPF.
 	if (container->enable_default_seccomp || container->seccomp_denied_syscall[0] != NULL) {

@@ -235,3 +235,8 @@ Run ruri in background and set output file.
 -X, --deny-syscall [syscall] ................: Deny a syscall
 ```
 Use Seccomp to set SCMP_ACT_KILL for the syscall.      
+*********
+```
+-O, --oom-score-adj [score] .................: Set oom_score_adj for container.
+```
+Set oom_score_adj, note that using negative value is dangerous.      

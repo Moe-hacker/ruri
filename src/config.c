@@ -74,6 +74,7 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	container->timens_realtime_offset = 0;
 	container->timens_monotonic_offset = 0;
 	container->seccomp_denied_syscall[0] = NULL;
+	container->oom_score_adj = 0;
 	// Use the time now for container_id.
 	time_t tm = time(NULL);
 	// We need a int value for container_id, so use long%86400.
@@ -242,6 +243,12 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	ret = k2v_add_comment(ret, "Use kvm");
 	ret = k2v_add_comment(ret, "Default is false.");
 	ret = k2v_add_config(bool, ret, "use_kvm", container->use_kvm);
+	// oom_score_adj.
+	ret = k2v_add_comment(ret, "OOM score.");
+	ret = k2v_add_comment(ret, "Default is 0.");
+	ret = k2v_add_comment(ret, "Set it to 0 to disable.");
+	ret = k2v_add_config(int, ret, "oom_score_adj", container->oom_score_adj);
+	ret = k2v_add_newline(ret);
 	// extra_mountpoint.
 	for (int i = 0; true; i++) {
 		if (container->extra_mountpoint[i] == NULL) {
@@ -415,6 +422,8 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	container->use_kvm = k2v_get_key(bool, "use_kvm", buf);
 	// Get hidepid.
 	container->hidepid = k2v_get_key(int, "hidepid", buf);
+	// Get oom_score_adj.
+	container->oom_score_adj = k2v_get_key(int, "oom_score_adj", buf);
 	// Get user.
 	if (container->user == NULL) {
 		container->user = k2v_get_key(char, "user", buf);
@@ -702,6 +711,12 @@ void ruri_correct_config(const char *_Nonnull path)
 		container.timens_monotonic_offset = 0;
 	} else {
 		container.timens_monotonic_offset = k2v_get_key(long, "timens_monotonic_offset", buf);
+	}
+	if (!have_key("oom_score_adj", buf)) {
+		ruri_warning("{green}No key oom_score_adj found, set to 0\n{clear}");
+		container.oom_score_adj = 0;
+	} else {
+		container.oom_score_adj = k2v_get_key(int, "oom_score_adj", buf);
 	}
 	free(buf);
 	unlink(path);
