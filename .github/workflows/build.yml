@@ -9,6 +9,7 @@ on:
       - 'build/**'
       - 'configure'
       - 'Makefile'
+      - '.github/**'
     tags:
       - "v*"
   pull_request:
