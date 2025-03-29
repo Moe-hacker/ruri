@@ -32,6 +32,7 @@
  * This file defines the actions of the animation.
  * All the functions have the same arguments.
  */
+#ifndef RURI_CORE_ONLY
 void nekofeng_face(useconds_t inr, unsigned int keep)
 {
 	struct ACTION *action = NULL;
@@ -189,3 +190,4 @@ void nekofeng_blink_righteye(useconds_t inr, unsigned int keep)
 	nekofeng_play_action(action, inr, keep);
 	nekofeng_free_action(action);
 }
+#endif

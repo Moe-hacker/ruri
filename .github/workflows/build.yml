@@ -98,7 +98,7 @@ jobs:
           make
           strip ruri
           tar -cf ../loong64.tar ./ruri ./LICENSE
-          ./configure --disable-libseccomp --disable-libcap -s --disable-rurienv
+          ./configure -c -s
           make
           strip ruri
           tar -cf ../loong64-core.tar ./ruri ./LICENSE

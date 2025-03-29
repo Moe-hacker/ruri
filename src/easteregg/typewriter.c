@@ -46,6 +46,7 @@
  * and I am too lazy to read the code.
  *
  */
+#ifndef RURI_CORE_ONLY
 static int get_last_line_size(char *_Nonnull buf)
 {
 	if (buf == NULL) {
@@ -103,14 +104,14 @@ static int get_lines(char *_Nonnull buf)
 void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
 {
 	int y_offset = 0;
-	printf("\033[%dH", y + layer->y_offset);
-	printf("\033[%dG", x + layer->x_offset);
+	printf("\033[%dH", nekofeng_y + layer->y_offset);
+	printf("\033[%dG", nekofeng_x + layer->x_offset);
 	for (size_t i = 0; i < strlen(layer->layer); i++) {
 		// The next line.
 		if (layer->layer[i] == '\n') {
 			y_offset++;
-			printf("\033[%dH", y + layer->y_offset + y_offset);
-			printf("\033[%dG", x + layer->x_offset);
+			printf("\033[%dH", nekofeng_y + layer->y_offset + y_offset);
+			printf("\033[%dG", nekofeng_x + layer->x_offset);
 			continue;
 		}
 		// '#' means a ' ' to cover the layer under it.
@@ -168,8 +169,8 @@ void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr
 		x_offset = get_last_line_size(buf);
 		buf = del_last_line(buf);
 		for (int j = x_offset; j > 0; j--) {
-			printf("\033[%dH", y + layer->y_offset + i);
-			printf("\033[%dG", x + layer->x_offset + j - 1);
+			printf("\033[%dH", nekofeng_y + layer->y_offset + i);
+			printf("\033[%dG", nekofeng_x + layer->x_offset + j - 1);
 			printf(" ");
 			fflush(stdout);
 			usleep(inr);
@@ -177,3 +178,4 @@ void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr
 	}
 	free(buf);
 }
+#endif

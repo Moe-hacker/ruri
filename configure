@@ -121,6 +121,9 @@ default_cflag() {
     if [ $DISABLE_RURIENV ]; then
         test_and_add_cflag "-DDISABLE_RURIENV"
     fi
+    if [ $RURI_CORE_ONLY ]; then
+        test_and_add_cflag "-DRURI_CORE_ONLY"
+    fi
     test_and_add_ldflag "-lpthread"
 }
 dev_cflag() {
@@ -161,6 +164,9 @@ dev_cflag() {
     if [ $DISABLE_RURIENV ]; then
         test_and_add_cflag "-DDISABLE_RURIENV"
     fi
+    if [ $RURI_CORE_ONLY ]; then
+        test_and_add_cflag "-DRURI_CORE_ONLY"
+    fi
     test_and_add_ldflag "-lpthread"
     export STRIP=true
 }
@@ -180,6 +186,7 @@ show_help() {
     echo "    -s, --static           compile static binary"
     echo "    -d, --dev              compile dev version"
     echo "    -D, --debug            compile with debug log"
+    echo "    -c, --core             compile only core module, will not include libseccomp and libcap"
     echo "    --disable-libseccomp   disable libseccomp"
     echo "    --disable-libcap       disable libcap"
     echo "    --disable-rurienv      disable .rurienv"
@@ -193,6 +200,7 @@ while [ $1 ]; do
     "--disable-libseccomp") export DISABLE_LIBSECCOMP=true ;;
     "--disable-libcap") export DISABLE_LIBCAP=true ;;
     "--disable-rurienv") export DISABLE_RURIENV=true ;;
+    "-c" | "--core") export RURI_CORE_ONLY=true ;;
     esac
     shift
 done

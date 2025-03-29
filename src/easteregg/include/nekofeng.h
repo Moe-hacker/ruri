@@ -78,12 +78,12 @@ struct ACTION {
 	struct ACTION *next;
 };
 // The offset of the x-axis.
-extern int x;
+extern int nekofeng_x;
 // The offset of the y-axis.
-extern int y;
+extern int nekofeng_y;
 // The lock for multi-threading.
 // This lock is used for print_layer() and clear_layer().
-extern atomic_flag lock;
+extern atomic_flag nekofeng_lock;
 // Function list.
 void nekofeng_spin_lock(atomic_flag *_Nonnull lock);
 void nekofeng_spin_unlock(atomic_flag *_Nonnull lock);

@@ -34,6 +34,17 @@
 #else
 #define _GNU_SOURCE
 #endif
+#ifdef RURI_CORE_ONLY
+#ifndef DISABLE_LIBSECCOMP
+#define DISABLE_LIBSECCOMP
+#endif
+#ifndef DISABLE_LIBCAP
+#define DISABLE_LIBCAP
+#endif
+#ifndef DISABLE_RURIENV
+#define DISABLE_RURIENV
+#endif
+#endif
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>

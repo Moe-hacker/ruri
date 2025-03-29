@@ -28,6 +28,7 @@
  *
  */
 #include "include/nekofeng.h"
+#ifndef RURI_CORE_ONLY
 /*
  * This file provides the function
  * nekofeng_add_action(), nekofeng_play_action(), nekofeng_playback_action(), and nekofeng_free_action().
@@ -49,18 +50,18 @@
  */
 static void clear_layer(struct LAYER *_Nonnull layer)
 {
-	nekofeng_spin_lock(&lock);
+	nekofeng_spin_lock(&nekofeng_lock);
 	int y_offset = 0;
 	int x_offset = 0;
-	printf("\033[%dH", y + layer->y_offset);
-	printf("\033[%dG", x + layer->x_offset);
+	printf("\033[%dH", nekofeng_y + layer->y_offset);
+	printf("\033[%dG", nekofeng_x + layer->x_offset);
 	for (size_t i = 0; i < strlen(layer->layer); i++) {
 		// The next line.
 		if (layer->layer[i] == '\n') {
 			y_offset++;
 			x_offset = 0;
-			printf("\033[%dH", y + layer->y_offset + y_offset);
-			printf("\033[%dG", x + layer->x_offset);
+			printf("\033[%dH", nekofeng_y + layer->y_offset + y_offset);
+			printf("\033[%dG", nekofeng_x + layer->x_offset);
 			continue;
 		}
 		// Unicode.
@@ -79,27 +80,27 @@ static void clear_layer(struct LAYER *_Nonnull layer)
 		}
 		// Skip space.
 		if (layer->layer[i] != ' ') {
-			printf("\033[%dG", x + layer->x_offset + x_offset);
+			printf("\033[%dG", nekofeng_x + layer->x_offset + x_offset);
 			printf("%c", ' ');
 		}
 		x_offset++;
 	}
 	fflush(stdout);
-	nekofeng_spin_unlock(&lock);
+	nekofeng_spin_unlock(&nekofeng_lock);
 	usleep(10000);
 }
 static void print_layer(struct LAYER *_Nonnull layer)
 {
-	nekofeng_spin_lock(&lock);
+	nekofeng_spin_lock(&nekofeng_lock);
 	int y_offset = 0;
-	printf("\033[%dH", y + layer->y_offset);
-	printf("\033[%dG", x + layer->x_offset);
+	printf("\033[%dH", nekofeng_y + layer->y_offset);
+	printf("\033[%dG", nekofeng_x + layer->x_offset);
 	for (size_t i = 0; i < strlen(layer->layer); i++) {
 		// The next line.
 		if (layer->layer[i] == '\n') {
 			y_offset++;
-			printf("\033[%dH", y + layer->y_offset + y_offset);
-			printf("\033[%dG", x + layer->x_offset);
+			printf("\033[%dH", nekofeng_y + layer->y_offset + y_offset);
+			printf("\033[%dG", nekofeng_x + layer->x_offset);
 			continue;
 		}
 		// '#' means a ' ' to cover the layer under it.
@@ -114,7 +115,7 @@ static void print_layer(struct LAYER *_Nonnull layer)
 	}
 	printf("\033[0m");
 	fflush(stdout);
-	nekofeng_spin_unlock(&lock);
+	nekofeng_spin_unlock(&nekofeng_lock);
 	usleep(10000);
 }
 void nekofeng_play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
@@ -174,3 +175,4 @@ struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset,
 	(*p)->prior = prior;
 	return action;
 }
+#endif

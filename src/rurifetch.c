@@ -32,6 +32,7 @@
  * A neofetch-like program for ruri.
  * Nothing useful, just for fun.
  */
+#ifndef RURI_CORE_ONLY
 static void __ruri_fetch(char **logo, char **info)
 {
 	int j = 0;
@@ -127,3 +128,9 @@ void ruri_fetch(void)
 	ruri_info[17] = NULL;
 	__ruri_fetch(ruri_logo, ruri_info);
 }
+#else
+void ruri_fetch(void)
+{
+	cprintf("{red}ruri was build with core-only mode QwQ.\n");
+}
+#endif

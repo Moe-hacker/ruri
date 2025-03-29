@@ -32,11 +32,12 @@
  * This file was the main.c in nekofeng project.
  * Now, it provides the function ruri_AwA() as the easteregg of ruri.
  */
+#ifndef RURI_CORE_ONLY
 // The global variables are defined here.
-int x;
-int y;
-atomic_flag lock = ATOMIC_FLAG_INIT;
-atomic_flag lock2 = ATOMIC_FLAG_INIT;
+int nekofeng_x;
+int nekofeng_y;
+atomic_flag nekofeng_lock = ATOMIC_FLAG_INIT;
+atomic_flag nekofeng_lock2 = ATOMIC_FLAG_INIT;
 // The spin lock.
 void nekofeng_spin_lock(atomic_flag *_Nonnull l)
 {
@@ -59,48 +60,48 @@ static void init()
 		printf("\033[31mThe window size is too small.\n");
 		exit(1);
 	}
-	x = size.ws_col / 2 - X_SIZE / 2;
-	y = size.ws_row / 2 - Y_SIZE / 2;
+	nekofeng_x = size.ws_col / 2 - X_SIZE / 2;
+	nekofeng_y = size.ws_row / 2 - Y_SIZE / 2;
 }
-static long tids[6] = { -114 };
+static long nekofeng_tids[6] = { -114 };
 static void update_tids(void)
 {
 	long tid = syscall(SYS_gettid);
-	nekofeng_spin_lock(&lock2);
+	nekofeng_spin_lock(&nekofeng_lock2);
 	for (int i = 0; i < 6; i++) {
-		if (tids[i] < 0) {
-			tids[i] = tid;
-			tids[i + 1] = -114;
-			nekofeng_spin_unlock(&lock2);
+		if (nekofeng_tids[i] < 0) {
+			nekofeng_tids[i] = tid;
+			nekofeng_tids[i + 1] = -114;
+			nekofeng_spin_unlock(&nekofeng_lock2);
 			return;
 		}
 	}
 }
-void *test0(void *arg)
+static void *test0(void *arg)
 {
 	update_tids();
 	nekofeng_face(100000, 7);
 	return arg;
 }
-void *test1(void *arg)
+static void *test1(void *arg)
 {
 	update_tids();
 	nekofeng_blink_lefteye(200000, 7);
 	return arg;
 }
-void *test2(void *arg)
+static void *test2(void *arg)
 {
 	update_tids();
 	nekofeng_blink_righteye(200000, 7);
 	return arg;
 }
-void *test3(void *arg)
+static void *test3(void *arg)
 {
 	update_tids();
 	nekofeng_mouth(200000, 7);
 	return arg;
 }
-void *test4(void *arg)
+static void *test4(void *arg)
 {
 	update_tids();
 	for (int i = 0; i < 11; i++) {
@@ -138,8 +139,8 @@ void ruri_AwA()
 		sleep(7);
 		printf("\033c");
 		for (int i = 0; i < 6; i++) {
-			if (tids[i] > 0) {
-				syscall(SYS_tgkill, getpid(), tids[i], SIGKILL);
+			if (nekofeng_tids[i] > 0) {
+				syscall(SYS_tgkill, getpid(), nekofeng_tids[i], SIGKILL);
 			} else {
 				break;
 			}
@@ -159,3 +160,9 @@ void ruri_AwA()
 	printf("\033c");
 	printf("\n\033[?25h");
 }
+#else
+void ruri_AwA()
+{
+	cprintf("{red}ruri was build with core-only mode QwQ.\n");
+}
+#endif

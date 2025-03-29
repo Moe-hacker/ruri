@@ -27,7 +27,7 @@ cp LICENSE ../output/LICENSE
 cp ruri ../output2/ruri
 cp LICENSE ../output2/LICENSE
 
-./configure --disable-libseccomp --disable-libcap -s --disable-rurienv
+./configure -c -s
 make
 cp ruri ../output3/ruri
 cp LICENSE ../output3/LICENSE
@@ -35,6 +35,7 @@ cp LICENSE ../output3/LICENSE
 if command -v upx >/dev/null 2>&1; then
     cd ..
     upx --best output/ruri
+    upx --best output3/ruri
 fi
 
 exit 0
