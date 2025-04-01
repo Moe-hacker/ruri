@@ -121,10 +121,12 @@ jobs:
   build-arch:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     strategy:
       matrix:
         arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64, s390x]
+    env:
+      ARCHITECTURE: ${{ matrix.arch }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -145,7 +147,6 @@ jobs:
 
       - name: download latest minirootfs
         env:
-          ARCHITECTURE: ${{ matrix.arch }}
           URL: https://dl-cdn.alpinelinux.org/alpine/edge/releases
         run: |
           cd build
@@ -160,8 +161,6 @@ jobs:
           tar -xzf "$FILE" -C "$ARCHITECTURE"
 
       - name: Build for ${{ matrix.arch }}
-        env:
-          ARCHITECTURE: ${{ matrix.arch }}
         shell: bash
         run: |
           cd build
