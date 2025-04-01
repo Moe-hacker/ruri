@@ -310,7 +310,6 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 		container->extra_ro_mountpoint[mlen] = NULL;
 		container->extra_ro_mountpoint[mlen + 1] = NULL;
 		// For ruri_container_ps() and ruri_umount_container().
-		// Also for ruri_rootless_mode_detected().
 		if (is_ruri_pid(k2v_get_key(int, "ns_pid", buf))) {
 			container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 		} else {

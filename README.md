@@ -55,8 +55,9 @@ It's useless, but it's cool.
 |52|44|85%|
 # Highlights:
 - Powerful Features
-  - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, run rootless container, and even more...      
+  - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, and more...      
   - Built-in support for binfmt_misc & QEMU, so you can run multi-arch container easily.
+  - Built-in rootless mode support (need user ns support).
   - Powerful mount option, you can mount image/partition as root, and you can choose every mountpoint to be read-only or rw.     
   - Built-in support for config file.
 - Ultra-lightweight, Zero runtime Dependencies, Ready Out-of-the-Box

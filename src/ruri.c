@@ -48,10 +48,6 @@ static void check_container(const struct RURI_CONTAINER *_Nonnull container)
 	if (strcmp(container->container_dir, "/") == 0) {
 		ruri_error("{red}Error: `/` is not allowed to use as a container directory QwQ\n");
 	}
-	// Check if we are running with root privileges.
-	if (geteuid() != 0 && !(container->rootless)) {
-		ruri_error("{red}Error: this program should be run with root privileges QwQ\n");
-	}
 	// rootless container should not be run with root privileges.
 	if (container->rootless && (geteuid() == 0 || getuid() == 0 || getgid() == 0 || getegid() == 0)) {
 		ruri_error("{red}Error: rootless container should not be run with root privileges QwQ\n");
@@ -1150,16 +1146,6 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 		}
 	}
 }
-static bool ruri_rootless_mode_detected(char *_Nonnull container_dir)
-{
-	struct RURI_CONTAINER *container = ruri_read_info(NULL, container_dir);
-	if (container->rootless && container->ns_pid > 0) {
-		free(container);
-		return true;
-	}
-	free(container);
-	return false;
-}
 static void detect_suid_or_capability(void)
 {
 #ifndef DISABLE_LIBCAP
@@ -1204,7 +1190,7 @@ int ruri(int argc, char **argv)
 	// Parse arguments.
 	parse_args(argc, argv, container);
 	// Detect rootless mode.
-	if (ruri_rootless_mode_detected(container->container_dir)) {
+	if (geteuid() != 0) {
 		container->rootless = true;
 	}
 	// Check container and the running environment.
