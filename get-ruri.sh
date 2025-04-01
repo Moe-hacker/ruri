@@ -61,8 +61,8 @@ if [[ $? != 0 ]]; then
     echo "If ruri has a new release, please wait for build completion"
     exit 1
 fi
-tar -xf ${CPU_ARCH}.tar >/dev/null 2>&1
-rm -f ${CPU_ARCH}.tar
+tar -xf ${CPU_ARCH}-noupx.tar >/dev/null 2>&1
+rm -f ${CPU_ARCH}-noupx.tar
 rm -f LICENSE
 chmod +x ruri
 echo "ruri has been downloaded successfully"
