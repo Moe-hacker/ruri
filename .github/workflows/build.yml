@@ -53,7 +53,7 @@ jobs:
       - name: Install toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y binfmt-support binutils build-essential debootstrap git libc6-dev libcap-dev libfdt-dev libglib2.0-dev libpixman-1-dev libseccomp-dev ninja-build pkg-config python3 python3-pip python3-tomli qemu-system-misc tree upx-ucl xz-utils zlib1g-dev uuid-runtime
+          sudo apt-get install -y binfmt-support binutils build-essential debootstrap libcap-dev libfdt-dev libglib2.0-dev libpixman-1-dev libseccomp-dev ninja-build pkg-config python3 python3-pip python3-tomli qemu-system-misc tree upx-ucl xz-utils zlib1g-dev
           pip3 install meson
 
       - name: Build x86_64 Ruri
@@ -118,7 +118,7 @@ jobs:
             ./*.tar
           retention-days: 7
 
-  buildmatrix:
+  build-arch:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -133,7 +133,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get --no-install-recommends -y install \
-            binutils clang curl libc6-dev libcap-dev libseccomp-dev make qemu-user-static wget xz-utils
+            binutils build-essential libcap-dev libseccomp-dev make qemu-user-static xz-utils
 
       - name: build source code
         run: |
@@ -156,71 +156,44 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
 
           FILE=$(curl -s "$URL/$ARCHITECTURE/latest-releases.yaml" | yq '.[] | select(.flavor == "alpine-minirootfs") | .file')
-          wget -q "$URL/$ARCHITECTURE/$FILE"
+          wget "$URL/$ARCHITECTURE/$FILE"
           tar -xzf "$FILE" -C "$ARCHITECTURE"
 
       - name: Build for ${{ matrix.arch }}
         env:
-         ARCHITECTURE: ${{ matrix.arch }}
+          ARCHITECTURE: ${{ matrix.arch }}
+        shell: bash
         run: |
           cd build
           cp build.sh "$ARCHITECTURE/build.sh"
           sudo chmod +x ../ruri
           sudo chmod +x "$ARCHITECTURE/build.sh"
+
           case "$ARCHITECTURE" in
-            x86_64)
+            x86_64|x86)
               sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
               ;;
-            x86)
-              sudo ../ruri ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../i386.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../i386-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../i386-core.tar .)
-              ;;
-            aarch64)
-              sudo ../ruri -a aarch64 -q /usr/bin/qemu-aarch64-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
-              ;;
-            riscv64)
-              sudo ../ruri -a riscv64 -q /usr/bin/qemu-riscv64-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
-              ;;
-            armhf)
-              sudo ../ruri -a armhf -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
-              ;;
-            armv7)
-              sudo ../ruri -a armv7 -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
-              ;;
-            ppc64le)
-              sudo ../ruri -a ppc64le -q /usr/bin/qemu-ppc64le-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
-              ;;
-            s390x)
-              sudo ../ruri -a s390x -q /usr/bin/qemu-s390x-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-noupx.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
-              ;;
-            loongarch64)
-              sudo ../ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./$ARCHITECTURE /bin/sh /build.sh
-              (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
-              (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
+            aarch64|armhf|ppc64le|armv7|riscv64|s390x|loongarch64)
+              if [ "$ARCHITECTURE" = "armv7" ]; then
+                sudo ../ruri -a armv7 -q /usr/bin/qemu-arm-static ./$ARCHITECTURE /bin/sh /build.sh
+              else
+                sudo ../ruri -a $ARCHITECTURE -q /usr/bin/qemu-$ARCHITECTURE-static ./$ARCHITECTURE /bin/sh /build.sh
+              fi
               ;;
           esac
+
+          (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
+          (cd $ARCHITECTURE/output3 && tar -cf ../../../$ARCHITECTURE-core.tar .)
+          if [[ "$ARCHITECTURE" =~ ^(x86_64|x86|aarch64|armhf|ppc64le|armv7)$ ]]; then
+            (cd $ARCHITECTURE/output2 && tar -cf ../../../$ARCHITECTURE-upx.tar .)
+          fi
+
+          cd $GITHUB_WORKSPACE
+          if [[ "$ARCHITECTURE" == "x86" ]]; then
+            mv $ARCHITECTURE.tar i386.tar
+            mv $ARCHITECTURE-upx.tar i386-upx.tar
+            mv $ARCHITECTURE-core.tar i386-core.tar
+          fi
 
       - name: Upload artifacts
         if: matrix.arch != 'loongarch64'
@@ -233,7 +206,7 @@ jobs:
 
   release:
     name: Push Release
-    needs: [update, buildloong64, buildmatrix]
+    needs: [update, buildloong64, build-arch]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -260,7 +233,7 @@ jobs:
           body: |
             This is ruri binary release.
             NOTE:
-            *-noupx means the binary is not upx compressed.
+            *-upx means the binary is upx compressed.
             *-core means the binary is built without libseccomp and libcap, and with .rurienv disabled.
             ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
             But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
