@@ -101,6 +101,24 @@ static int get_lines(char32_t *_Nonnull buf)
 	}
 	return j;
 }
+static void nekofeng_printf(char32_t *_Nonnull str)
+{
+	nekofeng_spin_lock(&nekofeng_lock);
+	for (size_t i = 0; i < nekofeng_strlen(str); i++) {
+		char character[64] = { '\0' };
+		mbstate_t state = { 0 };
+		size_t len = c32rtomb(character, str[i], &state);
+		if (len == (size_t)-1) {
+			perror("c32rtomb");
+			nekofeng_spin_unlock(&nekofeng_lock);
+			return;
+		}
+		character[len] = '\0';
+		printf("%s", character);
+	}
+	fflush(stdout);
+	nekofeng_spin_unlock(&nekofeng_lock);
+}
 void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
 {
 	int y_offset = 0;
@@ -129,7 +147,7 @@ void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool
 					tmp[j - i + 1] = 0;
 					if (layer->layer[j] == U'm') {
 						i = j;
-						printf("%ls", tmp);
+						nekofeng_printf(tmp);
 						break;
 					}
 				}
@@ -153,7 +171,16 @@ void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool
 				usleep(inr / 8);
 				printf("\033[1D\033[?25l");
 			}
-			printf("%lc", layer->layer[i]);
+			char character[64] = { '\0' };
+			mbstate_t state = { 0 };
+			size_t len = c32rtomb(character, layer->layer[i], &state);
+			if (len == (size_t)-1) {
+				perror("c32rtomb");
+				nekofeng_spin_unlock(&nekofeng_lock);
+				return;
+			}
+			character[len] = '\0';
+			printf("%s", character);
 			fflush(stdout);
 			usleep(inr);
 		} else {

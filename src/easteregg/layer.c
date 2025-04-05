@@ -77,7 +77,7 @@ static void clear_layer(struct LAYER *_Nonnull layer)
 		// Skip space.
 		if (layer->layer[i] != U' ') {
 			printf("\033[%dG", nekofeng_x + layer->x_offset + x_offset);
-			printf("%lc", ' ');
+			printf(" ");
 		}
 		x_offset++;
 	}
@@ -104,7 +104,16 @@ static void print_layer(struct LAYER *_Nonnull layer)
 			printf(" ");
 		} // Skip space.
 		else if (layer->layer[i] != U' ') {
-			printf("%lc", layer->layer[i]);
+			char character[64] = { '\0' };
+			mbstate_t state = { 0 };
+			size_t len = c32rtomb(character, layer->layer[i], &state);
+			if (len == (size_t)-1) {
+				perror("c32rtomb");
+				nekofeng_spin_unlock(&nekofeng_lock);
+				return;
+			}
+			character[len] = '\0';
+			printf("%s", character);
 		} else {
 			printf("\033[1C\033[?25l");
 		}
