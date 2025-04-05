@@ -41,6 +41,8 @@
 #include <stdbool.h>
 #include <stdatomic.h>
 #include <sys/syscall.h>
+#include <uchar.h>
+#include <locale.h>
 // This program should be compiled with -lpthread.
 #include <pthread.h>
 #ifndef _Nullable
@@ -59,7 +61,7 @@ struct LAYER {
 	 * The name is taken by historical reasons.
 	 */
 	// The string to be printed.
-	char *layer;
+	char32_t *layer;
 	// The offset of the x-axis.
 	int x_offset;
 	// The offset of the y-axis.
@@ -90,7 +92,7 @@ void nekofeng_spin_unlock(atomic_flag *_Nonnull lock);
 void nekofeng_play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
 void nekofeng_playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
 void nekofeng_free_action(struct ACTION *_Nonnull action);
-struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char *_Nonnull layer);
+struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char32_t *_Nonnull layer);
 void nekofeng_face(useconds_t inr, unsigned int keep);
 void nekofeng_mouth(useconds_t inr, unsigned int keep);
 void nekofeng_ahoge(useconds_t inr, unsigned int keep);
@@ -98,3 +100,5 @@ void nekofeng_blink_lefteye(useconds_t inr, unsigned int keep);
 void nekofeng_blink_righteye(useconds_t inr, unsigned int keep);
 void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink);
 void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr);
+size_t nekofeng_strlen(const char32_t *_Nonnull str);
+char32_t *nekofeng_strdup(const char32_t *_Nonnull str);

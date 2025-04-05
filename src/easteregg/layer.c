@@ -55,23 +55,19 @@ static void clear_layer(struct LAYER *_Nonnull layer)
 	int x_offset = 0;
 	printf("\033[%dH", nekofeng_y + layer->y_offset);
 	printf("\033[%dG", nekofeng_x + layer->x_offset);
-	for (size_t i = 0; i < strlen(layer->layer); i++) {
+	for (size_t i = 0; i < nekofeng_strlen(layer->layer); i++) {
 		// The next line.
-		if (layer->layer[i] == '\n') {
+		if (layer->layer[i] == U'\n') {
 			y_offset++;
 			x_offset = 0;
 			printf("\033[%dH", nekofeng_y + layer->y_offset + y_offset);
 			printf("\033[%dG", nekofeng_x + layer->x_offset);
 			continue;
 		}
-		// Unicode.
-		if (layer->layer[i] > 0x7f) {
-			i += 2;
-		}
 		// Color.
-		if (layer->layer[i] == '\033') {
-			for (size_t j = i; j < strlen(layer->layer); j++) {
-				if (layer->layer[j] == 'm') {
+		if (layer->layer[i] == U'\033') {
+			for (size_t j = i; j < nekofeng_strlen(layer->layer); j++) {
+				if (layer->layer[j] == U'm') {
 					i = j;
 					break;
 				}
@@ -79,9 +75,9 @@ static void clear_layer(struct LAYER *_Nonnull layer)
 			continue;
 		}
 		// Skip space.
-		if (layer->layer[i] != ' ') {
+		if (layer->layer[i] != U' ') {
 			printf("\033[%dG", nekofeng_x + layer->x_offset + x_offset);
-			printf("%c", ' ');
+			printf("%lc", ' ');
 		}
 		x_offset++;
 	}
@@ -95,22 +91,22 @@ static void print_layer(struct LAYER *_Nonnull layer)
 	int y_offset = 0;
 	printf("\033[%dH", nekofeng_y + layer->y_offset);
 	printf("\033[%dG", nekofeng_x + layer->x_offset);
-	for (size_t i = 0; i < strlen(layer->layer); i++) {
+	for (size_t i = 0; i < nekofeng_strlen(layer->layer); i++) {
 		// The next line.
-		if (layer->layer[i] == '\n') {
+		if (layer->layer[i] == U'\n') {
 			y_offset++;
 			printf("\033[%dH", nekofeng_y + layer->y_offset + y_offset);
 			printf("\033[%dG", nekofeng_x + layer->x_offset);
 			continue;
 		}
 		// '#' means a ' ' to cover the layer under it.
-		if (layer->layer[i] == '#') {
+		if (layer->layer[i] == U'#') {
 			printf(" ");
 		} // Skip space.
-		else if (layer->layer[i] != ' ') {
-			printf("%c", layer->layer[i]);
+		else if (layer->layer[i] != U' ') {
+			printf("%lc", layer->layer[i]);
 		} else {
-			printf("\033[1C");
+			printf("\033[1C\033[?25l");
 		}
 	}
 	printf("\033[0m");
@@ -158,7 +154,7 @@ void nekofeng_free_action(struct ACTION *_Nonnull action)
 		free(t);
 	}
 }
-struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char *_Nonnull layer)
+struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char32_t *_Nonnull layer)
 {
 	struct ACTION **p = &action;
 	struct ACTION *prior = action;
@@ -170,7 +166,7 @@ struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset,
 	(*p)->layer = malloc(sizeof(struct LAYER));
 	(*p)->layer->x_offset = x_offset;
 	(*p)->layer->y_offset = y_offset;
-	(*p)->layer->layer = strdup(layer);
+	(*p)->layer->layer = nekofeng_strdup(layer);
 	(*p)->next = NULL;
 	(*p)->prior = prior;
 	return action;

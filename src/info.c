@@ -56,7 +56,7 @@ void ruri_show_version_info(void)
 	cprintf("{base}%s%s%s", "Architecture .....:  ", RURI_HOST_ARCH, "\n");
 	struct stat st;
 	if (stat("/proc/self/exe", &st) == 0) {
-		cprintf(_Generic((off_t)0, long : "{base}Binary size ......:  %ldK\n", long long : "{base}Binary size ......:  %lldK\n", default : "{base}Binary size ......:  %ldK\n"), (st.st_size / 1024));
+		cprintf(_Generic((off_t)0, long: "{base}Binary size ......:  %ldK\n", long long: "{base}Binary size ......:  %lldK\n", default: "{base}Binary size ......:  %ldK\n"), (st.st_size / 1024));
 	}
 #if defined(LIBCAP_MAJOR) && defined(LIBCAP_MINOR)
 	cprintf("{base}%s%d%s%d%s", "libcap ...........:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");

@@ -91,7 +91,7 @@ void ruri_fetch(void)
 	struct stat st;
 	char binary_size[128] = { '\0' };
 	if (stat("/proc/self/exe", &st) == 0) {
-		sprintf(binary_size, _Generic((off_t)0, long : "{91;207;250}Binary size{white}: %ldK", long long : "{91;207;250}Binary size{white}: %lldK", default : "{91;207;250}Binary size{white}: %ldK"), (st.st_size / 1024));
+		sprintf(binary_size, _Generic((off_t)0, long: "{91;207;250}Binary size{white}: %ldK", long long: "{91;207;250}Binary size{white}: %lldK", default: "{91;207;250}Binary size{white}: %ldK"), (st.st_size / 1024));
 	} else {
 		sprintf(binary_size, "{91;207;250}Binary size{white}: unknown");
 	}

@@ -93,6 +93,8 @@ format :
 	chmod 777 test/*.sh
 	chmod 777 test/root/*
 	clang-format -i test/*.c
+	sed -i "s/U '/U'/g" src/easteregg/*.c
+	sed -i "s/U \"/U\"/g" src/easteregg/*.c
 clean :
 	$(CLEAN_LOG) $(BIN_TARGET)
 	@rm -f $(BIN_TARGET)||true

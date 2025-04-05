@@ -47,24 +47,24 @@
  *
  */
 #ifndef RURI_CORE_ONLY
-static int get_last_line_size(char *_Nonnull buf)
+static int get_last_line_size(char32_t *_Nonnull buf)
 {
 	if (buf == NULL) {
 		return 0;
 	}
-	char *tmp = NULL;
+	char32_t *tmp = NULL;
 	int ret = 0;
-	for (size_t i = strlen(buf); i > 0; i--) {
-		if (buf[i] == '\n') {
-			tmp = strdup(&buf[i + 1]);
+	for (size_t i = nekofeng_strlen(buf); i > 0; i--) {
+		if (buf[i] == U'\n') {
+			tmp = nekofeng_strdup(&buf[i + 1]);
 			break;
 		}
 	}
-	for (size_t i = 0; i < strlen(tmp); i++) {
+	for (size_t i = 0; i < nekofeng_strlen(tmp); i++) {
 		// Color.
-		if (tmp[i] == '\033') {
-			for (size_t j = i; j < strlen(tmp); j++) {
-				if (tmp[j] == 'm') {
+		if (tmp[i] == U'\033') {
+			for (size_t j = i; j < nekofeng_strlen(tmp); j++) {
+				if (tmp[j] == U'm') {
 					i = j;
 					break;
 				}
@@ -76,26 +76,26 @@ static int get_last_line_size(char *_Nonnull buf)
 	free(tmp);
 	return ret;
 }
-static char *del_last_line(char *_Nonnull buf)
+static char32_t *del_last_line(char32_t *_Nonnull buf)
 {
 	if (buf == NULL) {
 		return NULL;
 	}
-	char *tmp = strdup(buf);
-	for (size_t i = strlen(buf); i > 0; i--) {
-		if (buf[i] == '\n') {
-			tmp[i] = '\0';
+	char32_t *tmp = nekofeng_strdup(buf);
+	for (size_t i = nekofeng_strlen(buf); i > 0; i--) {
+		if (buf[i] == U'\n') {
+			tmp[i] = U'\0';
 			break;
 		}
 	}
 	free(buf);
 	return tmp;
 }
-static int get_lines(char *_Nonnull buf)
+static int get_lines(char32_t *_Nonnull buf)
 {
 	int j = 0;
-	for (size_t i = 0; i < strlen(buf); i++) {
-		if (buf[i] == '\n') {
+	for (size_t i = 0; i < nekofeng_strlen(buf); i++) {
+		if (buf[i] == U'\n') {
 			j++;
 		}
 	}
@@ -106,29 +106,30 @@ void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool
 	int y_offset = 0;
 	printf("\033[%dH", nekofeng_y + layer->y_offset);
 	printf("\033[%dG", nekofeng_x + layer->x_offset);
-	for (size_t i = 0; i < strlen(layer->layer); i++) {
+	fflush(stdout);
+	for (size_t i = 0; i < nekofeng_strlen(layer->layer); i++) {
 		// The next line.
-		if (layer->layer[i] == '\n') {
+		if (layer->layer[i] == U'\n') {
 			y_offset++;
 			printf("\033[%dH", nekofeng_y + layer->y_offset + y_offset);
 			printf("\033[%dG", nekofeng_x + layer->x_offset);
 			continue;
 		}
 		// '#' means a ' ' to cover the layer under it.
-		if (layer->layer[i] == '#') {
+		if (layer->layer[i] == U'#') {
 			printf(" ");
 		} // Skip space.
-		else if (layer->layer[i] != ' ') {
+		else if (layer->layer[i] != U' ') {
 			// Color.
-			if (layer->layer[i] == '\033') {
+			if (layer->layer[i] == U'\033') {
 				// Be mindful! This might overflow.
-				char tmp[1024] = { '\0' };
-				for (size_t j = i; j < strlen(layer->layer); j++) {
+				char32_t tmp[1024] = { U'\0' };
+				for (size_t j = i; j < nekofeng_strlen(layer->layer); j++) {
 					tmp[j - i] = layer->layer[j];
 					tmp[j - i + 1] = 0;
-					if (layer->layer[j] == 'm') {
+					if (layer->layer[j] == U'm') {
 						i = j;
-						printf("%s", tmp);
+						printf("%ls", tmp);
 						break;
 					}
 				}
@@ -138,32 +139,32 @@ void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool
 				printf("#");
 				fflush(stdout);
 				usleep(inr / 8);
-				printf("\033[1D");
+				printf("\033[1D\033[?25l");
 				printf("£");
 				fflush(stdout);
 				usleep(inr / 8);
-				printf("\033[1D");
+				printf("\033[1D\033[?25l");
 				printf("&");
 				fflush(stdout);
 				usleep(inr / 8);
-				printf("\033[1D");
+				printf("\033[1D\033[?25l");
 				printf("*");
 				fflush(stdout);
 				usleep(inr / 8);
-				printf("\033[1D");
+				printf("\033[1D\033[?25l");
 			}
-			printf("%c", layer->layer[i]);
+			printf("%lc", layer->layer[i]);
 			fflush(stdout);
 			usleep(inr);
 		} else {
-			printf("\033[1C");
+			printf("\033[1C\033[?25l");
 		}
 	}
 }
 void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr)
 {
 	int y_offset = get_lines(layer->layer);
-	char *buf = strdup(layer->layer);
+	char32_t *buf = nekofeng_strdup(layer->layer);
 	int x_offset = 0;
 	for (int i = y_offset; i > 0; i--) {
 		x_offset = get_last_line_size(buf);

@@ -49,6 +49,29 @@ void nekofeng_spin_unlock(atomic_flag *_Nonnull l)
 {
 	atomic_flag_clear(l);
 }
+// The function to get the length of a string.
+size_t nekofeng_strlen(const char32_t *_Nonnull str)
+{
+	size_t len = 0;
+	while (str[len] != U'\0') {
+		len++;
+	}
+	return len;
+}
+// The function to duplicate a string.
+char32_t *nekofeng_strdup(const char32_t *_Nonnull str)
+{
+	size_t len = nekofeng_strlen(str);
+	char32_t *dup = malloc((len + 1) * sizeof(char32_t));
+	if (dup == NULL) {
+		return NULL;
+	}
+	for (size_t i = 0; i < len; i++) {
+		dup[i] = str[i];
+	}
+	dup[len] = U'\0';
+	return dup;
+}
 // init() function for getting window size.
 static void init()
 {
@@ -111,16 +134,17 @@ static void *test4(void *arg)
 }
 void ruri_AwA()
 {
+	setlocale(LC_ALL, "");
 	printf("\033[?25l");
 	init();
 	struct LAYER layer;
-	layer.layer = "\033[1;38;2;254;228;208m\n"
-		      "          Keep moe.\n"
-		      "          Keep cool.\n"
-		      "         Keep hacking.\n"
-		      "Keep on the side of technology.\n\n"
-		      "      But talk is cheap,\n"
-		      "       Show me the code.\n";
+	layer.layer = U"\033[1;38;2;254;228;208m\n"
+			"          Keep moe.\n"
+			"          Keep cool.\n"
+			"         Keep hacking.\n"
+			"Keep on the side of technology.\n\n"
+			"      But talk is cheap,\n"
+			"       Show me the code.\n";
 	layer.x_offset = 3;
 	layer.y_offset = -2;
 	nekofeng_typewrite_layer(&layer, 50000, true);
@@ -147,12 +171,12 @@ void ruri_AwA()
 		}
 	}
 	printf("\033c");
-	layer.layer = "\033[1;38;2;254;228;208m\n\n"
-		      "●   ●  ●●●  ●●●●●       ●   ●   ●    ●●●  ●●●●● ●●●●  \n"
-		      "●● ●● ●   ● ●           ●   ●  ● ●  ●   ● ●     ●   ● \n"
-		      "● ● ● ●   ● ●●●●  ●●●●● ●●●●● ●●●●● ●     ●●●●  ●●●●● \n"
-		      "●   ● ●   ● ●           ●   ● ●   ● ●   ● ●     ●  ●  \n"
-		      "●   ●  ●●●  ●●●●●       ●   ● ●   ●  ●●●  ●●●●● ●   ● \n";
+	layer.layer = U"\033[1;38;2;254;228;208m\n\n"
+			"●   ●  ●●●  ●●●●●       ●   ●   ●    ●●●  ●●●●● ●●●●  \n"
+			"●● ●● ●   ● ●           ●   ●  ● ●  ●   ● ●     ●   ● \n"
+			"● ● ● ●   ● ●●●●  ●●●●● ●●●●● ●●●●● ●     ●●●●  ●●●●● \n"
+			"●   ● ●   ● ●           ●   ● ●   ● ●   ● ●     ●  ●  \n"
+			"●   ●  ●●●  ●●●●●       ●   ● ●   ●  ●●●  ●●●●● ●   ● \n";
 	layer.x_offset = -10;
 	layer.y_offset = -2;
 	nekofeng_typewrite_layer(&layer, 5000, false);
