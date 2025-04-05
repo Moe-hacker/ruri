@@ -122,7 +122,6 @@ typedef int cap_value_t;
 #define RURI_MAX_CHAR_DEVS (128 * 3)
 #define RURI_MAX_SECCOMP_DENIED_SYSCALL (2048)
 // Include other headers.
-#include "elf-magic.h"
 #include "version.h"
 #include "k2v.h"
 #include "cprintf.h"

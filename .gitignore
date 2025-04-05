@@ -25,3 +25,6 @@ test-root
 cmake_install.cmake
 CMakeCache.txt
 CMakeFiles
+build/.cmake
+build/compile_commands.json
+build/Makefile
