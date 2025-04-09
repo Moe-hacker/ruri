@@ -47,12 +47,25 @@ else
     fi
 fi
 CFLAGS=""
+AC_ARG_ENABLE([static],[AS_HELP_STRING([--enable-static],[Enable static build])],[enable_static=yes],[enable_static=no])
+if test "$enable_static" != "no";then
+    AC_MSG_NOTICE([static build enabled])
+    STATIC_CFLAGS="-static"
+else
+    STATIC_CFLAGS=""
+fi
 AC_DEFUN([CHECK_AND_ADD_CFLAGS],[AC_MSG_CHECKING([whether $CC supports $1])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([$2],[$3])],
-        [AC_MSG_RESULT([yes])
-        CFLAGS="$CFLAGS $1"],
-        [AC_MSG_RESULT([no])
-        CFLAGS="$CFLAGS"])])
+        CFLAGS_SAVE="$CFLAGS"
+        if test "$enable_static" != "no";then
+            CFLAGS="$CFLAGS $1 -static"
+        else
+            CFLAGS="$CFLAGS $1"
+        fi
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+            [AC_MSG_RESULT([yes])
+            CFLAGS="$CFLAGS $1"],
+            [AC_MSG_RESULT([no])
+            CFLAGS="$CFLAGS_SAVE"])])
 AC_ARG_ENABLE([debug],[AS_HELP_STRING([--enable-debug],[Enable debug log])],[enable_debug=yes],[enable_debug=no])
 if test "$enable_debug" != "no";then
     AC_MSG_NOTICE([debug log enabled])
@@ -81,6 +94,7 @@ if test "$enable_dev" != "no";then
     CHECK_AND_ADD_CFLAGS([-ffunction-sections])
     CHECK_AND_ADD_CFLAGS([-fdata-sections])
     CHECK_AND_ADD_CFLAGS([-Wl,--gc-sections])
+    CHECK_AND_ADD_CFLAGS([-Wl,--disable-new-dtags])
 else
     DEV_CFLAGS=""
     CHECK_AND_ADD_CFLAGS([-ftrivial-auto-var-init=pattern])
@@ -100,18 +114,11 @@ else
     CHECK_AND_ADD_CFLAGS([-ffunction-sections])
     CHECK_AND_ADD_CFLAGS([-fdata-sections])
     CHECK_AND_ADD_CFLAGS([-Wl,--gc-sections])
+    CHECK_AND_ADD_CFLAGS([-Wl,--disable-new-dtags])
     CHECK_AND_ADD_CFLAGS([-Wl,--strip-all])
     CHECK_AND_ADD_CFLAGS([-U_FORTIFY_SOURCE])
     CHECK_AND_ADD_CFLAGS([-D_FORTIFY_SOURCE=3])
     CHECK_AND_ADD_CFLAGS([-D_FILE_OFFSET_BITS=64])
-fi
-AC_ARG_ENABLE([static],[AS_HELP_STRING([--enable-static],[Enable static build])],[enable_static=yes],[enable_static=no])
-if test "$enable_static" != "no";then
-    AC_MSG_NOTICE([static build enabled])
-    STATIC_CFLAGS="-static"
-    CHECK_AND_ADD_CFLAGS([-Wl,--disable-new-dtags])
-else
-    STATIC_CFLAGS=""
 fi
 AC_MSG_CHECKING([for commit id])
 RURI_COMMIT_ID=`git rev-parse --short HEAD 2>/dev/null`
