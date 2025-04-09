@@ -91,7 +91,7 @@ jobs:
               binutils
           aclocal
           autoconf
-          automake --add-missing||true
+          automake --add-missing
           ./configure --enable-debug --enable-dev
           make
 
