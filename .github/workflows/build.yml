@@ -97,6 +97,7 @@ jobs:
           cd ruri
           aclocal
           autoconf
+          automake --add-missing
           ./configure --enable-static
           make
           strip ruri
