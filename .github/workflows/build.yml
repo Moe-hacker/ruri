@@ -95,11 +95,13 @@ jobs:
           apt-get install -y wget make clang git libseccomp-dev libcap-dev libc-dev binutils upx-ucl tar
           git clone --depth 1 https://github.com/moe-hacker/ruri.git
           cd ruri
-          ./configure -s
+          aclocal
+          autoconf
+          ./configure --enable-static
           make
           strip ruri
           tar -cf ../loong64.tar ./ruri ./LICENSE
-          ./configure -c -s
+          ./configure --enable-core --enable-static
           make
           strip ruri
           tar -cf ../loong64-core.tar ./ruri ./LICENSE

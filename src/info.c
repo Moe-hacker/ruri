@@ -40,15 +40,16 @@ void ruri_show_version_info(void)
 	 * RURI_COMMIT_ID is defined as -D option of compiler.
 	 */
 	cprintf("\n");
-	cprintf("{base}      ●●●●  ●   ● ●●●●   ●●●\n");
-	cprintf("{base}      ●   ● ●   ● ●   ●   ●\n");
-	cprintf("{base}      ●●●●  ●   ● ●●●●    ●\n");
-	cprintf("{base}      ●  ●  ●   ● ●  ●    ●\n");
-	cprintf("{base}      ●   ●  ●●●  ●   ●  ●●●\n");
-	cprintf("{base}    Revamp, Until Reach Ideal\n");
-	cprintf("{base}  Licensed under the MIT License\n");
-	cprintf("{base}    <https://mit-license.org>\n");
-	cprintf("{base}Copyright (C) 2022-2024 Moe-hacker\n\n");
+	cprintf("{base}               ●●●●  ●   ● ●●●●   ●●●\n");
+	cprintf("{base}               ●   ● ●   ● ●   ●   ●\n");
+	cprintf("{base}               ●●●●  ●   ● ●●●●    ●\n");
+	cprintf("{base}               ●  ●  ●   ● ●  ●    ●\n");
+	cprintf("{base}               ●   ●  ●●●  ●   ●  ●●●\n");
+	cprintf("{base}Lightweight, User-friendly Linux-container Implementation\n");
+	cprintf("{base}              Revamp, Until Reach Ideal\n");
+	cprintf("{base}            Licensed under the MIT License\n");
+	cprintf("{base}              <https://mit-license.org>\n");
+	cprintf("{base}         Copyright (C) 2022-2024 Moe-hacker\n\n");
 	cprintf("{base}%s%s%s", "ruri version .....:  ", RURI_VERSION, "\n");
 #if defined(RURI_COMMIT_ID)
 	cprintf("{base}%s%s%s", "ruri commit id ...:  ", RURI_COMMIT_ID, "\n");

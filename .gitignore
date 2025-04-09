@@ -28,3 +28,14 @@ CMakeFiles
 build/.cmake
 build/compile_commands.json
 build/Makefile
+autom4te.cache
+aclocal.m4
+config.log
+config.status
+config.h
+config.h.in
+compile
+configure~
+install-sh
+missing
+configure

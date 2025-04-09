@@ -118,11 +118,3 @@ help :
 	@echo "  make format         format code"
 test :
 	cd test && $(MAKE)
-config :
-	@./configure
-dbg_config :
-	@./configure -d -D
-dev_config :
-	@./configure -d
-static_config :
-	@./configure -s

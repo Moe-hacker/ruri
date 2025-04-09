@@ -17,7 +17,9 @@ mkdir output output2 output3
 
 git clone --depth 1 https://github.com/moe-hacker/ruri.git
 cd ruri
-./configure -s
+aclocal
+autoconf
+./configure --enable-static
 make
 strip ruri
 
@@ -27,7 +29,7 @@ cp LICENSE ../output/LICENSE
 cp ruri ../output2/ruri
 cp LICENSE ../output2/LICENSE
 
-./configure -c -s
+./configure --enable-core --enable-static
 make
 strip ruri
 cp ruri ../output3/ruri

@@ -13,9 +13,11 @@ cd ..
 mkdir ${TMPDIR}
 check_if_succeed $?
 export TMPDIR=$(realpath ${TMPDIR})
-./configure -d
+aclocal
+autoconf
+./configure --enable-debug --enable-dev
 check_if_succeed $?
-make dev
+make
 check_if_succeed $?
 mv ruri ${TMPDIR}
 check_if_succeed $?

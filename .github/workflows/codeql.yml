@@ -89,7 +89,9 @@ jobs:
               libcap-dev \
               libc6-dev \
               binutils
-          ./configure -d
+          aclocal
+          autoconf
+          ./configure --enable-debug --enable-dev
           make
 
     - name: Perform CodeQL Analysis
