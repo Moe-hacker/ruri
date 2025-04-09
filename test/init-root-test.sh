@@ -15,7 +15,7 @@ check_if_succeed $?
 export TMPDIR=$(realpath ${TMPDIR})
 aclocal
 autoconf
-automake --add-missing
+automake --add-missing || true
 ./configure --enable-debug --enable-dev
 check_if_succeed $?
 make

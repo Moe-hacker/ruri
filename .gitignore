@@ -39,3 +39,4 @@ configure~
 install-sh
 missing
 configure
+Makefile.in

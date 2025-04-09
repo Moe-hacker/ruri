@@ -1,5 +1,5 @@
 AC_INIT([ruri],[3.8])
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE
 AC_PROG_CC
 AC_CHECK_TOOL([STRIP],[strip])
 AC_CHECK_LIB([pthread],[pthread_create],[PTHREAD_LIB="-lpthread"],[PTHREAD_LIB=""])
@@ -130,6 +130,7 @@ AC_SUBST([CFLAGS],[$CFLAGS])
 AC_SUBST([LD_FLAGS],[$LD_FLAGS])
 AC_CONFIG_FILES([config.mk])
 AC_OUTPUT
+AC_CONFIG_FILES([Makefile])
 AC_MSG_NOTICE([CFLAGS: $CFLAGS])
 AC_MSG_NOTICE([LD_FLAGS: $LD_FLAGS])
 AC_MSG_NOTICE([configuration complete])
