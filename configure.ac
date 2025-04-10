@@ -1,5 +1,4 @@
 AC_INIT([ruri],[3.8])
-AM_INIT_AUTOMAKE
 AC_PROG_CC
 AC_CHECK_TOOL([STRIP],[strip])
 AC_CHECK_LIB([pthread],[pthread_create],[PTHREAD_LIB="-lpthread"],[PTHREAD_LIB=""])

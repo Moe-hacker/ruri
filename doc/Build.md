@@ -6,7 +6,6 @@ git clone https://github.com/Moe-hacker/ruri
 cd ruri
 aclocal
 autoconf
-automake --add-missing
 ./configure --enable-static
 make
 sudo cp ruri /usr/bin/ruri
