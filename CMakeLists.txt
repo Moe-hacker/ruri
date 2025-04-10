@@ -160,7 +160,10 @@ set(LDFLAGS "-Wl,-z,relro -Wl,-z,noexecstack -Wl,-z,now")
 
 option(ENABLE_DEBUG "Enable debug build" OFF)
 option(ENABLE_STATIC "Enable static linking" OFF)
-option(BUILD_LIB "BUILD with lib" OFF)
+option(DISABLE_LIBCAP "Disable cap library linking" OFF)
+option(DISABLE_LIBSECCOMP "Disable seccomp library linking" OFF)
+option(DISABLE_RURIENV "Disable env in ruri" OFF)
+option(BUILD_LIB "Build with lib" OFF)
 
 # For Debug build
 if(ENABLE_DEBUG)
@@ -171,9 +174,18 @@ else()
 endif()
 
 # For static build
-if(ENABLE_STATIC)
+if (ENABLE_STATIC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
+
+if (DISABLE_RURIENV)
+    add_definitions(-DDISABLE_RURIENV)
+endif()
+
+# For ruri core build
+if (DISABLE_RURIENV AND DISABLE_LIBCAP AND DISABLE_LIBSECCOMP)
+    add_definitions(-DRURI_CORE_ONLY)
+endif
 
 # Add LDFLAGS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
@@ -201,7 +213,7 @@ else ()
 # add the executable
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
-    add_executable(ruri ${SOURCES})
+    add_executable(ruri PRIVATE ${SOURCES})
     add_custom_command(
         TARGET ruri
         POST_BUILD
@@ -219,11 +231,30 @@ add_custom_target(
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if (ENABLE_STATIC)
-        target_link_libraries(ruri -lcap -lseccomp)
+    find_library(LCAP cap)
+    find_library(LSECCOMP seccomp)
+    if (NOT LCAP AND NOT DISABLE_LIBCAP)
+        message(FATAL_ERROR "Library 'cap' is required but not found.")
+    endif()
+    if (NOT LSECCOMP AND NOT DISABLE_LIBSECCOMP)
+        message(FATAL_ERROR "Library 'seccomp' is required but not found.")
+    endif()
+
+    if (DISABLE_LIBCAP AND DISABLE_LIBSECCOMP)
+        add_definitions(-DDISABLE_LIBCAP -DDISABLE_LIBSECCOMP)
+    elseif (DISABLE_LIBCAP)
+        add_definitions(-DDISABLE_LIBCAP)
+        target_link_libraries(ruri ${LSECCOMP})
+    elseif (DISABLE_LIBSECCOMP)
+        add_definitions(-DDISABLE_LIBSECCOMP)
+        target_link_libraries(ruri ${LCAP})
     else()
-        find_library(LCAP cap)
-        find_library(LSECCOMP seccomp)
         target_link_libraries(ruri ${LCAP} ${LSECCOMP})
     endif()
+
+    if (ENABLE_STATIC)
+        target_link_options(ruri PRIVATE -static)
+    endif()
+else()
+    message(FATAL_ERROR "ruri is only supported on Linux platforms.")
 endif()
