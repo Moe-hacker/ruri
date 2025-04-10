@@ -30,4 +30,4 @@ jobs:
           libcap-dev \
           libc6-dev \
           binutils qemu-user-static uidmap
-          make test
+          make -C test
