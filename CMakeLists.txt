@@ -102,24 +102,6 @@ if(CMAKE_C_COMPILER MATCHES "tcc")
     add_definitions(-D__TIMESTAMP__="${CMAKE_CURRENT_DATE} ${CMAKE_CURRENT_TIME}")
 endif()
 
-# Search for libs
-find_library(CAP_LIBRARY cap)
-find_library(SECCOMP_LIBRARY seccomp)
-find_library(PTHREAD_LIBRARY pthread)
-
-# Check dependent library
-if(NOT CAP_LIBRARY)
-    message(FATAL_ERROR "libcap is required")
-endif()
-
-if(NOT SECCOMP_LIBRARY)
-    message(FATAL_ERROR "libseccomp is required")
-endif()
-
-if(NOT PTHREAD_LIBRARY)
-    message(FATAL_ERROR "pthread is required")
-endif()
-
 # Set default CFLAGS and LDFLAGS
 set(CFLAGS_LIST
     "-flto=auto"
@@ -185,7 +167,7 @@ endif()
 # For ruri core build
 if (DISABLE_RURIENV AND DISABLE_LIBCAP AND DISABLE_LIBSECCOMP)
     add_definitions(-DRURI_CORE_ONLY)
-endif
+endif()
 
 # Add LDFLAGS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LDFLAGS}")
@@ -213,7 +195,7 @@ else ()
 # add the executable
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
-    add_executable(ruri PRIVATE ${SOURCES})
+    add_executable(ruri ${SOURCES})
     add_custom_command(
         TARGET ruri
         POST_BUILD
@@ -231,8 +213,10 @@ add_custom_target(
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    find_library(LCAP cap)
-    find_library(LSECCOMP seccomp)
+    # Search for libs
+    find_library(CAP cap)
+    find_library(SECCOMP seccomp)
+    find_library(PTHREAD pthread)
     if (NOT LCAP AND NOT DISABLE_LIBCAP)
         message(FATAL_ERROR "Library 'cap' is required but not found.")
     endif()
