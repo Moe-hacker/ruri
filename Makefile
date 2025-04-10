@@ -29,7 +29,7 @@
 # Premature optimization is the root of evil.
 #
 ifeq ($(wildcard config.mk),)
-$(error config.mk is missing. Please create or provide a valid config.mk file.)
+$(error config.mk is missing. Please run configure step before building.)
 endif
 
 CCCOLOR     = \033[1;38;2;254;228;208m
