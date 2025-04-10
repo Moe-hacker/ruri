@@ -121,8 +121,14 @@ typedef int cap_value_t;
 #define RURI_MAX_MOUNTPOINTS (512 * 2)
 #define RURI_MAX_CHAR_DEVS (128 * 3)
 #define RURI_MAX_SECCOMP_DENIED_SYSCALL (2048)
-// Include other headers.
+// For configure.ac
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#define RURI_VERSION VERSION
+#else
 #include "version.h"
+#endif
+// Include other headers.
 #include "k2v.h"
 #include "cprintf.h"
 #include "hostarch.h"
