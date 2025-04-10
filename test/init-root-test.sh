@@ -13,10 +13,8 @@ cd ..
 mkdir ${TMPDIR}
 check_if_succeed $?
 export TMPDIR=$(realpath ${TMPDIR})
-aclocal
-autoconf
-automake --add-missing || true
-./configure --enable-debug --enable-dev
+bash autogen.sh
+./configure --enable-debug
 check_if_succeed $?
 make
 check_if_succeed $?
