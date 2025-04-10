@@ -19,7 +19,6 @@ git clone --depth 1 https://github.com/moe-hacker/ruri.git
 cd ruri
 aclocal
 autoconf
-automake --add-missing
 ./configure --enable-static
 make
 strip ruri
