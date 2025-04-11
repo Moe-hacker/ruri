@@ -62,7 +62,7 @@ AC_DEFUN([CHECK_AND_ADD_CFLAGS],[AC_MSG_CHECKING([whether $CC supports $1])
         fi
         AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
             [AC_MSG_RESULT([yes])
-            CFLAGS="$CFLAGS $1"],
+            CFLAGS="$CFLAGS_SAVE $1"],
             [AC_MSG_RESULT([no])
             CFLAGS="$CFLAGS_SAVE"])])
 AC_ARG_ENABLE([debug],[AS_HELP_STRING([--enable-debug],[Enable debug log])],[enable_debug=yes],[enable_debug=no])
