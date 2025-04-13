@@ -221,7 +221,7 @@ struct RURI_ID_MAP {
 	{                                                                                                    \
 		cfprintf(stderr, "{red}In %s() in %s line %d:\n", __func__, __FILE__, __LINE__);             \
 		cfprintf(stderr, ##__VA_ARGS__);                                                             \
-		cfprintf(stderr, "{base}%s{clear}\n", "  .^.   .^.");                                        \
+		cfprintf(stderr, "{base}%s{clear}\n", "\n  .^.   .^.");                                        \
 		cfprintf(stderr, "{base}%s{clear}\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
 		cfprintf(stderr, "{base}%s{clear}\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                      \
 		cfprintf(stderr, "{base}%s{clear}\n", " ﾙﾘﾘ >  x )ﾘ");                                       \
