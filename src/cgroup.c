@@ -409,7 +409,7 @@ static void set_cgroup_v2_memory(const struct RURI_CONTAINER *_Nonnull container
 		}
 		close(fd);
 		char cgroup_oom[PATH_MAX] = { '\0' };
-		sprintf(cgroup_oom, "/sys/fs/cgroup/%d/memory.oom_control", container->container_id);
+		sprintf(cgroup_oom, "/sys/fs/cgroup/%d/memory.oom.group", container->container_id);
 		fd = open(cgroup_oom, O_RDWR | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
 			ruri_warning("{yellow}Set memory limit failed{clear}\n");
