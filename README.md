@@ -26,6 +26,11 @@ If you think something does not work as expected, please [Open a new isssue](htt
 # WIP wiki:
 https://wiki.crack.moe/ruri      
 # About:         
+## The past:
+ruri was part of termux-container(now daijin), as a container implementation on rooted Android phone, it's more secure than chroot/unshare.      
+## The future:
+The goal of ruri is `Not Only Better-chroot`. I hope it become a powerful tool, for developing, for devices that can't run docker, and for people who want to learn about Linux container. 
+## So, what's ruri:      
 &emsp;ruri is pronounced as `luli`, or you can call it `[瑠璃/琉璃]` ~~(るり)~~ in Chinese or Japanese as well.       
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
 &emsp;ruri is a powerful container implementation that runs on almost any Linux device, even with incomplete kernel configurations or minimal storage space.           
