@@ -149,6 +149,7 @@ static void init_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 	mount("tmpfs", "./dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);
 	usleep(100000);
 	free(devshm_options);
+	mount("binfmt_misc", "./proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL);
 	if (!container->unmask_dirs) {
 		// Protect some dirs in /proc and /sys.
 		mount("./proc/bus", "./proc/bus", NULL, MS_BIND | MS_REC, NULL);
