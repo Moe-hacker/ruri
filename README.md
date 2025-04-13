@@ -9,6 +9,8 @@
 -----------------     
 # WARNING:
 For production, I fully recommand you to use tools like crun, youki, containerd, docker, podman, they are more secure and stable. This is an non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!        
+# Looking for i18n?
+This project is not for you. If you don't know and don't want to know what's chroot/unshare/namespace/PID/capability/cgroup, you also can't know what's 换根/取消共享/命名空间/进程编号/能力/控制组. In fact, after translation, many words are even more un-understandable than English. But, it's a good idea to ask ChatGPT :)       
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -31,6 +33,7 @@ ruri was part of termux-container(now daijin), as a container implementation on 
 ## The future:
 The goal of ruri is `Not Only Better-chroot`. I hope it become a powerful tool, for developing, for devices that can't run docker, and for people who want to learn about Linux container. 
 ## So, what's ruri:      
+Was a toy, to be a tool.      
 &emsp;ruri is pronounced as `luli`, or you can call it `[瑠璃/琉璃]` ~~(るり)~~ in Chinese or Japanese as well.       
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
 &emsp;ruri is a powerful container implementation that runs on almost any Linux device, even with incomplete kernel configurations or minimal storage space.           
