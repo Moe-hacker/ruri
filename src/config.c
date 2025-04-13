@@ -93,7 +93,9 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	 */
 	// Add the shebang.
 	char ruri_bin_path[PATH_MAX] = { '\0' };
-	readlink("/proc/self/exe", ruri_bin_path, PATH_MAX);
+	if (readlink("/proc/self/exe", ruri_bin_path, PATH_MAX) <= 0) {
+		sprintf(ruri_bin_path, "%s", "/usr/bin/ruri");
+	}
 	char shebang[PATH_MAX + 8] = { '\0' };
 	sprintf(shebang, "#!%s -c\n\n", ruri_bin_path);
 	char *ret = strdup(shebang);

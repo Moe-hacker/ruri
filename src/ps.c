@@ -44,7 +44,7 @@ static char *getpid_name(pid_t pid)
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	read(fd, buf, sizeof(buf));
 	if (fd < 0) {
-		return " ";
+		return strdup(" ");
 	}
 	int j = 0;
 	for (unsigned long i = 0; i < sizeof(buf); i++) {
@@ -74,7 +74,7 @@ static char *getpid_stat(pid_t pid)
 	char stat_buf[PATH_MAX];
 	int fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
-		return " ";
+		return strdup(" ");
 	}
 	read(fd, buf, sizeof(buf));
 	int j = 0;
@@ -90,8 +90,8 @@ static char *getpid_stat(pid_t pid)
 			j++;
 		}
 	}
-	char *stat = strdup(stat_buf);
-	return stat;
+	char *pid_status = strdup(stat_buf);
+	return pid_status;
 }
 static void test_and_print_pid(pid_t pid, char *_Nonnull container_dir, bool in_pid_ns)
 {
@@ -106,16 +106,16 @@ static void test_and_print_pid(pid_t pid, char *_Nonnull container_dir, bool in_
 	ruri_log("{base}Root: {cyan}%s\n", buf);
 	if (strcmp(buf, container_dir) == 0) {
 		char *name = getpid_name(pid);
-		char *stat = getpid_stat(pid);
-		if (name != NULL && stat != NULL) {
+		char *pid_status = getpid_stat(pid);
+		if (name != NULL && pid_status != NULL) {
 			if (in_pid_ns) {
-				printf("--> %d %s %s\n", pid, name, stat);
+				printf("--> %d %s %s\n", pid, name, pid_status);
 			} else {
-				printf("%d %s %s\n", pid, name, stat);
+				printf("%d %s %s\n", pid, name, pid_status);
 			}
 		}
 		free(name);
-		free(stat);
+		free(pid_status);
 	}
 }
 static void __container_ps(char *_Nonnull container_dir, bool in_pid_ns)
@@ -202,16 +202,16 @@ void ruri_container_ps(char *_Nonnull container_dir)
 	if (container->ns_pid > 0) {
 		// We need to get the info of ns_pid before joining the namespace.
 		char *name = getpid_name(container->ns_pid);
-		char *stat = getpid_stat(container->ns_pid);
+		char *pid_status = getpid_stat(container->ns_pid);
 		if (join_ns(container->ns_pid) == 0) {
-			printf("%d %s %s\n", container->ns_pid, name, stat);
+			printf("%d %s %s\n", container->ns_pid, name, pid_status);
 			in_pid_ns = true;
 			// If we successfully joined the namespace,
 			// The root of the process is now "/".
 			container_dir = "/";
 		}
 		free(name);
-		free(stat);
+		free(pid_status);
 	}
 	__container_ps(container_dir, in_pid_ns);
 	free(container);

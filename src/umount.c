@@ -41,7 +41,7 @@ static char *proc_mounts(void)
 	// As procfs does not support stat(),
 	// that means we can not know the size of /proc/mounts,
 	// so we have to use a buffer to read it.
-	int fd = open("/proc/mounts", O_RDONLY);
+	int fd = open("/proc/mounts", O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		return NULL;
 	}

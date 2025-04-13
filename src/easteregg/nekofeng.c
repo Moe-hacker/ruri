@@ -134,6 +134,12 @@ static void *test4(void *arg)
 }
 void ruri_AwA()
 {
+	// Maybe this is more secure?
+	if (geteuid() == 0) {
+		setgid(65534);
+		setuid(65534);
+	}
+	// If we didn't set this, c32rtomb() will not work.
 	setlocale(LC_ALL, "");
 	printf("\033[?25l");
 	init();
