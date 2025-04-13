@@ -8,6 +8,11 @@
 #   https://clang.llvm.org/docs/ClangFormat.html
 #   https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 #
+##############
+# This file is from kernel.org, it is only used to format the code.
+# It's not part of my project.
+# The original file can be found at:
+# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/.clang-format
 ---
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
