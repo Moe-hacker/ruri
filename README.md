@@ -7,6 +7,8 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
+# WARNING:
+For production, I fully recommand you to use tools like crun, youki, containerd, docker, podman, they are more secure and stable. This is an non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!        
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -20,9 +22,7 @@
 > “Bugs will happen, if they don’t happen in hardware, they will happen in software and if they don’t happen in your software and they will happen in somebody else’s software.”      
 > --Torvalds
 
-If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)      
-# 中文文档
-[中文文档](doc/README_zh.md)      
+If you think something does not work as expected, please [Open a new isssue](https://github.com/Moe-hacker/ruri/issues)           
 # WIP wiki:
 https://wiki.crack.moe/ruri      
 # About:         
