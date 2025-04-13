@@ -204,7 +204,7 @@ static void set_cgroup_v1_memory(const struct RURI_CONTAINER *_Nonnull container
 		}
 		free(memory);
 		close(fd);
-		char *memory_oom[PATH_MAX] = { '\0' };
+		char memory_oom[PATH_MAX] = { '\0' };
 		sprintf(memory_oom, "/sys/fs/cgroup/memory/%d/memory.oom_control", container->container_id);
 		fd = open(memory_oom, O_RDWR | O_CLOEXEC);
 		if (fd < 0 && !container->no_warnings) {
