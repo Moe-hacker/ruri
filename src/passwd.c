@@ -33,6 +33,11 @@
  * we need to implement it.
  * This file provides functions to parse /etc/passwd,
  * and it can also parse /etc/subuid and /etc/subgid.
+ *
+ * TODO:
+ * As I don't think these code is safe enough,
+ * I will rewrite them in the future.
+ *
  */
 static char *line_get_username(const char *_Nonnull p)
 {

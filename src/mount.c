@@ -32,6 +32,7 @@
  * This file provides the mount functions for ruri.
  * It's used to mount disk devices, loop devices, and dir/files.
  * It also provides ruri_mkdirs() to create directories recursively.
+ * Unfrtunately, only ro mount option is supported, extra options are not supported.
  */
 // Return the same value as mkdir().
 int ruri_mkdirs(const char *_Nonnull dir, mode_t mode)

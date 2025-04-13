@@ -31,6 +31,11 @@
 /*
  * This file was the main.c in nekofeng project.
  * Now, it provides the function ruri_AwA() as the easteregg of ruri.
+ *
+ * Note:
+ * This part of code is just for fun, do not take it seriously.
+ * It will not affect the main function of ruri.
+ * And, it works on my machine!
  */
 #ifndef RURI_CORE_ONLY
 // The global variables are defined here.

@@ -40,5 +40,5 @@ if command -v upx >/dev/null 2>&1; then
     upx --best output2/ruri
     upx --best output3/ruri
 fi
-
+# WTF? shell is not like rust!
 exit $?

@@ -31,6 +31,7 @@
 /*
  * This file provides some functions to show help/version info.
  * As ruri_fetch() is too long but useless, I put it in rurifetch.c.
+ * Emmm... I hope users can understand the help page.
  */
 void ruri_show_version_info(void)
 {

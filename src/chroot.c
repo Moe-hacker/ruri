@@ -32,6 +32,7 @@
  * This file is the core of ruri.
  * It provides functions to run container as info in struct RURI_CONTAINER.
  * Bisic functions of ruri is implemented here.
+ * Thanks docker and podman for the device list and mask/protect list.
  */
 static bool su_biany_exist(char *_Nonnull container_dir)
 {

@@ -31,6 +31,7 @@
 /*
  * This file provides config file support for ruri.
  * ruri_init_config() is also here.
+ * Not very graceful, but it works.
  */
 void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 {

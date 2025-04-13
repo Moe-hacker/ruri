@@ -32,6 +32,8 @@
  * This file provides rootless container support,
  * as ruri_run_rootless_chroot_container() needs some functions in chroot.c,
  * it's in chroot.c, not here.
+ * This part need newuidmap and newgidmap binary,
+ * that's the only runtime dependency for ruri, and it's optional.
  */
 static int try_execvp(char *_Nonnull argv[])
 {

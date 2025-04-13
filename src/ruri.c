@@ -30,6 +30,9 @@
 #include "include/ruri.h"
 /*
  * This file was the main.c of ruri.
+ * It will parse the arguments, and do the action.
+ * I know code here is too shit, but it works,
+ * maybe I will rewrite it one day, I hope.
  */
 // Do some checks before chroot(2),called by main().
 static void check_container(const struct RURI_CONTAINER *_Nonnull container)

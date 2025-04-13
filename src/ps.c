@@ -30,6 +30,11 @@
 #include "include/ruri.h"
 /*
  * This file provides functions to show or kill all processes in the container.
+ * Note:
+ * For unshare container without pid ns,
+ * we can not recognize the pids in container.
+ * And for that with pid ns, just kill pid 1 of the ns,
+ * and all processes will be destoryed.
  */
 static char *getpid_name(pid_t pid)
 {

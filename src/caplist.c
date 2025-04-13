@@ -30,7 +30,11 @@
 #include "include/ruri.h"
 /*
  * This file provides functions to manage capability list.
- * But drop_caps() to set capabilities is in chroot.c, not here.
+ * But drop_caps() is in chroot.c, not here.
+ * As that time I didn't learnd C well,
+ * I didn't use a struct with length and capacities,
+ * but used the RURI_INIT_VALUE to mark the end of the list.
+ * And now I know that RURI_INIT_VALUE is a sentinel in fact.
  */
 #ifndef DISABLE_LIBCAP
 // cap_from_name() that supports both upper and lower case.

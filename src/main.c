@@ -28,6 +28,10 @@
  *
  */
 #include "include/ruri.h"
+/*
+ * main() calls ruri() directly,
+ * so that we can make ruri built-in into other programs easily.
+ */
 int main(int argc, char **argv)
 {
 	/*

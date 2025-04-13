@@ -31,6 +31,8 @@
 /*
  * This file provides function to umount the container.
  * All pids detected in the container will be killed at the same time.
+ * TODO:
+ * Maybe we should use info in /proc/mounts first?
  */
 static char *proc_mounts(void)
 {

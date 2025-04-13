@@ -32,6 +32,8 @@
  * This file provides functions to read and store .rurienv file.
  * ${container_dir}/.rurienv file is a file that stores the runtime info of the container.
  * It's used when running and umounting container.
+ * As we cannot trust files in the container,
+ * this file is immutable and bind-mount as readonly to itself.
  */
 // Check if the running pid is ruri.
 static bool is_ruri_pid(pid_t pid)
