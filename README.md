@@ -8,9 +8,10 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14021121.svg)](https://doi.org/10.5281/zenodo.14021121)
 -----------------     
 # WARNING:
-For production, I fully recommand you to use tools like crun, youki, containerd, docker, podman, they are more secure and stable. This is an non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!        
+For production, I fully recommand you to use tools like [crun](https://github.com/containers/crun), [youki](https://github.com/youki-dev/youki), [containerd](https://containerd.io/), [docker](https://www.docker.com/), [podman](https://podman.io/), [LXC](https://linuxcontainers.org/), [bubblewrap](https://github.com/containers/bubblewrap), they are more secure and stable. This is a non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!        
 # Looking for i18n?
-This project is not for you. If you don't know and don't want to know what's chroot/unshare/namespace/PID/capability/cgroup, you also can't know what's 换根/取消共享/命名空间/进程编号/能力/控制组. In fact, after translation, many words are even more un-understandable than English. But, it's a good idea to ask ChatGPT :)       
+This project is not for you. If you don't know and don't want to know what's chroot/unshare/namespace/PID/capability/cgroup, you also can't know what's 换根/取消共享/命名空间/进程编号/能力/控制组. And I currently have no time to mantain multi-language docs.      
+But as this is an open-source project, you are welcome to make your own fork with your preferred language :)      
 # WARNING:      
 > [!WARNING]
 > ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
@@ -18,6 +19,7 @@ This project is not for you. If you don't know and don't want to know what's chr
 * Your warranty is void.
 * I am not responsible for anything that may happen to your device by using this program.
 * You do it at your own risk and take the responsibility upon yourself.
+* This project is open source, you can make your own fork/rewrite but not to blame the author.
 * This program has no Super Cow Powers.
 ```
 # Bug reporting:

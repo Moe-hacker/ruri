@@ -29,7 +29,7 @@ cp LICENSE ../output/LICENSE
 cp ruri ../output2/ruri
 cp LICENSE ../output2/LICENSE
 
-./configure --enable-core --enable-static
+./configure --enable-coreonly --enable-static
 make
 strip ruri
 cp ruri ../output3/ruri
