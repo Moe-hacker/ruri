@@ -143,7 +143,7 @@ static void init_rootless_container(struct RURI_CONTAINER *_Nonnull container)
 		devshm_options = strdup("mode=1777");
 	} else {
 		devshm_options = malloc(strlen(container->memory) + strlen("mode=1777") + 114);
-		sprintf(devshm_options, "size=%s,mode=1777", container->memory);
+		sprintf(devshm_options, "size=65536k,mode=1777");
 	}
 	mkdir("./dev/shm", S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
 	mount("tmpfs", "./dev/shm", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, devshm_options);

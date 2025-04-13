@@ -204,6 +204,19 @@ static void set_cgroup_v1_memory(const struct RURI_CONTAINER *_Nonnull container
 		}
 		free(memory);
 		close(fd);
+		char *memory_oom[PATH_MAX] = { '\0' };
+		sprintf(memory_oom, "/sys/fs/cgroup/memory/%d/memory.oom_control", container->container_id);
+		fd = open(memory_oom, O_RDWR | O_CLOEXEC);
+		if (fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Set memory limit failed{clear}\n");
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
+		}
+		sprintf(buf, "1\n");
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Set memory limit failed{clear}\n");
+		}
+		close(fd);
 	}
 	char memory_cgroup_procs_path[PATH_MAX] = { '\0' };
 	sprintf(memory_cgroup_procs_path, "/sys/fs/cgroup/memory/%d/cgroup.procs", container->container_id);
@@ -377,6 +390,34 @@ static void set_cgroup_v2_memory(const struct RURI_CONTAINER *_Nonnull container
 			return;
 		}
 		sprintf(buf, "%s\n", container->memory);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Set memory limit failed{clear}\n");
+		}
+		close(fd);
+		char cgroup_memlimit_path2[PATH_MAX] = { '\0' };
+		sprintf(cgroup_memlimit_path2, "/sys/fs/cgroup/%d/memory.max", container->container_id);
+		fd = open(cgroup_memlimit_path2, O_RDWR | O_CLOEXEC);
+		if (fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Set memory limit failed{clear}\n");
+			// Do not keep the apifs mounted.
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
+		}
+		sprintf(buf, "%s\n", container->memory);
+		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Set memory limit failed{clear}\n");
+		}
+		close(fd);
+		char cgroup_oom[PATH_MAX] = { '\0' };
+		sprintf(cgroup_oom, "/sys/fs/cgroup/%d/memory.oom_control", container->container_id);
+		fd = open(cgroup_oom, O_RDWR | O_CLOEXEC);
+		if (fd < 0 && !container->no_warnings) {
+			ruri_warning("{yellow}Set memory limit failed{clear}\n");
+			// Do not keep the apifs mounted.
+			umount2("/sys/fs/cgroup", MNT_DETACH | MNT_FORCE);
+			return;
+		}
+		sprintf(buf, "1\n");
 		if (write(fd, buf, strlen(buf)) < 0 && !container->no_warnings) {
 			ruri_warning("{yellow}Set memory limit failed{clear}\n");
 		}
