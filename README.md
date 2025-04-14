@@ -91,7 +91,7 @@ It's useless, but it's cool.
 You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 Or you can run the following command to download ruri automatically:      
 ```sh
-. <(curl -L https://get.ruri.zip/ruri)
+. <(curl -sL https://get.ruri.zip/ruri)
 ```
 This will automatically download ruri binary to `./ruri`.      
 # Usage:    
