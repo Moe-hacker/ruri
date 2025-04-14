@@ -75,6 +75,7 @@ fi
 AC_ARG_ENABLE([dev],[AS_HELP_STRING([--enable-dev],[Enable dev build])],[enable_dev=yes],[enable_dev=no])
 if test "$enable_dev" != "no";then
     DEV_CFLAGS="-DRURI_DEV"
+    STRIP="true"
     AC_MSG_NOTICE([dev build enabled])
     CHECK_AND_ADD_CFLAGS([-g])
     CHECK_AND_ADD_CFLAGS([-O0])
