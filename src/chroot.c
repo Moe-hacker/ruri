@@ -47,6 +47,38 @@ static bool su_biany_exist(char *_Nonnull container_dir)
 	if (fd < 0) {
 		return false;
 	}
+	struct stat su_stat;
+	if (fstat(fd, &su_stat) != 0) {
+		close(fd);
+		return false;
+	}
+	if (!S_ISREG(su_stat.st_mode)) {
+		close(fd);
+		return false;
+	}
+	close(fd);
+	return true;
+}
+static bool busybox_exists(char *_Nonnull container_dir)
+{
+	/*
+	 * Check if busybox exists in container.
+	 */
+	char busybox_path[PATH_MAX] = { '\0' };
+	sprintf(busybox_path, "%s/bin/busybox", container_dir);
+	int fd = open(busybox_path, O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
+		return false;
+	}
+	struct stat busybox_stat;
+	if (fstat(fd, &busybox_stat) != 0) {
+		close(fd);
+		return false;
+	}
+	if (!S_ISREG(busybox_stat.st_mode)) {
+		close(fd);
+		return false;
+	}
 	close(fd);
 	return true;
 }
@@ -766,8 +798,14 @@ void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull containe
 			container->command[1] = "-";
 			container->command[2] = NULL;
 		} else {
-			container->command[0] = "/bin/sh";
-			container->command[1] = NULL;
+			if (busybox_exists(container->container_dir)) {
+				container->command[0] = "/bin/busybox";
+				container->command[1] = "sh";
+				container->command[2] = NULL;
+			} else {
+				container->command[0] = "/bin/sh";
+				container->command[1] = NULL;
+			}
 		}
 	}
 	// Check binary used.
