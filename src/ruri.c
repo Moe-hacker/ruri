@@ -1185,7 +1185,7 @@ int ruri(int argc, char **argv)
 	// Catch coredump signal.
 	ruri_register_signal();
 // Warning for dev/debug build.
-#ifdef RURI_DEBUG
+#if defined(RURI_DEBUG) || defined(RURI_DEV)
 	cprintf("{red}Warning: this is a dev/debug build, do not use it in production{clear}\n");
 #endif
 	// Info of container to run.
