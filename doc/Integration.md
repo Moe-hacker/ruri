@@ -1,14 +1,11 @@
 ## Using ruri as container implementation:
 Here is a simple example, to build file command in an alpine container with ruri:
-```sh
+```bash
 # Download and unpack rootfs
-git clone https://github.com/moe-hacker/rootfstool
-rootfstool/rootfstool d -d alpine -v edge
-mkdir alpine
-sudo tar -xvf rootfs.tar.xz -C alpine
+bash -c ". <(curl -sL https://get.ruri.zip/rurima) -s"
+./rurima lxc pull -o alpine -v edge -s ./alpine
 # Get ruri
-wget https://github.com/Moe-hacker/ruri/raw/refs/heads/main/getruri.sh
-bash getruri.sh -s
+bash -c ". <(curl -sL https://get.ruri.zip/ruri) -s"
 # Copy build script
 sudo cp build.sh alpine/build.sh
 sudo chmod +x alpine/build.sh
