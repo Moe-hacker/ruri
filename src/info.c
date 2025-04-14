@@ -170,29 +170,32 @@ void ruri_show_examples(void)
 	 * I think you can understand...
 	 */
 	cprintf("\n");
-	cprintf("{base}# Quickly setup a container(with rootfstool):\n");
-	cprintf("  {green}git {yellow}clone {purple}https://github.com/Moe-hacker/rootfstool\n");
-	cprintf("  {green}cd {purple}rootfstool\n");
-	cprintf("  {green}./rootfstool {yellow}download {blue}-d {purple}alpine {blue}-v {purple}edge\n");
-	cprintf("  {green}mkdir {purple}/tmp/alpine\n");
-	cprintf("  {green}sudo tar {blue}-xvf {purple}rootfs.tar.xz {blue}-C {purple}/tmp/alpine\n");
+	cprintf("{base}# Quickly setup a container(with rurima):\n");
+	cprintf("  {green}. {yellow}<({green}curl {blue}-sL {purple}https://get.ruri.zip/rurima{yellow})\n");
+	cprintf("  {green}./rurima lxc {blue}pull {blue}-a {purple}alpine {blue} -v {purple}edge {blue}-s {purple} /tmp/alpine\n");
+	cprintf("\n");
 	cprintf("{base}# Run chroot container:\n");
 	cprintf("  {green}sudo ruri {purple}/tmp/alpine\n");
 	cprintf("{base}# Very simple as you can see.\n");
+	cprintf("\n");
 	cprintf("{base}# About the capabilities:\n");
 	cprintf("{base}# Run privileged chroot container:\n");
 	cprintf("  {green}sudo ruri {blue}-p {purple}/tmp/alpine\n");
+	cprintf("\n");
 	cprintf("{base}# If you want to run privileged chroot container,\n");
 	cprintf("{base}# but you don't want to give the container cap_sys_chroot privileges:\n");
 	cprintf("  {green}sudo ruri {blue}-p -d \033[36mcap_sys_chroot {purple}/tmp/alpine\n");
+	cprintf("\n");
 	cprintf("{base}# If you want to run chroot container with common privileges,\n");
 	cprintf("{base}# but you want cap_sys_admin to be kept:\n");
 	cprintf("  {green}sudo ruri {blue}-k \033[36mcap_sys_admin {purple}/tmp/alpine\n");
+	cprintf("\n");
 	cprintf("{base}# About unshare:\n");
 	cprintf("{base}# Unshare container's capability options are same with chroot.\n");
 	cprintf("{base}# Run unshare container:\n");
 	cprintf("  {green}sudo ruri {blue}-u {purple}/tmp/alpine\n");
-	cprintf("{base}# Umount the container:\n");
+	cprintf("\n");
+	cprintf("{base}# Finally, umount the container:\n");
 	cprintf("  {green}sudo ruri {blue}-U {purple}/tmp/alpine\n");
 	cprintf("{clear}\n");
 }

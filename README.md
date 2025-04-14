@@ -13,8 +13,6 @@ For production, I fully recommand you to use tools like [crun](https://github.co
 This project is not for you. If you don't know and don't want to know what's chroot/unshare/namespace/PID/capability/cgroup, you also can't know what's 换根/取消共享/命名空间/进程编号/能力/控制组. And I currently have no time to mantain multi-language docs.      
 But as this is an open-source project, you are welcome to make your own fork with your preferred language :)      
 # WARNING:      
-> [!WARNING]
-> ruri should always be executed with root privileges(sudo), and do not set SUID or any capability on it!      
 ```
 * Your warranty is void.
 * I am not responsible for anything that may happen to your device by using this program.
@@ -35,34 +33,13 @@ ruri was part of termux-container(now daijin), as a container implementation on 
 ## The future:
 The goal of ruri is `Not Only Better-chroot`. I hope it become a powerful tool, for developing, for devices that can't run docker, and for people who want to learn about Linux container. 
 ## So, what's ruri:      
-Was a toy, to be a tool.      
+&emsp;Was a toy, to be a tool.      
 &emsp;ruri is pronounced as `luli`, or you can call it `[瑠璃/琉璃]` ~~(るり)~~ in Chinese or Japanese as well.       
 &emsp;ruri is acronym to Lightweight, User-friendly Linux-container Implementation.         
 &emsp;ruri is a powerful container implementation that runs on almost any Linux device, even with incomplete kernel configurations or minimal storage space.           
 # The enhanced version:
 [rurima](https://github.com/Moe-hacker/rurima) was planned to be the ruri manager, but since it now has a full integration of ruri, you can use it as an enhanced version of ruri.      
 Note that rurima is still WIP.      
-# Performance:
-On AMD Ryzen 5 5500U, Windows 11, Ubuntu 22.04.5 WSL 2      
-```
-# uname -m
-x86_64
-# /usr/bin/time -f "Time: %E\nMax memory: %M KB" ./ruri ../t /bin/true
-Time: 0:00.01
-Max memory: 860 KB
-```
-## Binary size(amd64):
-||ruri|crun|%|
-|---|---|---|---|
-|(noupx)|454K|3.0M|-84.9%|
-|(withupx)|147K|1.3M|-88.7%|
-## Core version:
-Without libcap and libseccomp, the core version, just as better-chroot implementation, can be even more lightweight.            
-It's useless, but it's cool.      
-## ~~Alphabet coverage~~
-|Alphabet|ruri used|%|
-|---|---|---|
-|52|44|85%|
 # Highlights:
 - Powerful Features
   - Basic container features are all supported, chroot, unshare with pivot_root, capability control, basic cgroup support, no_new_privs, auto set environment variables and change user/workdir, built-in seccomp profile, and more...      
@@ -87,6 +64,25 @@ It's useless, but it's cool.
 <img src="https://github.com/Moe-hacker/ruri/raw/main/logo/rurifetch.png" alt="" style="width:75%;align: center;">
 </p>
 
+# Performance:
+On AMD Ryzen 5 5500U, Windows 11, Ubuntu 22.04.5 WSL 2      
+```
+# uname -m
+x86_64
+# /usr/bin/time -f "Time: %E\nMax memory: %M KB" ./ruri ../t /bin/true
+Time: 0:00.01
+Max memory: 860 KB
+```
+## Binary size(amd64):
+||ruri|crun|%|
+|---|---|---|---|
+|(noupx)|454K|3.0M|-84.9%|
+|(withupx)|147K|1.3M|-88.7%|
+## ~~Alphabet coverage~~
+|Alphabet|ruri used|%|
+|---|---|---|
+|52|44|85%|      
+
 # Get ruri:    
 You can get ruri binary (statically linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 devices in [Release](https://github.com/Moe-hacker/ruri/releases/).      
 Or you can run the following command to download ruri automatically:      
@@ -102,10 +98,6 @@ BSD style usage is partially supported now, for example, you can use `-pW /root`
 See [Enhance Container Security](doc/Security.md).      
 # Build Manually:      
 Ruri provides statically linked binary, but if you want to build it yourself, see [Build](doc/Build.md).      
-# About systemd:
-Systemd need CAP_SYS_ADMIN to work, and need PID namespace support to make itself to be PID 1.      
-On my device, with `sudo ./ruri -u -k cap_sys_admin ../ubuntu /sbin/init &` and then `sudo ./ruri ../ubuntu /bin/bash` to enter container, although it shows `State: degraded`, systemd seems works.     
-But, as it might do some changes for the host and might make the device crash, you take your own risk to use it.      
 # Integration:
 ruri is ready to integrate into other projects, with the MIT License, it is compatiblte to be redistribute with almost all license, or commercial/closed source.      
 An example is ruri's own build action , it runs containers for 9 different architectures to build itself, that shows its broad application prospects.      
@@ -117,13 +109,11 @@ You might cannot remove this file unless you run `chattr -i .rurienv`, but don't
 If you want to change the container config, just use -U to umount it and re-run the container.      
 # FAQ:   
 [FAQ](doc/FAQ.md)      
-# Quick start(with rootfstool):
+# Quick start(with rurima):
 ## Download and unpack a rootfs:
 ```
-git clone https://github.com/Moe-hacker/rootfstool
-cd rootfstool
-./rootfstool download -d alpine -v edge
-mkdir /tmp/alpine
+. <(curl -sL https://get.ruri.zip/rurima)
+./rurima lxc pull -o alpine -v edge -s /tmp/alpine
 sudo tar -xvf rootfs.tar.xz -C /tmp/alpine
 ```
 ## Then:
@@ -140,21 +130,27 @@ For command line examples, please see `ruri -H`.
 ```
 # Run chroot container:
   sudo ruri /tmp/alpine
+
 # Very simple as you can see.
+
 # About the capabilities:
 # Run privileged chroot container:
   sudo ruri -p /tmp/alpine
+
 # If you want to run privileged chroot container,
 # but you don't want to give the container cap_sys_chroot privileges:
   sudo ruri -p -d cap_sys_chroot /tmp/alpine
+
 # If you want to run chroot container with common privileges,
 # but you want cap_sys_admin to be kept:
   sudo ruri -k cap_sys_admin /tmp/alpine
+
 # About unshare:
 # Unshare container's capability options are same with chroot.
 # Run unshare container:
   sudo ruri -u /tmp/alpine
-# Umount the container:
+
+# Finally, umount the container:
   sudo ruri -U /tmp/alpine
 ```
 # License:

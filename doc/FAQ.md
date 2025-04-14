@@ -10,7 +10,10 @@ rm /etc/resolv.conf
 echo nameserver 1.1.1.1 > /etc/resolv.conf
 ```
 Or, for Android, run https://github.com/Moe-hacker/daijin/raw/refs/heads/main/src/share/fixup.sh in container.      
-# 
+# About systemd:
+Systemd need CAP_SYS_ADMIN to work, and need PID namespace support to make itself to be PID 1.      
+On my device, with `sudo ./ruri -u -k cap_sys_admin ../ubuntu /sbin/init &` and then `sudo ./ruri ../ubuntu /bin/bash` to enter container, although it shows `State: degraded`, systemd seems works.     
+But, as it might do some changes for the host and might make the device crash, you take your own risk to use it.      
 # About container environment:      
 For safety, ruri container is like default docker container, it will mask some directory in /sys and /proc, drop unneed capabilities, and you are not able to run command like mknod or mount by default.      
 # About capability:      
