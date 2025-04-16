@@ -123,7 +123,7 @@ static void test_and_print_pid(pid_t pid, char *_Nonnull container_dir, bool in_
 		free(pid_status);
 	}
 }
-static void __container_ps(char *_Nonnull container_dir, bool in_pid_ns)
+static void container_ps__(char *_Nonnull container_dir, bool in_pid_ns)
 {
 	/*
 	 * Show the processes in the container.
@@ -218,7 +218,7 @@ void ruri_container_ps(char *_Nonnull container_dir)
 		free(name);
 		free(pid_status);
 	}
-	__container_ps(container_dir, in_pid_ns);
+	container_ps__(container_dir, in_pid_ns);
 	free(container);
 	exit(EXIT_SUCCESS);
 }

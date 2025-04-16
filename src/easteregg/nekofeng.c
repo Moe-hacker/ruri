@@ -88,8 +88,8 @@ static void init()
 		printf("\033[31mThe window size is too small.\n");
 		exit(1);
 	}
-	nekofeng_x = size.ws_col / 2 - X_SIZE / 2;
-	nekofeng_y = size.ws_row / 2 - Y_SIZE / 2;
+	nekofeng_x = size.ws_col / 2 - NEKOFENG_X_SIZE / 2;
+	nekofeng_y = size.ws_row / 2 - NEKOFENG_Y_SIZE / 2;
 }
 static long nekofeng_tids[6] = { -114 };
 static void update_tids(void)
@@ -148,7 +148,7 @@ void ruri_AwA()
 	setlocale(LC_ALL, "");
 	printf("\033[?25l");
 	init();
-	struct LAYER layer;
+	struct NEKOFENG_LAYER layer;
 	layer.layer = U"\033[1;38;2;254;228;208m\n"
 			"          Keep moe.\n"
 			"          Keep cool.\n"
@@ -161,6 +161,7 @@ void ruri_AwA()
 	nekofeng_typewrite_layer(&layer, 50000, true);
 	sleep(2);
 	nekofeng_clear_typewrite_layer(&layer, 50000);
+	// It works with bug, don't care about it.
 	pid_t pid = fork();
 	if (pid > 0) {
 		wait(NULL);

@@ -35,7 +35,7 @@
  *
  * Usage:
  *
- *  struct ACTION *action = NULL;
+ *  struct NEKOFENG_ACTION *action = NULL;
  *  action = nekofeng_add_action(action, 11, 4,
  *              "\n\033[0m vedvhfkhbfuweh  \n\n");
  *  action = nekofeng_add_action(action, 11, 4,
@@ -48,7 +48,7 @@
  * and I am too lazy to read the code.
  *
  */
-static void clear_layer(struct LAYER *_Nonnull layer)
+static void clear_layer(struct NEKOFENG_LAYER *_Nonnull layer)
 {
 	nekofeng_spin_lock(&nekofeng_lock);
 	int y_offset = 0;
@@ -85,7 +85,7 @@ static void clear_layer(struct LAYER *_Nonnull layer)
 	nekofeng_spin_unlock(&nekofeng_lock);
 	usleep(10000);
 }
-static void print_layer(struct LAYER *_Nonnull layer)
+static void print_layer(struct NEKOFENG_LAYER *_Nonnull layer)
 {
 	nekofeng_spin_lock(&nekofeng_lock);
 	int y_offset = 0;
@@ -123,9 +123,9 @@ static void print_layer(struct LAYER *_Nonnull layer)
 	nekofeng_spin_unlock(&nekofeng_lock);
 	usleep(10000);
 }
-void nekofeng_play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
+void nekofeng_play_action(struct NEKOFENG_ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
 {
-	struct ACTION **p = &action;
+	struct NEKOFENG_ACTION **p = &action;
 	while ((*p) != NULL) {
 		print_layer((*p)->layer);
 		usleep(inr);
@@ -136,9 +136,9 @@ void nekofeng_play_action(struct ACTION *_Nonnull action, useconds_t inr, unsign
 		p = &((*p)->next);
 	}
 }
-void nekofeng_playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
+void nekofeng_playback_action(struct NEKOFENG_ACTION *_Nonnull action, useconds_t inr, unsigned int keep)
 {
-	struct ACTION **p = &action;
+	struct NEKOFENG_ACTION **p = &action;
 	while ((*p)->next != NULL) {
 		p = &((*p)->next);
 	}
@@ -152,27 +152,27 @@ void nekofeng_playback_action(struct ACTION *_Nonnull action, useconds_t inr, un
 		p = &((*p)->prior);
 	}
 }
-void nekofeng_free_action(struct ACTION *_Nonnull action)
+void nekofeng_free_action(struct NEKOFENG_ACTION *_Nonnull action)
 {
-	struct ACTION *p = action;
+	struct NEKOFENG_ACTION *p = action;
 	while (p != NULL) {
-		struct ACTION *t = p;
+		struct NEKOFENG_ACTION *t = p;
 		p = p->next;
 		free(t->layer->layer);
 		free(t->layer);
 		free(t);
 	}
 }
-struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char32_t *_Nonnull layer)
+struct NEKOFENG_ACTION *nekofeng_add_action(struct NEKOFENG_ACTION *_Nonnull action, int x_offset, int y_offset, char32_t *_Nonnull layer)
 {
-	struct ACTION **p = &action;
-	struct ACTION *prior = action;
+	struct NEKOFENG_ACTION **p = &action;
+	struct NEKOFENG_ACTION *prior = action;
 	while (*p != NULL) {
 		prior = *p;
 		p = &((*p)->next);
 	}
-	(*p) = malloc(sizeof(struct ACTION));
-	(*p)->layer = malloc(sizeof(struct LAYER));
+	(*p) = malloc(sizeof(struct NEKOFENG_ACTION));
+	(*p)->layer = malloc(sizeof(struct NEKOFENG_LAYER));
 	(*p)->layer->x_offset = x_offset;
 	(*p)->layer->y_offset = y_offset;
 	(*p)->layer->layer = nekofeng_strdup(layer);

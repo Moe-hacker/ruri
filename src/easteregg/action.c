@@ -35,7 +35,7 @@
 #ifndef RURI_CORE_ONLY
 void nekofeng_face(useconds_t inr, unsigned int keep)
 {
-	struct ACTION *action = NULL;
+	struct NEKOFENG_ACTION *action = NULL;
 	action = nekofeng_add_action(action, -17, -9,
 				     U"\033[0m              ██                        ██\n"
 				       "\033[0m            ██  ██                    ██  ██\n"
@@ -64,7 +64,7 @@ void nekofeng_face(useconds_t inr, unsigned int keep)
 }
 void nekofeng_mouth(useconds_t inr, unsigned int keep)
 {
-	struct ACTION *action = NULL;
+	struct NEKOFENG_ACTION *action = NULL;
 	action = nekofeng_add_action(action, 10, 8,
 				     U"\n"
 				       "\n"
@@ -86,7 +86,7 @@ void nekofeng_mouth(useconds_t inr, unsigned int keep)
 }
 void nekofeng_ahoge(useconds_t inr, unsigned int keep)
 {
-	struct ACTION *action = NULL;
+	struct NEKOFENG_ACTION *action = NULL;
 	action = nekofeng_add_action(action, 6, -8,
 				     U"      ██\n"
 				       "     ██\n"
@@ -116,7 +116,7 @@ void nekofeng_ahoge(useconds_t inr, unsigned int keep)
 }
 void nekofeng_blink_lefteye(useconds_t inr, unsigned int keep)
 {
-	struct ACTION *action = NULL;
+	struct NEKOFENG_ACTION *action = NULL;
 	action = nekofeng_add_action(action, 1, 2,
 				     U"  ██████ \n"
 				       "██      ██\n"
@@ -154,7 +154,7 @@ void nekofeng_blink_lefteye(useconds_t inr, unsigned int keep)
 }
 void nekofeng_blink_righteye(useconds_t inr, unsigned int keep)
 {
-	struct ACTION *action = NULL;
+	struct NEKOFENG_ACTION *action = NULL;
 	action = nekofeng_add_action(action, 16, 2,
 				     U"  ██████ \n"
 				       "██      ██\n"

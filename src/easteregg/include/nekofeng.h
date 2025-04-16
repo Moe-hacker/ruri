@@ -52,9 +52,9 @@
 #define _Nonnull
 #endif
 // WARNING: magic number! Do not change!
-#define X_SIZE 36
-#define Y_SIZE 2
-struct LAYER {
+#define NEKOFENG_X_SIZE 36
+#define NEKOFENG_Y_SIZE 2
+struct NEKOFENG_LAYER {
 	/*
 	 * This is the smallest unit of the animation.
 	 * It represents one frame of an action.
@@ -67,17 +67,17 @@ struct LAYER {
 	// The offset of the y-axis.
 	int y_offset;
 };
-struct ACTION {
+struct NEKOFENG_ACTION {
 	/*
 	 * This is a doubly linked list,
 	 * because we want to playback the action.
 	 */
 	// The layer to be printed.
-	struct LAYER *layer;
+	struct NEKOFENG_LAYER *layer;
 	// The pointer to the last action.
-	struct ACTION *prior;
+	struct NEKOFENG_ACTION *prior;
 	// The pointer to the next action.
-	struct ACTION *next;
+	struct NEKOFENG_ACTION *next;
 };
 // The offset of the x-axis.
 extern int nekofeng_x;
@@ -89,16 +89,16 @@ extern atomic_flag nekofeng_lock;
 // Function list.
 void nekofeng_spin_lock(atomic_flag *_Nonnull lock);
 void nekofeng_spin_unlock(atomic_flag *_Nonnull lock);
-void nekofeng_play_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
-void nekofeng_playback_action(struct ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
-void nekofeng_free_action(struct ACTION *_Nonnull action);
-struct ACTION *nekofeng_add_action(struct ACTION *_Nonnull action, int x_offset, int y_offset, char32_t *_Nonnull layer);
+void nekofeng_play_action(struct NEKOFENG_ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
+void nekofeng_playback_action(struct NEKOFENG_ACTION *_Nonnull action, useconds_t inr, unsigned int keep);
+void nekofeng_free_action(struct NEKOFENG_ACTION *_Nonnull action);
+struct NEKOFENG_ACTION *nekofeng_add_action(struct NEKOFENG_ACTION *_Nonnull action, int x_offset, int y_offset, char32_t *_Nonnull layer);
 void nekofeng_face(useconds_t inr, unsigned int keep);
 void nekofeng_mouth(useconds_t inr, unsigned int keep);
 void nekofeng_ahoge(useconds_t inr, unsigned int keep);
 void nekofeng_blink_lefteye(useconds_t inr, unsigned int keep);
 void nekofeng_blink_righteye(useconds_t inr, unsigned int keep);
-void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink);
-void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr);
+void nekofeng_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useconds_t inr, bool blink);
+void nekofeng_clear_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useconds_t inr);
 size_t nekofeng_strlen(const char32_t *_Nonnull str);
 char32_t *nekofeng_strdup(const char32_t *_Nonnull str);

@@ -33,7 +33,7 @@
  * Nothing useful, just for fun.
  */
 #ifndef RURI_CORE_ONLY
-static void __ruri_fetch(char **logo, char **info)
+static void ruri_fetch__(char **logo, char **info)
 {
 	int j = 0;
 	for (int i = 0; logo[i] != NULL; i++) {
@@ -126,7 +126,7 @@ void ruri_fetch(void)
 	ruri_info[15] = "[black]   [red]   [green]   [yellow]   [blue]   [purple]   [cyan]   [white]   [clear]";
 	ruri_info[16] = "\033[48;5;243m   \033[48;5;196m   \033[48;5;46m   \033[48;5;226m   \033[48;5;33m   \033[48;5;201m   \033[48;5;51m   \033[48;5;15m   \033[0m";
 	ruri_info[17] = NULL;
-	__ruri_fetch(ruri_logo, ruri_info);
+	ruri_fetch__(ruri_logo, ruri_info);
 }
 #else
 void ruri_fetch(void)

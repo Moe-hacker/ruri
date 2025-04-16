@@ -34,7 +34,7 @@
  *
  * Usage:
  *
- *  struct LAYER layer;
+ *  struct NEKOFENG_LAYER layer;
  *  layer.layer = "\033[1;38;2;254;228;208mxxxxxxxxxxxx\n";
  *  layer.x_offset = 1;
  *  layer.y_offset = 14;
@@ -119,7 +119,7 @@ static void nekofeng_printf(char32_t *_Nonnull str)
 	fflush(stdout);
 	nekofeng_spin_unlock(&nekofeng_lock);
 }
-void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool blink)
+void nekofeng_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useconds_t inr, bool blink)
 {
 	int y_offset = 0;
 	printf("\033[%dH", nekofeng_y + layer->y_offset);
@@ -188,7 +188,7 @@ void nekofeng_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr, bool
 		}
 	}
 }
-void nekofeng_clear_typewrite_layer(struct LAYER *_Nonnull layer, useconds_t inr)
+void nekofeng_clear_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useconds_t inr)
 {
 	int y_offset = get_lines(layer->layer);
 	char32_t *buf = nekofeng_strdup(layer->layer);
