@@ -2,7 +2,7 @@ AC_INIT([ruri],[3.8])
 AC_PROG_CC
 AC_CHECK_TOOL([STRIP],[strip])
 AC_CHECK_LIB([pthread],[pthread_create],[PTHREAD_LIB="-lpthread"],[PTHREAD_LIB=""])
-AC_ARG_ENABLE([core],[AS_HELP_STRING([--enable-coreonly],[Compile core only])],[enable_coreonly=yes],[enable_coreonly=no])
+AC_ARG_ENABLE([coreonly],[AS_HELP_STRING([--enable-coreonly],[Compile core only])],[enable_coreonly=yes],[enable_coreonly=no])
 if test "$enable_coreonly" != "no";then
     AC_MSG_NOTICE([core only mode])
     COREONLY_CFLAGS="-DRURI_CORE_ONLY"
