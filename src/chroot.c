@@ -832,6 +832,10 @@ void ruri_run_rootless_chroot_container(struct RURI_CONTAINER *_Nonnull containe
 	if (container->cross_arch != NULL) {
 		setup_binfmt_misc(container);
 	}
+	// Setup oom_score_adj.
+	if (container->oom_score_adj != 0) {
+		set_oom_score(container->oom_score_adj);
+	}
 	// Set up Seccomp BPF.
 	if (container->enable_default_seccomp || container->seccomp_denied_syscall[0] != NULL) {
 		ruri_setup_seccomp(container);
