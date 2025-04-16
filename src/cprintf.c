@@ -34,18 +34,6 @@
 #define false ((_Bool) + 0u)
 #endif
 char *cprintf_base_color = "254;228;208";
-static void print_rgb_fg_color(const char *_Nonnull color)
-{
-	/*
-	 * print \033[1;38;2;R;G;Bm format color.
-	 */
-	char buf[17];
-	for (size_t i = 1; i < strlen(color) - 1; i++) {
-		buf[i - 1] = color[i];
-		buf[i] = 0;
-	}
-	printf("\033[38;2;%sm", buf);
-}
 static void fprint_rgb_fg_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
 	/*
@@ -57,18 +45,6 @@ static void fprint_rgb_fg_color(FILE *_Nonnull stream, const char *_Nonnull colo
 		buf[i] = 0;
 	}
 	fprintf(stream, "\033[38;2;%sm", buf);
-}
-static void print_rgb_bg_color(const char *_Nonnull color)
-{
-	/*
-	 * print \033[1;38;2;R;G;Bm format color.
-	 */
-	char buf[17];
-	for (size_t i = 1; i < strlen(color) - 1; i++) {
-		buf[i - 1] = color[i];
-		buf[i] = 0;
-	}
-	printf("\033[48;2;%sm", buf);
 }
 static void fprint_rgb_bg_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
@@ -167,58 +143,6 @@ static const char *cfprintf_print_fg_color(FILE *_Nonnull stream, const char *_N
 	}
 	return ret;
 }
-static const char *cprintf_print_fg_color(const char *_Nonnull buf)
-{
-	/*
-	 * Only valid {color} will be recognized,
-	 * and for other '{' without 'color}', we print a '{'.
-	 * we return the pointer to the last character that is
-	 * not recognized as color.
-	 */
-	const char *ret = buf;
-	char color[17] = { '\0' };
-	for (int i = 0; i < 16; i++) {
-		if (buf[i] == '}') {
-			color[i] = buf[i];
-			color[i + 1] = 0;
-			ret = &(buf[i]);
-			break;
-		}
-		color[i] = buf[i];
-		color[i + 1] = 0;
-	}
-	if (strcmp(color, "{clear}") == 0) {
-		printf("\033[0m");
-	} else if (strcmp(color, "{black}") == 0) {
-		printf("\033[30m");
-	} else if (strcmp(color, "{red}") == 0) {
-		printf("\033[31m");
-	} else if (strcmp(color, "{green}") == 0) {
-		printf("\033[32m");
-	} else if (strcmp(color, "{yellow}") == 0) {
-		printf("\033[33m");
-	} else if (strcmp(color, "{blue}") == 0) {
-		printf("\033[34m");
-	} else if (strcmp(color, "{purple}") == 0) {
-		printf("\033[35m");
-	} else if (strcmp(color, "{cyan}") == 0) {
-		printf("\033[36m");
-	} else if (strcmp(color, "{white}") == 0) {
-		printf("\033[37m");
-	} else if (strcmp(color, "{base}") == 0) {
-		printf("\033[1;38;2;%sm", cprintf_base_color);
-	} else if (strcmp(color, "{underline}") == 0) {
-		printf("\033[4m");
-	} else if (strcmp(color, "{highlight}") == 0) {
-		printf("\033[1m");
-	} else if (is_rgb_color(color)) {
-		print_rgb_fg_color(color);
-	} else {
-		ret = buf;
-		printf("{");
-	}
-	return ret;
-}
 static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_Nonnull buf)
 {
 	/*
@@ -271,59 +195,7 @@ static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_N
 	}
 	return ret;
 }
-static const char *cprintf_print_bg_color(const char *_Nonnull buf)
-{
-	/*
-	 * Only valid [color] will be recognized,
-	 * and for other '[' without 'color]', we print a '['.
-	 * we return the pointer to the last character that is
-	 * not recognized as color.
-	 */
-	const char *ret = buf;
-	char color[17] = { '\0' };
-	for (int i = 0; i < 16; i++) {
-		if (buf[i] == ']') {
-			color[i] = buf[i];
-			color[i + 1] = 0;
-			ret = &(buf[i]);
-			break;
-		}
-		color[i] = buf[i];
-		color[i + 1] = 0;
-	}
-	if (strcmp(color, "[clear]") == 0) {
-		printf("\033[0m");
-	} else if (strcmp(color, "[black]") == 0) {
-		printf("\033[40m");
-	} else if (strcmp(color, "[red]") == 0) {
-		printf("\033[41m");
-	} else if (strcmp(color, "[green]") == 0) {
-		printf("\033[42m");
-	} else if (strcmp(color, "[yellow]") == 0) {
-		printf("\033[43m");
-	} else if (strcmp(color, "[blue]") == 0) {
-		printf("\033[44m");
-	} else if (strcmp(color, "[purple]") == 0) {
-		printf("\033[45m");
-	} else if (strcmp(color, "[cyan]") == 0) {
-		printf("\033[46m");
-	} else if (strcmp(color, "[white]") == 0) {
-		printf("\033[47m");
-	} else if (strcmp(color, "[base]") == 0) {
-		printf("\033[1;48;2;%sm", cprintf_base_color);
-	} else if (strcmp(color, "[underline]") == 0) {
-		printf("\033[4m");
-	} else if (strcmp(color, "[highlight]") == 0) {
-		printf("\033[1m");
-	} else if (is_rgb_color(color)) {
-		print_rgb_bg_color(color);
-	} else {
-		ret = buf;
-		printf("[");
-	}
-	return ret;
-}
-void __cprintf(const char *_Nonnull buf)
+void cprintf__(const char *_Nonnull buf)
 {
 	const char *p = NULL;
 	p = buf;
@@ -331,10 +203,10 @@ void __cprintf(const char *_Nonnull buf)
 		// Search for '{'.
 		if (*p == '{') {
 			// *p will be moved because we need to skip the {color} string.
-			p = cprintf_print_fg_color(p);
+			p = cfprintf_print_fg_color(stdout, p);
 		} else if (*p == '[') {
 			// *p will be moved because we need to skip the [color] string.
-			p = cprintf_print_bg_color(p);
+			p = cfprintf_print_bg_color(stdout, p);
 		} else {
 			printf("%c", *p);
 		}
@@ -347,7 +219,7 @@ void __cprintf(const char *_Nonnull buf)
 	printf("\033[0m");
 	fflush(stdout);
 }
-void __cfprintf(FILE *_Nonnull stream, const char *_Nonnull buf)
+void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf)
 {
 	const char *p = NULL;
 	p = buf;

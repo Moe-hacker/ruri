@@ -40,12 +40,12 @@
 #ifndef _Nonnull
 #define _Nonnull
 #endif
-void __cprintf(const char *_Nonnull buf);
-void __cfprintf(FILE *_Nonnull stream, const char *_Nonnull buf);
+void cprintf__(const char *_Nonnull buf);
+void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf);
 // Get the size of the string to print.
 // We give another 514 bytes to avoid buffer overflow.
 // We call snprintf() twice, but never mind, it's fast enough.
-#define cprintf_get_bufsize(format, ...) (snprintf(NULL, 0, format, ##__VA_ARGS__) > 0 ? (size_t)snprintf(NULL, 0, format, ##__VA_ARGS__) + 514 : 514)
+#define cprintf_get_bufsize__(format, ...) (snprintf(NULL, 0, format, ##__VA_ARGS__) > 0 ? (size_t)snprintf(NULL, 0, format, ##__VA_ARGS__) + 514 : 514)
 // The `base` color.
 extern char *cprintf_base_color;
 /*
@@ -54,27 +54,27 @@ extern char *cprintf_base_color;
  * we use sprintf() to write it to buf[],
  * so that we only need to parse the string in buf[].
  */
-#define cprintf(format, ...)                                                 \
-	{                                                                    \
-		char *__cprintf_buf = NULL;                                  \
-		size_t bufsize = cprintf_get_bufsize(format, ##__VA_ARGS__); \
-		if (bufsize != 0) {                                          \
-			__cprintf_buf = malloc(bufsize);                     \
-			sprintf(__cprintf_buf, format, ##__VA_ARGS__);       \
-			__cprintf(__cprintf_buf);                            \
-			free(__cprintf_buf);                                 \
-		}                                                            \
+#define cprintf(format, ...)                                                   \
+	{                                                                      \
+		char *cprintf_buf__ = NULL;                                    \
+		size_t bufsize = cprintf_get_bufsize__(format, ##__VA_ARGS__); \
+		if (bufsize != 0) {                                            \
+			cprintf_buf__ = malloc(bufsize);                       \
+			sprintf(cprintf_buf__, format, ##__VA_ARGS__);         \
+			cprintf__(cprintf_buf__);                              \
+			free(cprintf_buf__);                                   \
+		}                                                              \
 	}
-#define cfprintf(stream, format, ...)                                        \
-	{                                                                    \
-		char *__cprintf_buf = NULL;                                  \
-		size_t bufsize = cprintf_get_bufsize(format, ##__VA_ARGS__); \
-		if (bufsize != 0) {                                          \
-			__cprintf_buf = malloc(bufsize);                     \
-			sprintf(__cprintf_buf, format, ##__VA_ARGS__);       \
-			__cfprintf(stream, __cprintf_buf);                   \
-			free(__cprintf_buf);                                 \
-		}                                                            \
+#define cfprintf(stream, format, ...)                                          \
+	{                                                                      \
+		char *cprintf_buf__ = NULL;                                    \
+		size_t bufsize = cprintf_get_bufsize__(format, ##__VA_ARGS__); \
+		if (bufsize != 0) {                                            \
+			cprintf_buf__ = malloc(bufsize);                       \
+			sprintf(cprintf_buf__, format, ##__VA_ARGS__);         \
+			cfprintf__(stream, cprintf_buf__);                     \
+			free(cprintf_buf__);                                   \
+		}                                                              \
 	}
 #define CPRINTF_MAJOR 1
-#define CPRINTF_MINOR 4
+#define CPRINTF_MINOR 5

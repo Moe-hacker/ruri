@@ -93,7 +93,6 @@ format :
 	shfmt -i 4 -w test/*.sh
 	shfmt -i 4 -w test/root/*.sh
 	shfmt -i 4 -w configure
-	shfmt -i 4 -w get-ruri.sh
 	chmod 777 test/*.sh
 	chmod 777 test/root/*
 	clang-format -i test/*.c
