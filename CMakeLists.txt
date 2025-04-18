@@ -218,7 +218,6 @@ add_custom_target(
     COMMENT "Running clang format"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
-
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # Search for libs
     find_library(CAP cap)
