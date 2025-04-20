@@ -220,9 +220,9 @@ add_custom_target(
 )
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # Search for libs
-    find_library(CAP cap)
-    find_library(SECCOMP seccomp)
-    find_library(PTHREAD pthread)
+    find_library(LCAP cap)
+    find_library(LSECCOMP seccomp)
+    find_library(LPTHREAD pthread)
     if (NOT LCAP AND NOT DISABLE_LIBCAP)
         message(FATAL_ERROR "Library 'cap' is required but not found.")
     endif()
