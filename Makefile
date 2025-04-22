@@ -65,13 +65,13 @@ all :build_dir $(objects)
 	@$(STRIP) $(BIN_TARGET)
 	$(STRIP_LOG) $(BIN_TARGET)
 	@cp -f $(BIN_TARGET) ../
-	@cd ..&&rm -rf $(O)
+	@cd .. && rm -rf $(O)
 dev :build_dir $(objects)
 	@cd $(O)
 	@$(CC) $(CFLAGS) -o $(BIN_TARGET) $(objects) $(LD_FLAGS)
 	$(LD_LOG) $(BIN_TARGET)
 	@cp -f $(BIN_TARGET) ../
-	@cd ..&&rm -rf $(O)
+	@cd .. && rm -rf $(O)
 static :all
 static-bionic :all
 build_dir:

@@ -8,7 +8,7 @@ on:
       - 'src/**'
       - 'build/**'
       - 'test/**'
-      - 'configure'
+      - 'configure.ac'
       - 'Makefile'
   pull_request:
 

@@ -7,7 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'build/**'
-      - 'configure'
+      - 'configure.ac'
       - 'Makefile'
       - '.github/**'
     tags:
@@ -96,8 +96,7 @@ jobs:
           apt-get install -y automake autoconf
           git clone --depth 1 https://github.com/moe-hacker/ruri.git
           cd ruri
-          aclocal
-          autoconf
+          ./autogen.sh
           ./configure --enable-static
           make
           strip ruri
