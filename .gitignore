@@ -28,6 +28,7 @@ CMakeFiles
 build/.cmake
 build/compile_commands.json
 build/Makefile
+build/build.ninja
 autom4te.cache
 aclocal.m4
 config.log
@@ -40,3 +41,9 @@ install-sh
 missing
 configure
 Makefile.in
+
+# VitePress
+docs/.vitepress/cache
+docs/.vitepress/.temp
+docs/.vitepress/dist
+node_modules
