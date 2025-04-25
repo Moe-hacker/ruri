@@ -17,8 +17,7 @@ mkdir output output2 output3
 
 git clone --depth 1 https://github.com/moe-hacker/ruri.git
 cd ruri
-aclocal
-autoconf
+./autogen.sh
 ./configure --enable-static
 make
 strip ruri

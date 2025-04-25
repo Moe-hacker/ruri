@@ -1,0 +1,22 @@
+{
+  "name": "ruri",
+  "type": "module",
+  "version": "3.8.0",
+  "description": "![](https://github.com/Moe-hacker/ruri/raw/main/logo/logo.png)",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Moe-hacker/ruri.git"
+  },
+  "homepage": "https://github.com/Moe-hacker/ruri#readme",
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
