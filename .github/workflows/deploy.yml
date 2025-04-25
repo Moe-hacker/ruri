@@ -1,10 +1,11 @@
 name: Deploy VitePress
 
 on:
-  push:
-    paths:
-      - 'docs/**/*.md'
-      - 'docs/**/*.ts'
+  # push:
+  #   paths:
+  #     - "package.json"
+  #     - "docs/**/*.md"
+  #     - "docs/**/*.ts"
 
   workflow_dispatch:
 
@@ -19,6 +20,10 @@ concurrency:
 
 jobs:
   build:
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,7 +36,7 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-
+      # In repository's settings under "Pages" menu item, select "GitHub Actions" in "Build and deployment > Source"
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -46,14 +51,6 @@ jobs:
         with:
           path: docs/.vitepress/dist
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

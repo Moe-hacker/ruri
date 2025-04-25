@@ -1,12 +1,15 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
+  description: "轻量级 Linux 容器实现",
   themeConfig: {
     nav: [
       { text: "首页", link: "/zh/" },
       { text: "指南", link: "/zh/USAGE" },
     ],
-    sidebar: sidebarGuide(),
+    sidebar: {
+      "/zh/": sidebar(),
+    },
     lastUpdated: {
       text: "上次更新",
     },
@@ -25,7 +28,7 @@ export default defineConfig({
   },
 });
 
-function sidebarGuide() {
+function sidebar() {
   return [
     {
       text: "文档",

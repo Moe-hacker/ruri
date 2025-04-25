@@ -1,15 +1,18 @@
 import { defineConfig } from "vitepress";
-import locales from "./locales";
+import configs, { head } from "./configs";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Ruri Docs",
-  head: [["link", { rel: "icon", href: "/favicon.png" }]],
-  locales: locales.locales,
+  head: head,
+  locales: configs.locales,
   lastUpdated: true,
   metaChunk: true,
-  /*cleanUrls: true,*/
-  base: "/ruri/", // Used when deploy to a subpath
+  // cleanUrls: true, // Remove the '.html' suffix from the URL
+  // base: "/ruri/", // Used when deploy to a subpath
+  /*sitemap: {
+    hostname: 'https://*.com/',
+  },*/
   themeConfig: {
     externalLinkIcon: true,
     logo: {

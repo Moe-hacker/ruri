@@ -1,12 +1,15 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
+  description: "Lightweight Linux container implementation",
   themeConfig: {
     nav: [
       { text: "Home", link: "/" },
       { text: "Guide", link: "/USAGE" },
     ],
-    sidebar: sidebarGuide(),
+    sidebar: {
+      "/": sidebar(),
+    },
     lastUpdated: {
       text: "Last Updated",
     },
@@ -25,7 +28,7 @@ export default defineConfig({
   },
 });
 
-function sidebarGuide() {
+function sidebar() {
   return [
     {
       text: "Documentation",
