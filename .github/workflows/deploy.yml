@@ -35,7 +35,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: npm
+          cache: "npm"
+
       # In repository's settings under "Pages" menu item, select "GitHub Actions" in "Build and deployment > Source"
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -44,7 +45,7 @@ jobs:
         run: npm ci
 
       - name: Build with VitePress
-        run: npm run build
+        run: npm run build --base=/${{ github.event.repository.name }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

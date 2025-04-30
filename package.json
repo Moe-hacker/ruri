@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vitepress dev docs",
-    "build": "vitepress build docs",
+    "build": "cross-env APP_BASE=$npm_config_base vitepress build docs",
     "preview": "vitepress preview docs"
   },
   "repository": {
@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/Moe-hacker/ruri#readme",
   "devDependencies": {
+    "@types/node": "^22.15.3",
+    "cross-env": "^7.0.3",
     "vitepress": "^1.6.3"
   }
 }

@@ -8,8 +8,9 @@ export default defineConfig({
   locales: configs.locales,
   lastUpdated: true,
   metaChunk: true,
+  ignoreDeadLinks: true,
+  base: process.env.APP_BASE || "/",
   // cleanUrls: true, // Remove the '.html' suffix from the URL
-  // base: "/ruri/", // Used when deploy to a subpath
   /*sitemap: {
     hostname: 'https://*.com/',
   },*/
