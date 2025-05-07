@@ -78,7 +78,7 @@ char32_t *nekofeng_strdup(const char32_t *_Nonnull str)
 	return dup;
 }
 // init() function for getting window size.
-static void init()
+static void init(void)
 {
 	printf("\033c");
 	// Use ioctl(2) to get the window size.
@@ -137,7 +137,7 @@ static void *test4(void *arg)
 	}
 	return arg;
 }
-void ruri_AwA()
+void ruri_AwA(void)
 {
 	// Maybe this is more secure?
 	if (geteuid() == 0) {
