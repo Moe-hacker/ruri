@@ -86,6 +86,30 @@ void ruri_init_config(struct RURI_CONTAINER *_Nonnull container)
 	// (86400 is the seconds of a day).
 	container->container_id = (int)(tm % 86400);
 }
+static int pmcrts(const char *s1, const char *s2)
+{
+	/*
+	 *
+	 * Compare two strings, but s2 is in the end of s1.
+	 * For example,
+	 * s1 = "./ruri", s2 = "ruri", it will return 0.
+	 * s1 = "./rurima", s2 = "ruri", it will return... 'a' - 'i',
+	 * anyway, it's not 0 :)
+	 * If s1 is shorter than s2, it will return -1.
+	 *
+	 */
+	size_t len1 = strlen(s1);
+	size_t len2 = strlen(s2);
+	if (len1 < len2) {
+		return -1; // s1 is shorter than s2
+	}
+	for (size_t i = len1; i > len1 - len2; i--) {
+		if (s1[i] != s2[i - (len1 - len2)]) {
+			return s1[i] - s2[i - (len1 - len2)];
+		}
+	}
+	return 0; // s1 ends with s2
+}
 char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container)
 {
 	/*
@@ -97,8 +121,13 @@ char *ruri_container_info_to_k2v(const struct RURI_CONTAINER *_Nonnull container
 	if (readlink("/proc/self/exe", ruri_bin_path, PATH_MAX) <= 0) {
 		sprintf(ruri_bin_path, "%s", "/usr/bin/ruri");
 	}
-	char shebang[PATH_MAX + 8] = { '\0' };
-	sprintf(shebang, "#!%s -c\n\n", ruri_bin_path);
+	char shebang[PATH_MAX + 16] = { '\0' };
+	// Detect rurima.
+	if (pmcrts(ruri_bin_path, "rurima") == 0) {
+		sprintf(shebang, "#!%s ruri -c\n\n", ruri_bin_path);
+	} else {
+		sprintf(shebang, "#!%s -c\n\n", ruri_bin_path);
+	}
 	char *ret = strdup(shebang);
 	// container_dir.
 	ret = k2v_add_comment(ret, "The CONTAINER_DIR.");
