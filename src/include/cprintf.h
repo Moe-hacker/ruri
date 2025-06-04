@@ -34,11 +34,17 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #ifndef _Nullable
 #define _Nullable
 #endif
 #ifndef _Nonnull
 #define _Nonnull
+#endif
+#if __STDC_VERSION__ < 202000L
+#define bool _Bool
+#define true ((_Bool) + 1u)
+#define false ((_Bool) + 0u)
 #endif
 void cprintf__(const char *_Nonnull buf);
 void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf);
@@ -48,6 +54,8 @@ void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf);
 #define cprintf_get_bufsize__(format, ...) (snprintf(NULL, 0, format, ##__VA_ARGS__) > 0 ? (size_t)snprintf(NULL, 0, format, ##__VA_ARGS__) + 514 : 514)
 // The `base` color.
 extern char *cprintf_base_color;
+// Do not print color if the stream is a FIFO.
+extern bool cprintf_print_color_if_not_fifo;
 /*
  * cprintf() is a macro,
  * first, we get the size of the string to print,

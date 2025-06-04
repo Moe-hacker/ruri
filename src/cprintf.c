@@ -28,12 +28,19 @@
  *
  */
 #include "include/cprintf.h"
-#if __STDC_VERSION__ < 202000L
-#define bool _Bool
-#define true ((_Bool) + 1u)
-#define false ((_Bool) + 0u)
-#endif
 char *cprintf_base_color = "254;228;208";
+bool cprintf_print_color_if_not_fifo = true;
+#define fprintf_if_not_fifo(stream, ...)                                                              \
+	{                                                                                             \
+		if (!cprintf_print_color_if_not_fifo) {                                               \
+			fprintf(stream, __VA_ARGS__);                                                 \
+		} else {                                                                              \
+			struct stat _stat_buf;                                                        \
+			if (fstat(fileno(stream), &_stat_buf) == 0 && !S_ISFIFO(_stat_buf.st_mode)) { \
+				fprintf(stream, __VA_ARGS__);                                         \
+			}                                                                             \
+		}                                                                                     \
+	}
 static void fprint_rgb_fg_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
 	/*
@@ -44,7 +51,7 @@ static void fprint_rgb_fg_color(FILE *_Nonnull stream, const char *_Nonnull colo
 		buf[i - 1] = color[i];
 		buf[i] = 0;
 	}
-	fprintf(stream, "\033[38;2;%sm", buf);
+	fprintf_if_not_fifo(stream, "\033[38;2;%sm", buf);
 }
 static void fprint_rgb_bg_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
@@ -56,7 +63,7 @@ static void fprint_rgb_bg_color(FILE *_Nonnull stream, const char *_Nonnull colo
 		buf[i - 1] = color[i];
 		buf[i] = 0;
 	}
-	fprintf(stream, "\033[48;2;%sm", buf);
+	fprintf_if_not_fifo(stream, "\033[48;2;%sm", buf);
 }
 static bool is_rgb_color(const char *_Nonnull color)
 {
@@ -112,29 +119,29 @@ static const char *cfprintf_print_fg_color(FILE *_Nonnull stream, const char *_N
 		color[i + 1] = 0;
 	}
 	if (strcmp(color, "{clear}") == 0) {
-		fprintf(stream, "\033[0m");
+		fprintf_if_not_fifo(stream, "\033[0m");
 	} else if (strcmp(color, "{black}") == 0) {
-		fprintf(stream, "\033[30m");
+		fprintf_if_not_fifo(stream, "\033[30m");
 	} else if (strcmp(color, "{red}") == 0) {
-		fprintf(stream, "\033[31m");
+		fprintf_if_not_fifo(stream, "\033[31m");
 	} else if (strcmp(color, "{green}") == 0) {
-		fprintf(stream, "\033[32m");
+		fprintf_if_not_fifo(stream, "\033[32m");
 	} else if (strcmp(color, "{yellow}") == 0) {
-		fprintf(stream, "\033[33m");
+		fprintf_if_not_fifo(stream, "\033[33m");
 	} else if (strcmp(color, "{blue}") == 0) {
-		fprintf(stream, "\033[34m");
+		fprintf_if_not_fifo(stream, "\033[34m");
 	} else if (strcmp(color, "{purple}") == 0) {
-		fprintf(stream, "\033[35m");
+		fprintf_if_not_fifo(stream, "\033[35m");
 	} else if (strcmp(color, "{cyan}") == 0) {
-		fprintf(stream, "\033[36m");
+		fprintf_if_not_fifo(stream, "\033[36m");
 	} else if (strcmp(color, "{white}") == 0) {
-		fprintf(stream, "\033[37m");
+		fprintf_if_not_fifo(stream, "\033[37m");
 	} else if (strcmp(color, "{base}") == 0) {
-		fprintf(stream, "\033[1;38;2;%sm", cprintf_base_color);
+		fprintf_if_not_fifo(stream, "\033[1;38;2;%sm", cprintf_base_color);
 	} else if (strcmp(color, "{underline}") == 0) {
-		fprintf(stream, "\033[4m");
+		fprintf_if_not_fifo(stream, "\033[4m");
 	} else if (strcmp(color, "{highlight}") == 0) {
-		fprintf(stream, "\033[1m");
+		fprintf_if_not_fifo(stream, "\033[1m");
 	} else if (is_rgb_color(color)) {
 		fprint_rgb_fg_color(stream, color);
 	} else {
@@ -164,29 +171,29 @@ static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_N
 		color[i + 1] = 0;
 	}
 	if (strcmp(color, "[clear]") == 0) {
-		fprintf(stream, "\033[0m");
+		fprintf_if_not_fifo(stream, "\033[0m");
 	} else if (strcmp(color, "[black]") == 0) {
-		fprintf(stream, "\033[40m");
+		fprintf_if_not_fifo(stream, "\033[40m");
 	} else if (strcmp(color, "[red]") == 0) {
-		fprintf(stream, "\033[41m");
+		fprintf_if_not_fifo(stream, "\033[41m");
 	} else if (strcmp(color, "[green]") == 0) {
-		fprintf(stream, "\033[42m");
+		fprintf_if_not_fifo(stream, "\033[42m");
 	} else if (strcmp(color, "[yellow]") == 0) {
-		fprintf(stream, "\033[43m");
+		fprintf_if_not_fifo(stream, "\033[43m");
 	} else if (strcmp(color, "[blue]") == 0) {
-		fprintf(stream, "\033[44m");
+		fprintf_if_not_fifo(stream, "\033[44m");
 	} else if (strcmp(color, "[purple]") == 0) {
-		fprintf(stream, "\033[45m");
+		fprintf_if_not_fifo(stream, "\033[45m");
 	} else if (strcmp(color, "[cyan]") == 0) {
-		fprintf(stream, "\033[46m");
+		fprintf_if_not_fifo(stream, "\033[46m");
 	} else if (strcmp(color, "[white]") == 0) {
-		fprintf(stream, "\033[47m");
+		fprintf_if_not_fifo(stream, "\033[47m");
 	} else if (strcmp(color, "[base]") == 0) {
-		fprintf(stream, "\033[1;48;2;%sm", cprintf_base_color);
+		fprintf_if_not_fifo(stream, "\033[1;48;2;%sm", cprintf_base_color);
 	} else if (strcmp(color, "[underline]") == 0) {
-		fprintf(stream, "\033[4m");
+		fprintf_if_not_fifo(stream, "\033[4m");
 	} else if (strcmp(color, "[highlight]") == 0) {
-		fprintf(stream, "\033[1m");
+		fprintf_if_not_fifo(stream, "\033[1m");
 	} else if (is_rgb_color(color)) {
 		fprint_rgb_bg_color(stream, color);
 	} else {
@@ -240,6 +247,6 @@ void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf)
 		p = &(p[1]);
 	}
 	// We will always reset the color in the end.
-	fprintf(stream, "\033[0m");
+	fprintf_if_not_fifo(stream, "\033[0m");
 	fflush(stream);
 }
