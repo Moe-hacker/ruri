@@ -10,11 +10,6 @@
 
 For production, I fully recommand you to use tools like [crun](https://github.com/containers/crun), [youki](https://github.com/youki-dev/youki), [containerd](https://containerd.io/), [docker](https://www.docker.com/), [podman](https://podman.io/), [LXC](https://linuxcontainers.org/), [bubblewrap](https://github.com/containers/bubblewrap), they are more secure and stable. This is a non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!
 
-# Looking for i18n?
-
-This project is not for you. If you don't know and don't want to know what's chroot/unshare/namespace/PID/capability/cgroup, you also can't know what's 换根/取消共享/命名空间/进程编号/能力/控制组. And I currently have no time to mantain multi-language docs.
-But as this is an open-source project, you are welcome to make your own fork with your preferred language :)
-
 # WARNING
 
 ```
@@ -159,7 +154,6 @@ If you want to change the container config, just use -U to umount it and re-run 
 ```
 . <(curl -sL https://get.ruri.zip/rurima)
 ./rurima lxc pull -o alpine -v edge -s /tmp/alpine
-sudo tar -xvf rootfs.tar.xz -C /tmp/alpine
 ```
 
 ## Then
@@ -211,7 +205,7 @@ For command line examples, please see `ruri -H`.
 License of code
 
 - Licensed under the MIT License
-- Copyright (c) 2022-2024 Moe-hacker
+- Copyright (c) 2022-2025 Moe-hacker
 
 License of clang-format config file
 
