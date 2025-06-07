@@ -282,7 +282,11 @@ static void get_uid_map(char *_Nonnull user, struct RURI_ID_MAP *_Nonnull id_map
 		return;
 	}
 	// Find username in /etc/subuid.
-	char *map = strstr(buf, user);
+	char *str_to_find = malloc(strlen(user) + 4);
+	strcpy(str_to_find, user);
+	strcat(str_to_find, ":");
+	char *map = strstr(buf, str_to_find);
+	free(str_to_find);
 	if (map == NULL) {
 		// If username is not in /etc/subuid.
 		id_map->uid_lower = 0;
@@ -382,7 +386,11 @@ static void get_gid_map(const char *_Nonnull user, struct RURI_ID_MAP *_Nonnull 
 		free(buf);
 		return;
 	}
-	char *map = strstr(buf, user);
+	char *str_to_find = malloc(strlen(user) + 4);
+	strcpy(str_to_find, user);
+	strcat(str_to_find, ":");
+	char *map = strstr(buf, str_to_find);
+	free(str_to_find);
 	if (map == NULL) {
 		id_map->gid_lower = 0;
 		id_map->gid_count = 0;
