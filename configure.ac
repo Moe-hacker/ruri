@@ -88,6 +88,7 @@ if test "$enable_dev" != "no";then
     CHECK_AND_ADD_CFLAGS([-pedantic])
     CHECK_AND_ADD_CFLAGS([-Wconversion])
     CHECK_AND_ADD_CFLAGS([-Wno-newline-eof])
+    CHECK_AND_ADD_CFLAGS([-Wno-unused-command-line-argument])
     CHECK_AND_ADD_CFLAGS([-Wno-gnu-zero-variadic-macro-arguments])
     CHECK_AND_ADD_CFLAGS([-fsanitize=address])
     CHECK_AND_ADD_CFLAGS([-Wl,--build-id=sha1])
@@ -119,6 +120,7 @@ else
     CHECK_AND_ADD_CFLAGS([-U_FORTIFY_SOURCE])
     CHECK_AND_ADD_CFLAGS([-D_FORTIFY_SOURCE=3])
     CHECK_AND_ADD_CFLAGS([-D_FILE_OFFSET_BITS=64])
+    CHECK_AND_ADD_CFLAGS([-Wno-unused-command-line-argument])
 fi
 AC_MSG_CHECKING([for commit id])
 RURI_COMMIT_ID=`git rev-parse --short HEAD 2>/dev/null`
