@@ -91,6 +91,9 @@ pid_t ruri_get_ns_pid(const char *_Nonnull container_dir)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		ruri_error("{red}Config file is too large, it should be less than 65536 bytes.\n{clear}");
+	}
 	close(fd);
 	// Read .rurienv file.
 	char *buf = k2v_open_file(file, (size_t)size);
@@ -296,6 +299,9 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		ruri_error("{red}Config file is too large, it should be less than 65536 bytes.\n{clear}");
+	}
 	close(fd);
 	// Read .rurienv file.
 	char *buf = k2v_open_file(file, (size_t)size);

@@ -144,6 +144,11 @@ static char *get_username(uid_t uid)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		ruri_error("{red}The /etc/passwd file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
@@ -263,6 +268,11 @@ static void get_uid_map(char *_Nonnull user, struct RURI_ID_MAP *_Nonnull id_map
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		ruri_error("{red}The /etc/subuid file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
@@ -359,10 +369,19 @@ static void get_gid_map(const char *_Nonnull user, struct RURI_ID_MAP *_Nonnull 
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		ruri_error("{red}The /etc/subgid file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
 	close(fd);
+	if (strlen(buf) != (size_t)size) {
+		free(buf);
+		return;
+	}
 	char *map = strstr(buf, user);
 	if (map == NULL) {
 		id_map->gid_lower = 0;
@@ -416,6 +435,11 @@ bool ruri_user_exist(const char *_Nonnull username)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		ruri_error("{red}The /etc/passwd file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
@@ -459,6 +483,11 @@ uid_t ruri_get_user_uid(const char *_Nonnull username)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		ruri_error("{red}The /etc/passwd file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
@@ -504,6 +533,11 @@ gid_t ruri_get_user_gid(const char *_Nonnull username)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		ruri_error("{red}The /etc/passwd file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';
@@ -620,6 +654,12 @@ int ruri_get_groups(uid_t uid, gid_t groups[])
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		// If the file is too large, just error.
+		close(fd);
+		free(username);
+		ruri_error("{red}The /etc/group file is too large, please check it.\n");
+	}
 	char *buf = malloc((size_t)size + 1);
 	read(fd, buf, (size_t)size);
 	buf[size] = '\0';

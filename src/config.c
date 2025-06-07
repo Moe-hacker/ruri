@@ -391,6 +391,9 @@ void ruri_read_config(struct RURI_CONTAINER *_Nonnull container, const char *_No
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		ruri_error("{red}Config file is too large, it should be less than 65536 bytes.\n{clear}");
+	}
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	// Check if config is valid.
@@ -528,6 +531,9 @@ void ruri_correct_config(const char *_Nonnull path)
 	struct stat filestat;
 	fstat(fd, &filestat);
 	off_t size = filestat.st_size;
+	if (size >= 65536) {
+		ruri_error("{red}Config file is too large, it should be less than 65536 bytes.\n{clear}");
+	}
 	close(fd);
 	char *buf = k2v_open_file(path, (size_t)size);
 	if (!have_key("container_dir", buf)) {
