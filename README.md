@@ -31,6 +31,19 @@ If you think something does not work as expected, please [Open a new isssue](htt
 
 https://wiki.crack.moe/ruri
 
+# News:
+## Using config file:
+Ruri now supports config as executable script, you can use config like:      
+```
+# Create a config file ./ctr_name
+ruri -D -o ./ctr_name /path/to/container
+# Same as `ruri -c ./ctr_name`
+./ctr_name
+# Same as `ruri -c ./ctr_name echo hello world`
+./ctr_name echo hello world
+```
+### Rootless support:
+rootless container now does not need `-r` option, ruri can detect current user and auto enable rootless mode.      
 # About
 
 ## The past
