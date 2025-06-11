@@ -619,6 +619,13 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 #else
 			ruri_error("{red}Error: libcap is disabled, please recompile ruri with libcap support QwQ\n");
 #endif
+		} else if (strcmp(argv[index], "-U") == 0 || strcmp(argv[index], "--umount") == 0) {
+			if (use_config_file) {
+				ruri_umount_container(container->container_dir);
+				exit(EXIT_SUCCESS);
+			} else {
+				ruri_error("{red}Error: --umount should only be used without other arguments QwQ\n");
+			}
 		}
 		// If use_config_file is true.
 		// The first unrecognized argument will be treated as command to exec in container.
