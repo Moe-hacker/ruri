@@ -225,7 +225,7 @@ jobs:
           find ./all -type f -name "*.tar" -exec mv {} ./ \;
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.2.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
