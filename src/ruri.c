@@ -1097,10 +1097,19 @@ static void parse_args(int argc, char **_Nonnull argv, struct RURI_CONTAINER *_N
 	}
 	// Fork to background if -b is set.
 	if (background) {
-		if (fork() > 0) {
+		pid_t fpid = fork();
+		if (fpid > 0) {
+			printf("PID: %d\n", fpid);
 			usleep(1000);
 			exit(EXIT_SUCCESS);
 		}
+		// Ignore SIGTTIN, if we are running in the background, SIGTTIN may kill this process.
+		sigset_t sigs;
+		sigemptyset(&sigs);
+		sigaddset(&sigs, SIGTTIN);
+		sigaddset(&sigs, SIGTTOU);
+		sigprocmask(SIG_BLOCK, &sigs, 0);
+		// Redirect stdout and stderr to log file or /dev/null.
 		if (log_file != NULL) {
 			ruri_mkdirs(log_file, 0755);
 			rmdir(log_file);
@@ -1201,7 +1210,7 @@ int ruri(int argc, char **argv)
 	ruri_register_signal();
 // Warning for dev/debug build.
 #if defined(RURI_DEBUG) || defined(RURI_DEV)
-	cprintf("{red}Warning: this is a dev/debug build, do not use it in production{clear}\n");
+	ruri_warning("{red}Warning: this is a dev/debug build, do not use it in production{clear}\n");
 #endif
 	// Info of container to run.
 	struct RURI_CONTAINER *container = (struct RURI_CONTAINER *)malloc(sizeof(struct RURI_CONTAINER));
