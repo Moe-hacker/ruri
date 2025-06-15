@@ -142,6 +142,13 @@ static char *losetup(const char *_Nonnull img)
 	 */
 	// Get a new loopfile for losetup.
 	int loopctlfd = open("/dev/loop-control", O_RDWR | O_CLOEXEC);
+	if (loopctlfd < 0) {
+		loopctlfd = open("/dev/block/loop-control", O_RDWR | O_CLOEXEC);
+		if (loopctlfd < 0) {
+			ruri_log("{red}Error: {base}Cannot open /dev/loop-control or /dev/block/loop-control.\n");
+			return "1145141919810";
+		}
+	}
 	// It takes the same effect as `losetup -f`.
 	int devnr = ioctl(loopctlfd, LOOP_CTL_GET_FREE);
 	close(loopctlfd);
@@ -212,6 +219,27 @@ static int touch_mountpoint_file(const char *_Nonnull target)
 	}
 	return 0;
 }
+static int mount_other_type(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags)
+{
+	/*
+	 *
+	 * This function is used to mount other type of mountpoints.
+	 *
+	 */
+	if (strncmp(source, "OVERLAY:", strlen("OVERLAY:")) == 0) {
+		// OverlayFS mount.
+		ruri_log("{base}Mounting {cyan}%s{base} to {cyan}%s{base} with flags {cyan}%d{base}\n", source, target, mountflags);
+		if (mk_mountpoint_dir(target) != 0) {
+			return -1;
+		}
+		char *overlay_flag = strdup(source + strlen("OVERLAY:"));
+		int ret = mount("overlay", target, "overlay", mountflags, overlay_flag);
+		free(overlay_flag);
+		return ret;
+	}
+	// For source that cannot be mounted.
+	return -1;
+}
 // Mount dev/dir/img to target.
 int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags)
 {
@@ -234,8 +262,7 @@ int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsi
 	struct stat dev_stat;
 	// If source does not exist, just return -1 as error.
 	if (lstat(source, &dev_stat) != 0) {
-		ruri_log("{red}Error: {base}Source {cyan}%s{base} does not exist.\n", source);
-		return -1;
+		return mount_other_type(source, target, mountflags);
 	}
 	// Bind-mount dir.
 	if (S_ISDIR(dev_stat.st_mode)) {
