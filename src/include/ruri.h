@@ -215,12 +215,12 @@ struct RURI_ID_MAP {
 	gid_t gid_count;
 };
 // Warnings.
-#define ruri_warning(...) cfprintf(stderr, ##__VA_ARGS__)
+#define ruri_warning(format, ...) cfprintf(stderr, format, ##__VA_ARGS__)
 // Show error msg and exit.
-#define ruri_error(...)                                                                                      \
+#define ruri_error(format, ...)                                                                              \
 	{                                                                                                    \
 		cfprintf(stderr, "{red}In %s() in %s line %d:\n", __func__, __FILE__, __LINE__);             \
-		cfprintf(stderr, ##__VA_ARGS__);                                                             \
+		cfprintf(stderr, format, ##__VA_ARGS__);                                                     \
 		cfprintf(stderr, "{base}%s{clear}\n", "\n  .^.   .^.");                                      \
 		cfprintf(stderr, "{base}%s{clear}\n", "  /⋀\\_ﾉ_/⋀\\");                                      \
 		cfprintf(stderr, "{base}%s{clear}\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                      \
