@@ -28,18 +28,116 @@
  *
  */
 #include "include/cprintf.h"
-char *cprintf_base_color = "254;228;208";
-bool cprintf_print_color_if_not_fifo = true;
-#define fprintf_if_not_fifo(stream, ...)                                                              \
-	{                                                                                             \
-		if (!cprintf_print_color_if_not_fifo) {                                               \
-			fprintf(stream, __VA_ARGS__);                                                 \
-		} else {                                                                              \
-			struct stat _stat_buf;                                                        \
-			if (fstat(fileno(stream), &_stat_buf) == 0 && !S_ISFIFO(_stat_buf.st_mode)) { \
-				fprintf(stream, __VA_ARGS__);                                         \
-			}                                                                             \
-		}                                                                                     \
+
+//
+// Generic support.
+//
+
+// For marking the buffer, so that it can be free() later.
+static thread_local char **cprintf_buffer = NULL;
+static thread_local size_t cprintf_buf_count = 0;
+void cprintf_mark_buf(char *b)
+{
+	/*
+	 * Mark the buffer, so that it can be free() later.
+	 */
+	cprintf_buffer = realloc(cprintf_buffer, (cprintf_buf_count + 1) * sizeof(char *));
+	cprintf_buffer[cprintf_buf_count] = b;
+	cprintf_buf_count++;
+}
+void cprintf_free_buf(void)
+{
+	/*
+	 * Free all the buffers that have been marked.
+	 */
+	for (size_t i = 0; i < cprintf_buf_count; i++) {
+		free(cprintf_buffer[i]);
+	}
+	free(cprintf_buffer);
+	cprintf_buffer = NULL;
+	cprintf_buf_count = 0;
+}
+char *cprintf_regen_format(const char *f, int limit)
+{
+	/*
+	 * This function will regenerate the format string
+	 * to replace all '{}' with '%s'.
+	 * If the input is NULL, it will return an empty string.
+	 */
+	char *ret = strdup(cprintf_avoid_null(f));
+	int j = 0;
+	// For the case that limit is 0, that means no limit.
+	// This is caused when args > 15, and we can't count it with CPRINTF_COUNT_ARGS.
+	if (limit == 0) {
+		limit = INT16_MAX;
+	}
+	int count = 0;
+	size_t len = cprintf_strlen(f);
+	if (len == 0 || limit == 1) {
+		cprintf_mark_buf(ret);
+		return ret;
+	}
+	limit = limit - 1;
+	for (size_t i = 0; i < len - 1; i++) {
+		if (f[i] == '{' && f[i + 1] == '}') {
+			ret[j] = '%';
+			ret[j + 1] = 's';
+			j += 2;
+			i++;
+			count++;
+			if (count == limit) {
+				for (size_t k = i + 1; k < len - 1; k++) {
+					ret[j] = f[k];
+					j++;
+				}
+				break;
+			}
+		} else {
+			ret[j] = f[i];
+			j++;
+		}
+	}
+	ret[j] = '\0';
+	if (f[len - 1] != '}') {
+		ret[j] = f[len - 1];
+		ret[j + 1] = '\0';
+	}
+	cprintf_mark_buf(ret);
+	return ret;
+}
+//
+// Color support.
+//
+struct CPRINTF_COLOR cprintf_color = {
+	.base = "254;228;208",
+	.black_fg = "\033[30m",
+	.red_fg = "\033[31m",
+	.green_fg = "\033[32m",
+	.yellow_fg = "\033[33m",
+	.blue_fg = "\033[34m",
+	.purple_fg = "\033[35m",
+	.cyan_fg = "\033[36m",
+	.white_fg = "\033[37m",
+	.black_bg = "\033[40m",
+	.red_bg = "\033[41m",
+	.green_bg = "\033[42m",
+	.yellow_bg = "\033[43m",
+	.blue_bg = "\033[44m",
+	.purple_bg = "\033[45m",
+	.cyan_bg = "\033[46m",
+	.white_bg = "\033[47m",
+};
+bool cprintf_print_color_only_tty = true;
+#define fprintf_only_tty(stream, ...)                                                               \
+	{                                                                                           \
+		if (!cprintf_print_color_only_tty) {                                                \
+			fprintf(stream, __VA_ARGS__);                                               \
+		} else {                                                                            \
+			struct stat _stat_buf;                                                      \
+			if (fstat(fileno(stream), &_stat_buf) == 0 && S_ISCHR(_stat_buf.st_mode)) { \
+				fprintf(stream, __VA_ARGS__);                                       \
+			}                                                                           \
+		}                                                                                   \
 	}
 static void fprint_rgb_fg_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
@@ -51,7 +149,7 @@ static void fprint_rgb_fg_color(FILE *_Nonnull stream, const char *_Nonnull colo
 		buf[i - 1] = color[i];
 		buf[i] = 0;
 	}
-	fprintf_if_not_fifo(stream, "\033[38;2;%sm", buf);
+	fprintf_only_tty(stream, "\033[38;2;%sm", buf);
 }
 static void fprint_rgb_bg_color(FILE *_Nonnull stream, const char *_Nonnull color)
 {
@@ -63,7 +161,7 @@ static void fprint_rgb_bg_color(FILE *_Nonnull stream, const char *_Nonnull colo
 		buf[i - 1] = color[i];
 		buf[i] = 0;
 	}
-	fprintf_if_not_fifo(stream, "\033[48;2;%sm", buf);
+	fprintf_only_tty(stream, "\033[48;2;%sm", buf);
 }
 static bool is_rgb_color(const char *_Nonnull color)
 {
@@ -119,29 +217,29 @@ static const char *cfprintf_print_fg_color(FILE *_Nonnull stream, const char *_N
 		color[i + 1] = 0;
 	}
 	if (strcmp(color, "{clear}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[0m");
+		fprintf_only_tty(stream, "\033[0m");
 	} else if (strcmp(color, "{black}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[30m");
+		fprintf_only_tty(stream, cprintf_color.black_fg);
 	} else if (strcmp(color, "{red}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[31m");
+		fprintf_only_tty(stream, cprintf_color.red_fg);
 	} else if (strcmp(color, "{green}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[32m");
+		fprintf_only_tty(stream, cprintf_color.green_fg);
 	} else if (strcmp(color, "{yellow}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[33m");
+		fprintf_only_tty(stream, cprintf_color.yellow_fg);
 	} else if (strcmp(color, "{blue}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[34m");
+		fprintf_only_tty(stream, cprintf_color.blue_fg);
 	} else if (strcmp(color, "{purple}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[35m");
+		fprintf_only_tty(stream, cprintf_color.purple_fg);
 	} else if (strcmp(color, "{cyan}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[36m");
+		fprintf_only_tty(stream, cprintf_color.cyan_fg);
 	} else if (strcmp(color, "{white}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[37m");
+		fprintf_only_tty(stream, cprintf_color.white_fg);
 	} else if (strcmp(color, "{base}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[1;38;2;%sm", cprintf_base_color);
+		fprintf_only_tty(stream, "\033[1;38;2;%sm", cprintf_color.base);
 	} else if (strcmp(color, "{underline}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[4m");
+		fprintf_only_tty(stream, "\033[4m");
 	} else if (strcmp(color, "{highlight}") == 0) {
-		fprintf_if_not_fifo(stream, "\033[1m");
+		fprintf_only_tty(stream, "\033[1m");
 	} else if (is_rgb_color(color)) {
 		fprint_rgb_fg_color(stream, color);
 	} else {
@@ -171,29 +269,29 @@ static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_N
 		color[i + 1] = 0;
 	}
 	if (strcmp(color, "[clear]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[0m");
+		fprintf_only_tty(stream, "\033[0m");
 	} else if (strcmp(color, "[black]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[40m");
+		fprintf_only_tty(stream, cprintf_color.black_bg);
 	} else if (strcmp(color, "[red]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[41m");
+		fprintf_only_tty(stream, cprintf_color.red_bg);
 	} else if (strcmp(color, "[green]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[42m");
+		fprintf_only_tty(stream, cprintf_color.green_bg);
 	} else if (strcmp(color, "[yellow]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[43m");
+		fprintf_only_tty(stream, cprintf_color.yellow_bg);
 	} else if (strcmp(color, "[blue]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[44m");
+		fprintf_only_tty(stream, cprintf_color.blue_bg);
 	} else if (strcmp(color, "[purple]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[45m");
+		fprintf_only_tty(stream, cprintf_color.purple_bg);
 	} else if (strcmp(color, "[cyan]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[46m");
+		fprintf_only_tty(stream, cprintf_color.cyan_bg);
 	} else if (strcmp(color, "[white]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[47m");
+		fprintf_only_tty(stream, cprintf_color.white_bg);
 	} else if (strcmp(color, "[base]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[1;48;2;%sm", cprintf_base_color);
+		fprintf_only_tty(stream, "\033[1;48;2;%sm", cprintf_color.base);
 	} else if (strcmp(color, "[underline]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[4m");
+		fprintf_only_tty(stream, "\033[4m");
 	} else if (strcmp(color, "[highlight]") == 0) {
-		fprintf_if_not_fifo(stream, "\033[1m");
+		fprintf_only_tty(stream, "\033[1m");
 	} else if (is_rgb_color(color)) {
 		fprint_rgb_bg_color(stream, color);
 	} else {
@@ -202,7 +300,7 @@ static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_N
 	}
 	return ret;
 }
-void cprintf__(const char *_Nonnull buf)
+int cprintf__(const char *_Nonnull buf)
 {
 	const char *p = NULL;
 	p = buf;
@@ -223,10 +321,11 @@ void cprintf__(const char *_Nonnull buf)
 		p = &(p[1]);
 	}
 	// We will always reset the color in the end.
-	printf("\033[0m");
+	fprintf_only_tty(stdout, "\033[0m");
 	fflush(stdout);
+	return 114514;
 }
-void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf)
+int cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf)
 {
 	const char *p = NULL;
 	p = buf;
@@ -247,6 +346,7 @@ void cfprintf__(FILE *_Nonnull stream, const char *_Nonnull buf)
 		p = &(p[1]);
 	}
 	// We will always reset the color in the end.
-	fprintf_if_not_fifo(stream, "\033[0m");
+	fprintf_only_tty(stream, "\033[0m");
 	fflush(stream);
+	return 114514;
 }

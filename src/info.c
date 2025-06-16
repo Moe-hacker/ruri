@@ -160,7 +160,9 @@ void ruri_show_helps(void)
 	cprintf("{base}(*12) : This feature might not work. The value is in seconds. This feature will auto enable unshare\n");
 	cprintf("{base}(*13) : This can only be used when `-N` option is enabled\n");
 	cprintf("{base}(*14) : The value is in range of -1000 to 1000, but setting to negative value might cause security issues\n");
-	cprintf("\n{base}Note:\n") cprintf("{base}BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.\n") cprintf("{base}{clear}\n");
+	cprintf("\n{base}Note:\n");
+	cprintf("{base}BSD style usage is partially supported now, for example, you can use `-pW /root`, but `-W/root` is not allowed.\n");
+	cprintf("{base}{clear}\n");
 }
 // For `ruri -H`.
 void ruri_show_examples(void)

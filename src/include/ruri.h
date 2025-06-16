@@ -234,15 +234,15 @@ struct RURI_ID_MAP {
 	}
 // Log system.
 #if defined(RURI_DEBUG)
-#define ruri_log(...)                                                                                                                 \
+#define ruri_log(format, ...)                                                                                                         \
 	{                                                                                                                             \
 		struct timeval tv;                                                                                                    \
 		gettimeofday(&tv, NULL);                                                                                              \
 		cfprintf(stderr, "{green}[%ld.%06ld] in %s() in %s line %d:\n", tv.tv_sec, tv.tv_usec, __func__, __FILE__, __LINE__); \
-		cfprintf(stderr, ##__VA_ARGS__)                                                                                       \
+		cfprintf(stderr, format, ##__VA_ARGS__);                                                                              \
 	}
 #else
-#define ruri_log(...)
+#define ruri_log(format, ...)
 #endif
 // Shared functions.
 void ruri_register_signal(void);
