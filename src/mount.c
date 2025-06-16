@@ -236,6 +236,16 @@ static int mount_other_type(const char *_Nonnull source, const char *_Nonnull ta
 		int ret = mount("overlay", target, "overlay", mountflags, overlay_flag);
 		free(overlay_flag);
 		return ret;
+	} else if (strncmp(source, "TMPFS:", strlen("TMPFS:")) == 0) {
+		// Tmpfs mount.
+		ruri_log("{base}Mounting {cyan}%s{base} to {cyan}%s{base} with flags {cyan}%d{base}\n", source, target, mountflags);
+		if (mk_mountpoint_dir(target) != 0) {
+			return -1;
+		}
+		char *tmpfs_flag = strdup(source + strlen("TMPFS:"));
+		int ret = mount("tmpfs", target, "tmpfs", mountflags, tmpfs_flag);
+		free(tmpfs_flag);
+		return ret;
 	}
 	// For source that cannot be mounted.
 	return -1;

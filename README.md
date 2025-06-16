@@ -32,6 +32,8 @@ If you think something does not work as expected, please [Open a new isssue](htt
 https://wiki.crack.moe/ruri
 
 # News:
+# Mounting overlayfs and tmpfs:
+You can now use `OVERLAY:lowerdir=/path/to/lower,upperdir=/path/to/upper,workdir=/path/to/work` and `TMPFS:size=1048576k` as source of `-M`/`-m` option.       
 ## Using config file:
 Ruri now supports config as executable script, you can use config like:      
 ```
