@@ -28,6 +28,7 @@
  *
  */
 #include "include/nekofeng.h"
+// NOLINTBEGIN
 /*
  * This file defines the actions of the animation.
  * All the functions have the same arguments.
@@ -191,3 +192,4 @@ void nekofeng_blink_righteye(useconds_t inr, unsigned int keep)
 	nekofeng_free_action(action);
 }
 #endif
+// NOLINTEND

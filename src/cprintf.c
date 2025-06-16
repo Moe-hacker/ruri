@@ -219,21 +219,21 @@ static const char *cfprintf_print_fg_color(FILE *_Nonnull stream, const char *_N
 	if (strcmp(color, "{clear}") == 0) {
 		fprintf_only_tty(stream, "\033[0m");
 	} else if (strcmp(color, "{black}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.black_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.black_fg);
 	} else if (strcmp(color, "{red}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.red_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.red_fg);
 	} else if (strcmp(color, "{green}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.green_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.green_fg);
 	} else if (strcmp(color, "{yellow}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.yellow_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.yellow_fg);
 	} else if (strcmp(color, "{blue}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.blue_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.blue_fg);
 	} else if (strcmp(color, "{purple}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.purple_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.purple_fg);
 	} else if (strcmp(color, "{cyan}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.cyan_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.cyan_fg);
 	} else if (strcmp(color, "{white}") == 0) {
-		fprintf_only_tty(stream, cprintf_color.white_fg);
+		fprintf_only_tty(stream, "%s", cprintf_color.white_fg);
 	} else if (strcmp(color, "{base}") == 0) {
 		fprintf_only_tty(stream, "\033[1;38;2;%sm", cprintf_color.base);
 	} else if (strcmp(color, "{underline}") == 0) {
@@ -271,21 +271,21 @@ static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_N
 	if (strcmp(color, "[clear]") == 0) {
 		fprintf_only_tty(stream, "\033[0m");
 	} else if (strcmp(color, "[black]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.black_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.black_bg);
 	} else if (strcmp(color, "[red]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.red_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.red_bg);
 	} else if (strcmp(color, "[green]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.green_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.green_bg);
 	} else if (strcmp(color, "[yellow]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.yellow_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.yellow_bg);
 	} else if (strcmp(color, "[blue]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.blue_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.blue_bg);
 	} else if (strcmp(color, "[purple]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.purple_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.purple_bg);
 	} else if (strcmp(color, "[cyan]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.cyan_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.cyan_bg);
 	} else if (strcmp(color, "[white]") == 0) {
-		fprintf_only_tty(stream, cprintf_color.white_bg);
+		fprintf_only_tty(stream, "%s", cprintf_color.white_bg);
 	} else if (strcmp(color, "[base]") == 0) {
 		fprintf_only_tty(stream, "\033[1;48;2;%sm", cprintf_color.base);
 	} else if (strcmp(color, "[underline]") == 0) {

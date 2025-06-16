@@ -28,6 +28,7 @@
  *
  */
 #include "include/nekofeng.h"
+// NOLINTBEGIN
 /*
  * This file provides the function
  * nekofeng_typewrite_layer() and nekofeng_clear_typewrite_layer().
@@ -207,3 +208,4 @@ void nekofeng_clear_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useco
 	free(buf);
 }
 #endif
+// NOLINTEND

@@ -160,7 +160,7 @@ static char *get_username(uid_t uid)
 	char *p = buf;
 	const char *bound = p + strlen(p);
 	uid_t tmpuid = 0;
-	char *tmpusername = " ";
+	char *tmpusername = NULL;
 	// Every time, we get the username and uid by line.
 	// If the uid is equal to the uid we want, we return the username.
 	while (true) {
@@ -458,7 +458,7 @@ bool ruri_user_exist(const char *_Nonnull username)
 	}
 	char *p = buf;
 	const char *bound = p + strlen(p);
-	char *tmpusername = " ";
+	char *tmpusername = NULL;
 	while (true) {
 		tmpusername = line_get_username(p);
 		if (strcmp(tmpusername, username) == 0) {
@@ -507,7 +507,7 @@ uid_t ruri_get_user_uid(const char *_Nonnull username)
 	char *p = buf;
 	const char *bound = p + strlen(p);
 	uid_t tmpuid = 0;
-	char *tmpusername = " ";
+	char *tmpusername = NULL;
 	while (true) {
 		tmpusername = line_get_username(p);
 		tmpuid = line_get_uid(p);
@@ -557,7 +557,7 @@ gid_t ruri_get_user_gid(const char *_Nonnull username)
 	char *p = buf;
 	const char *bound = p + strlen(p);
 	gid_t tmpgid = 0;
-	char *tmpusername = " ";
+	char *tmpusername = NULL;
 	while (true) {
 		tmpusername = line_get_username(p);
 		tmpgid = line_get_gid(p);

@@ -27,6 +27,7 @@
  *
  *
  */
+// NOLINTBEGIN
 #define _GNU_SOURCE
 #include <errno.h>
 #include <stdio.h>
@@ -102,3 +103,4 @@ void nekofeng_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useconds_t 
 void nekofeng_clear_typewrite_layer(struct NEKOFENG_LAYER *_Nonnull layer, useconds_t inr);
 size_t nekofeng_strlen(const char32_t *_Nonnull str);
 char32_t *nekofeng_strdup(const char32_t *_Nonnull str);
+// NOLINTEND

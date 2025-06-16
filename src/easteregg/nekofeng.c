@@ -28,6 +28,7 @@
  *
  */
 #include "include/nekofeng.h"
+// NOLINTBEGIN
 /*
  * This file was the main.c in nekofeng project.
  * Now, it provides the function ruri_AwA() as the easteregg of ruri.
@@ -203,3 +204,4 @@ void ruri_AwA()
 	cprintf("{red}ruri was build with core-only mode QwQ.\n");
 }
 #endif
+// NOLINTEND

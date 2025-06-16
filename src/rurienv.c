@@ -415,11 +415,9 @@ struct RURI_CONTAINER *ruri_read_info(struct RURI_CONTAINER *_Nullable container
 	int seccomplen = k2v_get_key(char_array, "deny_syscall", buf, container->seccomp_denied_syscall, RURI_MAX_SECCOMP_DENIED_SYSCALL);
 	container->seccomp_denied_syscall[seccomplen] = NULL;
 	// Check if seccomp_denied_syscall changed.
-	if (memcmp(backup->seccomp_denied_syscall, container->seccomp_denied_syscall, sizeof(char *) * RURI_MAX_SECCOMP_DENIED_SYSCALL) != 0) {
-		if (!container->no_warnings) {
-			ruri_warning("{yellow}.rurienv detected, seccomp_denied_syscall changed{clear}\n");
-		}
-	}
+	//
+	// TODO
+	//
 	// Get ns_pid.
 	container->ns_pid = k2v_get_key(int, "ns_pid", buf);
 	ruri_log("{base}ns_pid: %d\n", container->ns_pid);

@@ -25,8 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- *
  */
+// NOLINTBEGIN
 #pragma once
 #ifdef __linux__
 #define _GNU_SOURCE
@@ -92,12 +92,12 @@ extern bool cprintf_print_color_only_tty;
 		b;                                                                                                                                                                                                                                                                                                                                                                                                                         \
 	})
 
-#define cprintf_to_char(d, f)                                   \
-	({                                                      \
-		char *buf = malloc(cprintf_buf_len(f, d) + 32); \
-		sprintf(buf, f, d);                             \
-		cprintf_mark_buf(buf);                          \
-		buf;                                            \
+#define cprintf_to_char(d, f)                                      \
+	({                                                         \
+		char *cp_buf = malloc(cprintf_buf_len(f, d) + 32); \
+		sprintf(cp_buf, f, d);                             \
+		cprintf_mark_buf(cp_buf);                          \
+		cp_buf;                                            \
 	})
 
 #define F(data, format) cprintf_to_char(data, cprintf_get_fmt_(data, format))
@@ -118,25 +118,26 @@ extern bool cprintf_print_color_only_tty;
 		}                                                                                            \
 		cp_ret;                                                                                      \
 	})
-#define cprintf(format, ...)                                            \
-	({                                                              \
-		int cp_ret = 0;                                         \
-		char *buf = malloc(cprintf_len(format, ##__VA_ARGS__)); \
-		csprintf(buf, format, ##__VA_ARGS__);                   \
-		cp_ret = cprintf__(buf);                                \
-		free(buf);                                              \
-		cp_ret;                                                 \
+#define cprintf(format, ...)                                               \
+	({                                                                 \
+		int cp_ret = 0;                                            \
+		char *cp_buf = malloc(cprintf_len(format, ##__VA_ARGS__)); \
+		csprintf(cp_buf, format, ##__VA_ARGS__);                   \
+		cp_ret = cprintf__(cp_buf);                                \
+		free(cp_buf);                                              \
+		cp_ret;                                                    \
 	})
-#define cfprintf(stream, format, ...)                                   \
-	({                                                              \
-		int cp_ret = 0;                                         \
-		char *buf = malloc(cprintf_len(format, ##__VA_ARGS__)); \
-		csprintf(buf, format, ##__VA_ARGS__);                   \
-		cp_ret = cfprintf__(stream, buf);                       \
-		free(buf);                                              \
-		cp_ret;                                                 \
+#define cfprintf(stream, format, ...)                                      \
+	({                                                                 \
+		int cp_ret = 0;                                            \
+		char *cp_buf = malloc(cprintf_len(format, ##__VA_ARGS__)); \
+		csprintf(cp_buf, format, ##__VA_ARGS__);                   \
+		cp_ret = cfprintf__(stream, cp_buf);                       \
+		free(cp_buf);                                              \
+		cp_ret;                                                    \
 	})
 // For generic support.
 char *cprintf_regen_format(const char *f, int limit);
 void cprintf_free_buf(void);
 void cprintf_mark_buf(char *b);
+// NOLINTEND

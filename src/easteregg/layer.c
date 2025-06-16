@@ -28,6 +28,7 @@
  *
  */
 #include "include/nekofeng.h"
+// NOLINTBEGIN
 #ifndef RURI_CORE_ONLY
 /*
  * This file provides the function
@@ -181,3 +182,4 @@ struct NEKOFENG_ACTION *nekofeng_add_action(struct NEKOFENG_ACTION *_Nonnull act
 	return action;
 }
 #endif
+// NOLINTEND
