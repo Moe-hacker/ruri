@@ -36,7 +36,7 @@
 // For marking the buffer, so that it can be free() later.
 static thread_local char **cprintf_buffer = NULL;
 static thread_local size_t cprintf_buf_count = 0;
-void cprintf_mark_buf(char *b)
+void cprintf_mark_buf__(char *b)
 {
 	/*
 	 * Mark the buffer, so that it can be free() later.
@@ -45,7 +45,7 @@ void cprintf_mark_buf(char *b)
 	cprintf_buffer[cprintf_buf_count] = b;
 	cprintf_buf_count++;
 }
-void cprintf_free_buf(void)
+void cprintf_free_buf__(void)
 {
 	/*
 	 * Free all the buffers that have been marked.
@@ -57,14 +57,14 @@ void cprintf_free_buf(void)
 	cprintf_buffer = NULL;
 	cprintf_buf_count = 0;
 }
-char *cprintf_regen_format(const char *f, int limit)
+char *cprintf_regen_format__(const char *f, int limit)
 {
 	/*
 	 * This function will regenerate the format string
 	 * to replace all '{}' with '%s'.
 	 * If the input is NULL, it will return an empty string.
 	 */
-	char *ret = strdup(cprintf_avoid_null(f));
+	char *ret = strdup(cprintf_avoid_null__(f));
 	int j = 0;
 	// For the case that limit is 0, that means no limit.
 	// This is caused when args > 15, and we can't count it with CPRINTF_COUNT_ARGS.
@@ -72,9 +72,9 @@ char *cprintf_regen_format(const char *f, int limit)
 		limit = INT16_MAX;
 	}
 	int count = 0;
-	size_t len = cprintf_strlen(f);
+	size_t len = cprintf_strlen__(f);
 	if (len == 0 || limit == 1) {
-		cprintf_mark_buf(ret);
+		cprintf_mark_buf__(ret);
 		return ret;
 	}
 	limit = limit - 1;
@@ -102,13 +102,13 @@ char *cprintf_regen_format(const char *f, int limit)
 		ret[j] = f[len - 1];
 		ret[j + 1] = '\0';
 	}
-	cprintf_mark_buf(ret);
+	cprintf_mark_buf__(ret);
 	return ret;
 }
 //
 // Color support.
 //
-struct CPRINTF_COLOR cprintf_color = {
+struct CPRINTF_COLOR__ cprintf_color = {
 	.base = "254;228;208",
 	.black_fg = "\033[30m",
 	.red_fg = "\033[31m",
