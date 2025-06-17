@@ -125,6 +125,10 @@ typedef int cap_value_t;
 #include "version.h"
 #include "k2v.h"
 #include "cprintf.h"
+#undef cprintf
+#undef cfprintf
+#define cprintf(format, ...) scprintf(format, ##__VA_ARGS__)
+#define cfprintf(stream, format, ...) scfprintf(stream, format, ##__VA_ARGS__)
 #include "hostarch.h"
 // Info of a container to create.
 struct RURI_CONTAINER {
