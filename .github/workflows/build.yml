@@ -47,79 +47,6 @@ jobs:
           echo "release_name=$release_name" >> $GITHUB_OUTPUT
           echo "build_time=$build_time" >> $GITHUB_OUTPUT
 
-  buildloong64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y automake binfmt-support binutils build-essential debootstrap libcap-dev libfdt-dev libglib2.0-dev libpixman-1-dev libseccomp-dev ninja-build pkg-config python3 python3-pip python3-tomli qemu-system-misc tree upx-ucl xz-utils zlib1g-dev
-          pip3 install meson
-
-      - name: Build x86_64 Ruri
-        run: |
-          mkdir -p build
-          cd build
-          git clone --depth 1 https://github.com/moe-hacker/ruri.git
-          cd ruri
-          cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
-
-      - name: Build loong64 qemu
-        run: |
-          cd build
-          git clone --depth=1 https://github.com/qemu/qemu.git
-          cd qemu
-          ./configure --static --disable-system --target-list=loongarch64-linux-user
-          make -j$(nproc)
-
-          sudo cp build/qemu-loongarch64 /usr/bin/qemu-loongarch64-static
-
-      - name: Build loongarch64 system
-        run: |
-          cd build
-          sudo debootstrap --no-check-gpg \
-            --foreign --arch=loong64 --variant=buildd --include=debian-ports-archive-keyring \
-            --verbose --components=main --resolve-deps --extra-suites=unreleased \
-            unstable ./debian http://ftp.ports.debian.org/debian-ports
-
-          sudo cp /usr/bin/qemu-loongarch64-static ./debian/usr/bin/
-          sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /debootstrap/debootstrap --second-stage
-
-      - name: Build loong64 Ruri
-        run: |
-          cd build
-          sudo bash -c 'cat <<EOF >> ./debian/build.sh
-          rm -f /etc/resolv.conf
-          echo nameserver 1.1.1.1 > /etc/resolv.conf
-          apt-get update
-          apt-get install -y wget make clang git libseccomp-dev libcap-dev libc-dev binutils upx-ucl tar
-          apt-get install -y automake autoconf
-          git clone --depth 1 https://github.com/moe-hacker/ruri.git
-          cd ruri
-          ./autogen.sh
-          ./configure --enable-static
-          make
-          strip ruri
-          tar -cf ../loong64.tar ./ruri ./LICENSE
-          ./configure --enable-coreonly --enable-static
-          make
-          strip ruri
-          tar -cf ../loong64-core.tar ./ruri ./LICENSE
-          EOF'
-
-          sudo chmod +x ./debian/build.sh
-          sudo ./ruri/ruri -p -a loong64 -q /usr/bin/qemu-loongarch64-static ./debian /bin/sh /build.sh
-          cp ./debian/loong64.tar ../loongarch64.tar
-          cp ./debian/loong64-core.tar ../loongarch64-core.tar
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ruri-${{ github.run_id }}
-          path: |
-            ./*.tar
-          retention-days: 7
-
   build-arch:
     runs-on: ubuntu-latest
     permissions:
@@ -197,7 +124,7 @@ jobs:
           fi
 
       - name: Upload artifacts
-        if: matrix.arch != 'loongarch64'
+        if: true
         uses: actions/upload-artifact@v4
         with:
           name: ruri-${{ matrix.arch }}
@@ -207,7 +134,7 @@ jobs:
 
   release:
     name: Push Release
-    needs: [update, buildloong64, build-arch]
+    needs: [update,  build-arch]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -237,7 +164,6 @@ jobs:
             *-upx means the binary is upx compressed.
             *-core means the binary is built without libseccomp and libcap, and with .rurienv disabled.
             ruri use musl as libc to build by default (in alpine container), for smaller binary size and better security.
-            But since I didn't found way to get stable musl container image for loongarch64, the binary for loongarch64 is built with glibc in debian.
             Build time: ${{ needs.update.outputs.build_time }}
           files: |
             *.tar
