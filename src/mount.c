@@ -251,6 +251,89 @@ static int mount_other_type(const char *_Nonnull source, const char *_Nonnull ta
 	// For source that cannot be mounted.
 	return -1;
 }
+static const char *parse_mount_flags(const char *source, unsigned int *mountflag)
+{
+	/*
+	 * Parse mount flags from source.
+	 * Save the mount flags to mountflag.
+	 * Return the start of source without mount flags.
+	 *
+	 * Recognized prefixes and their corresponding flags:
+	 *   "RDONLY:"      -> MS_RDONLY
+	 *   "NOSUID:"      -> MS_NOSUID
+	 *   "NOEXEC:"      -> MS_NOEXEC
+	 *   "NODIRATIME:"  -> MS_NODIRATIME
+	 *   "NOATIME:"     -> MS_NOATIME
+	 *   "SYNCHRONOUS:" -> MS_SYNCHRONOUS
+	 *   "DIRSYNC:"     -> MS_DIRSYNC
+	 *   "MANDLOCK:"    -> MS_MANDLOCK
+	 *   "RELATIME:"    -> MS_RELATIME
+	 *   "SLAVE:"       -> MS_SLAVE
+	 *   "SHARED:"      -> MS_SHARED
+	 *   "PRIVATE:"     -> MS_PRIVATE
+	 *   "UNBINDABLE:"  -> MS_UNBINDABLE
+	 *   "SILENT:"      -> MS_SILENT
+	 *   "POSIXACL:"    -> MS_POSIXACL
+	 *   "LAZYTIME:"    -> MS_LAZYTIME
+	 *
+	 * The function stops processing when no recognized prefix is found at the start of 'source'.
+	 *
+	 */
+	while (true) {
+		if (strncmp(source, "RDONLY:", strlen("RDONLY:")) == 0) {
+			*mountflag |= MS_RDONLY;
+			source += strlen("RDONLY:");
+		} else if (strncmp(source, "NOSUID:", strlen("NOSUID:")) == 0) {
+			*mountflag |= MS_NOSUID;
+			source += strlen("NOSUID:");
+		} else if (strncmp(source, "NOEXEC:", strlen("NOEXEC:")) == 0) {
+			*mountflag |= MS_NOEXEC;
+			source += strlen("NOEXEC:");
+		} else if (strncmp(source, "NODIRATIME:", strlen("NODIRATIME:")) == 0) {
+			*mountflag |= MS_NODIRATIME;
+			source += strlen("NODIRATIME:");
+		} else if (strncmp(source, "NOATIME:", strlen("NOATIME:")) == 0) {
+			*mountflag |= MS_NOATIME;
+			source += strlen("NOATIME:");
+		} else if (strncmp(source, "SYNCHRONOUS:", strlen("SYNCHRONOUS:")) == 0) {
+			*mountflag |= MS_SYNCHRONOUS;
+			source += strlen("SYNCHRONOUS:");
+		} else if (strncmp(source, "DIRSYNC:", strlen("DIRSYNC:")) == 0) {
+			*mountflag |= MS_DIRSYNC;
+			source += strlen("DIRSYNC:");
+		} else if (strncmp(source, "MANDLOCK:", strlen("MANDLOCK:")) == 0) {
+			*mountflag |= MS_MANDLOCK;
+			source += strlen("MANDLOCK:");
+		} else if (strncmp(source, "RELATIME:", strlen("RELATIME:")) == 0) {
+			*mountflag |= MS_RELATIME;
+			source += strlen("RELATIME:");
+		} else if (strncmp(source, "SLAVE:", strlen("SLAVE:")) == 0) {
+			*mountflag |= MS_SLAVE;
+			source += strlen("SLAVE:");
+		} else if (strncmp(source, "SHARED:", strlen("SHARED:")) == 0) {
+			*mountflag |= MS_SHARED;
+			source += strlen("SHARED:");
+		} else if (strncmp(source, "PRIVATE:", strlen("PRIVATE:")) == 0) {
+			*mountflag |= MS_PRIVATE;
+			source += strlen("PRIVATE:");
+		} else if (strncmp(source, "UNBINDABLE:", strlen("UNBINDABLE:")) == 0) {
+			*mountflag |= MS_UNBINDABLE;
+			source += strlen("UNBINDABLE:");
+		} else if (strncmp(source, "SILENT:", strlen("SILENT:")) == 0) {
+			*mountflag |= MS_SILENT;
+			source += strlen("SILENT:");
+		} else if (strncmp(source, "POSIXACL:", strlen("POSIXACL:")) == 0) {
+			*mountflag |= MS_POSIXACL;
+			source += strlen("POSIXACL:");
+		} else if (strncmp(source, "LAZYTIME:", strlen("LAZYTIME:")) == 0) {
+			*mountflag |= MS_LAZYTIME;
+			source += strlen("LAZYTIME:");
+		} else {
+			break;
+		}
+	}
+	return source;
+}
 // Mount dev/dir/img to target.
 int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsigned int mountflags)
 {
@@ -269,11 +352,13 @@ int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsi
 	// umount target before mount(2), to avoid `device or resource busy`.
 	umount2(target, MNT_DETACH | MNT_FORCE);
 	int ret = 0;
-	ruri_log("{base}Mounting {cyan}%s{base} to {cyan}%s{base} with flags {cyan}%d{base}\n", source, target, mountflags);
+	unsigned int mountflags_new = mountflags;
+	source = parse_mount_flags(source, &mountflags_new);
+	ruri_log("{base}Mounting {cyan}%s{base} to {cyan}%s{base} with flags {cyan}%d{base}\n", source, target, mountflags_new);
 	struct stat dev_stat;
-	// If source does not exist, just return -1 as error.
+	// If source does not exist, try to parse as other type of source.
 	if (lstat(source, &dev_stat) != 0) {
-		return mount_other_type(source, target, mountflags);
+		return mount_other_type(source, target, mountflags_new);
 	}
 	// Bind-mount dir.
 	if (S_ISDIR(dev_stat.st_mode)) {
@@ -281,9 +366,9 @@ int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsi
 		if (mk_mountpoint_dir(target) != 0) {
 			return -1;
 		}
-		mount(source, target, NULL, mountflags | MS_BIND, NULL);
+		mount(source, target, NULL, mountflags_new | MS_BIND, NULL);
 		// For ro mount, we need a remount.
-		ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
+		ret = mount(source, target, NULL, mountflags_new | MS_BIND | MS_REMOUNT, NULL);
 	}
 	// Block device.
 	else if (S_ISBLK(dev_stat.st_mode)) {
@@ -291,7 +376,7 @@ int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsi
 		if (mk_mountpoint_dir(target) != 0) {
 			return -1;
 		}
-		ret = mount_device(source, target, mountflags);
+		ret = mount_device(source, target, mountflags_new);
 	}
 	// Image and common file.
 	// We cannot distinguish image file and common file by stat(2),
@@ -303,15 +388,15 @@ int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsi
 			return -1;
 		}
 		ruri_log("{base}Mounting as image file {cyan}%s{base} to {cyan}%s{base}\n", source, target);
-		ret = mount_device(losetup(source), target, mountflags);
+		ret = mount_device(losetup(source), target, mountflags_new);
 		// Common file.
 		if (ret != 0) {
 			if (touch_mountpoint_file(target) != 0) {
 				return -1;
 			}
 			ruri_log("{base}Bind-mounting as common file {cyan}%s{base} to {cyan}%s{base}\n", source, target);
-			mount(source, target, NULL, mountflags | MS_BIND, NULL);
-			ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
+			mount(source, target, NULL, mountflags_new | MS_BIND, NULL);
+			ret = mount(source, target, NULL, mountflags_new | MS_BIND | MS_REMOUNT, NULL);
 		}
 	}
 	// For char-device/FIFO/socket, we just bind-mount it.
@@ -320,8 +405,8 @@ int ruri_trymount(const char *_Nonnull source, const char *_Nonnull target, unsi
 			return -1;
 		}
 		ruri_log("{base}Bind-mounting {cyan}%s{base} to {cyan}%s{base}\n", source, target);
-		mount(source, target, NULL, mountflags | MS_BIND, NULL);
-		ret = mount(source, target, NULL, mountflags | MS_BIND | MS_REMOUNT, NULL);
+		mount(source, target, NULL, mountflags_new | MS_BIND, NULL);
+		ret = mount(source, target, NULL, mountflags_new | MS_BIND | MS_REMOUNT, NULL);
 	}
 	// We do not support to mount other type of files.
 	else {
