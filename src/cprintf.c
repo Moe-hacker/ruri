@@ -207,6 +207,10 @@ static const char *cfprintf_print_fg_color(FILE *_Nonnull stream, const char *_N
 	const char *ret = buf;
 	char color[17] = { '\0' };
 	for (int i = 0; i < 16; i++) {
+		if (buf[i] == '\0') {
+			fprintf(stream, "{");
+			return buf;
+		}
 		if (buf[i] == '}') {
 			color[i] = buf[i];
 			color[i + 1] = 0;
@@ -259,6 +263,10 @@ static const char *cfprintf_print_bg_color(FILE *_Nonnull stream, const char *_N
 	const char *ret = buf;
 	char color[17] = { '\0' };
 	for (int i = 0; i < 16; i++) {
+		if (buf[i] == '\0') {
+			fprintf(stream, "[");
+			return buf;
+		}
 		if (buf[i] == ']') {
 			color[i] = buf[i];
 			color[i + 1] = 0;

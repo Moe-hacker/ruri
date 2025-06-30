@@ -37,8 +37,7 @@ static void ruri_fetch__(char **logo, char **info)
 {
 	int j = 0;
 	for (int i = 0; logo[i] != NULL; i++) {
-		j = i - 1;
-		if (j >= 0 && info[j] != NULL) {
+		if (info[j] != NULL) {
 			cprintf("%s%s\n", logo[i], info[j]);
 			j++;
 		} else {
