@@ -5,6 +5,8 @@
   * Add `-J` option: `--join-ns`.
   * Add `-O` option: `--oom-score-adj`.
   * Fix binfmt_misc for rootless container.
+  * Support mount flags as prefix of source.
+  * Support tmpfs and overlayfs as mount source.
 # v3.8:
   * Support more platforms, currently supports: arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64.
   * Improve rootless container support.
